@@ -9,7 +9,7 @@
  * @module context/AppContext
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { INITIAL_FORM_DATA, RESUME_TEMPLATES, LEGAL_DOCUMENT_TYPES } from "../data/constants";
 import StorageService from "../utils/storage";
 
@@ -30,6 +30,8 @@ export const AppProvider = ({ children }) => {
   const [loginStep, setLoginStep] = useState(0);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [userData, setUserData] = useState({ nome: "", sobrenome: "", cpf: "" });
+  const [userId, setUserId] = useState(null);
 
   // ─── Estado de Modelo e Editor ───
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -38,6 +40,7 @@ export const AppProvider = ({ children }) => {
   // ─── Estado do Formulário ───
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [saveStatus, setSaveStatus] = useState("saved");
+  const [lastSaved, setLastSaved] = useState(null);
 
   // ─── Estado do Dashboard ───
   const [filter, setFilter] = useState("todos");
@@ -54,67 +57,114 @@ export const AppProvider = ({ children }) => {
   // ─── Estado de Carregamento ───
   const [isLoading, setIsLoading] = useState(true);
 
+  // ─── Refs para autosave ───
+  const autosaveTimerRef = useRef(null);
+  const isFirstRender = useRef(true);
+
+  // ─── Função de salvamento com debounce ───
+  const debouncedSave = useCallback((data, type, userId) => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+    
+    autosaveTimerRef.current = setTimeout(() => {
+      setSaveStatus("saving");
+      
+      if (type === "resume") {
+        StorageService.saveDraft(data, userId, "resume");
+      } else if (type === "legal") {
+        StorageService.saveDraft(data, userId, "legal");
+      } else if (type === "session") {
+        StorageService.saveSession(data);
+      }
+      
+      setTimeout(() => {
+        setSaveStatus("saved");
+        setLastSaved(new Date());
+      }, 800);
+    }, 1500);
+  }, []);
+
   // ─── Inicializar app - Carregar dados persistidos ───
   useEffect(() => {
     const initializeApp = () => {
-      // Verificar disponibilidade de armazenamento
       if (StorageService.isAvailable()) {
-        // Carregar dados do formulário salvos
-        const savedFormData = StorageService.loadFormData();
-        if (savedFormData) {
-          setFormData(savedFormData);
-        }
-
-        // Carregar dados do formulário legal
-        const savedLegalFormData = StorageService.loadLegalFormData();
-        if (savedLegalFormData) {
-          setLegalFormData(savedLegalFormData);
-        }
-
-        // Carregar documentos salvos
-        const savedDocuments = StorageService.loadDocuments();
-        if (savedDocuments.length > 0) {
-          setUserDocuments(savedDocuments);
-        }
-
-        // Carregar sessão salva (se o usuário estava logado)
-        const savedSession = StorageService.loadSession();
-        if (savedSession && savedSession.isAuthenticated) {
+        // Carregar sessão salva primeiro para obter userId
+        const savedSession = StorageService.loadSession(userId);
+        const currentUserId = savedSession?.userId || null;
+        
+        if (currentUserId) {
+          setUserId(currentUserId);
+          
+          // Carregar documentos do usuário específico
+          const docs = StorageService.loadDocuments(currentUserId);
+          if (docs.length > 0) {
+            setUserDocuments(docs);
+          }
+          
+          // Carregar drafts do usuário
+          const resumeDraft = StorageService.loadDraft(currentUserId, "resume");
+          if (resumeDraft) {
+            setFormData(resumeDraft);
+          }
+          
+          const legalDraft = StorageService.loadDraft(currentUserId, "legal");
+          if (legalDraft) {
+            setLegalFormData(legalDraft);
+          }
+          
+          // Restaurar sessão
           setPhone(savedSession.phone || "");
+          setUserData({
+            nome: savedSession.nome || "",
+            sobrenome: savedSession.sobrenome || "",
+            cpf: savedSession.cpf || ""
+          });
           setLoginStep(2);
+          
           setTimeout(() => {
             setCurrentPage("dashboard");
           }, 500);
+        } else {
+          // Usuário não logado - carregar dados de guest
+          const savedFormData = StorageService.loadFormData();
+          if (savedFormData) {
+            setFormData(savedFormData);
+          }
+
+          const savedLegalFormData = StorageService.loadLegalFormData();
+          if (savedLegalFormData) {
+            setLegalFormData(savedLegalFormData);
+          }
         }
       }
       setIsLoading(false);
     };
 
-    // Pequeno atraso para garantir a montagem do componente
     const timer = setTimeout(initializeApp, 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // ─── Auto-salvar dados do formulário quando mudar ───
+  // ─── Auto-salvar dados do formulário (resume) ───
   useEffect(() => {
-    if (!isLoading && StorageService.isAvailable()) {
-      // Salvar com debounce
-      const timer = setTimeout(() => {
-        StorageService.saveFormData(formData);
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!isLoading && !isFirstRender.current) {
+      debouncedSave(formData, "resume", userId);
     }
-  }, [formData, isLoading]);
+    isFirstRender.current = false;
+    
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+    };
+  }, [formData, userId, isLoading, debouncedSave]);
 
-  // ─── Auto-salvar dados do formulário legal quando mudar ───
+  // ─── Auto-salvar dados do formulário legal ───
   useEffect(() => {
-    if (!isLoading && StorageService.isAvailable()) {
-      const timer = setTimeout(() => {
-        StorageService.saveLegalFormData(legalFormData);
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!isLoading && !isFirstRender.current && Object.keys(legalFormData).length > 0) {
+      debouncedSave(legalFormData, "legal", userId);
     }
-  }, [legalFormData, isLoading]);
+  }, [legalFormData, userId, isLoading, debouncedSave]);
 
   // ─── Auxiliar de Navegação ───
   const navigate = useCallback((page) => {
@@ -141,17 +191,20 @@ export const AppProvider = ({ children }) => {
     setSelectedTemplate(null);
     setLegalFormData({});
     setDocumentType(null);
+    StorageService.clearDraft(userId, "resume");
+    StorageService.clearDraft(userId, "legal");
     StorageService.saveFormData(INITIAL_FORM_DATA);
     StorageService.clearLegalFormData();
-  }, []);
+  }, [userId]);
 
   // ─── Resetar Formulário Legal ───
   const resetLegalForm = useCallback(() => {
     setLegalFormData({});
     setDocumentType(null);
     setCurrentStep(0);
+    StorageService.clearDraft(userId, "legal");
     StorageService.clearLegalFormData();
-  }, []);
+  }, [userId]);
 
   // ─── Atualizar Dados do Documento Legal ───
   const updateLegalField = useCallback((field, value) => {
@@ -167,30 +220,54 @@ export const AppProvider = ({ children }) => {
 
   // ─── Salvar Documento (quando o checkout for concluído) ───
   const saveDocument = useCallback((documentData) => {
+    const docType = documentType ? "legal" : "resume";
+    
     const newDoc = {
-      id: Date.now(),
+      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
       ...documentData,
+      type: docType,
+      template: selectedTemplate?.name || documentType?.name || "Padrão",
       date: new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
+      createdAt: new Date().toISOString(),
       status: "finalizado",
+      userId: userId,
     };
     
     const updatedDocs = [...userDocuments, newDoc];
     setUserDocuments(updatedDocs);
-    StorageService.saveDocuments(updatedDocs);
+    StorageService.saveDocuments(updatedDocs, userId);
+    
+    // Limpar draft após finalizar
+    if (docType === "resume") {
+      StorageService.clearDraft(userId, "resume");
+    } else {
+      StorageService.clearDraft(userId, "legal");
+    }
     
     return newDoc;
-  }, [userDocuments]);
+  }, [userDocuments, userId, documentType, selectedTemplate]);
 
   // ─── Login ───
-  const login = useCallback((phoneNumber) => {
+  const login = useCallback((phoneNumber, userDataInput) => {
+    const newUserId = phoneNumber.replace(/\D/g, "");
+    
+    setUserId(newUserId);
     setPhone(phoneNumber);
+    setUserData(userDataInput || { nome: "", sobrenome: "", cpf: "" });
     setLoginStep(2);
     
-    // Salvar sessão
     if (StorageService.isAvailable()) {
+      // Primeiro, migrar dados legacy se existirem
+      StorageService.migrateLegacyData(newUserId);
+      
+      // Depois salvar sessão
       StorageService.saveSession({
         isAuthenticated: true,
+        userId: newUserId,
         phone: phoneNumber,
+        nome: userDataInput?.nome || "",
+        sobrenome: userDataInput?.sobrenome || "",
+        cpf: userDataInput?.cpf || "",
         loginTime: new Date().toISOString(),
       });
     }
@@ -203,9 +280,10 @@ export const AppProvider = ({ children }) => {
     setLoginStep(0);
     setOtp(["", "", "", "", "", ""]);
     setPhone("");
-    StorageService.clearSession();
+    setUserData({ nome: "", sobrenome: "", cpf: "" });
+    StorageService.clearSession(userId);
     navigate("landing");
-  }, [navigate]);
+  }, [navigate, userId]);
 
   // ─── Valor do Context ───
   const value = {
@@ -220,6 +298,9 @@ export const AppProvider = ({ children }) => {
     setPhone,
     otp,
     setOtp,
+    userData,
+    setUserData,
+    userId,
     login,
     logout,
 
@@ -238,6 +319,7 @@ export const AppProvider = ({ children }) => {
     updateForm,
     resetForm,
     saveStatus,
+    lastSaved,
 
     // Dashboard
     filter,

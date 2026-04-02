@@ -1,16 +1,85 @@
-# React + Vite
+# Kriou Docs - Documentos Profissionais
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma para criação de documentos profissionais como currículos, contratos e documentos jurídicos com entrega via WhatsApp.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+# Install dependencies
+npm install
 
-## React Compiler
+# Run development server
+npm run dev
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Build for production
+npm run build
+```
 
-## Expanding the ESLint configuration
+## 📁 Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/
+├── components/     # Reusable UI components
+│   ├── Icons.jsx   # SVG icon library
+│   ├── Theme.jsx   # Theme and global styles
+│   └── UI.jsx      # Buttons, Cards, Forms, etc.
+├── context/        # React Context state management
+│   └── AppContext.jsx
+├── data/           # Constants and configuration
+│   └── constants.js
+├── hooks/          # Custom React Hooks
+│   └── index.js
+├── pages/          # Page components
+│   ├── LandingPage.jsx
+│   ├── LoginPage.jsx
+│   ├── DashboardPage.jsx
+│   ├── TemplatesPage.jsx
+│   ├── EditorPage.jsx
+│   ├── PreviewPage.jsx
+│   └── CheckoutPage.jsx
+├── utils/          # Utility functions
+│   ├── pdfGenerator.js
+│   └── storage.js
+└── App.jsx         # Application entry
+```
+
+## 🎨 Theme Customization
+
+Edit `src/components/Theme.jsx` to change colors and styles:
+
+```javascript
+const theme = {
+  colors: {
+    coral: "#E94560",
+    teal: "#00D2D3",
+    // ...
+  }
+};
+```
+
+## 📄 Adding New Templates
+
+1. Add new template to `RESUME_TEMPLATES` in `src/data/constants.js`
+2. Define colors and styles
+3. PreviewPage and PDF generator will automatically apply
+
+## 🔧 Development
+
+### Add New Page
+1. Create component in `src/pages/`
+2. Add route in `App.jsx`
+3. Use `useApp()` hook for state access
+
+### PDF Generation
+Use `src/utils/pdfGenerator.js`:
+
+```javascript
+import { generateResumePDF, downloadPDF } from "./utils/pdfGenerator";
+
+const doc = generateResumePDF(formData, template);
+downloadPDF(doc, "my-resume.pdf");
+```
+
+## 📝 License
+
+MIT License - 2026 Kriou Docs

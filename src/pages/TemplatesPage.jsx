@@ -43,6 +43,17 @@ const TemplatesPage = () => {
   };
 
   /**
+   * Handle legal document type selection
+   * @param {Object} type - Selected legal document type
+   */
+  const handleLegalDocSelect = (type) => {
+    setSelectedTemplate(null);
+    setCurrentStep(0);
+    setDocumentType(type);
+    navigate("legalEditor");
+  };
+
+  /**
    * Go back to document type selection
    */
   const handleBack = () => {
@@ -308,27 +319,44 @@ const TemplatesPage = () => {
     if (docType === "resume") {
       return renderResumeTemplates();
     }
+    if (docType === "legal") {
+      return renderLegalDocTypes();
+    }
     return renderDocTypeSelection();
   };
-
-  return (
-    <div style={{ minHeight: "100vh" }}>
-      {/* ─── Navbar ─── */}
-      <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", gap: 16 }}>
-          <button
-            onClick={() => docType ? handleBack() : navigate("dashboard")}
-            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center" }}
-          >
-            <Icon name="ChevronLeft" className="w-5 h-5" />
+  
+  // Render legal document types
+  const renderLegalDocTypes = () => {
+    const available = LEGAL_DOCUMENT_TYPES.filter(d => d.available);
+    
+    return (
+      <div className="animate-fadeIn">
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", gap: 4 }}>
+            <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
           </button>
-          <div className="font-display" style={{ fontSize: 20, fontWeight: 800 }}>
-            {docType === "resume" ? "Escolha seu Modelo" : "Criar Documento"}
-          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 800 }}>Documentos Jurídicos</h2>
+          <p style={{ color: "var(--text-muted)" }}>Selecione o tipo de documento</p>
         </div>
-      </nav>
-
-      {/* ─── Content ─── */}
+        
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16, maxWidth: 900, margin: "0 auto" }}>
+          {available.map((doc) => (
+            <Card
+              key={doc.id}
+              onClick={() => handleLegalDocSelect(doc)}
+              style={{ cursor: "pointer", padding: 24 }}
+            >
+              <Icon name={doc.icon} className="w-8 h-8" style={{ color: "var(--teal)", marginBottom: 12 }} />
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{doc.name}</div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+   
+  return (
+    <div style={{ minHeight: "100vh", paddingBottom: 80 }}>
       {renderContent()}
     </div>
   );

@@ -72,15 +72,15 @@ export const STEP_VALIDATIONS = {
   0: {
     nome: {
       rules: [VALIDATION_RULES.required, VALIDATION_RULES.minLength(3)],
-      message: "Nome completo é obrigatório (mínimo 3 caracteres)",
+      message: "Preencha seu nome completo. Ex: João da Silva",
     },
     email: {
       rules: [VALIDATION_RULES.required, VALIDATION_RULES.email],
-      message: "E-mail válido é obrigatório",
+      message: "Informe um e-mail válido. Ex: joao@email.com",
     },
     telefone: {
       rules: [VALIDATION_RULES.required, VALIDATION_RULES.phone],
-      message: "Telefone válido é obrigatório",
+      message: "Informe um telefone com DDD. Ex: (11) 98765-4321",
     },
   },
 
@@ -90,7 +90,7 @@ export const STEP_VALIDATIONS = {
   1: {
     objetivo: {
       rules: [VALIDATION_RULES.required, VALIDATION_RULES.minLength(20)],
-      message: "Objetivo profissional é obrigatório (mínimo 20 caracteres)",
+      message: "Descreva seu objetivo profissional (mínimo 20 caracteres)",
     },
   },
 

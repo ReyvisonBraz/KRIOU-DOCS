@@ -6,7 +6,7 @@
  * and quick actions for creating new documents.
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, Badge } from "../components/UI";
@@ -15,68 +15,80 @@ import { Card, Button, Badge } from "../components/UI";
  * DashboardPage - User's document management hub
  */
 const DashboardPage = () => {
-  const { navigate, filter, setFilter, formData, setFormData, setCurrentStep, logout, phone, userDocuments, legalDocumentTypes, selectDocumentType, setDocumentType } = useApp();
+  const { navigate, filter, setFilter, formData, setFormData, setCurrentStep, logout } = useApp();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("todos");
 
   /**
    * Handle create new legal document
    */
   const handleCreateLegalDocument = () => {
-    setDocumentType(null);
     setCurrentStep(0);
     navigate("legalEditor");
   };
 
   /**
    * Mock documents for demonstration
-   * In production, this would come from database/API
    */
   const mockDocs = [
-    { id: 1, type: "Currículo", title: "Dev Full Stack", template: "Tech", date: "25 Mar", status: "finalizado" },
-    { id: 2, type: "Currículo", title: "Designer UX", template: "Criativo", date: "22 Mar", status: "rascunho" },
-    { id: 3, type: "Contrato", title: "Aluguel Apt 302", template: "Padrão", date: "18 Mar", status: "finalizado" },
+    { id: 1, type: "curriculo", title: "Dev Full Stack", template: "Tech", date: "25 Mar", status: "finalizado" },
+    { id: 2, type: "curriculo", title: "Designer UX", template: "Criativo", date: "22 Mar", status: "rascunho" },
+    { id: 3, type: "compra-venda", title: "Aluguel Apt 302", template: "Padrão", date: "18 Mar", status: "finalizado" },
+    { id: 4, type: "locacao", title: "Contrato Locação", template: "Padrão", date: "15 Mar", status: "rascunho" },
+    { id: 5, type: "curriculo", title: "Currículo Primeiro Emprego", template: "Primeiro Emprego", date: "10 Mar", status: "finalizado" },
   ];
 
   /**
-   * Filter documents based on selected type
-   * @returns {Array} Filtered document list
+   * Tab options
+   */
+  const tabs = [
+    { id: "todos", label: "Todos", icon: "FileText" },
+    { id: "curriculo", label: "Currículos", icon: "User" },
+    { id: "compra-venda", label: "Compra/Venda", icon: "FileText" },
+    { id: "locacao", label: "Locação", icon: "Home" },
+    { id: "procuracao", label: "Procuração", icon: "Shield" },
+  ];
+
+  /**
+   * Get filtered docs by tab and search
    */
   const getFilteredDocs = () => {
-    if (filter === "todos") return mockDocs;
-    return mockDocs.filter((doc) => doc.type.toLowerCase().includes(filter));
+    let docs = activeTab === "todos" ? mockDocs : mockDocs.filter((doc) => doc.type === activeTab);
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      docs = docs.filter((doc) => doc.title.toLowerCase().includes(query) || doc.template.toLowerCase().includes(query));
+    }
+    return docs;
   };
 
   /**
    * Get status badge variant
-   * @param {string} status - Document status
-   * @returns {string} Badge variant
    */
   const getStatusVariant = (status) => {
     return status === "finalizado" ? "success" : "warning";
   };
 
   /**
-   * Handle document edit navigation
-   * @param {Object} doc - Document to edit
+   * Get status label
+   */
+  const getStatusLabel = (status) => {
+    return status === "finalizado" ? "✓ Finalizado" : "✎ Rascunho";
+  };
+
+  /**
+   * Handle document edit
    */
   const handleEditDocument = (doc) => {
-    // Carregar dados do documento no editor (simulado com dados mock)
-    // Na produção, carregaria do banco de dados
     setFormData({
-      nome: doc.title === "Dev Full Stack" ? "Reyvison Silva" : "Designer UX",
+      nome: doc.title.includes("Dev") ? "Reyvison Silva" : doc.title.includes("Designer") ? "Maria Santos" : "Nome Completo",
       email: "usuario@email.com",
       telefone: "(11) 99999-9999",
       cidade: "São Paulo, SP",
       linkedin: "linkedin.com/in/usuario",
-      objetivo: doc.title === "Dev Full Stack" 
-        ? "Desenvolvedor Full Stack com 5 anos de experiência buscando posição de liderança técnica."
-        : "Designer UX buscando desafios em projetos inovadores.",
-      experiencias: [
-        { empresa: "Tech Solutions", cargo: "Desenvolvedor Senior", periodo: "Jan 2022 - Atual", descricao: "Liderança técnica e desenvolvimento de APIs." },
-      ],
-      formacoes: [
-        { instituicao: "USP", curso: "Ciência da Computação", periodo: "2018-2022", status: "Completo" },
-      ],
-      habilidades: ["React", "Node.js", "TypeScript", "Git"],
+      objetivo: "Objetivo profissional...",
+      experiencias: [{ empresa: "Empresa XPTO", cargo: "Cargo", periodo: "2022 - Atual", descricao: "Descrição" }],
+      formacoes: [{ instituicao: "Universidade", curso: "Curso", periodo: "2020 - 2024", status: "Cursando" }],
+      habilidades: ["Comunicação", "Trabalho em Equipe"],
       idiomas: [{ idioma: "Português", nivel: "Nativo" }],
       cursos: "",
     });
@@ -85,39 +97,35 @@ const DashboardPage = () => {
   };
 
   /**
-   * Get user's first name for greeting
-   * @returns {string} User's first name
+   * Get user's first name
    */
   const getUserName = () => {
-    const savedName = formData.nome;
-    return savedName ? savedName.split(" ")[0] : "Reyvison";
+    return formData.nome ? formData.nome.split(" ")[0] : "Usuário";
   };
 
   /**
-   * Filter button options
+   * Get document type label
    */
-  const filterOptions = [
-    { id: "todos", label: "Todos" },
-    { id: "currículo", label: "Currículo" },
-    { id: "contrato", label: "Contrato" },
-  ];
+  const getTypeLabel = (type) => {
+    const labels = {
+      curriculo: "Currículo",
+      "compra-venda": "Compra/Venda",
+      locacao: "Locação",
+      procuracao: "Procuração",
+    };
+    return labels[type] || type;
+  };
 
   return (
     <div style={{ minHeight: "100vh" }}>
-      {/* ─── Navbar ─── */}
+      {/* Navbar */}
       <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* Logo */}
           <div className="font-display" style={{ fontSize: 24, fontWeight: 900, cursor: "pointer" }} onClick={() => navigate("landing")}>
             <span style={{ color: "var(--coral)" }}>Kriou</span> Docs
           </div>
-
-          {/* User Menu */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button 
-              onClick={() => navigate("profile")}
-              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}
-            >
+            <button onClick={() => navigate("profile")} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
               <Icon name="User" className="w-4 h-4" />
             </button>
             <button onClick={logout} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
@@ -127,103 +135,124 @@ const DashboardPage = () => {
         </div>
       </nav>
 
-      {/* ─── Main Content ─── */}
+      {/* Main Content */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
-        {/* Welcome Section */}
-        <div className="animate-fadeUp" style={{ marginBottom: 32 }}>
-          <h1 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>
+        {/* Welcome */}
+        <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
+          <h1 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
             Olá, {getUserName()} 👋
           </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: 15 }}>Gerencie seus documentos ou crie um novo.</p>
+          <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Gerencie seus documentos ou crie um novo.</p>
         </div>
 
-        {/* ─── CTA Buttons ─── */}
-        <div className="animate-fadeUp delay-1" style={{ display: "flex", gap: 14, marginBottom: 36, flexWrap: "wrap" }}>
+        {/* CTA Buttons */}
+        <div className="animate-fadeUp delay-1" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
           <Button variant="primary" icon="Plus" onClick={() => navigate("templates")}>
-            Criar Currículo
+            + Novo Currículo
           </Button>
           <Button variant="secondary" icon="FileText" onClick={handleCreateLegalDocument}>
-            Criar Documento Jurídico
+            + Novo Documento
           </Button>
         </div>
 
-        {/* ─── Filter Tabs ─── */}
-        <div className="animate-fadeUp delay-2" style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-          {filterOptions.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => setFilter(option.id)}
+        {/* Search Bar */}
+        <div className="animate-fadeUp delay-1" style={{ marginBottom: 20 }}>
+          <div style={{ position: "relative", maxWidth: 400 }}>
+            <Icon name="Search" className="w-4 h-4" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+            <input
+              type="text"
+              placeholder="Buscar documentos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                background: filter === option.id ? "var(--coral)" : "var(--surface-2)",
-                color: filter === option.id ? "white" : "var(--text-muted)",
-                border: "none",
-                borderRadius: 100,
-                padding: "8px 20px",
+                width: "100%",
+                padding: "12px 12px 12px 42px",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                fontSize: 14,
+                color: "var(--text)",
+                outline: "none",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="animate-fadeUp delay-2" style={{ display: "flex", gap: 6, marginBottom: 24, overflowX: "auto", paddingBottom: 8 }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                background: activeTab === tab.id ? "var(--coral)" : "transparent",
+                color: activeTab === tab.id ? "white" : "var(--text-muted)",
+                border: activeTab === tab.id ? "none" : "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "10px 18px",
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                textTransform: "capitalize",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
                 transition: "all .2s",
               }}
             >
-              {option.label}
+              {tab.label}
+              <span style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.2)" : "var(--surface-2)", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>
+                {tab.id === "todos" ? mockDocs.length : mockDocs.filter(d => d.type === tab.id).length}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* ─── Documents Grid ─── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+        {/* Documents Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
           {getFilteredDocs().map((doc, index) => (
             <Card
               key={doc.id}
               className="animate-fadeUp"
-              style={{ animationDelay: `${(index + 3) * 0.1}s`, padding: 20 }}
+              onClick={() => handleEditDocument(doc)}
+              style={{
+                cursor: "pointer",
+                padding: 18,
+                animationDelay: `${index * 0.05}s`,
+              }}
             >
-              {/* Document Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div>
-                  <Badge variant={getStatusVariant(doc.status)}>
-                    {doc.status === "finalizado" ? "Finalizado" : "Rascunho"}
-                  </Badge>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>{doc.title}</h3>
-                  <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                    {doc.type} • {doc.template} • {doc.date}
-                  </p>
+                <div style={{
+                  background: doc.type === "curriculo" ? "rgba(233,69,96,0.1)" : "rgba(0,210,211,0.1)",
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: doc.type === "curriculo" ? "var(--coral)" : "var(--teal)",
+                }}>
+                  {getTypeLabel(doc.type)}
                 </div>
+                <Badge variant={getStatusVariant(doc.status)} style={{ fontSize: 10 }}>
+                  {getStatusLabel(doc.status)}
+                </Badge>
               </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: "flex", gap: 8 }}>
-                <Button variant="secondary" size="small" icon="Edit" onClick={() => handleEditDocument(doc)}>
-                  Editar
-                </Button>
-                <Button variant="secondary" size="small" icon="Download" />
-                <Button variant="secondary" size="small" icon="Copy" />
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>{doc.title}</h3>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+                <span>{doc.template}</span>
+                <span>{doc.date}</span>
               </div>
             </Card>
           ))}
-
-          {/* ─── New Document Card (Empty State) ─── */}
-          <Card
-            className="animate-fadeUp delay-5"
-            onClick={() => navigate("templates")}
-            style={{
-              padding: 20,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 180,
-              cursor: "pointer",
-              border: "2px dashed var(--border)",
-            }}
-          >
-            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(233,69,96,0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-              <Icon name="Plus" className="w-6 h-6" style={{ color: "var(--coral)" }} />
-            </div>
-            <span style={{ fontWeight: 600, fontSize: 15 }}>Novo Documento</span>
-          </Card>
         </div>
+
+        {/* Empty State */}
+        {getFilteredDocs().length === 0 && (
+          <div style={{ textAlign: "center", padding: 60, color: "var(--text-muted)" }}>
+            <Icon name="FileText" className="w-12 h-12" style={{ opacity: 0.3, marginBottom: 16 }} />
+            <p style={{ fontSize: 15 }}>Nenhum documento encontrado</p>
+            <p style={{ fontSize: 13 }}>Crie um novo documento para começar</p>
+          </div>
+        )}
       </div>
     </div>
   );

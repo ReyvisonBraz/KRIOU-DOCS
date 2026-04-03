@@ -30,9 +30,6 @@ import LegalEditorPage from "./pages/LegalEditorPage";
 const PageRouter = () => {
   const { currentPage } = useApp();
 
-  /**
-   * Route mapping object for clean switch statement
-   */
   const routes = {
     landing: LandingPage,
     login: LoginPage,
@@ -45,7 +42,6 @@ const PageRouter = () => {
     legalEditor: LegalEditorPage,
   };
 
-  // Obter o componente para a página atual, padrão para Landing
   const PageComponent = routes[currentPage] || LandingPage;
 
   return <PageComponent />;

@@ -9,8 +9,8 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button, Input, Textarea, Select, Badge, Tag } from "../components/UI";
-import { STEPS, STEP_DESCRIPTIONS, SKILLS_OPTIONS, LANGUAGE_LEVELS, EDUCATION_STATUS } from "../data/constants";
+import { Card, Button, Input, Textarea, Select, Badge, Tag, FieldHint, QuickSuggestion, ExperienceTypeSelector, FieldWithIcon, VisualExample, QuickFillCard } from "../components/UI";
+import { STEPS, STEP_DESCRIPTIONS, SKILLS_OPTIONS, LANGUAGE_LEVELS, EDUCATION_STATUS, FIELD_HINTS } from "../data/constants";
 import { validateStep, getStepStatus } from "../utils/validation";
 
 /**
@@ -199,56 +199,62 @@ const EditorPage = () => {
           <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>Nome Completo *</label>
-                <input
-                  className="input-field"
-                  placeholder="Seu nome completo"
-                  value={formData.nome}
-                  onChange={(e) => updateForm("nome", e.target.value)}
-                  style={getFieldError("nome") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
-                />
+                <FieldWithIcon icon="user" label="Nome Completo *" tip="Como aparece nos seus documentos">
+                  <input
+                    className="input-field"
+                    placeholder={FIELD_HINTS.nome.placeholder}
+                    value={formData.nome}
+                    onChange={(e) => updateForm("nome", e.target.value)}
+                    style={getFieldError("nome") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+                  />
+                </FieldWithIcon>
                 {getFieldError("nome") && <div style={errorStyle}>{getFieldError("nome")}</div>}
+                <VisualExample type="nome" />
               </div>
               <div>
-                <label style={labelStyle}>E-mail *</label>
-                <input
-                  className="input-field"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={formData.email}
-                  onChange={(e) => updateForm("email", e.target.value)}
-                  style={getFieldError("email") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
-                />
+                <FieldWithIcon icon="email" label="E-mail *" tip="Email que você usa com frequência">
+                  <input
+                    className="input-field"
+                    type="email"
+                    placeholder={FIELD_HINTS.email.placeholder}
+                    value={formData.email}
+                    onChange={(e) => updateForm("email", e.target.value)}
+                    style={getFieldError("email") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+                  />
+                </FieldWithIcon>
                 {getFieldError("email") && <div style={errorStyle}>{getFieldError("email")}</div>}
               </div>
               <div>
-                <label style={labelStyle}>Telefone *</label>
-                <input
-                  className="input-field"
-                  placeholder="(11) 99999-9999"
-                  value={formData.telefone}
-                  onChange={(e) => updateForm("telefone", e.target.value)}
-                  style={getFieldError("telefone") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
-                />
+                <FieldWithIcon icon="phone" label="Telefone *" tip="Com DDD para contato">
+                  <input
+                    className="input-field"
+                    placeholder={FIELD_HINTS.telefone.placeholder}
+                    value={formData.telefone}
+                    onChange={(e) => updateForm("telefone", e.target.value)}
+                    style={getFieldError("telefone") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+                  />
+                </FieldWithIcon>
                 {getFieldError("telefone") && <div style={errorStyle}>{getFieldError("telefone")}</div>}
               </div>
               <div>
-                <label style={labelStyle}>Cidade / Estado</label>
-                <input
-                  className="input-field"
-                  placeholder="São Paulo, SP"
-                  value={formData.cidade}
-                  onChange={(e) => updateForm("cidade", e.target.value)}
-                />
+                <FieldWithIcon icon="location" label="Cidade / Estado">
+                  <input
+                    className="input-field"
+                    placeholder={FIELD_HINTS.cidade.placeholder}
+                    value={formData.cidade}
+                    onChange={(e) => updateForm("cidade", e.target.value)}
+                  />
+                </FieldWithIcon>
               </div>
               <div>
-                <label style={labelStyle}>LinkedIn</label>
-                <input
-                  className="input-field"
-                  placeholder="linkedin.com/in/seu-perfil"
-                  value={formData.linkedin}
-                  onChange={(e) => updateForm("linkedin", e.target.value)}
-                />
+                <FieldWithIcon icon="linkedin" label="LinkedIn (opicional)" tip="Se não tem, pode pular">
+                  <input
+                    className="input-field"
+                    placeholder={FIELD_HINTS.linkedin.placeholder}
+                    value={formData.linkedin}
+                    onChange={(e) => updateForm("linkedin", e.target.value)}
+                  />
+                </FieldWithIcon>
               </div>
             </div>
           </div>
@@ -258,28 +264,27 @@ const EditorPage = () => {
       case 1:
         return (
           <div className="animate-fadeIn">
-            <label style={labelStyle}>Objetivo Profissional *</label>
-            <textarea
-              className="input-field"
-              rows={4}
-              placeholder="Ex: Desenvolvedor Full Stack com 5 anos de experiência buscando posição de liderança técnica..."
-              value={formData.objetivo}
-              onChange={(e) => updateForm("objetivo", e.target.value)}
-              style={getFieldError("objetivo") ? { resize: "vertical", borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : { resize: "vertical" }}
-            />
+            <FieldWithIcon icon="target" label="Objetivo Profissional *" tip="O que você quer fazer na sua carreira?">
+              <textarea
+                className="input-field"
+                rows={4}
+                placeholder={FIELD_HINTS.objetivo.placeholder}
+                value={formData.objetivo}
+                onChange={(e) => updateForm("objetivo", e.target.value)}
+                style={getFieldError("objetivo") ? { resize: "vertical", borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : { resize: "vertical" }}
+              />
+            </FieldWithIcon>
             {getFieldError("objetivo") && <div style={errorStyle}>{getFieldError("objetivo")}</div>}
-            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Sugestões:</span>
-              {objectiveSuggestions.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => updateForm("objetivo", `Profissional de ${suggestion} com experiência buscando novos desafios...`)}
-                  style={{ background: "var(--surface-3)", border: "none", borderRadius: 100, padding: "4px 12px", fontSize: 12, color: "var(--teal)", cursor: "pointer" }}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
+            
+            <QuickFillCard
+              title="🎯 Não sabe o que escribir?"
+              examples={[
+                { level: "👶 Iniciante", text: "Busco minha primeira oportunidade de trabalho. Sou comunicativo e aprendo rápido." },
+                { level: "📈 Intermediário", text: "Procuro uma posição na área de vendas onde posso desenvolver minhas habilidades de comunicação." },
+                { level: "💼 Avançado", text: "Desenvolvedor Full Stack com 3 años de experiência, buscando posição de liderança técnica em empresa de tecnologia." },
+              ]}
+              onSelect={(text) => updateForm("objetivo", text)}
+            />
           </div>
         );
 
@@ -287,6 +292,12 @@ const EditorPage = () => {
       case 2:
         return (
           <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <FieldHint
+              hint={FIELD_HINTS.experiencia_empresa.hint}
+              example={FIELD_HINTS.experiencia_empresa.examples?.[0]}
+              whereFind={FIELD_HINTS.experiencia_empresa.whatIfNeverWorked}
+              skipLabel={FIELD_HINTS.experiencia_empresa.skipLabel}
+            />
             {formData.experiencias.map((exp, index) => (
               <div
                 key={index}
@@ -321,7 +332,7 @@ const EditorPage = () => {
                     <label style={labelStyle}>Empresa</label>
                     <input
                       className="input-field"
-                      placeholder="Nome da empresa"
+                      placeholder={FIELD_HINTS.experiencia_empresa.placeholder}
                       value={exp.empresa}
                       onChange={(e) => updateExperiencia(index, "empresa", e.target.value)}
                     />
@@ -330,7 +341,7 @@ const EditorPage = () => {
                     <label style={labelStyle}>Cargo</label>
                     <input
                       className="input-field"
-                      placeholder="Seu cargo"
+                      placeholder={FIELD_HINTS.experiencia_cargo.placeholder}
                       value={exp.cargo}
                       onChange={(e) => updateExperiencia(index, "cargo", e.target.value)}
                     />
@@ -339,7 +350,7 @@ const EditorPage = () => {
                     <label style={labelStyle}>Período</label>
                     <input
                       className="input-field"
-                      placeholder="Jan 2022 - Atual"
+                      placeholder={FIELD_HINTS.experiencia_periodo.placeholder}
                       value={exp.periodo}
                       onChange={(e) => updateExperiencia(index, "periodo", e.target.value)}
                     />
@@ -349,7 +360,7 @@ const EditorPage = () => {
                     <textarea
                       className="input-field"
                       rows={3}
-                      placeholder="Descreva suas principais atividades e conquistas..."
+                      placeholder={FIELD_HINTS.experiencia_descricao.placeholder}
                       value={exp.descricao}
                       onChange={(e) => updateExperiencia(index, "descricao", e.target.value)}
                       style={{ resize: "vertical" }}
@@ -359,7 +370,7 @@ const EditorPage = () => {
               </div>
             ))}
             <Button variant="secondary" icon="Plus" onClick={addExperiencia} style={{ border: "2px dashed var(--border)", background: "none" }}>
-              Adicionar Experiência
+              + Adicionar Experiência
             </Button>
           </div>
         );
@@ -442,8 +453,13 @@ const EditorPage = () => {
               </div>
             ))}
             <Button variant="secondary" icon="Plus" onClick={addFormacao} style={{ border: "2px dashed var(--border)", background: "none" }}>
-              Adicionar Formação
+              + Adicionar Formação
             </Button>
+            <FieldHint
+              hint={FIELD_HINTS.formacao_curso.hint}
+              example={FIELD_HINTS.formacao_curso.examples?.[0]}
+              whereFind={FIELD_HINTS.formacao_curso.whatIfStudying}
+            />
           </div>
         );
 
@@ -451,6 +467,10 @@ const EditorPage = () => {
       case 4:
         return (
           <div className="animate-fadeIn">
+            <FieldHint
+              hint={FIELD_HINTS.habilidades.hint}
+              whereFind={FIELD_HINTS.habilidades.categories?.basic}
+            />
             <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 16 }}>
               Selecione suas habilidades ou adicione novas:
             </p>
@@ -472,6 +492,10 @@ const EditorPage = () => {
       case 5:
         return (
           <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <FieldHint
+              hint={FIELD_HINTS.idiomas.tip}
+              whereFind="Sea honesto ao avaliar seu nível. Empresas podem testar."
+            />
             {formData.idiomas.map((idioma, index) => (
               <div
                 key={index}
@@ -507,6 +531,9 @@ const EditorPage = () => {
                       </option>
                     ))}
                   </select>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
+                    {FIELD_HINTS.idiomas.nivel?.[level?.toLowerCase()] || ""}
+                  </div>
                   {formData.idiomas.length > 1 && (
                     <button
                       onClick={() => removeIdioma(index)}
@@ -535,14 +562,24 @@ const EditorPage = () => {
       case 6:
         return (
           <div className="animate-fadeIn">
-            <label style={labelStyle}>Cursos, Certificações e Informações Adicionais</label>
+            <FieldHint
+              hint={FIELD_HINTS.extras.hint}
+              example={FIELD_HINTS.extras.examples?.[0]}
+              whereFind={FIELD_HINTS.extras.whatIsRelevant}
+            />
+            <label style={{ ...labelStyle, marginTop: 16, display: "block" }}>Cursos, Certificações e Informações Adicionais</label>
             <textarea
               className="input-field"
               rows={5}
-              placeholder="Liste cursos extracurriculares, certificações, trabalho voluntário, projetos pessoais..."
+              placeholder={FIELD_HINTS.extras.placeholder}
               value={formData.cursos}
               onChange={(e) => updateForm("cursos", e.target.value)}
               style={{ resize: "vertical" }}
+            />
+            <QuickSuggestion
+              label="💡 Quer algumas ideias?"
+              suggestions={FIELD_HINTS.extras.examples?.slice(0, 4)}
+              onSelect={(text) => updateForm("cursos", formData.cursos ? `${formData.cursos}\n${text}` : text)}
             />
           </div>
         );
@@ -732,17 +769,47 @@ const EditorPage = () => {
       </div>
 
       {/* ─── Bottom Navigation ─── */}
-      <div className="glass" style={{ position: "fixed", bottom: 0, left: 0, right: 0, borderTop: "1px solid var(--border)", padding: "14px 24px" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", justifyContent: "space-between" }}>
+      <div className="glass" style={{ position: "fixed", bottom: 0, left: 0, right: 0, borderTop: "1px solid var(--border)", padding: "16px 20px", zIndex: 100 }}>
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <Button
             variant="secondary"
             disabled={isFirstStep}
             onClick={handlePrevious}
             icon="ChevronLeft"
             iconPosition="left"
+            style={{ minWidth: 100 }}
           >
-            Anterior
+            ← Voltar
           </Button>
+
+          {/* Save Draft Button */}
+          <button
+            onClick={triggerSave}
+            style={{
+              background: "var(--surface-3)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              padding: "10px 16px",
+              fontSize: 12,
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--surface-2)";
+              e.currentTarget.style.borderColor = "var(--teal)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--surface-3)";
+              e.currentTarget.style.borderColor = "var(--border)";
+            }}
+          >
+            <Icon name="Save" className="w-4 h-4" />
+            {saveStatus === "saving" ? "Salvando..." : "Salvar"}
+          </button>
 
           {isLastStep ? (
             <Button
@@ -750,13 +817,29 @@ const EditorPage = () => {
               onClick={() => navigate("preview")}
               icon="Eye"
               iconPosition="right"
-              style={{ animation: "pulse-glow 2s infinite" }}
+              style={{ 
+                animation: "pulse-glow 2s infinite",
+                minWidth: 160,
+                padding: "12px 24px",
+                fontSize: 14,
+              }}
             >
-              Visualizar Currículo
+              ✓ Visualizar
             </Button>
           ) : (
-            <Button variant="primary" onClick={handleNext} icon="ChevronRight" iconPosition="right">
-              Próximo
+            <Button 
+              variant="primary" 
+              onClick={handleNext} 
+              icon="ChevronRight" 
+              iconPosition="right"
+              style={{ 
+                minWidth: 120,
+                padding: "12px 24px",
+                fontSize: 14,
+                background: "var(--coral)",
+              }}
+            >
+              Avançar →
             </Button>
           )}
         </div>

@@ -362,149 +362,19 @@ export const THEME = {
 };
 
 // ─── Document Types - Contratos Jurídicos ───
-// [AGUARDANDO MODELO PADRÃO] - Campos específicos para cada tipo de contrato
-export const LEGAL_DOCUMENT_TYPES = [
-  {
-    id: "compra-venda",
-    name: "Contrato de Compra e Venda",
-    description: "Documento para compra e venda de imóveis ou veículos",
-    icon: "FileText",
-    available: true,
-    fields: [
-      // Tipo do imóvel
-      { key: "tipo_imovel", label: "Tipo de Imóvel", type: "select", options: ["Residencial", "Rural", "Comercial", "Terreno", "Veículo"], required: true },
-      
-      // Dados do Comprador
-      { key: "nome_comprador", label: "Nome Completo do Comprador", type: "text", required: true },
-      { key: "cpf_comprador", label: "CPF do Comprador", type: "cpf", required: true },
-      { key: "estado_civil_comprador", label: "Estado Civil do Comprador", type: "select", options: ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"], required: false },
-      { key: "profissao_comprador", label: "Profissão do Comprador", type: "text", required: false },
-      { key: "endereco_comprador", label: "Endereço do Comprador", type: "text", required: false },
-      { key: "cidade_comprador", label: "Cidade do Comprador", type: "text", required: false },
-      
-      // Dados do Vendedor
-      { key: "nome_vendedor", label: "Nome Completo do Vendedor", type: "text", required: true },
-      { key: "cpf_vendedor", label: "CPF do Vendedor", type: "cpf", required: true },
-      { key: "estado_civil_vendedor", label: "Estado Civil do Vendedor", type: "select", options: ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"], required: false },
-      { key: "profissao_vendedor", label: "Profissão do Vendedor", type: "text", required: false },
-      { key: "endereco_vendedor", label: "Endereço do Vendedor", type: "text", required: false },
-      { key: "cidade_vendedor", label: "Cidade do Vendedor", type: "text", required: false },
-      
-      // Descrição do Imóvel
-      { key: "descricao_imovel", label: "Descrição do Imóvel", type: "textarea", required: true },
-      { key: "endereco_imovel", label: "Endereço do Imóvel", type: "text", required: true },
-      { key: "cidade_imovel", label: "Cidade do Imóvel", type: "text", required: true },
-      { key: "estado_imovel", label: "Estado (UF)", type: "text", required: true },
-      
-      // Medidas
-      { key: "medida_frente", label: "Medida da Frente (m)", type: "text", required: true },
-      { key: "medida_fundo", label: "Medida do Fundo (m)", type: "text", required: true },
-      { key: "medida_direita", label: "Medida Lateral Direita (m)", type: "text", required: false },
-      { key: "medida_esquerda", label: "Medida Lateral Esquerda (m)", type: "text", required: false },
-      { key: "area_total", label: "Área Total (m²)", type: "text", required: false },
-      
-      // Informações adicionais
-      { key: "vizinhos", label: "Vizinhos (Opcional)", type: "textarea", required: false },
-      { key: "ponto_referencia", label: "Ponto de Referência (Opcional)", type: "text", required: false },
-      
-      // Valores e pagamento
-      { key: "valor", label: "Valor da Transação", type: "money", required: true },
-      { key: "forma_pagamento", label: "Forma de Pagamento", type: "select", options: ["À vista", "Parcelado", "Financiamento"], required: true },
-      { key: "data_assinatura", label: "Data de Assinatura", type: "date", required: true },
-    ],
-  },
-  {
-    id: "aluguel",
-    name: "Contrato de Aluguel",
-    description: "Contrato para locação de imóveis",
-    icon: "Home",
-    available: true,
-    fields: [
-      // Dados do Locador
-      { key: "nome_locador", label: "Nome do Locador (Proprietário)", type: "text", required: true },
-      { key: "cpf_locador", label: "CPF do Locador", type: "cpf", required: true },
-      { key: "estado_civil_locador", label: "Estado Civil do Locador", type: "select", options: ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"], required: false },
-      { key: "endereco_locador", label: "Endereço do Locador", type: "text", required: false },
-      { key: "cidade_locador", label: "Cidade do Locador", type: "text", required: false },
-      
-      // Dados do Locatário
-      { key: "nome_locatario", label: "Nome do Locatário (Inquilino)", type: "text", required: true },
-      { key: "cpf_locatario", label: "CPF do Locatário", type: "cpf", required: true },
-      { key: "estado_civil_locatario", label: "Estado Civil do Locatário", type: "select", options: ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"], required: false },
-      { key: "profissao_locatario", label: "Profissão do Locatário", type: "text", required: false },
-      { key: "endereco_locatario", label: "Endereço do Locatário", type: "text", required: false },
-      { key: "cidade_locatario", label: "Cidade do Locatário", type: "text", required: false },
-      
-      // Dados do Imóvel
-      { key: "tipo_imovel", label: "Tipo de Imóvel", type: "select", options: ["Apartamento", "Casa", "Kitnet", "Sala Comercial", "Loja"], required: true },
-      { key: "endereco_imovel", label: "Endereço do Imóvel", type: "text", required: true },
-      { key: "cidade_imovel", label: "Cidade do Imóvel", type: "text", required: true },
-      { key: "estado_imovel", label: "Estado (UF)", type: "text", required: true },
-      
-      // Valores
-      { key: "valor_aluguel", label: "Valor do Aluguel", type: "money", required: true },
-      { key: "valor_caucao", label: "Valor da Caução", type: "money", required: false },
-      { key: "valor_iptu", label: "Valor do IPTU", type: "money", required: false },
-      
-      // Prazos
-      { key: "prazo_inicio", label: "Data de Início", type: "date", required: true },
-      { key: "prazo_fim", label: "Data de Término", type: "date", required: true },
-      { key: "dia_vencimento", label: "Dia de Vencimento", type: "select", options: ["1", "5", "10", "15", "20", "25", "30"], required: true },
-    ],
-  },
-  {
-    id: "procuracao",
-    name: "Procuração",
-    description: "Delegação de poderes para representação",
-    icon: "Shield",
-    available: true,
-    fields: [
-      // Dados do Outorgante
-      { key: "nome_outorgante", label: "Nome Completo do Outorgante", type: "text", required: true },
-      { key: "cpf_outorgante", label: "CPF do Outorgante", type: "cpf", required: true },
-      { key: "estado_civil_outorgante", label: "Estado Civil do Outorgante", type: "select", options: ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"], required: false },
-      { key: "profissao_outorgante", label: "Profissão do Outorgante", type: "text", required: false },
-      { key: "endereco_outorgante", label: "Endereço do Outorgante", type: "text", required: false },
-      { key: "cidade_outorgante", label: "Cidade do Outorgante", type: "text", required: false },
-      
-      // Dados do Outorgado
-      { key: "nome_outorgado", label: "Nome Completo do Outorgado", type: "text", required: true },
-      { key: "cpf_outorgado", label: "CPF do Outorgado", type: "cpf", required: true },
-      { key: "profissao_outorgado", label: "Profissão do Outorgado", type: "text", required: false },
-      { key: "endereco_outorgado", label: "Endereço do Outorgado", type: "text", required: false },
-      { key: "cidade_outorgado", label: "Cidade do Outorgado", type: "text", required: false },
-      
-      // poderes
-      { key: "poderes", label: "Poderes Concedidos", type: "textarea", required: true },
-      { key: "finalidade", label: "Finalidade da Procuração", type: "select", options: ["General", "Compra e Venda", "Aluguel", "Representação Judicial", "Admin", "Outros"], required: false },
-      { key: "validade", label: "Validade", type: "select", options: ["30 dias", "90 dias", "6 meses", "1 ano", "Indeterminada"], required: true },
-    ],
-  },
-  {
-    id: "doacao",
-    name: "Contrato de Doação",
-    description: "Documento para transferência gratuita de bens",
-    icon: "Award",
-    available: false,
-    fields: [],
-  },
-  {
-    id: "declaracao-residencia",
-    name: "Declaração de Residência",
-    description: "Documento para comprovação de endereço",
-    icon: "Home",
-    available: false,
-    fields: [],
-  },
-  {
-    id: "uniao-estavel",
-    name: "Declaração de União Estável",
-    description: "Declaração de convivência marital",
-    icon: "User",
-    available: false,
-    fields: [],
-  },
-];
+// Agora usa o sistema de legalDocuments.js para dados completos.
+// Este array mantém compatibilidade com componentes que usam LEGAL_DOCUMENT_TYPES.
+import { LEGAL_DOCUMENTS } from "./legalDocuments";
+
+export const LEGAL_DOCUMENT_TYPES = LEGAL_DOCUMENTS.map((doc) => ({
+  id: doc.id,
+  name: doc.name,
+  description: doc.description,
+  icon: doc.icon,
+  available: doc.available,
+  variants: doc.variants,
+  defaultVariant: doc.defaultVariant,
+}));
 
 // ─── Wizard Steps para Contratos ───
 export const LEGAL_DOCUMENT_STEPS = [

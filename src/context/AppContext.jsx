@@ -48,7 +48,9 @@ export const AppProvider = ({ children }) => {
 
   // ─── Estado de Documentos Legais ───
   const [documentType, setDocumentType] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [legalFormData, setLegalFormData] = useState({});
+  const [disabledFields, setDisabledFields] = useState({});
   const legalDocumentTypes = LEGAL_DOCUMENT_TYPES;
 
   // ─── Estado do Checkout ───
@@ -201,6 +203,8 @@ export const AppProvider = ({ children }) => {
   const resetLegalForm = useCallback(() => {
     setLegalFormData({});
     setDocumentType(null);
+    setSelectedVariant(null);
+    setDisabledFields({});
     setCurrentStep(0);
     StorageService.clearDraft(userId, "legal");
     StorageService.clearLegalFormData();
@@ -331,12 +335,16 @@ export const AppProvider = ({ children }) => {
     // Documentos Legais
     documentType,
     setDocumentType,
+    selectedVariant,
+    setSelectedVariant,
     legalFormData,
     setLegalFormData,
     updateLegalField,
     selectDocumentType,
     legalDocumentTypes,
     resetLegalForm,
+    disabledFields,
+    setDisabledFields,
 
     // Checkout
     checkoutComplete,

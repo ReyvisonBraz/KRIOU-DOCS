@@ -10,7 +10,8 @@ import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button } from "../components/UI";
-import { RESUME_TEMPLATES, LEGAL_DOCUMENT_TYPES } from "../data/constants";
+import { RESUME_TEMPLATES } from "../data/constants";
+import { getAvailableDocuments } from "../data/legalDocuments";
 
 /**
  * TemplatesPage - Template gallery for resume selection
@@ -130,7 +131,7 @@ const TemplatesPage = () => {
    * Render document type selection (initial view)
    */
   const renderDocTypeSelection = () => {
-    const legalDocs = LEGAL_DOCUMENT_TYPES.filter(d => d.available);
+    const legalDocs = getAvailableDocuments();
     
     return (
       <div className="animate-fadeIn">
@@ -327,7 +328,7 @@ const TemplatesPage = () => {
   
   // Render legal document types
   const renderLegalDocTypes = () => {
-    const available = LEGAL_DOCUMENT_TYPES.filter(d => d.available);
+    const available = getAvailableDocuments();
     
     return (
       <div className="animate-fadeIn">

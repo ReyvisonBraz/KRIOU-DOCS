@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(wc -l /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/src/components/UI.jsx /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/src/pages/*.jsx /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/src/utils/*.js)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -c \"setForm\\\\|updateForm\\\\|setState\" /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/src/pages/*.jsx)",
+      "Bash(ls -lah /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/*.jsx)",
+      "Bash(wc -l /c/Users/reyvison/Desktop/ANTIGRAVITY/KRIOU-DOCS/*.jsx)",
+      "Bash(xargs wc:*)",
+      "Bash(npm run:*)",
+      "Bash(ls *.jsx *.js *.html)",
+      "Bash(rm DocumentDetails.jsx DocumentLanding.jsx LegalDocEditor.jsx kriou-docs-prototype.jsx)",
+      "Bash(ls *.jsx *.js)",
+      "Bash(rm ProfilePage.jsx)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

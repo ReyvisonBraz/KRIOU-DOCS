@@ -6,10 +6,14 @@
  * Supports WhatsApp login and account creation.
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button } from "../components/UI";
+import { formatCpf, formatPhone } from "../utils/formatting";
+import { validateCpf } from "../utils/validation";
+import { LABEL_STYLE, ERROR_STYLE } from "../constants/styles";
+import { checkRateLimit, resetRateLimit, formatRetryTime } from "../utils/rateLimiter";
 
 /**
  * LoginPage - Clean authentication UI
@@ -23,7 +27,8 @@ const LoginPage = () => {
   const [sobrenome, setSobrenome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // password uses a ref — never stored in React state to avoid DevTools exposure
+  const passwordRef = useRef(null);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -40,27 +45,6 @@ const LoginPage = () => {
         setAuthAction(null);
       }
     }
-  };
-
-  /**
-   * Format CPF
-   */
-  const formatCpf = (value) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 11);
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
-  };
-
-  /**
-   * Format phone
-   */
-  const formatPhone = (value) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 11);
-    if (numbers.length <= 2) return `(${numbers}`;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
   };
 
   /**
@@ -84,7 +68,7 @@ const LoginPage = () => {
     if (!nome.trim()) newErrors.nome = "Preencha seu nome";
     if (!sobrenome.trim()) newErrors.sobrenome = "Preencha seu sobrenome";
     if (!cpf.trim()) newErrors.cpf = "Preencha seu CPF";
-    else if (cpf.replace(/\D/g, "").length < 11) newErrors.cpf = "CPF inválido";
+    else if (!validateCpf(cpf)) newErrors.cpf = "CPF inválido";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,10 +77,12 @@ const LoginPage = () => {
    * Validate email login
    */
   const validateEmailLogin = () => {
+    const pwd = passwordRef.current?.value || "";
     const newErrors = {};
     if (!email.trim()) newErrors.email = "Preencha seu e-mail";
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "E-mail inválido";
-    if (!password.trim()) newErrors.password = "Preencha sua senha";
+    else if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim()))
+      newErrors.email = "E-mail inválido";
+    if (!pwd.trim()) newErrors.password = "Preencha sua senha";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -105,10 +91,11 @@ const LoginPage = () => {
    * Validate CPF login
    */
   const validateCpfLogin = () => {
+    const pwd = passwordRef.current?.value || "";
     const newErrors = {};
     if (!cpf.trim()) newErrors.cpf = "Preencha seu CPF";
-    else if (cpf.replace(/\D/g, "").length < 11) newErrors.cpf = "CPF inválido";
-    if (!password.trim()) newErrors.password = "Preencha sua senha";
+    else if (!validateCpf(cpf)) newErrors.cpf = "CPF inválido";
+    if (!pwd.trim()) newErrors.password = "Preencha sua senha";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -130,6 +117,11 @@ const LoginPage = () => {
       setErrors({ phone: "Digite um WhatsApp válido" });
       return;
     }
+    const rl = checkRateLimit("login", phone.replace(/\D/g, ""));
+    if (!rl.allowed) {
+      setErrors({ phone: `Muitas tentativas. Tente novamente em ${formatRetryTime(rl.retryAfterMs)}.` });
+      return;
+    }
     setErrors({});
     setLoginStep(1);
   };
@@ -138,8 +130,15 @@ const LoginPage = () => {
    * Continue email login
    */
   const handleContinueEmail = () => {
+    const rl = checkRateLimit("password", email);
+    if (!rl.allowed) {
+      setErrors({ general: `Muitas tentativas. Tente novamente em ${formatRetryTime(rl.retryAfterMs)}.` });
+      return;
+    }
     if (validateEmailLogin()) {
+      resetRateLimit("password", email);
       login(email, { nome: email.split("@")[0], sobrenome: "", cpf: "" });
+      if (passwordRef.current) passwordRef.current.value = "";
     }
   };
 
@@ -147,8 +146,16 @@ const LoginPage = () => {
    * Continue CPF login
    */
   const handleContinueCpf = () => {
+    const identifier = cpf.replace(/\D/g, "");
+    const rl = checkRateLimit("password", identifier);
+    if (!rl.allowed) {
+      setErrors({ general: `Muitas tentativas. Tente novamente em ${formatRetryTime(rl.retryAfterMs)}.` });
+      return;
+    }
     if (validateCpfLogin()) {
-      login(cpf, { nome: "", sobrenome: "", cpf: cpf });
+      resetRateLimit("password", identifier);
+      login(identifier, { nome: "", sobrenome: "", cpf: "" });
+      if (passwordRef.current) passwordRef.current.value = "";
     }
   };
 
@@ -157,27 +164,23 @@ const LoginPage = () => {
    */
   const handleVerifyOtp = () => {
     if (otp.every((digit) => digit !== "")) {
+      const rl = checkRateLimit("otp", phone.replace(/\D/g, ""));
+      if (!rl.allowed) {
+        setErrors({ otp: `Muitas tentativas. Tente novamente em ${formatRetryTime(rl.retryAfterMs)}.` });
+        return;
+      }
       if (authAction === "create") {
         login(phone, { nome, sobrenome, cpf });
       } else {
         login(phone, { nome: "", sobrenome: "", cpf: "" });
       }
+      resetRateLimit("otp", phone.replace(/\D/g, ""));
     }
   };
 
-  const labelStyle = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: "var(--text)",
-    marginBottom: 8,
-    display: "block",
-  };
-
-  const errorStyle = {
-    fontSize: 12,
-    color: "var(--coral)",
-    marginTop: 6,
-  };
+  // labelStyle e errorStyle importados de constants/styles.js
+  const labelStyle = LABEL_STYLE;
+  const errorStyle = ERROR_STYLE;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "var(--navy)" }}>
@@ -496,11 +499,11 @@ const LoginPage = () => {
               <label style={labelStyle}>Senha</label>
               <div style={{ position: "relative" }}>
                 <input
+                  ref={passwordRef}
                   className="input-field"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   style={{ paddingRight: 44 }}
                 />
                 <button
@@ -553,11 +556,11 @@ const LoginPage = () => {
               <label style={labelStyle}>Senha</label>
               <div style={{ position: "relative" }}>
                 <input
+                  ref={passwordRef}
                   className="input-field"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   style={{ paddingRight: 44 }}
                 />
                 <button

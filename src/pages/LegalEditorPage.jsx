@@ -21,6 +21,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
+import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import { Icon } from "../components/Icons";
 import {
   Card,
@@ -30,6 +31,10 @@ import {
   SectionHeader,
   LegalFieldRenderer,
   ClientNoteBanner,
+  AppNavbar,
+  AppStepper,
+  BottomNavigation,
+  SaveIndicator,
 } from "../components/UI";
 import {
   LEGAL_DOCUMENTS,
@@ -61,6 +66,8 @@ const LegalEditorPage = () => {
     setLegalFormData,
     documentType,
     setDocumentType,
+    saveStatus,
+    lastSaved,
   } = useApp();
 
   // ─── Estado local ───
@@ -69,6 +76,10 @@ const LegalEditorPage = () => {
   const [disabledFields, setDisabledFields] = useState({});
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
+
+  // ─── Aviso de alterações não salvas ───
+  const isDirty = saveStatus === "saving" || saveStatus === "idle";
+  useUnsavedChanges(isDirty);
 
   // ─── Documentos disponíveis ───
   const availableDocs = getAvailableDocuments();
@@ -652,151 +663,69 @@ const LegalEditorPage = () => {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === STEPS.length - 1;
 
+  const completedSteps = new Set(STEPS.map((_, i) => i).filter((i) => i < currentStep));
+
+  const navTitle = selectedDoc
+    ? selectedDoc.name + (currentVariantObj && currentStep > 1 ? ` — ${currentVariantObj.name}` : "")
+    : "Documento Jurídico";
+
+  const filledCount = currentStep === 2 && selectedDoc && selectedVariant
+    ? Object.keys(legalFormData).filter((k) => legalFormData[k] && legalFormData[k].trim() !== "").length
+    : null;
+
+  const nextLabel = isLastStep
+    ? "Gerar PDF"
+    : currentStep === 2
+    ? "Revisar"
+    : "Avançar";
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* ─── Top Navigation ─── */}
-      <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              onClick={() => isFirstStep ? navigate("dashboard") : handlePrevious()}
-              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
-            >
-              <Icon name="ChevronLeft" className="w-5 h-5" />
-            </button>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>
-                {selectedDoc ? `${selectedDoc.name}` : "Documento Jurídico"}
-                {currentVariantObj && currentStep > 1 && (
-                  <span style={{ color: "var(--teal)", marginLeft: 8, fontSize: 13 }}>
-                    {currentVariantObj.icon} {currentVariantObj.name}
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                Etapa {currentStep + 1} de {STEPS.length}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--success)" }}>
-            <Icon name="Check" className="w-4 h-4" /> Salvo
-          </div>
-        </div>
-      </nav>
+      <AppNavbar
+        title={navTitle}
+        leftAction={
+          <button
+            onClick={() => isFirstStep ? navigate("dashboard") : handlePrevious()}
+            aria-label="Voltar"
+            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6 }}
+          >
+            <Icon name="ChevronLeft" className="w-5 h-5" />
+          </button>
+        }
+        rightAction={<SaveIndicator status={saveStatus} lastSaved={lastSaved} />}
+      >
+        {currentStep > 0 && (
+          <AppStepper
+            steps={STEPS}
+            currentStep={currentStep}
+            onStepClick={(i) => i < currentStep && setCurrentStep(i)}
+            completedSteps={completedSteps}
+          />
+        )}
+      </AppNavbar>
 
       {/* ─── Main Content ─── */}
       <div style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
-        {/* ─── Stepper ─── */}
-        {currentStep > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 36, overflowX: "auto", padding: "4px 0" }}>
-            {STEPS.map((step, index) => {
-              const isCompleted = index < currentStep;
-              const isActive = index === currentStep;
-              const isPast = index < currentStep;
-
-              return (
-                <div
-                  key={index}
-                  onClick={() => index < currentStep && setCurrentStep(index)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    cursor: isPast ? "pointer" : "default",
-                    flexShrink: 0,
-                    opacity: isCompleted || isActive ? 1 : 0.4,
-                  }}
-                >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 10,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all .3s",
-                    background: isCompleted ? "var(--success)" : isActive ? "var(--teal)" : "var(--surface-2)",
-                    border: isActive ? "2px solid var(--teal)" : "1px solid var(--border)",
-                    fontSize: 13, fontWeight: 700,
-                    color: isCompleted || isActive ? "white" : "var(--text-muted)",
-                  }}>
-                    {isCompleted ? "✓" : index + 1}
-                  </div>
-
-                  <span style={{
-                    fontSize: 12,
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? "var(--text)" : "var(--text-muted)",
-                    whiteSpace: "nowrap",
-                    display: isActive || index < 3 ? "inline" : "none",
-                  }}>
-                    {step.label}
-                  </span>
-
-                  {index < STEPS.length - 1 && (
-                    <div style={{
-                      width: 20, height: 2,
-                      background: isPast ? "var(--success)" : "var(--border)",
-                      flexShrink: 0,
-                    }} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ─── Step Content ─── */}
         {renderStepContent()}
       </div>
 
       {/* ─── Bottom Navigation ─── */}
-      <div className="glass" style={{
-        position: "fixed", bottom: 0, left: 0, right: 0,
-        borderTop: "1px solid var(--border)", padding: "14px 24px",
-        zIndex: 100,
-      }}>
-        <div style={{ maxWidth: 920, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Button
-            variant="secondary"
-            disabled={isFirstStep}
-            onClick={handlePrevious}
-            icon="ChevronLeft"
-            iconPosition="left"
-            style={{ minWidth: 100 }}
-          >
-            Voltar
-          </Button>
-
-          {/* Contador de campos preenchidos (step 2) */}
-          {currentStep === 2 && selectedDoc && selectedVariant && (
+      <BottomNavigation
+        onBack={handlePrevious}
+        onNext={isLastStep ? () => navigate("checkout") : handleNext}
+        isFirstStep={isFirstStep}
+        isLastStep={isLastStep}
+        nextLabel={nextLabel}
+        extraContent={
+          filledCount !== null && (
             <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--teal)", fontWeight: 700 }}>
-                {Object.keys(legalFormData).filter((k) => legalFormData[k] && legalFormData[k].trim() !== "").length}
-              </span>
+              <span style={{ color: "var(--teal)", fontWeight: 700 }}>{filledCount}</span>
               campos preenchidos
             </div>
-          )}
-
-          {isLastStep ? (
-            <Button
-              variant="primary"
-              onClick={() => navigate("checkout")}
-              icon="Download"
-              iconPosition="right"
-              style={{ animation: "pulse-glow 2s infinite", minWidth: 180, padding: "12px 24px", fontSize: 14 }}
-            >
-              Gerar PDF
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              onClick={handleNext}
-              icon="ChevronRight"
-              iconPosition="right"
-              disabled={currentStep === 0 && !selectedDoc}
-              style={{ minWidth: 120, padding: "12px 24px", fontSize: 14 }}
-            >
-              {currentStep === 2 ? "Revisar" : "Avançar"}
-            </Button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
     </div>
   );
 };

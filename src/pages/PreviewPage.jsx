@@ -7,19 +7,19 @@
  * Supports both resume and legal documents.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button } from "../components/UI";
-import { generateResumePDF, downloadPDF } from "../utils/pdfGenerator";
-import { generateLegalPDF, downloadLegalPDF } from "../utils/legalPdfGenerator";
+import { Button, AppNavbar } from "../components/UI";
+import { usePDF } from "../hooks/usePDF";
+import showToast from "../utils/toast";
 
 /**
  * PreviewPage - Resume/Legal document preview with template styling
  */
 const PreviewPage = () => {
   const { navigate, selectedTemplate, formData, documentType, legalFormData } = useApp();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { generatePDF, isGenerating } = usePDF();
 
   // Check if viewing a legal document
   const isLegalDocument = !!documentType;
@@ -56,34 +56,17 @@ const PreviewPage = () => {
   const hasCursos = formData.cursos && formData.cursos.trim().length > 0;
 
   /**
-   * Handle PDF download
-   * Generates and downloads the resume or legal document as PDF
+   * Handle PDF download — gerado em Web Worker (não trava a UI)
    */
   const handleDownloadPDF = async () => {
     try {
-      setIsGenerating(true);
-      
       if (isLegalDocument) {
-        // Gerar PDF de documento jurídico
-        const doc = generateLegalPDF(legalFormData, documentType);
-        const filename = documentType?.id 
-          ? `${documentType.id}-kriou-docs.pdf`
-          : "documento-kriou-docs.pdf";
-        downloadLegalPDF(doc, filename);
+        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType });
       } else {
-        // Gerar PDF de currículo
-        const doc = generateResumePDF(formData, selectedTemplate);
-        const filename = formData.nome 
-          ? `curriculo-${formData.nome.toLowerCase().replace(/\s+/g, "-")}.pdf`
-          : "curriculo-kriou-docs.pdf";
-        downloadPDF(doc, filename);
+        await generatePDF({ type: "GENERATE_RESUME", formData, template: selectedTemplate });
       }
-      
-      setIsGenerating(false);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      setIsGenerating(false);
-      alert("Erro ao gerar PDF. Tente novamente.");
+    } catch {
+      showToast.error("Erro ao gerar PDF. Tente novamente.");
     }
   };
 
@@ -97,51 +80,31 @@ const PreviewPage = () => {
   return (
     <div style={{ minHeight: "100vh" }}>
       {/* ─── Top Navigation Bar ─── */}
-      <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* Left: Back button and title */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              onClick={() => navigate(isLegalDocument ? "legalEditor" : "editor")}
-              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
-            >
-              <Icon name="ChevronLeft" className="w-5 h-5" />
-            </button>
-            <div className="font-display" style={{ fontSize: 18, fontWeight: 800 }}>
-              {isLegalDocument ? `Preview - ${documentType?.name || "Documento"}` : "Preview do Currículo"}
-            </div>
-          </div>
-
-          {/* Right: Action buttons */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <Button 
-              variant="secondary" 
-              size="small" 
-              icon="Edit" 
-              onClick={() => navigate(isLegalDocument ? "legalEditor" : "editor")}
-            >
+      <AppNavbar
+        title={isLegalDocument ? `Preview — ${documentType?.name || "Documento"}` : "Preview do Currículo"}
+        leftAction={
+          <button
+            onClick={() => navigate(isLegalDocument ? "legalEditor" : "editor")}
+            aria-label="Voltar ao editor"
+            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6 }}
+          >
+            <Icon name="ChevronLeft" className="w-5 h-5" />
+          </button>
+        }
+        rightAction={
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button variant="secondary" size="small" icon="Edit" onClick={() => navigate(isLegalDocument ? "legalEditor" : "editor")}>
               Editar
             </Button>
-            <Button 
-              variant="secondary" 
-              size="small" 
-              icon="Download" 
-              onClick={handleDownloadPDF}
-              disabled={isGenerating}
-            >
-              {isGenerating ? "Gerando..." : "Baixar PDF"}
+            <Button variant="secondary" size="small" icon="Download" onClick={handleDownloadPDF} disabled={isGenerating}>
+              {isGenerating ? "Gerando..." : "PDF"}
             </Button>
-            <Button 
-              variant="primary" 
-              size="small" 
-              icon="CreditCard" 
-              onClick={handleFinalize}
-            >
+            <Button variant="primary" size="small" icon="CreditCard" onClick={handleFinalize}>
               Finalizar
             </Button>
           </div>
-        </div>
-      </nav>
+        }
+      />
 
       {/* ─── Resume Preview Container ─── */}
       <div style={{ maxWidth: 700, margin: "40px auto", padding: "0 24px" }}>

@@ -8,6 +8,34 @@
  * @module utils/validation
  */
 
+// ─── CPF Validation (Mod11 algorithm) ───
+/**
+ * Validate a Brazilian CPF using the Mod11 checksum algorithm.
+ * Rejects all-same-digit sequences (e.g. 000.000.000-00).
+ * @param {string} cpf - CPF with or without formatting
+ * @returns {boolean} True if CPF is mathematically valid
+ */
+export function validateCpf(cpf) {
+  const digits = cpf.replace(/\D/g, "");
+  if (digits.length !== 11) return false;
+  // Reject known invalid patterns (all same digit)
+  if (/^(\d)\1{10}$/.test(digits)) return false;
+
+  // First check digit
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(digits[i]) * (10 - i);
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(digits[9])) return false;
+
+  // Second check digit
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(digits[i]) * (11 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  return remainder === parseInt(digits[10]);
+}
+
 // ─── Validation Rules ───
 export const VALIDATION_RULES = {
   /**
@@ -26,14 +54,21 @@ export const VALIDATION_RULES = {
   },
 
   /**
-   * Email validation
+   * Email validation — RFC-compliant pattern.
    * @param {string} email - Email to validate
    * @returns {boolean} Is valid email
    */
   email: (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test((email || "").trim().toLowerCase());
   },
+
+  /**
+   * CPF validation using Mod11 checksum.
+   * @param {string} cpf - CPF with or without formatting
+   * @returns {boolean} Is valid CPF
+   */
+  cpf: (cpf) => validateCpf(cpf),
 
   /**
    * Phone validation (Brazilian format)

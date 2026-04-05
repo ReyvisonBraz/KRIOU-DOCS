@@ -98,18 +98,27 @@ export const Input = ({
   required = false,
   className = "",
   style = {},
+  id,
   ...props
 }) => {
+  const inputId = id || (label ? `input-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label className="label">{label}{required && " *"}</label>}
+      {label && (
+        <label htmlFor={inputId} className="label">
+          {label}{required && <span aria-hidden="true"> *</span>}
+          {required && <span className="sr-only"> (obrigatório)</span>}
+        </label>
+      )}
       <input
+        id={inputId}
         type={type}
         className={`input-field ${className}`}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         style={style}
+        aria-required={required || undefined}
         {...props}
       />
     </div>
@@ -128,18 +137,27 @@ export const Textarea = ({
   required = false,
   className = "",
   style = {},
+  id,
   ...props
 }) => {
+  const textareaId = id || (label ? `textarea-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label className="label">{label}{required && " *"}</label>}
+      {label && (
+        <label htmlFor={textareaId} className="label">
+          {label}{required && <span aria-hidden="true"> *</span>}
+          {required && <span className="sr-only"> (obrigatório)</span>}
+        </label>
+      )}
       <textarea
+        id={textareaId}
         className={`input-field ${className}`}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         rows={rows}
         style={{ resize: "vertical", ...style }}
+        aria-required={required || undefined}
         {...props}
       />
     </div>
@@ -157,16 +175,25 @@ export const Select = ({
   required = false,
   className = "",
   style = {},
+  id,
   ...props
 }) => {
+  const selectId = id || (label ? `select-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label className="label">{label}{required && " *"}</label>}
+      {label && (
+        <label htmlFor={selectId} className="label">
+          {label}{required && <span aria-hidden="true"> *</span>}
+          {required && <span className="sr-only"> (obrigatório)</span>}
+        </label>
+      )}
       <select
+        id={selectId}
         className={`input-field ${className}`}
         value={value}
         onChange={onChange}
         style={style}
+        aria-required={required || undefined}
         {...props}
       >
         {options.map((opt, index) => (
@@ -1336,6 +1363,549 @@ export const LegalFieldRenderer = ({
   );
 };
 
+// ─────────────────────────────────────────────
+// NOVOS COMPONENTES REUTILIZÁVEIS
+// (PLANO-REFATORACAO Fase 1 + plano-evolucao)
+// ─────────────────────────────────────────────
+
+/**
+ * ErrorMessage — Exibe mensagem de erro de formulário.
+ * Substitui os {errors.campo && <div>} espalhados pelo projeto.
+ * @param {string} message - Mensagem de erro (não renderiza se falsy)
+ * @param {object} style - Estilo extra opcional
+ */
+export const ErrorMessage = ({ message, style }) => {
+  if (!message) return null;
+  return (
+    <p
+      role="alert"
+      style={{
+        color: "var(--coral, #E94560)",
+        fontSize: "0.78rem",
+        marginTop: 5,
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        ...style,
+      }}
+    >
+      {message}
+    </p>
+  );
+};
+
+/**
+ * AppNavbar — Navbar glass reutilizável para todas as páginas.
+ * Substitui as navbars inline duplicadas em EditorPage, LegalEditorPage,
+ * DashboardPage, PreviewPage e CheckoutPage.
+ *
+ * @param {string}    title        - Título centralizado
+ * @param {ReactNode} leftAction   - Conteúdo à esquerda (ex: botão voltar)
+ * @param {ReactNode} rightAction  - Conteúdo à direita (ex: botão salvar)
+ * @param {ReactNode} children     - Conteúdo extra abaixo da linha principal (ex: stepper)
+ * @param {object}    style        - Estilo extra no container
+ */
+export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
+  <div
+    style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      background: "rgba(15, 15, 30, 0.92)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderBottom: "1px solid rgba(255,255,255,0.06)",
+      ...style,
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "12px 16px",
+        maxWidth: 600,
+        margin: "0 auto",
+      }}
+    >
+      {/* Lado esquerdo */}
+      <div style={{ minWidth: 80 }}>{leftAction || <span />}</div>
+
+      {/* Título central */}
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: "0.95rem",
+          color: "var(--text-primary, #F0F0F5)",
+          textAlign: "center",
+          flex: 1,
+        }}
+      >
+        {title}
+      </span>
+
+      {/* Lado direito */}
+      <div style={{ minWidth: 80, display: "flex", justifyContent: "flex-end" }}>
+        {rightAction || <span />}
+      </div>
+    </div>
+
+    {/* Conteúdo extra (ex: stepper, barra de progresso) */}
+    {children && <div style={{ padding: "0 16px 10px" }}>{children}</div>}
+  </div>
+);
+
+/**
+ * AppStepper — Indicador de etapas para wizards.
+ * Substitui os steppers duplicados em EditorPage e LegalEditorPage.
+ *
+ * @param {Array}    steps          - Array de { label, icon, key }
+ * @param {number}   currentStep    - Índice da etapa atual (0-based)
+ * @param {Function} onStepClick    - Callback ao clicar numa etapa concluída
+ * @param {Set}      completedSteps - Set de índices das etapas concluídas
+ */
+export const AppStepper = ({ steps = [], currentStep = 0, onStepClick, completedSteps = new Set() }) => (
+  <nav
+    aria-label={`Etapa ${currentStep + 1} de ${steps.length}: ${steps[currentStep]?.label || ""}`}
+    style={{
+      display: "flex",
+      overflowX: "auto",
+      gap: 4,
+      padding: "4px 0",
+      scrollbarWidth: "none",
+    }}
+  >
+    {steps.map((step, index) => {
+      const isActive = index === currentStep;
+      const isCompleted = completedSteps.has(index);
+      const isClickable = isCompleted && onStepClick;
+
+      return (
+        <button
+          key={step.key || index}
+          onClick={() => isClickable && onStepClick(index)}
+          aria-current={isActive ? "step" : undefined}
+          style={{
+            flex: "0 0 auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+            padding: "6px 10px",
+            borderRadius: 10,
+            border: "none",
+            cursor: isClickable ? "pointer" : "default",
+            background: isActive
+              ? "rgba(233, 69, 96, 0.15)"
+              : "transparent",
+            transition: "background 0.2s",
+          }}
+        >
+          {/* Dot indicator */}
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              background: isActive
+                ? "var(--coral, #E94560)"
+                : isCompleted
+                ? "var(--success, #00C897)"
+                : "rgba(255,255,255,0.08)",
+              color: isActive || isCompleted ? "#fff" : "var(--text-muted, #8888A8)",
+              transition: "background 0.2s",
+            }}
+          >
+            {isCompleted && !isActive ? "✓" : index + 1}
+          </div>
+
+          {/* Label */}
+          <span
+            style={{
+              fontSize: "0.65rem",
+              fontWeight: isActive ? 700 : 500,
+              color: isActive
+                ? "var(--coral, #E94560)"
+                : isCompleted
+                ? "var(--success, #00C897)"
+                : "var(--text-muted, #8888A8)",
+              whiteSpace: "nowrap",
+              transition: "color 0.2s",
+            }}
+          >
+            {step.label}
+          </span>
+        </button>
+      );
+    })}
+  </nav>
+);
+
+/**
+ * BottomNavigation — Botões de navegação entre etapas do wizard.
+ * Substitui os botões Voltar/Próximo duplicados em EditorPage e LegalEditorPage.
+ *
+ * @param {Function} onBack       - Callback para voltar
+ * @param {Function} onNext       - Callback para avançar
+ * @param {boolean}  isFirstStep  - Oculta botão voltar na primeira etapa
+ * @param {boolean}  isLastStep   - Muda label do botão de avançar
+ * @param {string}   nextLabel    - Label personalizado para botão de avançar
+ * @param {ReactNode} extraContent - Conteúdo extra (ex: indicador de progresso)
+ */
+export const BottomNavigation = ({
+  onBack,
+  onNext,
+  isFirstStep = false,
+  isLastStep = false,
+  nextLabel,
+  extraContent,
+  style,
+}) => (
+  <div
+    style={{
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 50,
+      background: "rgba(15, 15, 30, 0.95)",
+      backdropFilter: "blur(16px)",
+      WebkitBackdropFilter: "blur(16px)",
+      borderTop: "1px solid rgba(255,255,255,0.06)",
+      padding: "12px 16px",
+      ...style,
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        gap: 12,
+        maxWidth: 600,
+        margin: "0 auto",
+      }}
+    >
+      {!isFirstStep && (
+        <button
+          onClick={onBack}
+          style={{
+            flex: "0 0 auto",
+            padding: "14px 20px",
+            borderRadius: 14,
+            border: "1.5px solid rgba(255,255,255,0.1)",
+            background: "transparent",
+            color: "var(--text-muted, #8888A8)",
+            fontWeight: 600,
+            fontSize: "0.9rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <Icon name="ChevronLeft" className="w-4 h-4" />
+          Voltar
+        </button>
+      )}
+
+      <button
+        onClick={onNext}
+        style={{
+          flex: 1,
+          padding: "14px 20px",
+          borderRadius: 14,
+          border: "none",
+          background: "var(--coral, #E94560)",
+          color: "#fff",
+          fontWeight: 700,
+          fontSize: "0.95rem",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          transition: "opacity 0.2s",
+        }}
+      >
+        {nextLabel || (isLastStep ? "Finalizar" : "Próximo")}
+        {!isLastStep && <Icon name="ChevronRight" className="w-4 h-4" />}
+      </button>
+    </div>
+
+    {extraContent && (
+      <div style={{ maxWidth: 600, margin: "8px auto 0" }}>{extraContent}</div>
+    )}
+  </div>
+);
+
+/**
+ * SkeletonCard — Placeholder animado enquanto documentos carregam.
+ * Usa animação CSS pulse para simular o conteúdo real.
+ */
+export const SkeletonCard = () => (
+  <div style={{
+    background: "var(--surface-2)",
+    borderRadius: 14,
+    padding: 18,
+    border: "1px solid var(--border)",
+  }}>
+    <style>{`
+      @keyframes skeleton-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .skeleton-line {
+        background: var(--surface-3);
+        border-radius: 6px;
+        animation: skeleton-pulse 1.4s ease-in-out infinite;
+      }
+    `}</style>
+    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+      <div className="skeleton-line" style={{ width: 80, height: 22 }} />
+      <div className="skeleton-line" style={{ width: 64, height: 22, animationDelay: "0.1s" }} />
+    </div>
+    <div className="skeleton-line" style={{ width: "70%", height: 18, marginBottom: 10, animationDelay: "0.2s" }} />
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className="skeleton-line" style={{ width: "35%", height: 14, animationDelay: "0.3s" }} />
+      <div className="skeleton-line" style={{ width: "20%", height: 14, animationDelay: "0.35s" }} />
+    </div>
+  </div>
+);
+
+/**
+ * SaveIndicator — Indicador visual do estado de auto-save.
+ * Exibe "Salvando..." animado ou "Salvo" com ícone de check.
+ *
+ * @param {"saving"|"saved"|"error"} status - Estado atual do save
+ * @param {Date|null} lastSaved             - Timestamp do último save bem-sucedido
+ */
+export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
+  const isSaving = status === "saving";
+  const isError = status === "error";
+
+  const color = isError ? "var(--coral, #E94560)" : isSaving ? "var(--text-muted)" : "var(--success, #00C897)";
+
+  const label = isError
+    ? "Erro ao salvar"
+    : isSaving
+    ? "Salvando..."
+    : lastSaved
+    ? `Salvo às ${lastSaved.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+    : "Salvo";
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color, userSelect: "none" }}
+    >
+      {isSaving ? (
+        <span
+          style={{
+            width: 12, height: 12, borderRadius: "50%",
+            border: `2px solid ${color}`,
+            borderTopColor: "transparent",
+            display: "inline-block",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+      ) : (
+        <Icon name={isError ? "AlertCircle" : "Check"} className="w-3 h-3" />
+      )}
+      {label}
+    </div>
+  );
+};
+
+/**
+ * ConfirmDialog — Modal de confirmação acessível.
+ * Usado com o hook useConfirm para ações destrutivas.
+ *
+ * @param {boolean}  open          - Visibilidade do modal
+ * @param {string}   title         - Título do diálogo
+ * @param {string}   message       - Mensagem de confirmação
+ * @param {string}   confirmLabel  - Label do botão de confirmar
+ * @param {string}   cancelLabel   - Label do botão de cancelar
+ * @param {boolean}  danger        - Estilo destrutivo no botão confirmar
+ * @param {Function} onConfirm     - Callback ao confirmar
+ * @param {Function} onCancel      - Callback ao cancelar
+ */
+export const ConfirmDialog = ({
+  open = false,
+  title = "Confirmar ação",
+  message = "Tem certeza?",
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
+  danger = false,
+  onConfirm,
+  onCancel,
+}) => {
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-message"
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 24,
+        background: "rgba(0,0,0,0.65)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }}
+    >
+      <div
+        style={{
+          background: "var(--surface, #1a1a2e)",
+          borderRadius: 16,
+          padding: 28,
+          maxWidth: 420,
+          width: "100%",
+          border: "1px solid var(--border)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+        }}
+      >
+        <h2
+          id="confirm-dialog-title"
+          style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}
+        >
+          {title}
+        </h2>
+        <p
+          id="confirm-dialog-message"
+          style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 24 }}
+        >
+          {message}
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button
+            onClick={onCancel}
+            style={{
+              padding: "10px 20px", borderRadius: 10,
+              background: "var(--surface-2)", color: "var(--text-muted)",
+              border: "1px solid var(--border)", fontWeight: 600,
+              fontSize: 13, cursor: "pointer",
+            }}
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={onConfirm}
+            autoFocus
+            style={{
+              padding: "10px 20px", borderRadius: 10,
+              background: danger ? "var(--coral, #E94560)" : "var(--teal, #00D2D3)",
+              color: "#fff", border: "none", fontWeight: 700,
+              fontSize: 13, cursor: "pointer",
+            }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * DocumentCard — Card reutilizável para exibir documentos no Dashboard.
+ * Aceita tanto currículos quanto documentos jurídicos.
+ *
+ * @param {Object}   doc           - Objeto do documento
+ * @param {Function} onClick       - Handler de clique
+ * @param {number}   animationDelay - Delay de animação em segundos
+ */
+export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => {
+  const isResume = doc.type === "curriculo";
+
+  const typeColor = isResume ? "var(--coral)" : "var(--teal)";
+  const typeBg = isResume ? "rgba(233,69,96,0.1)" : "rgba(0,210,211,0.1)";
+
+  const typeLabels = {
+    curriculo: "Currículo",
+    "compra-venda": "Compra/Venda",
+    locacao: "Locação",
+    procuracao: "Procuração",
+    "prestacao-servicos": "Prest. Serviços",
+  };
+  const typeLabel = typeLabels[doc.type] || doc.type;
+
+  const statusVariant = doc.status === "finalizado" ? "success" : "warning";
+  const statusLabel = doc.status === "finalizado" ? "✓ Finalizado" : "✎ Rascunho";
+
+  return (
+    <Card
+      className="animate-fadeUp"
+      onClick={onClick}
+      style={{
+        cursor: "pointer",
+        padding: 18,
+        animationDelay: `${animationDelay}s`,
+        transition: "transform .18s, box-shadow .18s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "";
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <span style={{
+          background: typeBg,
+          color: typeColor,
+          padding: "5px 10px",
+          borderRadius: 8,
+          fontSize: 11,
+          fontWeight: 700,
+        }}>
+          {typeLabel}
+        </span>
+        <Badge variant={statusVariant} style={{ fontSize: 10 }}>
+          {statusLabel}
+        </Badge>
+      </div>
+
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--text)", lineHeight: 1.3 }}>
+        {doc.title}
+      </h3>
+
+      <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>{doc.template}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span>{doc.date}</span>
+          {onDelete && (
+            <button
+              aria-label={`Excluir ${doc.title}`}
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-muted)", padding: 2, display: "flex",
+                alignItems: "center", borderRadius: 4,
+                transition: "color .15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--coral)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
+            >
+              <Icon name="Trash2" className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 export default {
   Button,
   Card,
@@ -1363,4 +1933,13 @@ export default {
   OptionalFieldToggle,
   ClientNoteBanner,
   LegalFieldRenderer,
+  // Novos componentes
+  ErrorMessage,
+  AppNavbar,
+  AppStepper,
+  BottomNavigation,
+  DocumentCard,
+  SaveIndicator,
+  SkeletonCard,
+  ConfirmDialog,
 };

@@ -8,20 +8,43 @@
  * @module App
  */
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./components/Theme";
+import { Spinner } from "./components/UI";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { Toaster } from "sonner";
 
-// Componentes de Página
+// Páginas carregadas na inicialização (rota inicial + login)
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import TemplatesPage from "./pages/TemplatesPage";
-import EditorPage from "./pages/EditorPage";
-import PreviewPage from "./pages/PreviewPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import ProfilePage from "./pages/ProfilePage";
-import LegalEditorPage from "./pages/LegalEditorPage";
+
+// Páginas carregadas sob demanda (code splitting)
+const DashboardPage   = lazy(() => import("./pages/DashboardPage"));
+const TemplatesPage   = lazy(() => import("./pages/TemplatesPage"));
+const EditorPage      = lazy(() => import("./pages/EditorPage"));
+const PreviewPage     = lazy(() => import("./pages/PreviewPage"));
+const CheckoutPage    = lazy(() => import("./pages/CheckoutPage"));
+const ProfilePage     = lazy(() => import("./pages/ProfilePage"));
+const LegalEditorPage = lazy(() => import("./pages/LegalEditorPage"));
+
+const routes = {
+  landing:     LandingPage,
+  login:       LoginPage,
+  dashboard:   DashboardPage,
+  templates:   TemplatesPage,
+  editor:      EditorPage,
+  preview:     PreviewPage,
+  checkout:    CheckoutPage,
+  profile:     ProfilePage,
+  legalEditor: LegalEditorPage,
+};
+
+const PageFallback = () => (
+  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Spinner size={36} />
+  </div>
+);
 
 /**
  * PageRouter - Renders the appropriate page based on currentPage state
@@ -29,22 +52,13 @@ import LegalEditorPage from "./pages/LegalEditorPage";
  */
 const PageRouter = () => {
   const { currentPage } = useApp();
-
-  const routes = {
-    landing: LandingPage,
-    login: LoginPage,
-    dashboard: DashboardPage,
-    templates: TemplatesPage,
-    editor: EditorPage,
-    preview: PreviewPage,
-    checkout: CheckoutPage,
-    profile: ProfilePage,
-    legalEditor: LegalEditorPage,
-  };
-
   const PageComponent = routes[currentPage] || LandingPage;
 
-  return <PageComponent />;
+  return (
+    <Suspense fallback={<PageFallback />}>
+      <PageComponent />
+    </Suspense>
+  );
 };
 
 /**
@@ -54,11 +68,21 @@ const PageRouter = () => {
  */
 const App = () => {
   return (
-    <ThemeProvider>
-      <AppProvider>
-        <PageRouter />
-      </AppProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppProvider>
+          <ErrorBoundary>
+            <PageRouter />
+          </ErrorBoundary>
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              style: { fontFamily: "inherit", fontSize: 14 },
+            }}
+          />
+        </AppProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

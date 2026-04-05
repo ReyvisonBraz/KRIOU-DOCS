@@ -73,15 +73,37 @@ const StorageService = {
   },
 
   /**
-   * Load user session by userId
-   * @param {string} userId - User ID
+   * Load user session by userId.
+   * When userId is null, scans all kriou session keys and returns
+   * the most recently active one (used on app boot before userId is known).
+   * @param {string|null} userId - User ID or null to find any active session
    * @returns {Object|null} Session data or null
    */
   loadSession: (userId = null) => {
     try {
-      const key = getUserSessionKey(userId);
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : null;
+      if (userId) {
+        const key = getUserSessionKey(userId);
+        const stored = localStorage.getItem(key);
+        return stored ? JSON.parse(stored) : null;
+      }
+
+      // Scan for any active session (boot-time discovery)
+      let latest = null;
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("kriou_user_") && key.endsWith("_session")) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            if (data?.userId && data?.isAuthenticated) {
+              if (!latest || (data.lastActive > (latest.lastActive || ""))) {
+                latest = data;
+              }
+            }
+          } catch {
+            // ignore malformed entries
+          }
+        }
+      });
+      return latest;
     } catch (error) {
       console.error("Error loading session:", error);
       return null;

@@ -10,10 +10,10 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button } from "../components/UI";
+import { Card, Button, AppNavbar } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
-import { generateResumePDF, downloadPDF } from "../utils/pdfGenerator";
-import { generateLegalPDF, downloadLegalPDF } from "../utils/legalPdfGenerator";
+import { usePDF } from "../hooks/usePDF";
+import showToast from "../utils/toast";
 
 /**
  * CheckoutPage - Payment flow for document purchase
@@ -21,7 +21,7 @@ import { generateLegalPDF, downloadLegalPDF } from "../utils/legalPdfGenerator";
 const CheckoutPage = () => {
   const { navigate, selectedTemplate, formData, phone, checkoutComplete, setCheckoutComplete, documentType, legalFormData } = useApp();
   const [selectedPayment, setSelectedPayment] = useState("pix");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { generatePDF, isGenerating } = usePDF();
 
   // Check if processing a legal document
   const isLegalDocument = !!documentType;
@@ -36,6 +36,7 @@ const CheckoutPage = () => {
    */
   const handlePayment = () => {
     setCheckoutComplete(true);
+    showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
   };
 
   /**
@@ -47,32 +48,17 @@ const CheckoutPage = () => {
   };
 
   /**
-   * Handle PDF download
-   * In production, this would trigger actual PDF generation
+   * Handle PDF download — gerado em Web Worker (não trava a UI)
    */
   const handleDownloadPDF = async () => {
     try {
-      setIsGenerating(true);
-      
       if (isLegalDocument) {
-        const doc = generateLegalPDF(legalFormData, documentType);
-        const filename = documentType?.id 
-          ? `${documentType.id}-kriou-docs.pdf`
-          : "documento-kriou-docs.pdf";
-        downloadLegalPDF(doc, filename);
+        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType });
       } else {
-        const doc = generateResumePDF(formData, selectedTemplate);
-        const filename = formData.nome 
-          ? `curriculo-${formData.nome.toLowerCase().replace(/\s+/g, "-")}.pdf`
-          : "curriculo-kriou-docs.pdf";
-        downloadPDF(doc, filename);
+        await generatePDF({ type: "GENERATE_RESUME", formData, template: selectedTemplate });
       }
-      
-      setIsGenerating(false);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      setIsGenerating(false);
-      alert("Erro ao gerar PDF. Tente novamente.");
+    } catch {
+      showToast.error("Erro ao gerar PDF. Tente novamente.");
     }
   };
 
@@ -180,19 +166,18 @@ const CheckoutPage = () => {
   return (
     <div style={{ minHeight: "100vh" }}>
       {/* ─── Top Navigation Bar ─── */}
-      <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", gap: 12 }}>
+      <AppNavbar
+        title={`Checkout — ${isLegalDocument ? "Documento Jurídico" : "Currículo"}`}
+        leftAction={
           <button
             onClick={() => navigate("preview")}
-            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+            aria-label="Voltar ao preview"
+            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6 }}
           >
             <Icon name="ChevronLeft" className="w-5 h-5" />
           </button>
-          <div className="font-display" style={{ fontSize: 18, fontWeight: 800 }}>
-            Checkout — {isLegalDocument ? "Documento Jurídico" : "Currículo"}
-          </div>
-        </div>
-      </nav>
+        }
+      />
 
       {/* ─── Checkout Content ─── */}
       <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 24px" }}>

@@ -9,15 +9,19 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button, Badge } from "../components/UI";
+import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, ConfirmDialog } from "../components/UI";
+import { useConfirm } from "../hooks/useConfirm";
+import StorageService from "../utils/storage";
+import showToast from "../utils/toast";
 
 /**
  * DashboardPage - User's document management hub
  */
 const DashboardPage = () => {
-  const { navigate, filter, setFilter, formData, setFormData, setCurrentStep, logout } = useApp();
+  const { navigate, formData, setFormData, setCurrentStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
+  const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   /**
    * Handle create new legal document
@@ -28,15 +32,15 @@ const DashboardPage = () => {
   };
 
   /**
-   * Mock documents for demonstration
+   * Use real documents from context; fall back to demo data when list is empty
    */
-  const mockDocs = [
-    { id: 1, type: "curriculo", title: "Dev Full Stack", template: "Tech", date: "25 Mar", status: "finalizado" },
-    { id: 2, type: "curriculo", title: "Designer UX", template: "Criativo", date: "22 Mar", status: "rascunho" },
-    { id: 3, type: "compra-venda", title: "Aluguel Apt 302", template: "Padrão", date: "18 Mar", status: "finalizado" },
-    { id: 4, type: "locacao", title: "Contrato Locação", template: "Padrão", date: "15 Mar", status: "rascunho" },
-    { id: 5, type: "curriculo", title: "Currículo Primeiro Emprego", template: "Primeiro Emprego", date: "10 Mar", status: "finalizado" },
+  const demoDocs = [
+    { id: "demo-1", type: "curriculo", title: "Dev Full Stack", template: "Tech", date: "25 Mar", status: "finalizado" },
+    { id: "demo-2", type: "curriculo", title: "Designer UX", template: "Criativo", date: "22 Mar", status: "rascunho" },
+    { id: "demo-3", type: "compra-venda", title: "Aluguel Apt 302", template: "Padrão", date: "18 Mar", status: "finalizado" },
+    { id: "demo-4", type: "locacao", title: "Contrato Locação", template: "Padrão", date: "15 Mar", status: "rascunho" },
   ];
+  const allDocs = userDocuments && userDocuments.length > 0 ? userDocuments : demoDocs;
 
   /**
    * Tab options
@@ -53,87 +57,69 @@ const DashboardPage = () => {
    * Get filtered docs by tab and search
    */
   const getFilteredDocs = () => {
-    let docs = activeTab === "todos" ? mockDocs : mockDocs.filter((doc) => doc.type === activeTab);
+    let docs = activeTab === "todos" ? allDocs : allDocs.filter((doc) => doc.type === activeTab);
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      docs = docs.filter((doc) => doc.title.toLowerCase().includes(query) || doc.template.toLowerCase().includes(query));
+      docs = docs.filter((doc) => doc.title?.toLowerCase().includes(query) || doc.template?.toLowerCase().includes(query));
     }
     return docs;
   };
 
   /**
-   * Get status badge variant
-   */
-  const getStatusVariant = (status) => {
-    return status === "finalizado" ? "success" : "warning";
-  };
-
-  /**
-   * Get status label
-   */
-  const getStatusLabel = (status) => {
-    return status === "finalizado" ? "✓ Finalizado" : "✎ Rascunho";
-  };
-
-  /**
-   * Handle document edit
+   * Handle document edit — redireciona para o editor correto
    */
   const handleEditDocument = (doc) => {
-    setFormData({
-      nome: doc.title.includes("Dev") ? "Reyvison Silva" : doc.title.includes("Designer") ? "Maria Santos" : "Nome Completo",
-      email: "usuario@email.com",
-      telefone: "(11) 99999-9999",
-      cidade: "São Paulo, SP",
-      linkedin: "linkedin.com/in/usuario",
-      objetivo: "Objetivo profissional...",
-      experiencias: [{ empresa: "Empresa XPTO", cargo: "Cargo", periodo: "2022 - Atual", descricao: "Descrição" }],
-      formacoes: [{ instituicao: "Universidade", curso: "Curso", periodo: "2020 - 2024", status: "Cursando" }],
-      habilidades: ["Comunicação", "Trabalho em Equipe"],
-      idiomas: [{ idioma: "Português", nivel: "Nativo" }],
-      cursos: "",
+    if (doc.type === "curriculo") {
+      setCurrentStep(0);
+      navigate("editor");
+    } else {
+      setCurrentStep(0);
+      navigate("legalEditor");
+    }
+  };
+
+  /**
+   * Handle document delete with confirmation
+   */
+  const handleDeleteDocument = async (doc) => {
+    const confirmed = await requestConfirm({
+      title: "Excluir documento",
+      message: `Deseja excluir "${doc.title}"? Esta ação não pode ser desfeita.`,
+      confirmLabel: "Excluir",
+      cancelLabel: "Cancelar",
+      danger: true,
     });
-    setCurrentStep(0);
-    navigate("editor");
+    if (!confirmed) return;
+    const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
+    setUserDocuments(updated);
+    StorageService.saveDocuments(updated, userId);
+    showToast.success("Documento excluído.");
   };
 
   /**
    * Get user's first name
    */
   const getUserName = () => {
-    return formData.nome ? formData.nome.split(" ")[0] : "Usuário";
-  };
-
-  /**
-   * Get document type label
-   */
-  const getTypeLabel = (type) => {
-    const labels = {
-      curriculo: "Currículo",
-      "compra-venda": "Compra/Venda",
-      locacao: "Locação",
-      procuracao: "Procuração",
-    };
-    return labels[type] || type;
+    const name = userData?.nome || formData.nome;
+    return name ? name.split(" ")[0] : "Usuário";
   };
 
   return (
     <div style={{ minHeight: "100vh" }}>
       {/* Navbar */}
-      <nav className="glass" style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div className="font-display" style={{ fontSize: 24, fontWeight: 900, cursor: "pointer" }} onClick={() => navigate("landing")}>
-            <span style={{ color: "var(--coral)" }}>Kriou</span> Docs
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button onClick={() => navigate("profile")} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+      <AppNavbar
+        title={<span className="font-display" style={{ fontSize: 22, fontWeight: 900, cursor: "pointer" }} onClick={() => navigate("landing")}><span style={{ color: "var(--coral)" }}>Kriou</span> Docs</span>}
+        rightAction={
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => navigate("profile")} aria-label="Perfil" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
               <Icon name="User" className="w-4 h-4" />
             </button>
-            <button onClick={logout} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+            <button onClick={logout} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13, padding: 4 }}>
               <Icon name="LogOut" className="w-4 h-4" /> Sair
             </button>
           </div>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
@@ -202,7 +188,7 @@ const DashboardPage = () => {
             >
               {tab.label}
               <span style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.2)" : "var(--surface-2)", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>
-                {tab.id === "todos" ? mockDocs.length : mockDocs.filter(d => d.type === tab.id).length}
+                {tab.id === "todos" ? allDocs.length : allDocs.filter(d => d.type === tab.id).length}
               </span>
             </button>
           ))}
@@ -210,50 +196,36 @@ const DashboardPage = () => {
 
         {/* Documents Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-          {getFilteredDocs().map((doc, index) => (
-            <Card
-              key={doc.id}
-              className="animate-fadeUp"
-              onClick={() => handleEditDocument(doc)}
-              style={{
-                cursor: "pointer",
-                padding: 18,
-                animationDelay: `${index * 0.05}s`,
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div style={{
-                  background: doc.type === "curriculo" ? "rgba(233,69,96,0.1)" : "rgba(0,210,211,0.1)",
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: doc.type === "curriculo" ? "var(--coral)" : "var(--teal)",
-                }}>
-                  {getTypeLabel(doc.type)}
-                </div>
-                <Badge variant={getStatusVariant(doc.status)} style={{ fontSize: 10 }}>
-                  {getStatusLabel(doc.status)}
-                </Badge>
-              </div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>{doc.title}</h3>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-                <span>{doc.template}</span>
-                <span>{doc.date}</span>
-              </div>
-            </Card>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+            : getFilteredDocs().map((doc, index) => (
+                <DocumentCard
+                  key={doc.id}
+                  doc={doc}
+                  onClick={() => handleEditDocument(doc)}
+                  onDelete={doc.id.startsWith("demo-") ? undefined : () => handleDeleteDocument(doc)}
+                  animationDelay={index * 0.05}
+                />
+              ))
+          }
         </div>
 
         {/* Empty State */}
-        {getFilteredDocs().length === 0 && (
-          <div style={{ textAlign: "center", padding: 60, color: "var(--text-muted)" }}>
-            <Icon name="FileText" className="w-12 h-12" style={{ opacity: 0.3, marginBottom: 16 }} />
-            <p style={{ fontSize: 15 }}>Nenhum documento encontrado</p>
-            <p style={{ fontSize: 13 }}>Crie um novo documento para começar</p>
-          </div>
+        {!isLoading && getFilteredDocs().length === 0 && (
+          <EmptyState
+            icon="FileText"
+            title="Nenhum documento encontrado"
+            description="Crie um novo documento para começar"
+          />
         )}
       </div>
+
+      {/* ConfirmDialog para exclusão de documentos */}
+      <ConfirmDialog
+        {...confirmState}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 };

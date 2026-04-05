@@ -37,6 +37,7 @@ import {
   getAvailableDocuments,
   getSectionsForVariant,
   validateFields,
+  getDocumentBody,
 } from "../data/legalDocuments";
 
 // ─── Steps do wizard ───
@@ -427,92 +428,214 @@ const LegalEditorPage = () => {
   );
 
   // ─── Render: Step 4 - Preview ───
-  const renderPreview = () => (
-    <div className="animate-fadeIn">
-      <div style={{ marginBottom: 24 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
-          Visualização do Documento
-        </h2>
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
-          Revise o documento final antes de gerar o PDF
-        </p>
-      </div>
+  const renderPreview = () => {
+    const docBody = getDocumentBody(selectedDoc?.id, selectedVariant, legalFormData);
+    const hasBody = docBody && docBody.length > 0;
 
-      <Card style={{ padding: 40, background: "white", color: "#1a1a1a" }}>
-        {/* Título */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", marginBottom: 4, textTransform: "uppercase" }}>
-            {selectedDoc?.name}
-          </h3>
-          <p style={{ fontSize: 13, color: "#666" }}>
-            {currentVariantObj?.name}
-          </p>
-          <div style={{ width: 60, height: 2, background: "#333", margin: "12px auto 0" }} />
-        </div>
-
-        {/* Dados organizados por seção */}
-        {currentSections.map((section) => {
-          const filledFields = section.fields.filter(
-            (f) => !disabledFields[f.key] && legalFormData[f.key] && legalFormData[f.key].trim() !== ""
-          );
-          if (filledFields.length === 0) return null;
-
+    const renderBlock = (block, i) => {
+      switch (block.type) {
+        case "title":
           return (
-            <div key={section.id} style={{ marginBottom: 24 }}>
-              <h4 style={{
-                fontSize: 14, fontWeight: 700, color: "#333",
-                marginBottom: 10, paddingBottom: 6,
-                borderBottom: "1px solid #eee",
-                textTransform: "uppercase",
+            <div key={i} style={{ textAlign: "center", marginBottom: 28 }}>
+              <h3 style={{
+                fontSize: 17, fontWeight: 800, color: "#111",
+                textTransform: "uppercase", letterSpacing: "0.05em",
+                lineHeight: 1.4,
               }}>
-                {section.title}
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {filledFields.map((f) => (
-                  <div key={f.key} style={{ display: "flex", gap: 8, paddingLeft: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#555", minWidth: "38%" }}>
-                      {f.label}:
-                    </span>
-                    <span style={{ fontSize: 13, color: "#333" }}>
-                      {legalFormData[f.key]}
-                    </span>
+                {block.text}
+              </h3>
+              <div style={{ width: 60, height: 2, background: "#222", margin: "12px auto 0" }} />
+            </div>
+          );
+
+        case "paragraph":
+          return (
+            <p key={i} style={{
+              fontSize: 13, color: "#222", lineHeight: 1.8,
+              textAlign: "justify", marginBottom: 16,
+            }}>
+              {block.text}
+            </p>
+          );
+
+        case "clause":
+          return (
+            <div key={i} style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: "#111", lineHeight: 1.8, textAlign: "justify" }}>
+                <strong>CLÁUSULA {block.number} – {block.title}</strong>
+              </p>
+              {block.text && (
+                <p style={{ fontSize: 13, color: "#222", lineHeight: 1.8, textAlign: "justify", marginTop: 4 }}>
+                  {block.text}
+                </p>
+              )}
+              {block.paragraphs && (
+                <div style={{ marginTop: 4 }}>
+                  {block.paragraphs.map((p, j) => (
+                    <p key={j} style={{
+                      fontSize: 13, color: "#222", lineHeight: 1.8,
+                      paddingLeft: p.startsWith("I") || p.startsWith("V") ? 16 : 0,
+                      marginBottom: 2,
+                    }}>
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+
+        case "closing":
+          return (
+            <p key={i} style={{
+              fontSize: 13, color: "#222", lineHeight: 1.8,
+              textAlign: "justify", marginTop: 24, marginBottom: 16,
+            }}>
+              {block.text}
+            </p>
+          );
+
+        case "date":
+          return (
+            <p key={i} style={{
+              fontSize: 13, color: "#222", marginBottom: 32, marginTop: 8,
+            }}>
+              {block.text}
+            </p>
+          );
+
+        case "signatures":
+          return (
+            <div key={i} style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`,
+              gap: 32, marginTop: 16, marginBottom: 32,
+            }}>
+              {block.parties.map((party, j) => (
+                <div key={j} style={{ textAlign: "center" }}>
+                  <div style={{
+                    borderBottom: "1px solid #333",
+                    paddingBottom: 4,
+                    marginBottom: 6,
+                    minHeight: 40,
+                  }} />
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>{party.role}</p>
+                  <p style={{ fontSize: 12, color: "#555" }}>{party.name}</p>
+                </div>
+              ))}
+            </div>
+          );
+
+        case "witnesses":
+          return (
+            <div key={i} style={{ marginTop: 24 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 16 }}>
+                TESTEMUNHAS:
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+                {Array.from({ length: block.count }).map((_, j) => (
+                  <div key={j}>
+                    <div style={{ borderBottom: "1px solid #999", marginBottom: 4, minHeight: 32 }} />
+                    <p style={{ fontSize: 11, color: "#555" }}>
+                      {j + 1}ª Testemunha — Nome: _____________________________ RG: _______________
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
           );
+
+        default:
+          return null;
+      }
+    };
+
+    // Fallback: mostra campos organizados por seção quando não há body definido
+    const renderFallback = () => (
+      <>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "#111", textTransform: "uppercase" }}>
+            {selectedDoc?.name}
+          </h3>
+          <p style={{ fontSize: 13, color: "#666" }}>{currentVariantObj?.name}</p>
+          <div style={{ width: 60, height: 2, background: "#333", margin: "12px auto 0" }} />
+        </div>
+        {currentSections.map((section) => {
+          const filled = section.fields.filter(
+            (f) => !disabledFields[f.key] && legalFormData[f.key]?.trim()
+          );
+          if (!filled.length) return null;
+          return (
+            <div key={section.id} style={{ marginBottom: 20 }}>
+              <h4 style={{
+                fontSize: 12, fontWeight: 700, color: "#444",
+                textTransform: "uppercase", letterSpacing: "0.06em",
+                borderBottom: "1px solid #eee", paddingBottom: 6, marginBottom: 10,
+              }}>
+                {section.title}
+              </h4>
+              {filled.map((f) => (
+                <div key={f.key} style={{ display: "flex", gap: 8, marginBottom: 5, paddingLeft: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#555", minWidth: "38%" }}>{f.label}:</span>
+                  <span style={{ fontSize: 13, color: "#333" }}>{legalFormData[f.key]}</span>
+                </div>
+              ))}
+            </div>
+          );
         })}
+      </>
+    );
 
-        {/* Legislação */}
-        {selectedDoc?.legislation && (
-          <div style={{
-            marginTop: 24, padding: 12,
-            background: "#f8f8f8", borderRadius: 6,
-            fontSize: 11, color: "#888", textAlign: "center",
-          }}>
-            Base Legal: {selectedDoc.legislation}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div style={{
-          marginTop: 32, paddingTop: 16,
-          borderTop: "1px solid #ddd", textAlign: "center",
-        }}>
-          <p style={{ fontSize: 11, color: "#666" }}>
-            Documento gerado por Kriou Docs - {new Date().toLocaleDateString("pt-BR")}
+    return (
+      <div className="animate-fadeIn">
+        <div style={{ marginBottom: 24 }}>
+          <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+            Visualização do Documento
+          </h2>
+          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+            Revise o documento final antes de gerar o PDF
           </p>
         </div>
-      </Card>
 
-      <div style={{ marginTop: 24, textAlign: "center" }}>
-        <Button variant="primary" icon="Download" onClick={() => navigate("checkout")}
-          style={{ padding: "14px 32px", fontSize: 15 }}>
-          Finalizar e Gerar PDF
-        </Button>
+        <Card style={{ padding: "48px 56px", background: "white", color: "#1a1a1a", fontFamily: "Georgia, 'Times New Roman', serif" }}>
+          {hasBody
+            ? docBody.map((block, i) => renderBlock(block, i))
+            : renderFallback()
+          }
+
+          {/* Legislação */}
+          {selectedDoc?.legislation && (
+            <div style={{
+              marginTop: 32, padding: 12,
+              background: "#f8f8f8", borderRadius: 6,
+              fontSize: 11, color: "#888", textAlign: "center",
+              fontFamily: "sans-serif",
+            }}>
+              Base Legal: {selectedDoc.legislation}
+            </div>
+          )}
+
+          {/* Footer */}
+          <div style={{
+            marginTop: 24, paddingTop: 14,
+            borderTop: "1px solid #ddd", textAlign: "center",
+            fontFamily: "sans-serif",
+          }}>
+            <p style={{ fontSize: 10, color: "#aaa" }}>
+              Documento gerado por Kriou Docs — {new Date().toLocaleDateString("pt-BR")}
+            </p>
+          </div>
+        </Card>
+
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <Button variant="primary" icon="Download" onClick={() => navigate("checkout")}
+            style={{ padding: "14px 32px", fontSize: 15 }}>
+            Finalizar e Gerar PDF
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ─── Render step content ───
   const renderStepContent = () => {

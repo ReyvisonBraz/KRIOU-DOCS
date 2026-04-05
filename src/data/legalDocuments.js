@@ -1539,6 +1539,196 @@ export const LEGAL_DOCUMENTS = [
     internalNotes: [
       "Para parceria rural: atentar para não configurar vínculo empregatício",
     ],
+
+    // ─── Corpo do documento por variante ───
+    documentBody: {
+      imovel: [
+        {
+          type: "title",
+          text: "CONTRATO DE COMODATO DE IMÓVEL",
+        },
+        {
+          type: "paragraph",
+          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}, {comodante_nacionalidade}, {comodante_estado_civil}, {comodante_profissao}, portador(a) do RG n.º {comodante_rg} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco}, {comodante_cidade}, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}, {comodatario_nacionalidade}, {comodatario_estado_civil}, {comodatario_profissao}, portador(a) do RG n.º {comodatario_rg} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco}, {comodatario_cidade}, têm entre si como justo e acordado o que segue, que se obrigam a cumprir por si e seus sucessores:",
+        },
+        {
+          type: "clause",
+          number: "1ª",
+          title: "DO OBJETO",
+          text: "O(A) COMODANTE, na qualidade de legítimo(a) proprietário(a) do imóvel situado em {endereco_comodato}, cede e transfere referido bem ao(à) COMODATÁRIO(A), gratuitamente, a título de comodato, para fins de {finalidade_comodato}.",
+        },
+        {
+          type: "clause",
+          number: "2ª",
+          title: "DO PRAZO",
+          text: "O prazo de vigência deste contrato será com início em {prazo_inicio_com} e término em {prazo_fim_com}, data em que o(a) COMODATÁRIO(A) deverá restituir o imóvel acima especificado nas mesmas condições em que ora o recebe, independentemente de qualquer notificação.",
+        },
+        {
+          type: "clause",
+          number: "3ª",
+          title: "DA CONSERVAÇÃO",
+          text: "O(A) COMODATÁRIO(A) se obriga a zelar pela conservação do imóvel que lhe é cedido em comodato, responsabilizando-se por todos os custos com a manutenção do mesmo. Os danos advindos do mau uso ou negligência na sua conservação serão suportados pelo(a) COMODATÁRIO(A), que arcará com todas as despesas para a devida recuperação do bem.",
+        },
+        {
+          type: "clause",
+          number: "4ª",
+          title: "DA VEDAÇÃO DE CESSÃO",
+          text: "É vedado ao(à) COMODATÁRIO(A) sub-comodatar ou locar o bem objeto deste instrumento a terceiros, bem como ceder ou transferir o presente contrato sem prévia autorização, por escrito, do(a) COMODANTE.",
+        },
+        {
+          type: "clause",
+          number: "5ª",
+          title: "DA RESPONSABILIDADE",
+          text: "O(A) COMODATÁRIO(A), durante a vigência deste instrumento, responsabilizar-se-á perante terceiros por danos decorrentes de eventuais acidentes que envolvam as instalações, edificações, muros e outras benfeitorias agregadas ao imóvel, independentemente de ter ou não contratado seguro para tal fim.",
+        },
+        {
+          type: "clause",
+          number: "6ª",
+          title: "DA TURBAÇÃO E ESBULHO",
+          text: "Em caso de turbação ou esbulho da posse do bem por atos de terceiros, o(a) COMODATÁRIO(A) deverá tomar as providências cabíveis a fim de cessar tais atos, bem como comunicar imediatamente tais fatos ao(à) COMODANTE.",
+        },
+        {
+          type: "clause",
+          number: "7ª",
+          title: "DA RESCISÃO",
+          text: "O presente instrumento será considerado rescindido de pleno direito em caso de infração, por parte do(a) COMODATÁRIO(A), de qualquer cláusula acordada, assegurado ao(à) COMODANTE o direito de rescindir, unilateralmente, o contrato, mediante simples comunicação, independentemente de aviso judicial ou extrajudicial.",
+        },
+        {
+          type: "clause",
+          number: "8ª",
+          title: "DA TOLERÂNCIA",
+          text: "Qualquer tolerância ou concessão das partes quanto ao cumprimento do disposto neste contrato constituir-se-á ato de mera liberalidade, não podendo ser considerado novação.",
+        },
+        {
+          type: "clause",
+          number: "9ª",
+          title: "DO FORO",
+          text: "As partes elegem o Foro da Comarca de {cidade_comodato} para dirimir eventuais litígios decorrentes deste contrato.",
+        },
+        {
+          type: "closing",
+          text: "E assim, por estarem justas e contratadas, as partes assinam o presente em 2 (duas) vias de igual teor, juntamente com as duas testemunhas abaixo.",
+        },
+        {
+          type: "date",
+          text: "{cidade_comodato}, {data_assinatura_com}",
+        },
+        {
+          type: "signatures",
+          parties: [
+            { role: "COMODANTE", fieldKey: "comodante_nome" },
+            { role: "COMODATÁRIO(A)", fieldKey: "comodatario_nome" },
+          ],
+        },
+        {
+          type: "witnesses",
+          count: 2,
+        },
+      ],
+
+      rural: [
+        {
+          type: "title",
+          text: "CONTRATO DE COMODATO RURAL — PARCERIA AGRÍCOLA",
+        },
+        {
+          type: "paragraph",
+          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}, {comodante_nacionalidade}, {comodante_estado_civil}, {comodante_profissao}, portador(a) do RG n.º {comodante_rg} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco}, {comodante_cidade}, proprietário(a) do imóvel rural abaixo descrito, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}, {comodatario_nacionalidade}, {comodatario_estado_civil}, {comodatario_profissao}, portador(a) do RG n.º {comodatario_rg} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco}, {comodatario_cidade}.",
+        },
+        {
+          type: "paragraph",
+          text: "As partes têm entre si, justo e contratado o que segue:",
+        },
+        {
+          type: "clause",
+          number: "1ª",
+          title: "DO OBJETO",
+          text: "O(A) COMODANTE cede ao(à) COMODATÁRIO(A), gratuitamente, a título de comodato rural, a propriedade localizada em {localizacao_rural}, com área total de {area_rural}.",
+        },
+        {
+          type: "clause",
+          number: "2ª",
+          title: "DA DESTINAÇÃO",
+          text: "O imóvel será utilizado exclusivamente para fins de {tipo_atividade_rural}.",
+        },
+        {
+          type: "clause",
+          number: "3ª",
+          title: "DO PRAZO",
+          text: "O prazo deste contrato terá início em {prazo_inicio_com} e término em {prazo_fim_com}.",
+        },
+        {
+          type: "clause",
+          number: "4ª",
+          title: "DA PARCERIA",
+          text: "As partes acordam a seguinte divisão de produção: {percentual_parceria}. A partilha será feita após a colheita.",
+        },
+        {
+          type: "clause",
+          number: "5ª",
+          title: "DAS OBRIGAÇÕES DO COMODATÁRIO",
+          paragraphs: [
+            "I — Cultivar o imóvel com zelo e diligência;",
+            "II — Não submeter o imóvel a uso diverso do pactuado;",
+            "III — Respeitar as normas ambientais vigentes;",
+            "IV — Pagar as despesas de cultivo e produção;",
+            "V — Restituir o imóvel em plenas condições de uso ao término do contrato.",
+          ],
+        },
+        {
+          type: "clause",
+          number: "6ª",
+          title: "DAS OBRIGAÇÕES DO COMODANTE",
+          paragraphs: [
+            "I — Entregar o imóvel em condições de uso;",
+            "II — Não interferir nas atividades de cultivo;",
+            "III — Respeitar o prazo pactuado.",
+          ],
+        },
+        {
+          type: "clause",
+          number: "7ª",
+          title: "DAS BENFEITORIAS",
+          text: "As benfeitorias necessárias realizadas pelo(a) COMODATÁRIO(A) serão indenizadas. As benfeitorias úteis dependem de autorização prévia por escrito do(a) COMODANTE. As voluptuárias não serão indenizadas.",
+        },
+        {
+          type: "clause",
+          number: "8ª",
+          title: "DA RESCISÃO",
+          paragraphs: [
+            "O contrato poderá ser rescindido:",
+            "I — Por inadimplemento de qualquer das partes;",
+            "II — Por acordo mútuo;",
+            "III — Por motivo de força maior.",
+          ],
+        },
+        {
+          type: "clause",
+          number: "9ª",
+          title: "DO FORO",
+          text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {cidade_comodato}.",
+        },
+        {
+          type: "closing",
+          text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor.",
+        },
+        {
+          type: "date",
+          text: "{cidade_comodato}, {data_assinatura_com}",
+        },
+        {
+          type: "signatures",
+          parties: [
+            { role: "COMODANTE (Proprietário)", fieldKey: "comodante_nome" },
+            { role: "COMODATÁRIO (Parceiro)", fieldKey: "comodatario_nome" },
+          ],
+        },
+        {
+          type: "witnesses",
+          count: 2,
+        },
+      ],
+    },
   },
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1694,6 +1884,50 @@ export const getAllFieldsForVariant = (docId, variantId) => {
  */
 export const getRequiredFields = (docId, variantId) => {
   return getAllFieldsForVariant(docId, variantId).filter((f) => f.required);
+};
+
+/**
+ * Retorna o corpo do documento para uma variante, interpolando os valores do formulário.
+ * Placeholders no formato {field_key} são substituídos pelos dados preenchidos.
+ */
+export const getDocumentBody = (docId, variantId, formData = {}) => {
+  const doc = getDocumentById(docId);
+  if (!doc?.documentBody) return null;
+
+  const template = doc.documentBody[variantId];
+  if (!template) return null;
+
+  const interpolate = (text) =>
+    text.replace(/\{(\w+)\}/g, (_, key) => formData[key] || `[${key}]`);
+
+  return template.map((block) => {
+    switch (block.type) {
+      case "title":
+        return { ...block, text: interpolate(block.text) };
+      case "paragraph":
+      case "closing":
+      case "date":
+        return { ...block, text: interpolate(block.text) };
+      case "clause":
+        return {
+          ...block,
+          text: block.text ? interpolate(block.text) : undefined,
+          paragraphs: block.paragraphs
+            ? block.paragraphs.map(interpolate)
+            : undefined,
+        };
+      case "signatures":
+        return {
+          ...block,
+          parties: block.parties.map((p) => ({
+            ...p,
+            name: formData[p.fieldKey] || "[Nome não informado]",
+          })),
+        };
+      default:
+        return block;
+    }
+  });
 };
 
 /**

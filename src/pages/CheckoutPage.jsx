@@ -19,7 +19,7 @@ import showToast from "../utils/toast";
  * CheckoutPage - Payment flow for document purchase
  */
 const CheckoutPage = () => {
-  const { navigate, selectedTemplate, formData, phone, checkoutComplete, setCheckoutComplete, documentType, legalFormData } = useApp();
+  const { navigate, selectedTemplate, formData, phone, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields } = useApp();
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const { generatePDF, isGenerating } = usePDF();
 
@@ -53,7 +53,7 @@ const CheckoutPage = () => {
   const handleDownloadPDF = async () => {
     try {
       if (isLegalDocument) {
-        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType });
+        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType, disabledFields: disabledFields || {}, variantId: selectedVariant || null });
       } else {
         await generatePDF({ type: "GENERATE_RESUME", formData, template: selectedTemplate });
       }

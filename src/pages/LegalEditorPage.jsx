@@ -22,6 +22,7 @@
 import React, { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
+import { useConfirm } from "../hooks/useConfirm";
 import { Icon } from "../components/Icons";
 import {
   Card,
@@ -35,7 +36,9 @@ import {
   AppStepper,
   BottomNavigation,
   SaveIndicator,
+  ConfirmDialog,
 } from "../components/UI";
+import showToast from "../utils/toast";
 import {
   LEGAL_DOCUMENTS,
   getDocumentById,
@@ -66,16 +69,21 @@ const LegalEditorPage = () => {
     setLegalFormData,
     documentType,
     setDocumentType,
+    selectedVariant,
+    setSelectedVariant,
+    disabledFields,
+    setDisabledFields,
     saveStatus,
     lastSaved,
   } = useApp();
 
   // ─── Estado local ───
   const [selectedDoc, setSelectedDoc] = useState(documentType || null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [disabledFields, setDisabledFields] = useState({});
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
+
+  // ─── Confirm dialog ───
+  const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   // ─── Aviso de alterações não salvas ───
   const isDirty = saveStatus === "saving" || saveStatus === "idle";
@@ -166,6 +174,33 @@ const LegalEditorPage = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setShowErrors(false);
+    }
+  };
+
+  // ─── Salvar para depois e ir ao dashboard ───
+  const handleSaveLater = () => {
+    // O auto-save já persiste automaticamente; apenas navega ao dashboard
+    navigate("dashboard");
+    showToast.success("Rascunho salvo! Você pode continuar de onde parou.");
+  };
+
+  // ─── Ir para Home com confirmação se houver dados ───
+  const handleGoHome = async () => {
+    const hasDraft = Object.keys(legalFormData).length > 0 || currentStep > 0;
+    if (!hasDraft) {
+      navigate("dashboard");
+      return;
+    }
+    const confirmed = await requestConfirm({
+      title: "Sair do editor",
+      message: "Seu rascunho será salvo automaticamente. Deseja voltar ao início?",
+      confirmLabel: "Salvar e sair",
+      cancelLabel: "Continuar editando",
+      danger: false,
+    });
+    if (confirmed) {
+      navigate("dashboard");
+      showToast.success("Rascunho salvo!");
     }
   };
 
@@ -440,7 +475,7 @@ const LegalEditorPage = () => {
 
   // ─── Render: Step 4 - Preview ───
   const renderPreview = () => {
-    const docBody = getDocumentBody(selectedDoc?.id, selectedVariant, legalFormData);
+    const docBody = getDocumentBody(selectedDoc?.id, selectedVariant, legalFormData, disabledFields);
     const hasBody = docBody && docBody.length > 0;
 
     const renderBlock = (block, i) => {
@@ -693,7 +728,21 @@ const LegalEditorPage = () => {
             <Icon name="ChevronLeft" className="w-5 h-5" />
           </button>
         }
-        rightAction={<SaveIndicator status={saveStatus} lastSaved={lastSaved} />}
+        rightAction={
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {currentStep > 0 && (
+              <button
+                onClick={handleGoHome}
+                aria-label="Ir para o início"
+                title="Salvar e ir ao início"
+                style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
+              >
+                <Icon name="Home" className="w-5 h-5" />
+              </button>
+            )}
+            <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+          </div>
+        }
       >
         {currentStep > 0 && (
           <AppStepper
@@ -717,6 +766,7 @@ const LegalEditorPage = () => {
         isFirstStep={isFirstStep}
         isLastStep={isLastStep}
         nextLabel={nextLabel}
+        onSaveLater={handleSaveLater}
         extraContent={
           filledCount !== null && (
             <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
@@ -725,6 +775,13 @@ const LegalEditorPage = () => {
             </div>
           )
         }
+      />
+
+      {/* ─── Confirm Dialog (Home / Sair) ─── */}
+      <ConfirmDialog
+        {...confirmState}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </div>
   );

@@ -1549,7 +1549,7 @@ export const LEGAL_DOCUMENTS = [
         },
         {
           type: "paragraph",
-          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}, {comodante_nacionalidade}, {comodante_estado_civil}, {comodante_profissao}, portador(a) do RG n.º {comodante_rg} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco}, {comodante_cidade}, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}, {comodatario_nacionalidade}, {comodatario_estado_civil}, {comodatario_profissao}, portador(a) do RG n.º {comodatario_rg} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco}, {comodatario_cidade}, têm entre si como justo e acordado o que segue, que se obrigam a cumprir por si e seus sucessores:",
+          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}{?, {comodante_nacionalidade}}{?, {comodante_estado_civil}}{?, {comodante_profissao}}, portador(a) do RG n.º {comodante_rg?} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco?}{?, {comodante_cidade}}, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}{?, {comodatario_nacionalidade}}{?, {comodatario_estado_civil}}{?, {comodatario_profissao}}, portador(a) do RG n.º {comodatario_rg?} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco?}{?, {comodatario_cidade}}, têm entre si como justo e acordado o que segue, que se obrigam a cumprir por si e seus sucessores:",
         },
         {
           type: "clause",
@@ -1633,7 +1633,7 @@ export const LEGAL_DOCUMENTS = [
         },
         {
           type: "paragraph",
-          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}, {comodante_nacionalidade}, {comodante_estado_civil}, {comodante_profissao}, portador(a) do RG n.º {comodante_rg} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco}, {comodante_cidade}, proprietário(a) do imóvel rural abaixo descrito, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}, {comodatario_nacionalidade}, {comodatario_estado_civil}, {comodatario_profissao}, portador(a) do RG n.º {comodatario_rg} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco}, {comodatario_cidade}.",
+          text: "Por este instrumento particular, de um lado, como COMODANTE: {comodante_nome}{?, {comodante_nacionalidade}}{?, {comodante_estado_civil}}{?, {comodante_profissao}}, portador(a) do RG n.º {comodante_rg?} e inscrito(a) no CPF sob n.º {comodante_cpf}, residente e domiciliado(a) em {comodante_endereco?}{?, {comodante_cidade}}, proprietário(a) do imóvel rural abaixo descrito, e de outro lado, como COMODATÁRIO(A): {comodatario_nome}{?, {comodatario_nacionalidade}}{?, {comodatario_estado_civil}}{?, {comodatario_profissao}}, portador(a) do RG n.º {comodatario_rg?} e inscrito(a) no CPF sob n.º {comodatario_cpf}, residente e domiciliado(a) em {comodatario_endereco?}{?, {comodatario_cidade}}.",
         },
         {
           type: "paragraph",
@@ -1890,30 +1890,85 @@ export const getRequiredFields = (docId, variantId) => {
  * Retorna o corpo do documento para uma variante, interpolando os valores do formulário.
  * Placeholders no formato {field_key} são substituídos pelos dados preenchidos.
  */
-export const getDocumentBody = (docId, variantId, formData = {}) => {
+export const getDocumentBody = (docId, variantId, formData = {}, disabledFields = {}) => {
   const doc = getDocumentById(docId);
   if (!doc?.documentBody) return null;
 
   const template = doc.documentBody[variantId];
   if (!template) return null;
 
-  const interpolate = (text) =>
-    text.replace(/\{(\w+)\}/g, (_, key) => formData[key] || `[${key}]`);
+  /**
+   * Verifica se um campo está ausente (desabilitado ou vazio).
+   */
+  const isAbsent = (key) =>
+    disabledFields[key] || !formData[key] || String(formData[key]).trim() === "";
+
+  /**
+   * Interpola o texto com suporte a três sintaxes:
+   *
+   * 1. {fieldKey}       — obrigatório: mostra [fieldKey] se ausente
+   * 2. {fieldKey?}      — opcional simples: remove o token se o campo estiver ausente;
+   *                       limpa pontuação/espaços residuais ao redor
+   * 3. {?, texto}       — segmento condicional: o "texto" deve conter {fieldKey};
+   *                       remove o segmento inteiro se o fieldKey estiver ausente
+   *
+   * Após a substituição, limpa artefatos como vírgulas duplas, espaços duplos, etc.
+   */
+  const interpolateAdaptive = (text) => {
+    // Passo 1 — segmentos condicionais {?, ...{fieldKey}...}
+    // Remove o segmento inteiro se o fieldKey dentro dele estiver ausente
+    let result = text.replace(/\{\?,\s*([^}]*\{(\w+)\}[^}]*)\}/g, (_, segment, key) => {
+      if (isAbsent(key)) return "";
+      // Interpola o campo dentro do segmento
+      return segment.replace(`{${key}}`, formData[key]);
+    });
+
+    // Passo 2 — campos opcionais simples {fieldKey?}
+    result = result.replace(/\{(\w+)\?\}/g, (_, key) => {
+      if (isAbsent(key)) return "\x00"; // marcador temporário para limpeza
+      return formData[key];
+    });
+
+    // Passo 3 — campos obrigatórios {fieldKey}
+    result = result.replace(/\{(\w+)\}/g, (_, key) => formData[key] || `[${key}]`);
+
+    // Passo 4 — limpar artefatos deixados pelo marcador \x00 e pelo passo 1
+    // Remove "portador(a) do RG n.º  e" quando RG foi removido (pattern: "n.º \x00 e")
+    result = result.replace(/\bn\.º\s+\x00\s+e\b/g, "e");
+    result = result.replace(/\bem\s+\x00,/g, "em");
+    result = result.replace(/\bem\s+\x00\./g, ".");
+    result = result.replace(/\bem\s+\x00\b/g, "");
+    // Limpar qualquer marcador \x00 restante com vírgula ao redor
+    result = result.replace(/,\s*\x00\s*,/g, ",");
+    result = result.replace(/\x00\s*,\s*/g, "");
+    result = result.replace(/,\s*\x00/g, "");
+    result = result.replace(/\x00/g, "");
+    // Limpar vírgulas duplas e espaços extras
+    result = result.replace(/,\s*,/g, ",");
+    result = result.replace(/\s{2,}/g, " ");
+    // Limpar vírgula antes de pontuação final
+    result = result.replace(/,\s*([.:])/g, "$1");
+    // Limpar vírgula no início ou fim de segmentos após limpeza
+    result = result.replace(/,\s*(e de outro lado)/g, "$1");
+    result = result.trim();
+
+    return result;
+  };
 
   return template.map((block) => {
     switch (block.type) {
       case "title":
-        return { ...block, text: interpolate(block.text) };
+        return { ...block, text: interpolateAdaptive(block.text) };
       case "paragraph":
       case "closing":
       case "date":
-        return { ...block, text: interpolate(block.text) };
+        return { ...block, text: interpolateAdaptive(block.text) };
       case "clause":
         return {
           ...block,
-          text: block.text ? interpolate(block.text) : undefined,
+          text: block.text ? interpolateAdaptive(block.text) : undefined,
           paragraphs: block.paragraphs
-            ? block.paragraphs.map(interpolate)
+            ? block.paragraphs.map(interpolateAdaptive)
             : undefined,
         };
       case "signatures":

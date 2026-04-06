@@ -3,208 +3,351 @@
  * KRIOU DOCS - Legal PDF Generator Utility
  * ============================================
  * Handles legal document PDF generation using jsPDF.
- * Supports contract types: compra-venda, aluguel,
- * procuração, and future document types.
- * 
- * [AGUARDANDO MODELO PADRÃO]
- * Os campos base estão implementados. Quando você
- * informar o modelo padrão completo, complementaremos
- * com campos e formatação específicos.
- * 
+ *
+ * Dois modos de geração:
+ * 1. Com documentBody (ex: comodato) → contrato real com cláusulas numeradas
+ * 2. Sem documentBody → lista de campos (label: valor) — fallback
+ *
  * @module utils/legalPdfGenerator
  */
 
 import { jsPDF } from "jspdf";
+import { getDocumentBody } from "../data/legalDocuments";
+
+// ─── Constantes de layout ───────────────────────────────────────────────────
+const PAGE_W = 210;
+const PAGE_H = 297;
+const MARGIN = 20;
+const CONTENT_W = PAGE_W - MARGIN * 2;
+
+// Cores
+const COLOR_HEADER = [15, 52, 96];
+const COLOR_TEXT   = [30, 30, 30];
+const COLOR_MUTED  = [100, 100, 100];
+const COLOR_LINE   = [200, 200, 200];
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Generate a legal document PDF
- * 
- * @param {Object} formData - Legal document form data
- * @param {Object} docType - Document type configuration
- * @returns {jsPDF} Generated PDF instance
+ * Garante nova página se o conteúdo não couber.
+ * Retorna o currentY atualizado.
  */
-export const generateLegalPDF = (formData, docType) => {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  });
+const ensurePage = (doc, y, neededHeight = 15) => {
+  if (y + neededHeight > PAGE_H - 25) {
+    doc.addPage();
+    return MARGIN + 5;
+  }
+  return y;
+};
 
-  const pageWidth = 210;
-  const pageHeight = 297;
-  const margin = 20;
-  const contentWidth = pageWidth - (margin * 2);
-  let currentY = margin;
-
-  // Colors
-  const headerColor = { r: 15, g: 52, b: 96 };
-  const textColor = { r: 30, g: 30, b: 30 };
-  const mutedColor = { r: 100, g: 100, b: 100 };
-
-  // ─── Header ───
-  doc.setFillColor(headerColor.r, headerColor.g, headerColor.b);
-  doc.rect(0, 0, pageWidth, 35, "F");
+/**
+ * Desenha o cabeçalho azul padrão Kriou Docs.
+ */
+const drawHeader = (doc, title) => {
+  doc.setFillColor(...COLOR_HEADER);
+  doc.rect(0, 0, PAGE_W, 32, "F");
 
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(docType?.name || "Documento Jurídico", margin, 15);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text("Kriou Docs - Serviço de Geração de Documentos", margin, 25);
-
-  currentY = 45;
-
-  // ─── Reset text color ───
-  doc.setTextColor(textColor.r, textColor.g, textColor.b);
-
-  // ─── Document Title ───
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text(docType?.name || "CONTRATO", margin, currentY);
-  
-  doc.setDrawColor(headerColor.r, headerColor.g, headerColor.b);
-  doc.setLineWidth(0.5);
-  doc.line(margin, currentY + 3, pageWidth - margin, currentY + 3);
-  
-  currentY += 15;
+  doc.text(title || "Documento Jurídico", MARGIN, 14);
 
-  // ─── Document Fields ───
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  doc.setFontSize(9);
+  doc.text("Kriou Docs — Serviço de Geração de Documentos", MARGIN, 24);
 
-  docType?.fields?.forEach((field) => {
-    const value = formData[field.key] || "—";
-    
-    // Check if we need a new page
-    if (currentY > pageHeight - 40) {
-      doc.addPage();
-      currentY = margin;
+  doc.setTextColor(...COLOR_TEXT);
+};
+
+/**
+ * Desenha o rodapé em todas as páginas.
+ */
+const drawFooter = (doc) => {
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    const fy = PAGE_H - 12;
+    doc.setDrawColor(...COLOR_LINE);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, fy - 4, PAGE_W - MARGIN, fy - 4);
+    doc.setFontSize(8);
+    doc.setTextColor(...COLOR_MUTED);
+    doc.text("Documento gerado por Kriou Docs", MARGIN, fy);
+    doc.text(
+      `Pág. ${i}/${totalPages}   ${new Date().toLocaleDateString("pt-BR")}`,
+      PAGE_W - MARGIN,
+      fy,
+      { align: "right" }
+    );
+  }
+};
+
+// ─── Geração por documentBody ────────────────────────────────────────────────
+
+/**
+ * Gera PDF a partir de um array de blocos (documentBody interpolado).
+ * Produz um contrato real com título centralizado, parágrafos justificados,
+ * cláusulas numeradas, assinaturas e testemunhas.
+ *
+ * @param {jsPDF}    doc  - Instância jsPDF já com cabeçalho
+ * @param {Array}    body - Resultado de getDocumentBody()
+ * @param {number}   startY
+ * @returns {number} Y final
+ */
+const renderBodyToPDF = (doc, body, startY) => {
+  let y = startY;
+
+  body.forEach((block) => {
+    switch (block.type) {
+
+      case "title": {
+        y = ensurePage(doc, y, 20);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(...COLOR_HEADER);
+        const titleLines = doc.splitTextToSize(block.text, CONTENT_W);
+        titleLines.forEach((line) => {
+          doc.text(line, PAGE_W / 2, y, { align: "center" });
+          y += 6;
+        });
+        // Linha decorativa
+        doc.setDrawColor(...COLOR_HEADER);
+        doc.setLineWidth(0.5);
+        doc.line(MARGIN + 20, y + 1, PAGE_W - MARGIN - 20, y + 1);
+        y += 8;
+        doc.setTextColor(...COLOR_TEXT);
+        break;
+      }
+
+      case "paragraph": {
+        y = ensurePage(doc, y, 12);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        const lines = doc.splitTextToSize(block.text, CONTENT_W);
+        lines.forEach((line) => {
+          y = ensurePage(doc, y, 6);
+          doc.text(line, MARGIN, y, { maxWidth: CONTENT_W });
+          y += 5.5;
+        });
+        y += 4;
+        break;
+      }
+
+      case "clause": {
+        y = ensurePage(doc, y, 18);
+        // Título da cláusula
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...COLOR_HEADER);
+        doc.text(`CLÁUSULA ${block.number} — ${block.title}`, MARGIN, y);
+        y += 6;
+        doc.setTextColor(...COLOR_TEXT);
+
+        // Texto principal
+        if (block.text) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          const lines = doc.splitTextToSize(block.text, CONTENT_W);
+          lines.forEach((line) => {
+            y = ensurePage(doc, y, 6);
+            doc.text(line, MARGIN, y, { maxWidth: CONTENT_W });
+            y += 5.5;
+          });
+        }
+
+        // Parágrafos numerados
+        if (block.paragraphs?.length) {
+          block.paragraphs.forEach((p) => {
+            y = ensurePage(doc, y, 6);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const pLines = doc.splitTextToSize(p, CONTENT_W - 6);
+            pLines.forEach((line, li) => {
+              y = ensurePage(doc, y, 6);
+              doc.text(line, MARGIN + (li === 0 ? 0 : 4), y);
+              y += 5.5;
+            });
+          });
+        }
+        y += 4;
+        break;
+      }
+
+      case "closing": {
+        y = ensurePage(doc, y, 12);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10);
+        const lines = doc.splitTextToSize(block.text, CONTENT_W);
+        lines.forEach((line) => {
+          y = ensurePage(doc, y, 6);
+          doc.text(line, MARGIN, y);
+          y += 5.5;
+        });
+        y += 4;
+        doc.setFont("helvetica", "normal");
+        break;
+      }
+
+      case "date": {
+        y = ensurePage(doc, y, 10);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(block.text, PAGE_W / 2, y, { align: "center" });
+        y += 10;
+        break;
+      }
+
+      case "signatures": {
+        const parties = block.parties || [];
+        y = ensurePage(doc, y, 40);
+        y += 6;
+
+        const colW = CONTENT_W / parties.length;
+        parties.forEach((party, i) => {
+          const x = MARGIN + i * colW + colW * 0.1;
+          const lineW = colW * 0.8;
+          // Linha de assinatura
+          doc.setDrawColor(...COLOR_TEXT);
+          doc.setLineWidth(0.4);
+          doc.line(x, y, x + lineW, y);
+          // Nome
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(...COLOR_TEXT);
+          doc.text(party.name, x + lineW / 2, y + 5, { align: "center", maxWidth: lineW });
+          // Papel
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(...COLOR_MUTED);
+          doc.text(party.role, x + lineW / 2, y + 10, { align: "center" });
+        });
+        y += 20;
+        doc.setTextColor(...COLOR_TEXT);
+        break;
+      }
+
+      case "witnesses": {
+        const count = block.count || 2;
+        y = ensurePage(doc, y, 35);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...COLOR_MUTED);
+        doc.text("TESTEMUNHAS:", MARGIN, y);
+        y += 8;
+
+        const colW = CONTENT_W / count;
+        for (let i = 0; i < count; i++) {
+          const x = MARGIN + i * colW + colW * 0.05;
+          const lineW = colW * 0.85;
+          doc.setDrawColor(...COLOR_TEXT);
+          doc.setLineWidth(0.4);
+          doc.line(x, y, x + lineW, y);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(...COLOR_MUTED);
+          doc.text(`Testemunha ${i + 1} — Nome / CPF`, x + lineW / 2, y + 5, { align: "center" });
+        }
+        y += 15;
+        doc.setTextColor(...COLOR_TEXT);
+        break;
+      }
+
+      default:
+        break;
     }
-
-    // Field label
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(mutedColor.r, mutedColor.g, mutedColor.b);
-    doc.text(field.label, margin, currentY);
-    
-    // Field value
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(textColor.r, textColor.g, textColor.b);
-    
-    const valueLines = doc.splitTextToSize(value, contentWidth);
-    doc.text(valueLines, margin, currentY + 5);
-    
-    currentY += 8 + (valueLines.length - 1) * 5;
   });
 
-  // ─── Footer ───
-  const footerY = pageHeight - 15;
-  doc.setDrawColor(200, 200, 200);
-  doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-  
-  doc.setFontSize(8);
-  doc.setTextColor(mutedColor.r, mutedColor.g, mutedColor.b);
-  doc.text("Documento gerado por Kriou Docs", margin, footerY);
-  doc.text(new Date().toLocaleDateString("pt-BR"), pageWidth - margin - 25, footerY);
+  return y;
+};
 
+// ─── Exportação principal ────────────────────────────────────────────────────
+
+/**
+ * Gera PDF de documento jurídico.
+ *
+ * Se o documento tiver `documentBody` definido, gera um contrato real.
+ * Caso contrário, usa o fallback de lista de campos (label: valor).
+ *
+ * @param {Object} formData      - Dados preenchidos no formulário
+ * @param {Object} docType       - Objeto do documento (da legalDocuments)
+ * @param {Object} disabledFields - Campos marcados como "não preencher"
+ * @param {string} variantId     - ID da variante selecionada
+ * @returns {jsPDF}
+ */
+export const generateLegalPDF = (formData, docType, disabledFields = {}, variantId = null) => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  drawHeader(doc, docType?.name || "Documento Jurídico");
+
+  let y = 40;
+
+  // Tenta gerar pelo documentBody
+  const vId = variantId || docType?.defaultVariant;
+  const body = vId
+    ? getDocumentBody(docType?.id, vId, formData, disabledFields)
+    : null;
+
+  if (body && body.length > 0) {
+    // Contrato real com cláusulas
+    y = renderBodyToPDF(doc, body, y);
+  } else {
+    // Fallback: lista de campos
+    const pageWidth = PAGE_W;
+    const margin = MARGIN;
+    const contentWidth = CONTENT_W;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...COLOR_HEADER);
+    doc.text(docType?.name || "CONTRATO", margin, y);
+    doc.setDrawColor(...COLOR_HEADER);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 3, pageWidth - margin, y + 3);
+    y += 14;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...COLOR_TEXT);
+
+    (docType?.fields || []).forEach((f) => {
+      if (disabledFields[f.key]) return;
+      const value = formData[f.key] || "—";
+      y = ensurePage(doc, y, 14);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(...COLOR_MUTED);
+      doc.text(f.label, margin, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...COLOR_TEXT);
+      const lines = doc.splitTextToSize(value, contentWidth);
+      doc.text(lines, margin, y + 5);
+      y += 8 + (lines.length - 1) * 5;
+    });
+  }
+
+  drawFooter(doc);
   return doc;
 };
 
 /**
- * Generate specific contract type PDFs
- */
-
-// Compra e Venda
-export const generateCompraVendaPDF = (formData) => {
-  const docType = {
-    name: "CONTRATO DE COMPRA E VENDA",
-    fields: [
-      { key: "nome_comprador", label: "COMPRADOR" },
-      { key: "cpf_comprador", label: "CPF do Comprador" },
-      { key: "nome_vendedor", label: "VENDEDOR" },
-      { key: "cpf_vendedor", label: "CPF do Vendedor" },
-      { key: "descricao_imovel", label: "DESCRIÇÃO DO IMÓVEL/VEÍCULO" },
-      { key: "valor", label: "VALOR DA TRANSAÇÃO" },
-      { key: "forma_pagamento", label: "FORMA DE PAGAMENTO" },
-      { key: "data_assinatura", label: "DATA DE ASSINATURA" },
-    ],
-  };
-  return generateLegalPDF(formData, docType);
-};
-
-// Aluguel
-export const generateAluguelPDF = (formData) => {
-  const docType = {
-    name: "CONTRATO DE LOCAÇÃO",
-    fields: [
-      { key: "nome_locador", label: "LOCADOR (Proprietário)" },
-      { key: "cpf_locador", label: "CPF do Locador" },
-      { key: "nome_locatario", label: "LOCATÁRIO (Inquilino)" },
-      { key: "cpf_locatario", label: "CPF do Locatário" },
-      { key: "endereco_imovel", label: "ENDEREÇO DO IMÓVEL" },
-      { key: "valor_aluguel", label: "VALOR DO ALUGUEL" },
-      { key: "valor_caucao", label: "VALOR DA CAUÇÃO" },
-      { key: "prazo_inicio", label: "DATA DE INÍCIO" },
-      { key: "prazo_fim", label: "DATA DE TÉRMINO" },
-    ],
-  };
-  return generateLegalPDF(formData, docType);
-};
-
-// Procuração
-export const generateProcuraçãoPDF = (formData) => {
-  const docType = {
-    name: "PROCURAÇÃO",
-    fields: [
-      { key: "nome_outorgante", label: "OUTORGANTE (quem concede)" },
-      { key: "cpf_outorgante", label: "CPF do Outorgante" },
-      { key: "nome_outorgado", label: "OUTORGADO (quem recebe)" },
-      { key: "cpf_outorgado", label: "CPF do Outorgado" },
-      { key: "poderes", label: "PODERES CONCEDIDOS" },
-      { key: "validade", label: "VALIDADE" },
-    ],
-  };
-  return generateLegalPDF(formData, docType);
-};
-
-/**
  * Download legal PDF
- * 
- * @param {jsPDF} doc - PDF document instance
- * @param {string} filename - Output filename
  */
 export const downloadLegalPDF = (doc, filename = "documento.pdf") => {
   doc.save(filename);
 };
 
 /**
- * Generate PDF based on document type
- * 
- * @param {string} docTypeId - Document type ID
- * @param {Object} formData - Form data
- * @returns {jsPDF} Generated PDF instance
+ * Generate PDF based on document type ID (legacy helper)
  */
 export const generatePDFByType = (docTypeId, formData) => {
-  switch (docTypeId) {
-    case "compra-venda":
-      return generateCompraVendaPDF(formData);
-    case "aluguel":
-      return generateAluguelPDF(formData);
-    case "procuracao":
-      return generateProcuraçãoPDF(formData);
-    default:
-      return generateLegalPDF(formData, { name: "Documento", fields: [] });
-  }
+  return generateLegalPDF(formData, { id: docTypeId, name: "Documento", fields: [] });
 };
 
 export default {
   generateLegalPDF,
-  generateCompraVendaPDF,
-  generateAluguelPDF,
-  generateProcuraçãoPDF,
   generatePDFByType,
   downloadLegalPDF,
 };

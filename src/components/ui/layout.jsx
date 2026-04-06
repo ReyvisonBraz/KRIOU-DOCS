@@ -190,6 +190,7 @@ export const BottomNavigation = ({
   isLastStep = false,
   nextLabel,
   extraContent,
+  onSaveLater,
   style,
 }) => (
   <div
@@ -210,7 +211,7 @@ export const BottomNavigation = ({
     <div
       style={{
         display: "flex",
-        gap: 12,
+        gap: 10,
         maxWidth: 600,
         margin: "0 auto",
       }}
@@ -220,7 +221,7 @@ export const BottomNavigation = ({
           onClick={onBack}
           style={{
             flex: "0 0 auto",
-            padding: "14px 20px",
+            padding: "14px 16px",
             borderRadius: 14,
             border: "1.5px solid rgba(255,255,255,0.1)",
             background: "transparent",
@@ -235,6 +236,31 @@ export const BottomNavigation = ({
         >
           <Icon name="ChevronLeft" className="w-4 h-4" />
           Voltar
+        </button>
+      )}
+
+      {onSaveLater && !isFirstStep && (
+        <button
+          onClick={onSaveLater}
+          title="Salvar rascunho e sair"
+          style={{
+            flex: "0 0 auto",
+            padding: "14px 14px",
+            borderRadius: 14,
+            border: "1.5px solid rgba(255,255,255,0.1)",
+            background: "transparent",
+            color: "var(--text-muted, #8888A8)",
+            fontWeight: 600,
+            fontSize: "0.85rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            whiteSpace: "nowrap",
+          }}
+        >
+          <Icon name="Bookmark" className="w-4 h-4" />
+          <span style={{ display: "none" }} className="save-later-label">Salvar</span>
         </button>
       )}
 

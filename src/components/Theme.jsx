@@ -439,6 +439,15 @@ const globalStyles = `
     .dashboard-content { padding: 40px 32px !important; }
   }
 
+  /* ── Transição de página ── */
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page-enter {
+    animation: pageEnter 0.18s ease-out both;
+  }
+
   /* ── Reduced motion — respect user preference ── */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

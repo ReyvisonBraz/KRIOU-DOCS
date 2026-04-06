@@ -22,7 +22,7 @@ import { generateResumePDF } from "../utils/pdfGenerator";
 import { generateLegalPDF } from "../utils/legalPdfGenerator";
 
 self.addEventListener("message", (event) => {
-  const { type, formData, template, docType } = event.data;
+  const { type, formData, template, docType, disabledFields, variantId } = event.data;
 
   try {
     let doc;
@@ -34,7 +34,7 @@ self.addEventListener("message", (event) => {
         ? `curriculo-${formData.nome.toLowerCase().replace(/\s+/g, "-")}.pdf`
         : "curriculo-kriou-docs.pdf";
     } else if (type === "GENERATE_LEGAL") {
-      doc = generateLegalPDF(formData, docType);
+      doc = generateLegalPDF(formData, docType, disabledFields || {}, variantId || null);
       filename = docType?.id
         ? `${docType.id}-kriou-docs.pdf`
         : "documento-kriou-docs.pdf";

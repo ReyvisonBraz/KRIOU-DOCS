@@ -56,7 +56,9 @@ const PageRouter = () => {
 
   return (
     <Suspense fallback={<PageFallback />}>
-      <PageComponent />
+      <div key={currentPage} className="page-enter">
+        <PageComponent />
+      </div>
     </Suspense>
   );
 };

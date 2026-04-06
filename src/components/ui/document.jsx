@@ -32,6 +32,12 @@ export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => 
     locacao: "Locação",
     procuracao: "Procuração",
     "prestacao-servicos": "Prest. Serviços",
+    comodato: "Comodato",
+    doacao: "Doação",
+    recibo: "Recibo",
+    "uniao-estavel": "União Estável",
+    "autorizacao-viagem": "Autorização de Viagem",
+    permuta: "Permuta",
   };
   const typeLabel = typeLabels[doc.type] || doc.type;
 

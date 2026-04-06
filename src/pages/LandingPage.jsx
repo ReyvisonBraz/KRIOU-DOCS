@@ -65,7 +65,7 @@ const LandingPage = () => {
       </nav>
 
       {/* ─── Hero Section ─── */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px 60px", textAlign: "center", position: "relative" }}>
+      <section className="hero-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px 60px", textAlign: "center", position: "relative" }}>
         {/* Background decorative elements */}
         <div style={{ position: "absolute", top: 40, left: "10%", width: 300, height: 300, background: "radial-gradient(circle, rgba(233,69,96,0.08) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: 100, right: "5%", width: 200, height: 200, background: "radial-gradient(circle, rgba(0,210,211,0.06) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
@@ -87,7 +87,7 @@ const LandingPage = () => {
         </p>
 
         {/* CTA Buttons */}
-        <div className="animate-fadeUp delay-3" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+        <div className="animate-fadeUp delay-3 cta-group" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
           <Button variant="primary" size="large" icon="ChevronRight" iconPosition="right" onClick={() => navigate("login")}>
             Começar Agora — É Grátis
           </Button>
@@ -97,7 +97,7 @@ const LandingPage = () => {
         </div>
 
         {/* Stats */}
-        <div className="animate-fadeUp delay-4" style={{ display: "flex", justifyContent: "center", gap: 48, marginTop: 64, flexWrap: "wrap" }}>
+        <div className="animate-fadeUp delay-4 hero-stats" style={{ display: "flex", justifyContent: "center", gap: 48, marginTop: 64, flexWrap: "wrap" }}>
           {stats.map((stat, index) => (
             <div key={index} style={{ textAlign: "center" }}>
               <div className="font-display" style={{ fontSize: 32, fontWeight: 900, color: "var(--coral)" }}>{stat.number}</div>

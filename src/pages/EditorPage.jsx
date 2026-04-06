@@ -548,7 +548,7 @@ const EditorPage = () => {
       </AppNavbar>
 
       {/* ─── Main Content Area ─── */}
-      <div style={{ flex: 1, maxWidth: 860, margin: "0 auto", padding: "24px 24px 100px", width: "100%" }}>
+      <div className="page-container" style={{ flex: 1, maxWidth: 860, margin: "0 auto", padding: "24px 24px 100px", width: "100%" }}>
 
         {/* ─── Step Title Section ─── */}
         <div className="animate-slideRight" key={currentStep} style={{ marginBottom: 28 }}>

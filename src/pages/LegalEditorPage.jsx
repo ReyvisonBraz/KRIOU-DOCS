@@ -706,7 +706,7 @@ const LegalEditorPage = () => {
       </AppNavbar>
 
       {/* ─── Main Content ─── */}
-      <div style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
+      <div className="page-container" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
         {renderStepContent()}
       </div>
 

@@ -318,6 +318,135 @@ const globalStyles = `
       font-size: 16px; /* Prevents iOS zoom */
     }
   }
+
+  /* ─── Responsive Layout ─────────────────────────────
+   * 375px  — iPhone SE / small Android
+   * 390px  — iPhone 14/15
+   * 768px  — tablet portrait
+   * 1280px — desktop
+   * ────────────────────────────────────────────────── */
+
+  /* ── 375–767px : mobile ── */
+  @media (max-width: 767px) {
+
+    /* Headings */
+    h1 { font-size: clamp(26px, 7vw, 36px) !important; letter-spacing: -0.5px !important; }
+    h2 { font-size: clamp(20px, 5vw, 28px) !important; }
+    h3 { font-size: clamp(16px, 4vw, 20px) !important; }
+
+    /* Section padding — prevents content touching edges at 375px */
+    section, .page-section {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+
+    /* Hero vertical breathing room */
+    .hero-section {
+      padding-top: 48px !important;
+      padding-bottom: 40px !important;
+    }
+
+    /* CTA button groups — stack vertically on small screens */
+    .cta-group {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+    }
+    .cta-group .btn-primary,
+    .cta-group .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Stats row — tighter gap */
+    .stats-row {
+      gap: 24px !important;
+      flex-wrap: wrap;
+    }
+
+    /* Card grid — single column */
+    .grid-auto { grid-template-columns: 1fr !important; }
+
+    /* Dashboard — reduce top padding */
+    .dashboard-content { padding: 20px 16px 24px !important; }
+
+    /* Tabs — always scrollable, no overflow bleed */
+    .tabs-row {
+      gap: 4px !important;
+      padding-bottom: 4px;
+    }
+
+    /* AppNavbar title font size */
+    .app-navbar-title { font-size: 0.85rem !important; }
+
+    /* Wizard bottom nav buttons — full width */
+    .bottom-nav-btn { font-size: 0.85rem !important; padding: 12px 16px !important; }
+
+    /* Preview / checkout pages — remove horizontal padding */
+    .preview-container, .checkout-container {
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+    }
+
+    /* Profile / legal editor / editor containers */
+    .page-container { padding: 16px 16px 100px !important; }
+
+    /* Form inputs — ensure readable size, prevent iOS zoom */
+    .input-field { font-size: 16px !important; padding: 12px 14px !important; }
+
+    /* Variant selector — force single column */
+    .variant-selector { flex-direction: column !important; }
+    .variant-selector > button { max-width: 100% !important; flex: 1 1 100% !important; }
+
+    /* Legal section header — tighten margins */
+    .section-header-inner { gap: 10px !important; padding: 12px 0 8px !important; }
+
+    /* DocumentCard title truncate on narrow widths */
+    .doc-card-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    /* Landing hero stats — 2-col wrap on 375px */
+    .hero-stats { gap: 28px 40px !important; }
+    .hero-stats > div { min-width: 80px; }
+  }
+
+  /* ── 390–767px : iPhone 14/15 slight adjustment ── */
+  @media (min-width: 376px) and (max-width: 767px) {
+    h1 { font-size: clamp(28px, 7vw, 38px) !important; }
+  }
+
+  /* ── 768–1279px : tablet ── */
+  @media (min-width: 768px) and (max-width: 1279px) {
+
+    /* Tablet padding for page containers */
+    .page-container { padding: 24px 24px 120px !important; }
+    .dashboard-content { padding: 28px 24px !important; }
+
+    /* Grid collapses to 2 columns */
+    .grid-auto { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Hero section */
+    .hero-section { padding: 60px 32px 48px !important; }
+  }
+
+  /* ── 1280px+ : desktop refinements ── */
+  @media (min-width: 1280px) {
+    .page-container { padding: 32px 32px 120px !important; }
+    .dashboard-content { padding: 40px 32px !important; }
+  }
+
+  /* ── Reduced motion — respect user preference ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 `;
 
 // ─── Componente Provider do Tema ───

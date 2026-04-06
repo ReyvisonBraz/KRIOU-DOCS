@@ -180,7 +180,7 @@ const CheckoutPage = () => {
       />
 
       {/* ─── Checkout Content ─── */}
-      <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 24px" }}>
+      <div className="checkout-container" style={{ maxWidth: 600, margin: "40px auto", padding: "0 24px" }}>
         <div className="animate-fadeUp">
           {/* Order Summary */}
           <Card style={{ marginBottom: 20 }}>

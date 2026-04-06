@@ -107,7 +107,7 @@ const PreviewPage = () => {
       />
 
       {/* ─── Resume Preview Container ─── */}
-      <div style={{ maxWidth: 700, margin: "40px auto", padding: "0 24px" }}>
+      <div className="preview-container" style={{ maxWidth: 700, margin: "40px auto", padding: "0 24px" }}>
         <div
           className="animate-scaleIn"
           style={{

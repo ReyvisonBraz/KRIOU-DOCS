@@ -12,7 +12,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { INITIAL_FORM_DATA, RESUME_TEMPLATES } from "../data/constants";
 import StorageService from "../utils/storage";
 import { sanitizeFormData } from "../utils/sanitization";
-import { DEBOUNCE_AUTOSAVE_MS, SAVE_FEEDBACK_DELAY_MS } from "../constants/timing";
+import { useAutoSave } from "../hooks/useAutoSave";
 
 export const ResumeContext = createContext(null);
 
@@ -20,47 +20,27 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [currentStep, setCurrentStep]           = useState(0);
   const [formData, setFormData]                 = useState(INITIAL_FORM_DATA);
-  const [saveStatus, setSaveStatus]             = useState("saved");
-  const [lastSaved, setLastSaved]               = useState(null);
   const [userDocuments, setUserDocuments]       = useState([]);
   const [filter, setFilter]                     = useState("todos");
 
-  // ─── Refs de auto-save ───
-  const autosaveTimerRef = useRef(null);
-  const isFirstRender    = useRef(true);
-
-  // ─── Auto-save com debounce ───
-  const debouncedSave = useCallback((data, uid) => {
-    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-
-    autosaveTimerRef.current = setTimeout(() => {
-      setSaveStatus("saving");
-      StorageService.saveDraft(sanitizeFormData(data), uid, "resume");
-      setTimeout(() => {
-        setSaveStatus("saved");
-        setLastSaved(new Date());
-      }, SAVE_FEEDBACK_DELAY_MS);
-    }, DEBOUNCE_AUTOSAVE_MS);
-  }, []);
+  // Ref para bloquear auto-save durante carregamento inicial
+  const isReadyRef = useRef(false);
 
   useEffect(() => {
-    if (isLoading || isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    debouncedSave(formData, userId);
-    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
-  }, [formData, userId, isLoading, debouncedSave]);
+    if (!isLoading) isReadyRef.current = true;
+  }, [isLoading]);
 
-  const triggerSave = useCallback(() => {
-    setSaveStatus("saving");
-    setTimeout(() => setSaveStatus("saved"), 1200);
-  }, []);
+  // Função de save passada ao hook — só persiste quando pronto
+  const saveFn = useCallback((data) => {
+    if (!isReadyRef.current) return;
+    StorageService.saveDraft(sanitizeFormData(data), userId, "resume");
+  }, [userId]);
+
+  const { saveStatus, lastSaved, triggerSave } = useAutoSave(formData, saveFn);
 
   const updateForm = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    triggerSave();
-  }, [triggerSave]);
+  }, []);
 
   const resetForm = useCallback((legalResetFn) => {
     setFormData(INITIAL_FORM_DATA);
@@ -88,7 +68,6 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     const updatedDocs = [...userDocuments, newDoc];
     setUserDocuments(updatedDocs);
     StorageService.saveDocuments(updatedDocs, userId);
-
     StorageService.clearDraft(userId, docType);
     return newDoc;
   }, [userDocuments, userId]);

@@ -31,16 +31,7 @@ const DashboardPage = () => {
     navigate("legalEditor");
   };
 
-  /**
-   * Use real documents from context; fall back to demo data when list is empty
-   */
-  const demoDocs = [
-    { id: "demo-1", type: "curriculo", title: "Dev Full Stack", template: "Tech", date: "25 Mar", status: "finalizado" },
-    { id: "demo-2", type: "curriculo", title: "Designer UX", template: "Criativo", date: "22 Mar", status: "rascunho" },
-    { id: "demo-3", type: "compra-venda", title: "Aluguel Apt 302", template: "Padrão", date: "18 Mar", status: "finalizado" },
-    { id: "demo-4", type: "locacao", title: "Contrato Locação", template: "Padrão", date: "15 Mar", status: "rascunho" },
-  ];
-  const allDocs = userDocuments && userDocuments.length > 0 ? userDocuments : demoDocs;
+  const allDocs = userDocuments || [];
 
   /**
    * Tab options
@@ -122,7 +113,7 @@ const DashboardPage = () => {
       />
 
       {/* Main Content */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+      <div className="dashboard-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {/* Welcome */}
         <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
           <h1 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
@@ -132,7 +123,7 @@ const DashboardPage = () => {
         </div>
 
         {/* CTA Buttons */}
-        <div className="animate-fadeUp delay-1" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+        <div className="animate-fadeUp delay-1 cta-group" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
           <Button variant="primary" icon="Plus" onClick={() => navigate("templates")}>
             + Novo Currículo
           </Button>
@@ -203,7 +194,7 @@ const DashboardPage = () => {
                   key={doc.id}
                   doc={doc}
                   onClick={() => handleEditDocument(doc)}
-                  onDelete={doc.id.startsWith("demo-") ? undefined : () => handleDeleteDocument(doc)}
+                  onDelete={() => handleDeleteDocument(doc)}
                   animationDelay={index * 0.05}
                 />
               ))
@@ -214,8 +205,16 @@ const DashboardPage = () => {
         {!isLoading && getFilteredDocs().length === 0 && (
           <EmptyState
             icon="FileText"
-            title="Nenhum documento encontrado"
-            description="Crie um novo documento para começar"
+            title={searchQuery.trim() ? "Nenhum resultado encontrado" : "Você ainda não tem documentos"}
+            description={searchQuery.trim() ? "Tente buscar por outro termo." : "Crie seu primeiro currículo ou documento jurídico."}
+            action={
+              !searchQuery.trim() && (
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <Button variant="primary" onClick={() => navigate("templates")}>+ Novo Currículo</Button>
+                  <Button variant="secondary" onClick={handleCreateLegalDocument}>+ Novo Documento</Button>
+                </div>
+              )
+            }
           />
         )}
       </div>

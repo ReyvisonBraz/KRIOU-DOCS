@@ -39,6 +39,7 @@ import {
   ConfirmDialog,
 } from "../components/UI";
 import showToast from "../utils/toast";
+import { generateMockFormData } from "../utils/mockData";
 import {
   LEGAL_DOCUMENTS,
   getDocumentById,
@@ -135,6 +136,16 @@ const LegalEditorPage = () => {
   const getFieldError = (key) => {
     if (!showErrors) return null;
     return stepErrors[key] || null;
+  };
+
+  // ─── Preencher com dados fictícios para demonstração ───
+  const handleFillDemo = () => {
+    const mockData = generateMockFormData(selectedDoc.id, selectedVariant, currentSections);
+    setLegalFormData(mockData);
+    setDisabledFields({});
+    setStepErrors({});
+    setShowErrors(false);
+    showToast.success("Dados de demonstração preenchidos! Avance para visualizar o documento.");
   };
 
   // ─── Navegação ───
@@ -352,6 +363,50 @@ const LegalEditorPage = () => {
           Campos opcionais podem ser desabilitados com o toggle.
           Clique no botão <strong style={{ color: "var(--teal)" }}>?</strong> para ver ajuda.
         </p>
+
+        {/* Banner de demonstração */}
+        <div style={{
+          marginTop: 16,
+          padding: "14px 18px",
+          background: "linear-gradient(135deg, rgba(0,210,211,0.08) 0%, rgba(108,99,255,0.08) 100%)",
+          border: "1.5px dashed var(--teal)",
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 22 }}>🎭</span>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: 0 }}>
+                Preencher com dados de demonstração
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "2px 0 0" }}>
+                Pré-visualize o documento com dados fictícios antes de preencher os seus.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleFillDemo}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "9px 18px",
+              background: "var(--teal)", color: "#fff",
+              border: "none", borderRadius: 8,
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+              whiteSpace: "nowrap",
+              boxShadow: "0 2px 8px rgba(0,210,211,0.3)",
+              transition: "opacity .15s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.85"}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+          >
+            <Icon name="Wand2" className="w-4 h-4" />
+            Preencher Demo
+          </button>
+        </div>
       </div>
 
       {/* Observações do cliente */}
@@ -730,16 +785,14 @@ const LegalEditorPage = () => {
         }
         rightAction={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {currentStep > 0 && (
-              <button
-                onClick={handleGoHome}
-                aria-label="Ir para o início"
-                title="Salvar e ir ao início"
-                style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
-              >
-                <Icon name="Home" className="w-5 h-5" />
-              </button>
-            )}
+            <button
+              onClick={handleGoHome}
+              aria-label="Ir para o início"
+              title="Voltar ao dashboard"
+              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
+            >
+              <Icon name="Home" className="w-5 h-5" />
+            </button>
             <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
           </div>
         }

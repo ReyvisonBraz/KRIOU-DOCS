@@ -23,6 +23,7 @@ const STORAGE_KEYS = {
   LEGAL_FORM_DATA: "kriou_docs_legal_form_data",
   USER_SESSION: "kriou_docs_user_session",
   TEMPLATE_PREFERENCES: "kriou_docs_template_prefs",
+  CURRENT_PAGE: "kriou_docs_current_page",
 };
 
 // ─── Storage Keys with User Context ───
@@ -351,6 +352,27 @@ const StorageService = {
       console.error("Error clearing legal form data:", error);
       return false;
     }
+  },
+
+  // ─── Current Page Persistence ───
+  savePage: (page) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_PAGE, page);
+      return true;
+    } catch { return false; }
+  },
+
+  loadPage: () => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.CURRENT_PAGE) || null;
+    } catch { return null; }
+  },
+
+  clearPage: () => {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_PAGE);
+      return true;
+    } catch { return false; }
   },
 
   /**

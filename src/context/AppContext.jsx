@@ -26,12 +26,23 @@ import { LegalProvider, useLegal } from "./LegalContext";
 const NavigationContext = createContext(null);
 const UIContext         = createContext(null);
 
+// Páginas válidas que podem ser restauradas após atualização
+const RESTORABLE_PAGES = new Set([
+  "dashboard", "legalEditor", "editor", "templates", "profile", "preview", "checkout",
+]);
+
 const NavigationProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState("landing");
 
   const navigate = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
+    // Páginas autenticadas são persistidas; páginas públicas limpam o registro
+    if (RESTORABLE_PAGES.has(page)) {
+      StorageService.savePage(page);
+    } else {
+      StorageService.clearPage();
+    }
   }, []);
 
   return (
@@ -71,7 +82,10 @@ const AppBootstrap = ({ children }) => {
           setUserData({ nome: savedSession.displayName || "", sobrenome: "", cpf: "" });
           setLoginStep(2);
 
-          setTimeout(() => navigate("dashboard"), 500);
+          // Restaura a última página visitada; cai no dashboard se não houver
+          const savedPage = StorageService.loadPage();
+          const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+          setTimeout(() => navigate(targetPage), 500);
         } else {
           const savedFormData = StorageService.loadFormData();
           if (savedFormData) setFormData(savedFormData);

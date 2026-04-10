@@ -155,35 +155,41 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
     <div style={{ position: "relative", display: "inline-block" }}>
       <button
         onClick={() => setOpen(!open)}
+        title="Clique para ver ajuda sobre este campo"
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 8,
-          border: open ? "2px solid var(--teal)" : "2px solid var(--border)",
-          background: open ? "rgba(0,210,211,0.15)" : "var(--surface-3)",
-          color: open ? "var(--teal)" : "var(--text-muted)",
-          fontSize: 14,
-          fontWeight: 800,
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          border: open ? "2px solid var(--teal)" : "2px solid rgba(0,210,211,0.5)",
+          background: open
+            ? "linear-gradient(135deg, var(--teal) 0%, #00a8a9 100%)"
+            : "linear-gradient(135deg, rgba(0,210,211,0.18) 0%, rgba(0,210,211,0.08) 100%)",
+          color: open ? "#fff" : "var(--teal)",
+          fontSize: 15,
+          fontWeight: 900,
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           transition: "all 0.2s",
           flexShrink: 0,
+          boxShadow: open ? "0 2px 8px rgba(0,210,211,0.4)" : "none",
+          letterSpacing: "-0.5px",
         }}
         onMouseEnter={(e) => {
           if (!open) {
             e.currentTarget.style.borderColor = "var(--teal)";
-            e.currentTarget.style.color = "var(--teal)";
+            e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,210,211,0.3) 0%, rgba(0,210,211,0.12) 100%)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,210,211,0.25)";
           }
         }}
         onMouseLeave={(e) => {
           if (!open) {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.color = "var(--text-muted)";
+            e.currentTarget.style.borderColor = "rgba(0,210,211,0.5)";
+            e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,210,211,0.18) 0%, rgba(0,210,211,0.08) 100%)";
+            e.currentTarget.style.boxShadow = "none";
           }
         }}
-        title="Clique para ver ajuda"
       >
         ?
       </button>
@@ -347,67 +353,58 @@ export const OptionalFieldToggle = ({ enabled, onToggle, label }) => {
 
 /**
  * ClientNoteBanner - Banner de observação para o cliente
+ * Sempre visível — informações importantes não devem ficar escondidas atrás de um clique.
  */
 export const ClientNoteBanner = ({ notes }) => {
-  const [expanded, setExpanded] = React.useState(false);
   if (!notes || notes.length === 0) return null;
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, rgba(0,210,211,0.08) 0%, rgba(83,52,131,0.08) 100%)",
-      border: "1px solid rgba(0,210,211,0.2)",
+      background: "linear-gradient(135deg, rgba(249,168,37,0.1) 0%, rgba(249,168,37,0.04) 100%)",
+      border: "2px solid rgba(249,168,37,0.45)",
       borderRadius: 14,
-      padding: "14px 18px",
+      padding: "16px 20px",
       marginBottom: 24,
     }}>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          width: "100%",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          color: "var(--text)",
-        }}
-      >
-        <span style={{ fontSize: 20 }}>📋</span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)" }}>
-          Informações Importantes para Você
-        </span>
-        <span style={{
-          marginLeft: "auto",
-          transform: expanded ? "rotate(180deg)" : "rotate(0)",
-          transition: "transform 0.2s",
-          fontSize: 12,
-          color: "var(--text-muted)",
+      {/* Cabeçalho sempre visível */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10,
+          background: "rgba(249,168,37,0.2)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 18, flexShrink: 0,
         }}>
-          ▼
-        </span>
-      </button>
-
-      {expanded && (
-        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-          {notes.map((note, i) => (
-            <div key={i} style={{
-              display: "flex",
-              gap: 10,
-              padding: "8px 12px",
-              background: "rgba(0,0,0,0.15)",
-              borderRadius: 8,
-              fontSize: 13,
-              color: "var(--text)",
-              lineHeight: 1.5,
-            }}>
-              <span style={{ color: "var(--teal)", fontWeight: 700, flexShrink: 0 }}>•</span>
-              {note}
-            </div>
-          ))}
+          ⚠️
         </div>
-      )}
+        <span style={{ fontSize: 14, fontWeight: 800, color: "#f9a825", letterSpacing: "0.01em" }}>
+          Leia antes de preencher
+        </span>
+      </div>
+
+      {/* Notas sempre expandidas */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {notes.map((note, i) => (
+          <div key={i} style={{
+            display: "flex",
+            gap: 10,
+            padding: "10px 14px",
+            background: "rgba(249,168,37,0.07)",
+            borderRadius: 9,
+            border: "1px solid rgba(249,168,37,0.2)",
+            fontSize: 13,
+            color: "var(--text)",
+            lineHeight: 1.6,
+          }}>
+            <span style={{
+              color: "#f9a825", fontWeight: 800, flexShrink: 0,
+              fontSize: 16, lineHeight: 1.4,
+            }}>
+              {i + 1}.
+            </span>
+            {note}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -458,12 +455,17 @@ export const LegalFieldRenderer = ({
         </label>
 
         {hasHelp && (
-          <LegalHelpButton
-            hint={fieldDef.hint}
-            example={fieldDef.example}
-            whereFind={fieldDef.whereFind}
-            label={fieldDef.label}
-          />
+          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+            <span style={{ fontSize: 10, color: "var(--teal)", fontWeight: 600, letterSpacing: "0.02em" }}>
+              ver dica
+            </span>
+            <LegalHelpButton
+              hint={fieldDef.hint}
+              example={fieldDef.example}
+              whereFind={fieldDef.whereFind}
+              label={fieldDef.label}
+            />
+          </div>
         )}
       </div>
 

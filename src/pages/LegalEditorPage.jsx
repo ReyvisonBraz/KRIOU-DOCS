@@ -64,8 +64,8 @@ const STEPS = [
 const LegalEditorPage = () => {
   const {
     navigate,
-    currentStep,
-    setCurrentStep,
+    legalStep: currentStep,
+    setLegalStep: setCurrentStep,
     legalFormData,
     setLegalFormData,
     documentType,

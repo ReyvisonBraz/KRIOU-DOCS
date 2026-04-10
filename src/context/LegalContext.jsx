@@ -21,6 +21,8 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [legalFormData, setLegalFormData]     = useState({});
   const [disabledFields, setDisabledFields]   = useState({});
+  // Step próprio do editor jurídico — isolado do currentStep do currículo
+  const [legalStep, setLegalStep]             = useState(0);
 
   // Ref para bloquear auto-save durante carregamento inicial
   const isReadyRef = useRef(false);
@@ -56,6 +58,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     setDocumentType(null);
     setSelectedVariant(null);
     setDisabledFields({});
+    setLegalStep(0);
     StorageService.clearDraft(userId, "legal");
     StorageService.clearLegalFormData();
   }, [userId]);
@@ -65,6 +68,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     selectedVariant, setSelectedVariant,
     legalFormData, setLegalFormData,
     disabledFields, setDisabledFields,
+    legalStep, setLegalStep,
     legalDocumentTypes: LEGAL_DOCUMENT_TYPES,
     updateLegalField, selectDocumentType, resetLegalForm,
   };

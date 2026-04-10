@@ -17,7 +17,7 @@ import { getAvailableDocuments } from "../data/legalDocuments";
  * TemplatesPage - Template gallery for resume selection
  */
 const TemplatesPage = () => {
-  const { navigate, setSelectedTemplate, setCurrentStep, setDocumentType } = useApp();
+  const { navigate, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType } = useApp();
   const [docType, setDocType] = useState(null);
 
   /**
@@ -28,7 +28,7 @@ const TemplatesPage = () => {
     setDocType(type);
     if (type === "legal") {
       setDocumentType(null);
-      setCurrentStep(0);
+      setLegalStep(0);
       navigate("legalEditor");
     }
   };
@@ -49,7 +49,7 @@ const TemplatesPage = () => {
    */
   const handleLegalDocSelect = (type) => {
     setSelectedTemplate(null);
-    setCurrentStep(0);
+    setLegalStep(0);
     setDocumentType(type);
     navigate("legalEditor");
   };

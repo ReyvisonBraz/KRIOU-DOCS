@@ -18,7 +18,7 @@ import showToast from "../utils/toast";
  * DashboardPage - User's document management hub
  */
 const DashboardPage = () => {
-  const { navigate, formData, setFormData, setCurrentStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading } = useApp();
+  const { navigate, formData, setFormData, setCurrentStep, setLegalStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
@@ -27,7 +27,7 @@ const DashboardPage = () => {
    * Handle create new legal document
    */
   const handleCreateLegalDocument = () => {
-    setCurrentStep(0);
+    setLegalStep(0);
     navigate("legalEditor");
   };
 
@@ -64,7 +64,7 @@ const DashboardPage = () => {
       setCurrentStep(0);
       navigate("editor");
     } else {
-      setCurrentStep(0);
+      setLegalStep(0);
       navigate("legalEditor");
     }
   };

@@ -14,7 +14,7 @@
  * @module context/AppContext
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import StorageService from "../utils/storage";
 import { APP_INIT_DELAY_MS } from "../constants/timing";
 import { AuthProvider, useAuth } from "./AuthContext";
@@ -34,15 +34,47 @@ const RESTORABLE_PAGES = new Set([
 const NavigationProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState("landing");
 
+  // Ref para evitar pushState recursivo quando o popstate dispara setCurrentPage
+  const isPopstateRef = useRef(false);
+
   const navigate = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
-    // Páginas autenticadas são persistidas; páginas públicas limpam o registro
+
+    // Empurra uma entrada no histórico do browser (permite botão Voltar)
+    // mas só quando a navegação veio do app (não de um evento popstate)
+    if (!isPopstateRef.current) {
+      window.history.pushState({ page }, "", window.location.pathname);
+    }
+
+    // Persiste no localStorage para restaurar após F5
     if (RESTORABLE_PAGES.has(page)) {
       StorageService.savePage(page);
     } else {
       StorageService.clearPage();
     }
+  }, []);
+
+  // Escuta o botão Voltar / Avançar do browser
+  useEffect(() => {
+    const handlePopstate = (event) => {
+      const page = event.state?.page;
+      if (page) {
+        isPopstateRef.current = true;
+        setCurrentPage(page);
+        window.scrollTo(0, 0);
+        isPopstateRef.current = false;
+      } else {
+        // Sem estado (entrada inicial sem pushState) → vai para landing
+        isPopstateRef.current = true;
+        setCurrentPage("landing");
+        window.scrollTo(0, 0);
+        isPopstateRef.current = false;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopstate);
+    return () => window.removeEventListener("popstate", handlePopstate);
   }, []);
 
   return (
@@ -204,6 +236,7 @@ export const useApp = () => {
     selectedVariant: legal.selectedVariant,      setSelectedVariant: legal.setSelectedVariant,
     legalFormData: legal.legalFormData,          setLegalFormData: legal.setLegalFormData,
     disabledFields: legal.disabledFields,        setDisabledFields: legal.setDisabledFields,
+    legalStep: legal.legalStep,                  setLegalStep: legal.setLegalStep,
     legalDocumentTypes: legal.legalDocumentTypes,
     updateLegalField: legal.updateLegalField,
     selectDocumentType: legal.selectDocumentType,

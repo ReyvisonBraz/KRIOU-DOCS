@@ -495,7 +495,16 @@ const EditorPage = () => {
   const handlePrevious = () => {
     if (!isFirstStep) {
       setCurrentStep(currentStep - 1);
+    } else {
+      navigate("dashboard");
     }
+  };
+
+  /**
+   * Voltar ao dashboard (botão Home)
+   */
+  const handleGoHome = () => {
+    navigate("dashboard");
   };
 
   /**
@@ -521,16 +530,24 @@ const EditorPage = () => {
         title={`Currículo — ${selectedTemplate?.name || "Modelo"}`}
         leftAction={
           <button
-            onClick={() => navigate("templates")}
-            aria-label="Voltar para modelos"
+            onClick={handlePrevious}
+            aria-label={isFirstStep ? "Voltar ao dashboard" : "Etapa anterior"}
             style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
           >
             <Icon name="ChevronLeft" className="w-5 h-5" />
-            <span style={{ fontSize: 13 }}>Modelos</span>
+            <span style={{ fontSize: 13 }}>{isFirstStep ? "Dashboard" : "Voltar"}</span>
           </button>
         }
         rightAction={
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={handleGoHome}
+              aria-label="Voltar ao dashboard"
+              title="Voltar ao dashboard"
+              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
+            >
+              <Icon name="Home" className="w-5 h-5" />
+            </button>
             <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
             <Button variant="primary" size="small" icon="Eye" onClick={() => navigate("preview")}>
               Preview

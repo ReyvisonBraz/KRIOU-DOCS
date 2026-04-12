@@ -37,7 +37,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     StorageService.saveDraft(sanitizeFormData(data), userId, "legal");
   }, [userId]);
 
-  const { saveStatus } = useAutoSave(legalFormData, saveFn);
+  const { saveStatus, triggerSave } = useAutoSave(legalFormData, saveFn);
 
   // Repassa saveStatus ao contexto pai (UIContext) via callback
   useEffect(() => {
@@ -71,6 +71,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     legalStep, setLegalStep,
     legalDocumentTypes: LEGAL_DOCUMENT_TYPES,
     updateLegalField, selectDocumentType, resetLegalForm,
+    triggerSave,
   };
 
   return <LegalContext.Provider value={value}>{children}</LegalContext.Provider>;

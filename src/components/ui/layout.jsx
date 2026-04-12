@@ -260,7 +260,7 @@ export const BottomNavigation = ({
           }}
         >
           <Icon name="Bookmark" className="w-4 h-4" />
-          <span style={{ display: "none" }} className="save-later-label">Salvar</span>
+          <span className="save-later-label">Salvar</span>
         </button>
       )}
 

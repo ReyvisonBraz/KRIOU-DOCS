@@ -76,6 +76,7 @@ const LegalEditorPage = () => {
     setDisabledFields,
     saveStatus,
     lastSaved,
+    triggerLegalSave,
   } = useApp();
 
   // ─── Estado local ───
@@ -189,8 +190,8 @@ const LegalEditorPage = () => {
   };
 
   // ─── Salvar para depois e ir ao dashboard ───
-  const handleSaveLater = () => {
-    // O auto-save já persiste automaticamente; apenas navega ao dashboard
+  const handleSaveLater = async () => {
+    await triggerLegalSave();
     navigate("dashboard");
     showToast.success("Rascunho salvo! Você pode continuar de onde parou.");
   };

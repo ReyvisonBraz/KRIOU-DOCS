@@ -241,6 +241,7 @@ export const useApp = () => {
     updateLegalField: legal.updateLegalField,
     selectDocumentType: legal.selectDocumentType,
     resetLegalForm: legal.resetLegalForm,
+    triggerLegalSave: legal.triggerSave,
 
     // UI
     isLoading: ui.isLoading,

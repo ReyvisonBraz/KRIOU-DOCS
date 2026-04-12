@@ -192,104 +192,124 @@ export const BottomNavigation = ({
   extraContent,
   onSaveLater,
   style,
-}) => (
-  <div
-    style={{
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 50,
-      background: "rgba(15, 15, 30, 0.95)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
-      borderTop: "1px solid rgba(255,255,255,0.06)",
-      padding: "12px 16px",
-      ...style,
-    }}
-  >
+}) => {
+  const [hoveredButton, setHoveredButton] = React.useState(null);
+
+  return (
     <div
       style={{
-        display: "flex",
-        gap: 10,
-        maxWidth: 600,
-        margin: "0 auto",
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: "rgba(15, 15, 30, 0.98)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+        padding: "14px 16px 20px",
+        ...style,
       }}
     >
-      {!isFirstStep && (
-        <button
-          onClick={onBack}
-          style={{
-            flex: "0 0 auto",
-            padding: "14px 16px",
-            borderRadius: 14,
-            border: "1.5px solid rgba(255,255,255,0.1)",
-            background: "transparent",
-            color: "var(--text-muted, #8888A8)",
-            fontWeight: 600,
-            fontSize: "0.9rem",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <Icon name="ChevronLeft" className="w-4 h-4" />
-          Voltar
-        </button>
-      )}
-
-      {onSaveLater && !isFirstStep && (
-        <button
-          onClick={onSaveLater}
-          title="Salvar rascunho e sair"
-          style={{
-            flex: "0 0 auto",
-            padding: "14px 14px",
-            borderRadius: 14,
-            border: "1.5px solid rgba(255,255,255,0.1)",
-            background: "transparent",
-            color: "var(--text-muted, #8888A8)",
-            fontWeight: 600,
-            fontSize: "0.85rem",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            whiteSpace: "nowrap",
-          }}
-        >
-          <Icon name="Bookmark" className="w-4 h-4" />
-          <span className="save-later-label">Salvar</span>
-        </button>
-      )}
-
-      <button
-        onClick={onNext}
+      <div
         style={{
-          flex: 1,
-          padding: "14px 20px",
-          borderRadius: 14,
-          border: "none",
-          background: "var(--coral, #E94560)",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: "0.95rem",
-          cursor: "pointer",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          transition: "opacity 0.2s",
+          gap: 10,
+          maxWidth: 600,
+          margin: "0 auto",
         }}
       >
-        {nextLabel || (isLastStep ? "Finalizar" : "Próximo")}
-        {!isLastStep && <Icon name="ChevronRight" className="w-4 h-4" />}
-      </button>
-    </div>
+        {!isFirstStep && (
+          <button
+            onClick={onBack}
+            onMouseEnter={() => setHoveredButton("back")}
+            onMouseLeave={() => setHoveredButton(null)}
+            style={{
+              flex: "0 0 auto",
+              padding: "14px 20px",
+              borderRadius: 14,
+              border: "2px solid rgba(255,255,255,0.15)",
+              background: hoveredButton === "back" ? "rgba(255,255,255,0.08)" : "transparent",
+              color: hoveredButton === "back" ? "#fff" : "var(--text-muted, #8888A8)",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              transition: "all 0.2s ease",
+              transform: hoveredButton === "back" ? "scale(1.02)" : "scale(1)",
+            }}
+          >
+            <Icon name="ChevronLeft" className="w-5 h-5" />
+            <span className="back-label">Voltar</span>
+          </button>
+        )}
 
-    {extraContent && (
-      <div style={{ maxWidth: 600, margin: "8px auto 0" }}>{extraContent}</div>
-    )}
-  </div>
-);
+        {onSaveLater && !isFirstStep && (
+          <button
+            onClick={onSaveLater}
+            onMouseEnter={() => setHoveredButton("save")}
+            onMouseLeave={() => setHoveredButton(null)}
+            title="Salvar rascunho e sair"
+            style={{
+              flex: "0 0 auto",
+              padding: "14px 18px",
+              borderRadius: 14,
+              border: "2px solid rgba(249,168,37,0.4)",
+              background: hoveredButton === "save" ? "rgba(249,168,37,0.15)" : "rgba(249,168,37,0.05)",
+              color: hoveredButton === "save" ? "#f9a825" : "rgba(249,168,37,0.7)",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              whiteSpace: "nowrap",
+              transition: "all 0.2s ease",
+              transform: hoveredButton === "save" ? "scale(1.02)" : "scale(1)",
+            }}
+          >
+            <Icon name="Bookmark" className="w-4 h-4" />
+            <span className="save-later-label">Salvar</span>
+          </button>
+        )}
+
+        <button
+          onClick={onNext}
+          onMouseEnter={() => setHoveredButton("next")}
+          onMouseLeave={() => setHoveredButton(null)}
+          style={{
+            flex: 1,
+            padding: "16px 24px",
+            borderRadius: 14,
+            border: "none",
+            background: hoveredButton === "next" 
+              ? "linear-gradient(135deg, #ff6b7a 0%, #E94560 100%)" 
+              : "var(--coral, #E94560)",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: "1rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            transition: "all 0.25s ease",
+            transform: hoveredButton === "next" ? "scale(1.02)" : "scale(1)",
+            boxShadow: hoveredButton === "next" 
+              ? "0 8px 30px rgba(233,69,96,0.4)" 
+              : "0 4px 15px rgba(233,69,96,0.25)",
+          }}
+        >
+          {nextLabel || (isLastStep ? "✓ Finalizar" : "Avançar")}
+          {!isLastStep && <Icon name="ChevronRight" className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {extraContent && (
+        <div style={{ maxWidth: 600, margin: "10px auto 0" }}>{extraContent}</div>
+      )}
+    </div>
+  );
+};

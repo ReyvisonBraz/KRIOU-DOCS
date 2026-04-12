@@ -19,7 +19,7 @@
  * - Formulário organizado por seções
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import { useConfirm } from "../hooks/useConfirm";
@@ -84,6 +84,33 @@ const LegalEditorPage = () => {
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
 
+  // ─── Refs para scroll ───
+  const bottomNavRef = useRef(null);
+  const contentRef = useRef(null);
+
+  // ─── Scroll para botão de navegação ───
+  const scrollToNavigation = useCallback(() => {
+    setTimeout(() => {
+      if (bottomNavRef.current) {
+        bottomNavRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 150);
+  }, []);
+
+  // ─── Scroll para o topo do conteúdo ───
+  const scrollToTop = useCallback(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  // ─── Effect para scroll quando muda de etapa ───
+  useEffect(() => {
+    scrollToTop();
+    scrollToNavigation();
+  }, [currentStep, scrollToTop, scrollToNavigation]);
+
   // ─── Confirm dialog ───
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
@@ -109,13 +136,14 @@ const LegalEditorPage = () => {
     setStepErrors({});
     setShowErrors(false);
     setCurrentStep(1);
+    scrollToNavigation();
   };
 
   const handleSelectVariant = (variantId) => {
     setSelectedVariant(variantId);
-    // Manter dados das seções compartilhadas, limpar dados das seções específicas
     setStepErrors({});
     setShowErrors(false);
+    scrollToNavigation();
   };
 
   const handleUpdateField = useCallback((key, value) => {
@@ -809,27 +837,29 @@ const LegalEditorPage = () => {
       </AppNavbar>
 
       {/* ─── Main Content ─── */}
-      <div className="page-container" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
+      <div ref={contentRef} className="page-container" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
         {renderStepContent()}
       </div>
 
       {/* ─── Bottom Navigation ─── */}
-      <BottomNavigation
-        onBack={handlePrevious}
-        onNext={isLastStep ? () => navigate("checkout") : handleNext}
-        isFirstStep={isFirstStep}
-        isLastStep={isLastStep}
-        nextLabel={nextLabel}
-        onSaveLater={handleSaveLater}
-        extraContent={
-          filledCount !== null && (
-            <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--teal)", fontWeight: 700 }}>{filledCount}</span>
-              campos preenchidos
-            </div>
-          )
-        }
-      />
+      <div ref={bottomNavRef}>
+        <BottomNavigation
+          onBack={handlePrevious}
+          onNext={isLastStep ? () => navigate("checkout") : handleNext}
+          isFirstStep={isFirstStep}
+          isLastStep={isLastStep}
+          nextLabel={nextLabel}
+          onSaveLater={handleSaveLater}
+          extraContent={
+            filledCount !== null && (
+              <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: "var(--teal)", fontWeight: 700 }}>{filledCount}</span>
+                campos preenchidos
+              </div>
+            )
+          }
+        />
+      </div>
 
       {/* ─── Confirm Dialog (Home / Sair) ─── */}
       <ConfirmDialog

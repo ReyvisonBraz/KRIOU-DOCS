@@ -14,18 +14,12 @@ import { useConfirm } from "../hooks/useConfirm";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 
-/**
- * DashboardPage - User's document management hub
- */
 const DashboardPage = () => {
-  const { navigate, formData, setFormData, setCurrentStep, setLegalStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading } = useApp();
+  const { navigate, formData, setLegalStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading, setCurrentStep } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
-  /**
-   * Handle create new legal document
-   */
   const handleCreateLegalDocument = () => {
     setLegalStep(0);
     navigate("legalEditor");
@@ -33,9 +27,6 @@ const DashboardPage = () => {
 
   const allDocs = userDocuments || [];
 
-  /**
-   * Tab options
-   */
   const tabs = [
     { id: "todos", label: "Todos", icon: "FileText" },
     { id: "curriculo", label: "Currículos", icon: "User" },
@@ -44,9 +35,6 @@ const DashboardPage = () => {
     { id: "procuracao", label: "Procuração", icon: "Shield" },
   ];
 
-  /**
-   * Get filtered docs by tab and search
-   */
   const getFilteredDocs = () => {
     let docs = activeTab === "todos" ? allDocs : allDocs.filter((doc) => doc.type === activeTab);
     if (searchQuery.trim()) {
@@ -56,9 +44,6 @@ const DashboardPage = () => {
     return docs;
   };
 
-  /**
-   * Handle document edit — redireciona para o editor correto
-   */
   const handleEditDocument = (doc) => {
     if (doc.type === "curriculo") {
       setCurrentStep(0);
@@ -69,9 +54,6 @@ const DashboardPage = () => {
     }
   };
 
-  /**
-   * Handle document delete with confirmation
-   */
   const handleDeleteDocument = async (doc) => {
     const confirmed = await requestConfirm({
       title: "Excluir documento",
@@ -87,106 +69,95 @@ const DashboardPage = () => {
     showToast.success("Documento excluído.");
   };
 
-  /**
-   * Get user's first name
-   */
   const getUserName = () => {
     const name = userData?.nome || formData.nome;
     return name ? name.split(" ")[0] : "Usuário";
   };
 
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div className="min-h-screen bg-navy flex flex-col relative">
+      {/* Background elements */}
+      <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-blue/10 blur-[100px] rounded-full pointer-events-none" />
+
       {/* Navbar */}
       <AppNavbar
-        title={<span className="font-display" style={{ fontSize: 22, fontWeight: 900, cursor: "pointer" }} onClick={() => navigate("landing")}><span style={{ color: "var(--coral)" }}>Kriou</span> Docs</span>}
+        title={<span className="font-display text-2xl font-black cursor-pointer tracking-tight" onClick={() => navigate("landing")}><span className="text-coral">Kriou</span> <span className="text-white">Docs</span></span>}
         rightAction={
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => navigate("profile")} aria-label="Perfil" style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 4 }}>
-              <Icon name="User" className="w-4 h-4" />
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate("profile")} aria-label="Perfil" className="p-2 bg-surface-2 rounded-full border border-border text-text-muted hover:text-white hover:border-coral transition-colors">
+              <Icon name="User" className="w-5 h-5" />
             </button>
-            <button onClick={logout} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 13, padding: 4 }}>
-              <Icon name="LogOut" className="w-4 h-4" /> Sair
+            <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-text-muted hover:text-coral transition-colors bg-transparent border-none cursor-pointer">
+              <Icon name="LogOut" className="w-4 h-4" /> <span className="hidden sm:inline">Sair</span>
             </button>
           </div>
         }
       />
 
       {/* Main Content */}
-      <div className="dashboard-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 z-10 relative">
         {/* Welcome */}
-        <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
-          <h1 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
-            Olá, {getUserName()} 👋
+        <div className="animate-fadeUp mb-8 md:mb-12">
+          <h1 className="font-display text-3xl md:text-4xl font-black mb-2 text-white">
+            Olá, <span className="text-coral">{getUserName()}</span> 👋
           </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Gerencie seus documentos ou crie um novo.</p>
+          <p className="text-text-muted text-base md:text-lg">Gerencie seus documentos com facilidade ou crie algo novo agora mesmo.</p>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="animate-fadeUp delay-1 cta-group" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
-          <Button variant="primary" icon="Plus" onClick={() => navigate("templates")}>
-            + Novo Currículo
-          </Button>
-          <Button variant="secondary" icon="FileText" onClick={handleCreateLegalDocument}>
-            + Novo Documento
-          </Button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="animate-fadeUp delay-1" style={{ marginBottom: 20 }}>
-          <div style={{ position: "relative", maxWidth: 400 }}>
-            <Icon name="Search" className="w-4 h-4" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+        {/* Action Panel: Search and Buttons */}
+        <div className="animate-fadeUp delay-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 bg-surface/40 p-4 md:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-96 flex-shrink-0">
+            <Icon name="Search" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               type="text"
-              placeholder="Buscar documentos..."
+              placeholder="Buscar por nome ou modelo..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "12px 12px 12px 42px",
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                fontSize: 14,
-                color: "var(--text)",
-                outline: "none",
-              }}
+              className="w-full bg-surface-2 border border-border rounded-xl pl-12 pr-4 py-3.5 text-[15px] outline-none text-white placeholder-text-muted/70 transition-all focus:border-coral focus:ring-2 focus:ring-coral/20 shadow-inner"
             />
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-3 w-full md:w-auto">
+            <Button variant="primary" icon="Plus" onClick={() => navigate("templates")} className="flex-1 md:flex-none justify-center px-5 py-3 shadow-coral/20 shadow-lg">
+              Novo Currículo
+            </Button>
+            <Button variant="secondary" icon="FileText" onClick={handleCreateLegalDocument} className="flex-1 md:flex-none justify-center px-5 py-3 border-white/10 bg-surface/80 hover:bg-surface-3">
+              Novo Documento
+            </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="animate-fadeUp delay-2" style={{ display: "flex", gap: 6, marginBottom: 24, overflowX: "auto", paddingBottom: 8 }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                background: activeTab === tab.id ? "var(--coral)" : "transparent",
-                color: activeTab === tab.id ? "white" : "var(--text-muted)",
-                border: activeTab === tab.id ? "none" : "1px solid var(--border)",
-                borderRadius: 10,
-                padding: "10px 18px",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                transition: "all .2s",
-              }}
-            >
-              {tab.label}
-              <span style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.2)" : "var(--surface-2)", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>
-                {tab.id === "todos" ? allDocs.length : allDocs.filter(d => d.type === tab.id).length}
-              </span>
-            </button>
-          ))}
+        {/* Tabs - Scrollable */}
+        <div className="animate-fadeUp delay-2 mb-8 relative">
+          <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory">
+            {tabs.map((tab) => {
+              const count = tab.id === "todos" ? allDocs.length : allDocs.filter(d => d.type === tab.id).length;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`snap-start whitespace-nowrap flex py-2.5 px-4 items-center gap-2.5 rounded-xl text-sm font-bold transition-all border
+                    ${isActive ? 'bg-coral text-white border-coral shadow-lg shadow-coral/20 hover:bg-coral-light select-none' : 'bg-surface border-border text-text-muted hover:border-coral/50 hover:text-white'}`}
+                >
+                  <Icon name={tab.icon} className="w-4 h-4 opacity-80" />
+                  {tab.label}
+                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-black ${isActive ? 'bg-white/20 text-white' : 'bg-surface-3 text-text'}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Fade edge effect for tabs overflow on mobile */}
+          <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-navy to-transparent pointer-events-none md:hidden" />
         </div>
 
         {/* Documents Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
             : getFilteredDocs().map((doc, index) => (
@@ -204,14 +175,14 @@ const DashboardPage = () => {
         {/* Empty State */}
         {!isLoading && getFilteredDocs().length === 0 && (
           <EmptyState
-            icon="FileText"
-            title={searchQuery.trim() ? "Nenhum resultado encontrado" : "Você ainda não tem documentos"}
-            description={searchQuery.trim() ? "Tente buscar por outro termo." : "Crie seu primeiro currículo ou documento jurídico."}
+            icon="Search"
+            title={searchQuery.trim() ? "Nenhum documento encontrado" : "Nenhum documento no momento"}
+            description={searchQuery.trim() ? "Tente buscar utilizando outros termos ou filtros diferentes." : "Que tal começar agora? Crie seu primeiro currículo ou contrato jurídico."}
             action={
               !searchQuery.trim() && (
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Button variant="primary" onClick={() => navigate("templates")}>+ Novo Currículo</Button>
-                  <Button variant="secondary" onClick={handleCreateLegalDocument}>+ Novo Documento</Button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                  <Button variant="primary" onClick={() => navigate("templates")} className="justify-center px-6">Criar Currículo</Button>
+                  <Button variant="secondary" onClick={handleCreateLegalDocument} className="justify-center px-6">Criar Documento Jurídico</Button>
                 </div>
               )
             }
@@ -219,12 +190,22 @@ const DashboardPage = () => {
         )}
       </div>
 
-      {/* ConfirmDialog para exclusão de documentos */}
       <ConfirmDialog
         {...confirmState}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+      
+      {/* Hide scrollbar injected style for tabs specifically */}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };

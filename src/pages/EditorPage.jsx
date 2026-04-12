@@ -12,140 +12,135 @@ import { Icon } from "../components/Icons";
 import { Card, Button, Input, Textarea, Select, Badge, Tag, FieldHint, QuickSuggestion, ExperienceTypeSelector, FieldWithIcon, VisualExample, QuickFillCard, AppNavbar, AppStepper, BottomNavigation, ErrorMessage, SaveIndicator } from "../components/UI";
 import { STEPS, STEP_DESCRIPTIONS, SKILLS_OPTIONS, LANGUAGE_LEVELS, EDUCATION_STATUS, FIELD_HINTS } from "../data/constants";
 import { validateStep, getStepStatus } from "../utils/validation";
-import { LABEL_STYLE, ERROR_STYLE } from "../constants/styles";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 
-// ─── Sub-componentes memoizados ───────────────────────────────────────────────
-// Evitam re-render dos itens não editados quando qualquer campo do array muda.
+// Labels e Errors formatados via Tailwind classes
+const labelClass = "block text-[12px] font-bold text-text-muted mb-1.5 uppercase tracking-wide ml-1";
+const errorClass = "text-coral font-semibold text-xs mt-1.5 ml-1";
+const inputErrorClass = "border-coral ring-2 ring-coral/20";
+const stepContainerClass = "animate-fadeIn flex flex-col gap-6";
 
-const ExperienciaItem = memo(({ exp, index, total, onUpdate, onRemove, labelStyle }) => (
-  <div
-    style={{
-      padding: 16,
-      background: "var(--surface-2)",
-      borderRadius: 12,
-      border: "1px solid var(--border)",
-      position: "relative",
-    }}
-  >
-    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--coral)", marginBottom: 12 }}>
-      Experiência {index + 1}
+// ─── Sub-componentes memoizados ───────────────────────────────────────────────
+
+const ExperienciaItem = memo(({ exp, index, total, onUpdate, onRemove }) => (
+  <div className="p-5 md:p-6 bg-surface/50 border border-border rounded-2xl relative shadow-sm group transition-colors hover:border-border/80">
+    <div className="flex items-center justify-between mb-4">
+      <div className="text-sm font-bold text-coral flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg bg-coral/10 flex items-center justify-center">
+          {index + 1}
+        </div>
+        Experiência
+      </div>
       {total > 1 && (
         <button
           onClick={() => onRemove(index)}
-          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 12, marginLeft: 12 }}
+          className="text-xs font-bold text-text-muted hover:text-coral transition-colors px-2 py-1 uppercase tracking-wide"
         >
           Remover
         </button>
       )}
     </div>
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label style={labelStyle}>Empresa</label>
+        <label className={labelClass}>Empresa</label>
         <input className="input-field" placeholder={FIELD_HINTS.experiencia_empresa.placeholder} value={exp.empresa} onChange={(e) => onUpdate(index, "empresa", e.target.value)} />
       </div>
       <div>
-        <label style={labelStyle}>Cargo</label>
+        <label className={labelClass}>Cargo</label>
         <input className="input-field" placeholder={FIELD_HINTS.experiencia_cargo.placeholder} value={exp.cargo} onChange={(e) => onUpdate(index, "cargo", e.target.value)} />
       </div>
-      <div style={{ gridColumn: "1 / -1" }}>
-        <label style={labelStyle}>Período</label>
+      <div className="md:col-span-2">
+        <label className={labelClass}>Período</label>
         <input className="input-field" placeholder={FIELD_HINTS.experiencia_periodo.placeholder} value={exp.periodo} onChange={(e) => onUpdate(index, "periodo", e.target.value)} />
       </div>
-      <div style={{ gridColumn: "1 / -1" }}>
-        <label style={labelStyle}>Descrição</label>
-        <textarea className="input-field" rows={3} placeholder={FIELD_HINTS.experiencia_descricao.placeholder} value={exp.descricao} onChange={(e) => onUpdate(index, "descricao", e.target.value)} style={{ resize: "vertical" }} />
+      <div className="md:col-span-2">
+        <label className={labelClass}>Descrição das Atividades</label>
+        <textarea className="input-field resize-y min-h-[100px]" rows={3} placeholder={FIELD_HINTS.experiencia_descricao.placeholder} value={exp.descricao} onChange={(e) => onUpdate(index, "descricao", e.target.value)} />
       </div>
     </div>
   </div>
 ));
 
-const FormacaoItem = memo(({ form, index, total, onUpdate, onRemove, labelStyle }) => (
-  <div style={{ padding: 16, background: "var(--surface-2)", borderRadius: 12, border: "1px solid var(--border)" }}>
-    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--teal)", marginBottom: 12 }}>
-      Formação {index + 1}
+const FormacaoItem = memo(({ form, index, total, onUpdate, onRemove }) => (
+  <div className="p-5 md:p-6 bg-surface/50 border border-border rounded-2xl relative shadow-sm transition-colors hover:border-border/80">
+    <div className="flex items-center justify-between mb-4">
+      <div className="text-sm font-bold text-teal flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg bg-teal/10 flex items-center justify-center">
+          {index + 1}
+        </div>
+        Formação
+      </div>
       {total > 1 && (
-        <button onClick={() => onRemove(index)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 12, marginLeft: 12 }}>
+        <button onClick={() => onRemove(index)} className="text-xs font-bold text-text-muted hover:text-coral transition-colors px-2 py-1 uppercase tracking-wide">
           Remover
         </button>
       )}
     </div>
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-      <div>
-        <label style={labelStyle}>Instituição</label>
-        <input className="input-field" placeholder="Universidade / Escola" value={form.instituicao} onChange={(e) => onUpdate(index, "instituicao", e.target.value)} />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="md:col-span-2">
+        <label className={labelClass}>Instituição de Ensino</label>
+        <input className="input-field" placeholder="Ex: Universidade de São Paulo" value={form.instituicao} onChange={(e) => onUpdate(index, "instituicao", e.target.value)} />
       </div>
       <div>
-        <label style={labelStyle}>Curso</label>
-        <input className="input-field" placeholder="Nome do curso" value={form.curso} onChange={(e) => onUpdate(index, "curso", e.target.value)} />
+        <label className={labelClass}>Curso</label>
+        <input className="input-field" placeholder="Ex: Engenharia de Software" value={form.curso} onChange={(e) => onUpdate(index, "curso", e.target.value)} />
       </div>
       <div>
-        <label style={labelStyle}>Período</label>
-        <input className="input-field" placeholder="2018 - 2022" value={form.periodo} onChange={(e) => onUpdate(index, "periodo", e.target.value)} />
+        <label className={labelClass}>Status</label>
+        <div className="relative">
+          <select className="input-field appearance-none" value={form.status} onChange={(e) => onUpdate(index, "status", e.target.value)}>
+            {EDUCATION_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <Icon name="ChevronDown" className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+        </div>
       </div>
-      <div>
-        <label style={labelStyle}>Status</label>
-        <select className="input-field" value={form.status} onChange={(e) => onUpdate(index, "status", e.target.value)}>
-          {EDUCATION_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+      <div className="md:col-span-2">
+        <label className={labelClass}>Período Mês/Ano</label>
+        <input className="input-field" placeholder="Ex: 2018 - 2022" value={form.periodo} onChange={(e) => onUpdate(index, "periodo", e.target.value)} />
       </div>
     </div>
   </div>
 ));
 
-const IdiomaItem = memo(({ idioma, index, total, onUpdate, onRemove, labelStyle }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: 16, background: "var(--surface-2)", borderRadius: 12, border: "1px solid var(--border)" }}>
+const IdiomaItem = memo(({ idioma, index, total, onUpdate, onRemove }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 md:p-6 bg-surface/50 border border-border rounded-2xl relative shadow-sm">
     <div>
-      <label style={labelStyle}>Idioma</label>
+      <label className={labelClass}>Idioma</label>
       <input className="input-field" placeholder="Ex: Inglês" value={idioma.idioma} onChange={(e) => onUpdate(index, "idioma", e.target.value)} />
     </div>
     <div>
-      <label style={labelStyle}>Nível</label>
-      <select className="input-field" value={idioma.nivel} onChange={(e) => onUpdate(index, "nivel", e.target.value)}>
-        {LANGUAGE_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
-      </select>
-      {total > 1 && (
-        <button onClick={() => onRemove(index)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, marginTop: 8 }}>
-          Remover
-        </button>
-      )}
+      <div className="flex items-center justify-between">
+        <label className={labelClass}>Nível</label>
+        {total > 1 && (
+          <button onClick={() => onRemove(index)} className="text-[11px] uppercase tracking-wide font-bold text-text-muted hover:text-coral transition-colors">
+            Remover
+          </button>
+        )}
+      </div>
+      <div className="relative mt-1">
+        <select className="input-field appearance-none" value={idioma.nivel} onChange={(e) => onUpdate(index, "nivel", e.target.value)}>
+          {LANGUAGE_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
+        </select>
+        <Icon name="ChevronDown" className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+      </div>
     </div>
   </div>
 ));
 
-/**
- * EditorPage - Resume creation wizard with 7 steps
- */
 const EditorPage = () => {
-  const {
-    navigate,
-    selectedTemplate,
-    currentStep,
-    setCurrentStep,
-    formData,
-    updateForm,
-    saveStatus,
-    lastSaved,
-  } = useApp();
+  const { navigate, selectedTemplate, currentStep, setCurrentStep, formData, updateForm, saveStatus, lastSaved } = useApp();
 
-  // ─── Estado de Validação ───
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
 
-  // ─── Aviso de alterações não salvas ao fechar aba ───
   const isDirty = saveStatus === "saving" || saveStatus === "idle";
   useUnsavedChanges(isDirty);
 
-  /**
-   * Current step definition
-   */
   const currentStepData = STEPS[currentStep];
 
-  /**
-   * Validate current step and return status
-   */
-  const getCurrentStepValidation = () => {
-    return getStepStatus(currentStep, formData);
+  const getFieldError = (field) => {
+    if (!showErrors || !stepErrors[field]) return null;
+    return stepErrors[field];
   };
 
   const toggleSkill = useCallback((skill) => {
@@ -203,71 +198,46 @@ const EditorPage = () => {
     }
   }, [formData.idiomas, updateForm]);
 
-  // labelStyle e errorStyle centralizados em constants/styles.js
-  const labelStyle = LABEL_STYLE;
-  const errorStyle = ERROR_STYLE;
-
-  /**
-   * Get error message for a field
-   */
-  const getFieldError = (field) => {
-    if (!showErrors || !stepErrors[field]) return null;
-    return stepErrors[field];
-  };
-
-  /**
-   * Step objective suggestions
-   */
-  const objectiveSuggestions = ["Desenvolvedor", "Designer", "Analista", "Gerente"];
-
-  /**
-   * Render step content based on current step index
-   * @returns {JSX.Element} Step content
-   */
   const renderStepContent = () => {
     switch (currentStep) {
-      // ─── Etapa 0: Dados Pessoais ───
       case 0:
         return (
-          <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div style={{ gridColumn: "1 / -1" }}>
+          <div className={stepContainerClass}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="md:col-span-2">
                 <FieldWithIcon icon="user" label="Nome Completo *" tip="Como aparece nos seus documentos">
                   <input
-                    className="input-field"
+                    className={`input-field ${getFieldError("nome") ? inputErrorClass : ""}`}
                     placeholder={FIELD_HINTS.nome.placeholder}
                     value={formData.nome}
                     onChange={(e) => updateForm("nome", e.target.value)}
-                    style={getFieldError("nome") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
                   />
                 </FieldWithIcon>
-                {getFieldError("nome") && <div style={errorStyle}>{getFieldError("nome")}</div>}
+                {getFieldError("nome") && <div className={errorClass}>{getFieldError("nome")}</div>}
                 <VisualExample type="nome" />
               </div>
               <div>
-                <FieldWithIcon icon="email" label="E-mail *" tip="Email que você usa com frequência">
+                <FieldWithIcon icon="email" label="E-mail *" tip="Email que você checa todo dia">
                   <input
-                    className="input-field"
+                    className={`input-field ${getFieldError("email") ? inputErrorClass : ""}`}
                     type="email"
                     placeholder={FIELD_HINTS.email.placeholder}
                     value={formData.email}
                     onChange={(e) => updateForm("email", e.target.value)}
-                    style={getFieldError("email") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
                   />
                 </FieldWithIcon>
-                {getFieldError("email") && <div style={errorStyle}>{getFieldError("email")}</div>}
+                {getFieldError("email") && <div className={errorClass}>{getFieldError("email")}</div>}
               </div>
               <div>
-                <FieldWithIcon icon="phone" label="Telefone *" tip="Com DDD para contato">
+                <FieldWithIcon icon="phone" label="Telefone / Whats *" tip="Com DDD para contato direto">
                   <input
-                    className="input-field"
+                    className={`input-field ${getFieldError("telefone") ? inputErrorClass : ""}`}
                     placeholder={FIELD_HINTS.telefone.placeholder}
                     value={formData.telefone}
                     onChange={(e) => updateForm("telefone", e.target.value)}
-                    style={getFieldError("telefone") ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
                   />
                 </FieldWithIcon>
-                {getFieldError("telefone") && <div style={errorStyle}>{getFieldError("telefone")}</div>}
+                {getFieldError("telefone") && <div className={errorClass}>{getFieldError("telefone")}</div>}
               </div>
               <div>
                 <FieldWithIcon icon="location" label="Cidade / Estado">
@@ -280,7 +250,7 @@ const EditorPage = () => {
                 </FieldWithIcon>
               </div>
               <div>
-                <FieldWithIcon icon="linkedin" label="LinkedIn (opicional)" tip="Se não tem, pode pular">
+                <FieldWithIcon icon="linkedin" label="LinkedIn (opcional)" tip="Se não tem, deixe vazio">
                   <input
                     className="input-field"
                     placeholder={FIELD_HINTS.linkedin.placeholder}
@@ -293,157 +263,125 @@ const EditorPage = () => {
           </div>
         );
 
-      // ─── Etapa 1: Objetivo ───
       case 1:
         return (
-          <div className="animate-fadeIn">
-            <FieldWithIcon icon="target" label="Objetivo Profissional *" tip="O que você quer fazer na sua carreira?">
-              <textarea
-                className="input-field"
-                rows={4}
-                placeholder={FIELD_HINTS.objetivo.placeholder}
-                value={formData.objetivo}
-                onChange={(e) => updateForm("objetivo", e.target.value)}
-                style={getFieldError("objetivo") ? { resize: "vertical", borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : { resize: "vertical" }}
-              />
-            </FieldWithIcon>
-            {getFieldError("objetivo") && <div style={errorStyle}>{getFieldError("objetivo")}</div>}
+          <div className={`${stepContainerClass} gap-8`}>
+            <div>
+              <FieldWithIcon icon="target" label="Objetivo Profissional *" tip="O que você busca na sua carreira atualmente?">
+                <textarea
+                  className={`input-field min-h-[140px] resize-y leading-relaxed ${getFieldError("objetivo") ? inputErrorClass : ""}`}
+                  placeholder={FIELD_HINTS.objetivo.placeholder}
+                  value={formData.objetivo}
+                  onChange={(e) => updateForm("objetivo", e.target.value)}
+                />
+              </FieldWithIcon>
+              {getFieldError("objetivo") && <div className={errorClass}>{getFieldError("objetivo")}</div>}
+            </div>
             
             <QuickFillCard
-              title="🎯 Não sabe o que escribir?"
+              title="🎯 Não sabe direito o que escrever?"
               examples={[
-                { level: "👶 Iniciante", text: "Busco minha primeira oportunidade de trabalho. Sou comunicativo e aprendo rápido." },
-                { level: "📈 Intermediário", text: "Procuro uma posição na área de vendas onde posso desenvolver minhas habilidades de comunicação." },
-                { level: "💼 Avançado", text: "Desenvolvedor Full Stack com 3 años de experiência, buscando posição de liderança técnica em empresa de tecnologia." },
+                { level: "👶 Iniciante", text: "Busco minha primeira oportunidade engajado em aprender rápido e somar na equipe de vendas." },
+                { level: "📈 Intermediário", text: "Profissional de Marketing Pleno buscando aplicar meus conhecimentos analíticos para aumentar resultados de campanhas digitais." },
+                { level: "💼 Avançado", text: "Gestor Comercial Sênior focando em otimizar processos em empresas tech atuantes no mercado nacional." },
               ]}
               onSelect={(text) => updateForm("objetivo", text)}
             />
           </div>
         );
 
-      // ─── Etapa 2: Experiência ───
       case 2:
         return (
-          <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className={stepContainerClass}>
             <FieldHint
               hint={FIELD_HINTS.experiencia_empresa.hint}
               example={FIELD_HINTS.experiencia_empresa.examples?.[0]}
               whereFind={FIELD_HINTS.experiencia_empresa.whatIfNeverWorked}
               skipLabel={FIELD_HINTS.experiencia_empresa.skipLabel}
             />
-            {formData.experiencias.map((exp, index) => (
-              <ExperienciaItem
-                key={index}
-                exp={exp}
-                index={index}
-                total={formData.experiencias.length}
-                onUpdate={updateExperiencia}
-                onRemove={removeExperiencia}
-                labelStyle={labelStyle}
-              />
-            ))}
-            <Button variant="secondary" icon="Plus" onClick={addExperiencia} style={{ border: "2px dashed var(--border)", background: "none" }}>
-              + Adicionar Experiência
+            <div className="flex flex-col gap-4">
+              {formData.experiencias.map((exp, index) => (
+                <ExperienciaItem key={index} exp={exp} index={index} total={formData.experiencias.length} onUpdate={updateExperiencia} onRemove={removeExperiencia} />
+              ))}
+            </div>
+            <Button variant="secondary" icon="Plus" onClick={addExperiencia} className="border-dashed border-2 border-border/70 hover:border-coral bg-transparent hover:bg-coral/5 w-full justify-center mt-2 font-bold py-4">
+              Adicionar Nova Experiência
             </Button>
           </div>
         );
 
-      // ─── Etapa 3: Formação ───
       case 3:
         return (
-          <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {formData.formacoes.map((form, index) => (
-              <FormacaoItem
-                key={index}
-                form={form}
-                index={index}
-                total={formData.formacoes.length}
-                onUpdate={updateFormacao}
-                onRemove={removeFormacao}
-                labelStyle={labelStyle}
-              />
-            ))}
-            <Button variant="secondary" icon="Plus" onClick={addFormacao} style={{ border: "2px dashed var(--border)", background: "none" }}>
-              + Adicionar Formação
-            </Button>
+          <div className={stepContainerClass}>
             <FieldHint
               hint={FIELD_HINTS.formacao_curso.hint}
               example={FIELD_HINTS.formacao_curso.examples?.[0]}
               whereFind={FIELD_HINTS.formacao_curso.whatIfStudying}
             />
+            <div className="flex flex-col gap-4">
+              {formData.formacoes.map((form, index) => (
+                <FormacaoItem key={index} form={form} index={index} total={formData.formacoes.length} onUpdate={updateFormacao} onRemove={removeFormacao} />
+              ))}
+            </div>
+            <Button variant="secondary" icon="Plus" onClick={addFormacao} className="border-dashed border-2 border-border/70 hover:border-teal bg-transparent hover:bg-teal/5 w-full justify-center mt-2 font-bold py-4">
+              Adicionar Nova Formação
+            </Button>
           </div>
         );
 
-      // ─── Etapa 4: Habilidades ───
       case 4:
         return (
-          <div className="animate-fadeIn">
-            <FieldHint
-              hint={FIELD_HINTS.habilidades.hint}
-              whereFind={FIELD_HINTS.habilidades.categories?.basic}
-            />
-            <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 16 }}>
-              Selecione suas habilidades ou adicione novas:
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div className={stepContainerClass}>
+            <FieldHint hint={FIELD_HINTS.habilidades.hint} whereFind={FIELD_HINTS.habilidades.categories?.basic} />
+            <p className="text-sm font-medium text-text-muted">Selecione suas habilidades chave ou ferramentas dominadas:</p>
+            <div className="flex flex-wrap gap-2.5">
               {SKILLS_OPTIONS.map((skill) => {
                 const isActive = formData.habilidades.includes(skill);
                 return (
-                  <Tag key={skill} active={isActive} onClick={() => toggleSkill(skill)}>
-                    {isActive && "✓ "}
-                    {skill}
-                  </Tag>
+                  <button
+                    key={skill}
+                    onClick={() => toggleSkill(skill)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 border cursor-pointer select-none
+                      ${isActive ? 'bg-coral text-white border-coral shadow-md shadow-coral/20' : 'bg-surface border-border text-text-muted hover:border-coral/50'}`}
+                  >
+                    {isActive ? <span className="mr-1">✓</span> : null}{skill}
+                  </button>
                 );
               })}
             </div>
           </div>
         );
 
-      // ─── Etapa 5: Idiomas ───
       case 5:
         return (
-          <div className="animate-fadeIn" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <FieldHint
-              hint={FIELD_HINTS.idiomas.tip}
-              whereFind="Seja honesto ao avaliar seu nível. Empresas podem testar."
-            />
-            {formData.idiomas.map((idioma, index) => (
-              <IdiomaItem
-                key={index}
-                idioma={idioma}
-                index={index}
-                total={formData.idiomas.length}
-                onUpdate={updateIdioma}
-                onRemove={removeIdioma}
-                labelStyle={labelStyle}
-              />
-            ))}
-            <Button variant="secondary" icon="Plus" onClick={addIdioma} style={{ border: "2px dashed var(--border)", background: "none" }}>
-              Adicionar Idioma
+          <div className={stepContainerClass}>
+            <FieldHint hint={FIELD_HINTS.idiomas.tip} whereFind="Seja honesto ao avaliar seu nível. Lembre-se que as empresas podem testar a fluência." />
+            <div className="flex flex-col gap-4">
+              {formData.idiomas.map((idioma, index) => (
+                <IdiomaItem key={index} idioma={idioma} index={index} total={formData.idiomas.length} onUpdate={updateIdioma} onRemove={removeIdioma} />
+              ))}
+            </div>
+            <Button variant="secondary" icon="Plus" onClick={addIdioma} className="border-dashed border-2 border-border/70 hover:border-border bg-transparent hover:bg-surface-3 w-full justify-center mt-2 font-bold py-4">
+              Adicionar Novo Idioma
             </Button>
           </div>
         );
 
-      // ─── Etapa 6: Extras ───
       case 6:
         return (
-          <div className="animate-fadeIn">
-            <FieldHint
-              hint={FIELD_HINTS.extras.hint}
-              example={FIELD_HINTS.extras.examples?.[0]}
-              whereFind={FIELD_HINTS.extras.whatIsRelevant}
-            />
-            <label style={{ ...labelStyle, marginTop: 16, display: "block" }}>Cursos, Certificações e Informações Adicionais</label>
-            <textarea
-              className="input-field"
-              rows={5}
-              placeholder={FIELD_HINTS.extras.placeholder}
-              value={formData.cursos}
-              onChange={(e) => updateForm("cursos", e.target.value)}
-              style={{ resize: "vertical" }}
-            />
+          <div className={stepContainerClass}>
+            <FieldHint hint={FIELD_HINTS.extras.hint} example={FIELD_HINTS.extras.examples?.[0]} whereFind={FIELD_HINTS.extras.whatIsRelevant} />
+            <div className="mt-2">
+              <label className={labelClass}>Cursos Extras, Certificações e Informações Adicionais</label>
+              <textarea
+                className="input-field min-h-[160px] resize-y mt-1.5"
+                placeholder={FIELD_HINTS.extras.placeholder}
+                value={formData.cursos}
+                onChange={(e) => updateForm("cursos", e.target.value)}
+              />
+            </div>
             <QuickSuggestion
-              label="💡 Quer algumas ideias?"
+              label="💡 O que mais devo colocar?"
               suggestions={FIELD_HINTS.extras.examples?.slice(0, 4)}
               onSelect={(text) => updateForm("cursos", formData.cursos ? `${formData.cursos}\n${text}` : text)}
             />
@@ -455,30 +393,17 @@ const EditorPage = () => {
     }
   };
 
-  /**
-   * Check if current step is first
-   */
   const isFirstStep = currentStep === 0;
-
-  /**
-   * Check if current step is last
-   */
   const isLastStep = currentStep === STEPS.length - 1;
 
-  /**
-   * Handle next step navigation with validation
-   */
   const handleNext = () => {
-    // Validar etapa atual antes de avançar
     const validation = validateStep(currentStep, formData);
-    
     if (!validation.valid) {
       setStepErrors(validation.errors);
       setShowErrors(true);
       return;
     }
     
-    // Limpar erros e avançar
     setStepErrors({});
     setShowErrors(false);
     
@@ -489,9 +414,6 @@ const EditorPage = () => {
     }
   };
 
-  /**
-   * Handle previous step navigation
-   */
   const handlePrevious = () => {
     if (!isFirstStep) {
       setCurrentStep(currentStep - 1);
@@ -500,92 +422,65 @@ const EditorPage = () => {
     }
   };
 
-  /**
-   * Voltar ao dashboard (botão Home)
-   */
-  const handleGoHome = () => {
-    navigate("dashboard");
-  };
+  const handleGoHome = () => navigate("dashboard");
 
-  /**
-   * Handle step click navigation (from stepper)
-   * @param {number} step - Step to navigate to
-   */
   const handleStepClick = (step) => {
-    // Apenas permite voltar para etapas concluídas ou etapa atual
     if (step < currentStep) {
       setCurrentStep(step);
     }
   };
 
-  // Etapas concluídas para o AppStepper
-  const completedSteps = new Set(
-    STEPS.map((_, i) => i).filter((i) => i < currentStep)
-  );
+  const completedSteps = new Set(STEPS.map((_, i) => i).filter((i) => i < currentStep));
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* ─── Top Navigation Bar (AppNavbar reutilizável) ─── */}
+    <div className="min-h-screen flex flex-col bg-navy">
       <AppNavbar
-        title={`Currículo — ${selectedTemplate?.name || "Modelo"}`}
+        title={`Currículo — ${selectedTemplate?.name || "Padrão"}`}
         leftAction={
           <button
             onClick={handlePrevious}
-            aria-label={isFirstStep ? "Voltar ao dashboard" : "Etapa anterior"}
-            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+            className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors bg-transparent border-none cursor-pointer"
           >
             <Icon name="ChevronLeft" className="w-5 h-5" />
-            <span style={{ fontSize: 13 }}>{isFirstStep ? "Dashboard" : "Voltar"}</span>
+            <span className="text-[13px] font-semibold tracking-wide hidden sm:inline">{isFirstStep ? "Dashboard" : "Voltar"}</span>
           </button>
         }
         rightAction={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              onClick={handleGoHome}
-              aria-label="Voltar ao dashboard"
-              title="Voltar ao dashboard"
-              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
-            >
+          <div className="flex items-center gap-3 md:gap-4">
+            <button onClick={handleGoHome} className="p-2 text-text-muted hover:text-white transition-colors rounded-full hover:bg-surface-2 hidden md:block">
               <Icon name="Home" className="w-5 h-5" />
             </button>
             <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
-            <Button variant="primary" size="small" icon="Eye" onClick={() => navigate("preview")}>
-              Preview
+            <Button variant="primary" size="small" icon="Eye" onClick={() => navigate("preview")} className="shadow-lg shadow-coral/20">
+              <span className="hidden sm:inline">Preview</span>
             </Button>
           </div>
         }
       >
-        {/* Stepper dentro da navbar */}
-        <AppStepper
-          steps={STEPS}
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-          completedSteps={completedSteps}
-        />
+        <div className="hidden md:block">
+          <AppStepper steps={STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
+        </div>
       </AppNavbar>
 
-      {/* ─── Main Content Area ─── */}
-      <div className="page-container" style={{ flex: 1, maxWidth: 860, margin: "0 auto", padding: "24px 24px 100px", width: "100%" }}>
+      {/* Mobile Stepper injection if needed, omit to keep minimalistic top bar */}
 
-        {/* ─── Step Title Section ─── */}
-        <div className="animate-slideRight" key={currentStep} style={{ marginBottom: 28 }}>
-          <h2 className="font-display" style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
+      <div className="flex-1 w-full max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-[100px]">
+        <div className="animate-slideRight mb-8 md:mb-10 text-center md:text-left">
+          <h2 className="font-display text-2xl md:text-3xl font-black mb-2 text-white">
             {currentStepData.label}
           </h2>
-          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>{STEP_DESCRIPTIONS[currentStep]}</p>
+          <p className="text-text-muted text-[15px]">{STEP_DESCRIPTIONS[currentStep]}</p>
         </div>
 
-        {/* ─── Step Content ─── */}
         {renderStepContent()}
       </div>
 
-      {/* ─── Bottom Navigation (BottomNavigation reutilizável) ─── */}
       <BottomNavigation
         onBack={handlePrevious}
         onNext={isLastStep ? () => navigate("preview") : handleNext}
         isFirstStep={isFirstStep}
         isLastStep={isLastStep}
-        nextLabel={isLastStep ? "✓ Visualizar" : undefined}
+        nextLabel={isLastStep ? "✓ Visualizar Mágica" : undefined}
       />
     </div>
   );

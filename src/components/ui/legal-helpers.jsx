@@ -150,10 +150,58 @@ export const SectionHeader = ({ title, subtitle, icon, number }) => {
  */
 export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
   const [open, setOpen] = React.useState(false);
+  const buttonRef = React.useRef(null);
+  const tooltipRef = React.useRef(null);
+
+  // ─── Verifica se o tooltip está fora da tela e centraliza ───
+  const getTooltipStyle = () => {
+    if (!buttonRef.current) return { right: 0 };
+
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const tooltipWidth = 320;
+    const windowWidth = window.innerWidth;
+
+    // Se o botão estiver muito à direita, centraliza na tela
+    if (buttonRect.right + tooltipWidth > windowWidth - 20) {
+      const centerOffset = (windowWidth - tooltipWidth) / 2;
+      return {
+        left: Math.max(10, centerOffset),
+        right: "auto",
+      };
+    }
+
+    return { right: 0 };
+  };
+
+  // ─── Fecha ao clicar fora ───
+  const handleClickOutside = (e) => {
+    if (tooltipRef.current && !tooltipRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
+      setOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // Scroll para o tooltip se estiver fora da tela
+      setTimeout(() => {
+        if (tooltipRef.current) {
+          const tooltipRect = tooltipRef.current.getBoundingClientRect();
+          if (tooltipRect.top < 0 || tooltipRect.bottom > window.innerHeight) {
+            tooltipRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      }, 50);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  const tooltipPosition = getTooltipStyle();
 
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
       <button
+        ref={buttonRef}
         onClick={() => setOpen(!open)}
         title="Clique para ver ajuda sobre este campo"
         style={{
@@ -204,20 +252,23 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
               zIndex: 90,
             }}
           />
-          <div style={{
-            position: "absolute",
-            top: "100%",
-            right: 0,
-            marginTop: 8,
-            width: 320,
-            maxWidth: "calc(100vw - 48px)",
-            background: "var(--surface)",
-            border: "2px solid var(--teal)",
-            borderRadius: 14,
-            padding: 18,
-            zIndex: 100,
-            boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
-          }}>
+          <div
+            ref={tooltipRef}
+            style={{
+              position: "absolute",
+              top: "100%",
+              right: 0,
+              marginTop: 8,
+              width: 320,
+              maxWidth: "calc(100vw - 48px)",
+              background: "var(--surface)",
+              border: "2px solid var(--teal)",
+              borderRadius: 14,
+              padding: 18,
+              zIndex: 100,
+              boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
+              ...tooltipPosition,
+            }}>
             <div style={{
               display: "flex",
               alignItems: "center",

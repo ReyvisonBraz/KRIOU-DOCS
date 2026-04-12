@@ -9,15 +9,12 @@
 import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button } from "../components/UI";
+import { Button } from "../components/UI";
 import { formatCpf, formatPhone } from "../utils/formatting";
 import { validateCpf } from "../utils/validation";
 import { LABEL_STYLE, ERROR_STYLE } from "../constants/styles";
 import { checkRateLimit, resetRateLimit, formatRetryTime } from "../utils/rateLimiter";
 
-/**
- * LoginPage - Clean authentication UI
- */
 const LoginPage = () => {
   const { navigate, loginStep, setLoginStep, phone, setPhone, otp, setOtp, login } = useApp();
 
@@ -27,14 +24,10 @@ const LoginPage = () => {
   const [sobrenome, setSobrenome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
-  // password uses a ref — never stored in React state to avoid DevTools exposure
   const passwordRef = useRef(null);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  /**
-   * Reset to initial state
-   */
   const handleBack = () => {
     if (loginStep === 1) {
       setLoginStep(0);
@@ -47,9 +40,6 @@ const LoginPage = () => {
     }
   };
 
-  /**
-   * Handle OTP change
-   */
   const handleOtpChange = (index, value) => {
     if (value.length > 1) return;
     const next = [...otp];
@@ -60,9 +50,6 @@ const LoginPage = () => {
     }
   };
 
-  /**
-   * Validate create account
-   */
   const validateCreate = () => {
     const newErrors = {};
     if (!nome.trim()) newErrors.nome = "Preencha seu nome";
@@ -73,9 +60,6 @@ const LoginPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Validate email login
-   */
   const validateEmailLogin = () => {
     const pwd = passwordRef.current?.value || "";
     const newErrors = {};
@@ -87,9 +71,6 @@ const LoginPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Validate CPF login
-   */
   const validateCpfLogin = () => {
     const pwd = passwordRef.current?.value || "";
     const newErrors = {};
@@ -100,18 +81,12 @@ const LoginPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Continue create account
-   */
   const handleContinueCreate = () => {
     if (validateCreate()) {
       setLoginStep(1);
     }
   };
 
-  /**
-   * Continue WhatsApp login
-   */
   const handleContinueWhatsApp = () => {
     if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
       setErrors({ phone: "Digite um WhatsApp válido" });
@@ -126,9 +101,6 @@ const LoginPage = () => {
     setLoginStep(1);
   };
 
-  /**
-   * Continue email login
-   */
   const handleContinueEmail = () => {
     const rl = checkRateLimit("password", email);
     if (!rl.allowed) {
@@ -142,9 +114,6 @@ const LoginPage = () => {
     }
   };
 
-  /**
-   * Continue CPF login
-   */
   const handleContinueCpf = () => {
     const identifier = cpf.replace(/\D/g, "");
     const rl = checkRateLimit("password", identifier);
@@ -159,9 +128,6 @@ const LoginPage = () => {
     }
   };
 
-  /**
-   * Verify OTP
-   */
   const handleVerifyOtp = () => {
     if (otp.every((digit) => digit !== "")) {
       const rl = checkRateLimit("otp", phone.replace(/\D/g, ""));
@@ -178,103 +144,78 @@ const LoginPage = () => {
     }
   };
 
-  // labelStyle e errorStyle importados de constants/styles.js
-  const labelStyle = LABEL_STYLE;
-  const errorStyle = ERROR_STYLE;
+  // Convert legacy objects to Tailwind classes where feasible, mapping to globals
+  const errorJSX = (msg) => <div className="text-coral font-semibold text-xs mt-1.5 ml-1">{msg}</div>;
+  const labelClass = "block text-text-muted text-xs font-bold uppercase tracking-wide mb-1.5 ml-1";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "var(--navy)" }}>
-      <div style={{ width: "100%", maxWidth: 400 }}>
-        {/* Back to Home - Always visible */}
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-navy relative overflow-hidden">
+      {/* Elementos de fundo dinâmicos */}
+      <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-purple/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-coral/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="w-full max-w-[440px] glass-card p-6 md:p-8 relative z-10 mx-auto">
+        
+        {/* Back to Home - Always visible in Card Header */}
         <button 
           onClick={() => navigate("landing")} 
-          style={{ 
-            background: "none", 
-            border: "none", 
-            color: "var(--text-muted)", 
-            cursor: "pointer", 
-            display: "flex", 
-            alignItems: "center", 
-            gap: 6, 
-            fontSize: 14,
-            marginBottom: 24 
-          }}
+          className="group flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-8"
         >
-          <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar ao início
+          <Icon name="ChevronLeft" className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+          Voltar ao início
         </button>
 
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div className="text-center mb-8">
           <div 
-            className="font-display" 
-            style={{ fontSize: 32, fontWeight: 900, cursor: "pointer" }} 
+            className="font-display text-3xl font-black cursor-pointer hover:opacity-80 transition-opacity" 
             onClick={() => navigate("landing")}
           >
-            <span style={{ color: "var(--coral)" }}>Kriou</span> Docs
+            <span className="text-coral">Kriou</span><span className="text-white ml-0.5">Docs</span>
           </div>
         </div>
 
         {/* STEP 0: Initial - Choose Action */}
         {loginStep === 0 && !authAction && (
           <div className="animate-fadeIn">
-            <h1 style={{ fontSize: 24, fontWeight: 800, textAlign: "center", marginBottom: 8 }}>
+            <h1 className="text-2xl font-black text-center mb-2 font-display text-white tracking-tight">
               O que você quer fazer?
             </h1>
-            <p style={{ color: "var(--text-muted)", textAlign: "center", marginBottom: 32, fontSize: 15 }}>
+            <p className="text-text-muted text-center mb-8 text-[15px]">
               Escolha uma opção para continuar
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="flex flex-col gap-4">
               <button
                 onClick={() => setAuthAction("login")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "20px 24px",
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 16,
-                  cursor: "pointer",
-                  transition: "all .2s",
-                }}
+                className="group flex items-center justify-between p-5 bg-surface-2 border border-border rounded-2xl cursor-pointer transition-all duration-300 hover:border-coral hover:bg-surface-3 hover:shadow-lg hover:shadow-coral/5"
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 14, background: "var(--coral)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon name="LogIn" className="w-6 h-6" style={{ color: "white" }} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-[14px] bg-coral/10 text-coral flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon name="LogIn" className="w-6 h-6" />
                   </div>
-                  <div style={{ textAlign: "left" }}>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: "var(--text)" }}>Entrar</div>
-                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Já tenho conta</div>
+                  <div className="text-left">
+                    <div className="font-bold text-[16px] text-white">Entrar</div>
+                    <div className="text-[13px] text-text-muted">Já tenho conta</div>
                   </div>
                 </div>
-                <Icon name="ChevronRight" className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
+                <Icon name="ChevronRight" className="w-5 h-5 text-text-muted group-hover:text-coral transition-colors" />
               </button>
 
               <button
                 onClick={() => setAuthAction("create")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "20px 24px",
-                  background: "var(--coral)",
-                  border: "none",
-                  borderRadius: 16,
-                  cursor: "pointer",
-                  transition: "all .2s",
-                }}
+                className="group flex items-center justify-between p-5 bg-gradient-to-r from-coral to-coral-light border border-transparent rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-coral/30 hover:scale-[1.02]"
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 14, background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon name="UserPlus" className="w-6 h-6" style={{ color: "var(--coral)" }} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-[14px] bg-white/20 text-white flex items-center justify-center shrink-0">
+                    <Icon name="UserPlus" className="w-6 h-6" />
                   </div>
-                  <div style={{ textAlign: "left" }}>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: "white" }}>Criar Conta</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Sou novo aqui</div>
+                  <div className="text-left">
+                    <div className="font-bold text-[16px] text-white">Criar Conta</div>
+                    <div className="text-[13px] text-white/80">Sou novo aqui</div>
                   </div>
                 </div>
-                <Icon name="ChevronRight" className="w-5 h-5" style={{ color: "white" }} />
+                <Icon name="ChevronRight" className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>
@@ -282,88 +223,55 @@ const LoginPage = () => {
 
         {/* STEP 0: Login - Choose Method */}
         {loginStep === 0 && authAction === "login" && !loginMethod && (
-          <div className="animate-fadeIn">
-            <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={handleBack} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">
               Como você quer entrar?
             </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 32, fontSize: 15 }}>
+            <p className="text-text-muted mb-8 text-[15px]">
               Escolha a melhor forma para você
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => setLoginMethod("whatsapp")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  padding: "18px 20px",
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  width: "100%",
-                  textAlign: "left",
-                }}
+                className="group flex items-center gap-4 p-[18px] bg-surface-2 border border-border rounded-[14px] cursor-pointer w-full text-left transition-all hover:bg-surface-3 hover:border-[#25D366]"
               >
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon name="MessageCircle" className="w-5 h-5" style={{ color: "white" }} />
+                <div className="w-11 h-11 rounded-xl bg-[#25D366] flex items-center justify-center shrink-0 shadow-lg shadow-[#25D366]/20">
+                  <Icon name="MessageCircle" className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>WhatsApp</div>
-                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Receber código por mensagem</div>
+                  <div className="font-bold text-[15px] text-white group-hover:text-[#25D366] transition-colors">WhatsApp</div>
+                  <div className="text-[13px] text-text-muted">Receber código por mensagem</div>
                 </div>
               </button>
 
               <button
                 onClick={() => setLoginMethod("email")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  padding: "18px 20px",
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  width: "100%",
-                  textAlign: "left",
-                }}
+                className="group flex items-center gap-4 p-[18px] bg-surface-2 border border-border rounded-[14px] cursor-pointer w-full text-left transition-all hover:bg-surface-3 hover:border-coral"
               >
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--coral)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon name="Mail" className="w-5 h-5" style={{ color: "white" }} />
+                <div className="w-11 h-11 rounded-xl bg-coral flex items-center justify-center shrink-0 shadow-lg shadow-coral/20">
+                  <Icon name="Mail" className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>E-mail e Senha</div>
-                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Entrar com credenciais</div>
+                  <div className="font-bold text-[15px] text-white group-hover:text-coral transition-colors">E-mail e Senha</div>
+                  <div className="text-[13px] text-text-muted">Entrar com credenciais</div>
                 </div>
               </button>
 
               <button
                 onClick={() => setLoginMethod("cpf")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  padding: "18px 20px",
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  width: "100%",
-                  textAlign: "left",
-                }}
+                className="group flex items-center gap-4 p-[18px] bg-surface-2 border border-border rounded-[14px] cursor-pointer w-full text-left transition-all hover:bg-surface-3 hover:border-[#6C5CE7]"
               >
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "#6C5CE7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Icon name="CreditCard" className="w-5 h-5" style={{ color: "white" }} />
+                <div className="w-11 h-11 rounded-xl bg-[#6C5CE7] flex items-center justify-center shrink-0 shadow-lg shadow-[#6C5CE7]/20">
+                  <Icon name="CreditCard" className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 15, color: "var(--text)" }}>CPF e Senha</div>
-                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Entrar com CPF</div>
+                  <div className="font-bold text-[15px] text-white group-hover:text-[#6C5CE7] transition-colors">CPF e Senha</div>
+                  <div className="text-[13px] text-text-muted">Entrar com CPF</div>
                 </div>
               </button>
             </div>
@@ -372,67 +280,64 @@ const LoginPage = () => {
 
         {/* STEP 0: Create Account - Form */}
         {loginStep === 0 && authAction === "create" && (
-          <div className="animate-fadeIn">
-            <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={handleBack} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-              Criar conta
-            </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: 15 }}>
-              Preencha seus dados para começar
-            </p>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">Criar conta</h1>
+            <p className="text-text-muted mb-6 text-[15px]">Preencha seus dados para começar</p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <label style={labelStyle}>Nome</label>
+                <label className={labelClass}>Nome</label>
                 <input
                   className="input-field"
                   placeholder="Seu nome"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                 />
-                {errors.nome && <div style={errorStyle}>{errors.nome}</div>}
+                {errors.nome && errorJSX(errors.nome)}
               </div>
               <div>
-                <label style={labelStyle}>Sobrenome</label>
+                <label className={labelClass}>Sobrenome</label>
                 <input
                   className="input-field"
-                  placeholder="Sobrenome"
+                  placeholder="Seu sobrenome"
                   value={sobrenome}
                   onChange={(e) => setSobrenome(e.target.value)}
                 />
-                {errors.sobrenome && <div style={errorStyle}>{errors.sobrenome}</div>}
+                {errors.sobrenome && errorJSX(errors.sobrenome)}
               </div>
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <label style={labelStyle}>CPF</label>
+            <div className="mb-3">
+              <label className={labelClass}>CPF</label>
               <input
                 className="input-field"
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={(e) => setCpf(formatCpf(e.target.value))}
               />
-              {errors.cpf && <div style={errorStyle}>{errors.cpf}</div>}
+              {errors.cpf && errorJSX(errors.cpf)}
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <label style={labelStyle}>WhatsApp</label>
+            <div className="mb-4">
+              <label className={labelClass}>WhatsApp</label>
               <input
                 className="input-field"
                 placeholder="(11) 99999-9999"
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
               />
+              {errors.phone && errorJSX(errors.phone)}
             </div>
 
-            <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 16 }}>
-              Enviaremos um código de verificação via WhatsApp
+            <p className="text-xs text-text-muted/80 text-center font-medium bg-surface-2 p-3 rounded-xl border border-border/50">
+              Enviaremos um código seguro via WhatsApp.
             </p>
 
-            <Button variant="primary" style={{ width: "100%", marginTop: 20, padding: "16px" }} onClick={handleContinueCreate}>
+            <Button variant="primary" className="w-full mt-6 py-4" onClick={handleContinueCreate}>
               Continuar
             </Button>
           </div>
@@ -440,51 +345,47 @@ const LoginPage = () => {
 
         {/* STEP 0: Login - WhatsApp */}
         {loginStep === 0 && authAction === "login" && loginMethod === "whatsapp" && (
-          <div className="animate-fadeIn">
-            <button onClick={() => setLoginMethod(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={() => setLoginMethod(null)} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-              Entrar com WhatsApp
-            </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: 15 }}>
-              Digite seu número para receber o código
-            </p>
+            <div className="w-14 h-14 bg-[#25D366]/10 rounded-2xl flex items-center justify-center mb-4">
+              <Icon name="MessageCircle" className="w-7 h-7 text-[#25D366]" />
+            </div>
 
-            <div>
-              <label style={labelStyle}>Seu WhatsApp</label>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">Entrar com WhatsApp</h1>
+            <p className="text-text-muted mb-6 text-[15px]">Digite seu número para receber o código</p>
+
+            <div className="mb-6">
+              <label className={labelClass}>Seu WhatsApp</label>
               <input
                 className="input-field"
                 placeholder="(11) 99999-9999"
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
               />
-              {errors.phone && <div style={errorStyle}>{errors.phone}</div>}
+              {errors.phone && errorJSX(errors.phone)}
             </div>
 
-            <Button variant="primary" style={{ width: "100%", marginTop: 20, padding: "16px" }} onClick={handleContinueWhatsApp} icon="MessageCircle" iconPosition="right">
-              Receber Código
+            <Button variant="primary" className="w-full py-4 text-center justify-center border-none !bg-gradient-to-r !from-[#25D366] !to-[#128C7E] shadow-xl shadow-[#25D366]/20 hover:shadow-[#25D366]/40" onClick={handleContinueWhatsApp}>
+               <span className="flex items-center gap-2">Receber Código <Icon name="ChevronRight" className="w-4 h-4" /></span>
             </Button>
           </div>
         )}
 
         {/* STEP 0: Login - Email */}
         {loginStep === 0 && authAction === "login" && loginMethod === "email" && (
-          <div className="animate-fadeIn">
-            <button onClick={() => setLoginMethod(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={() => setLoginMethod(null)} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-              Entrar com E-mail
-            </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: 15 }}>
-              Digite seus dados para acessar
-            </p>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">Entrar com E-mail</h1>
+            <p className="text-text-muted mb-6 text-[15px]">Digite suas credenciais</p>
 
-            <div>
-              <label style={labelStyle}>E-mail</label>
+            <div className="mb-4">
+              <label className={labelClass}>E-mail</label>
               <input
                 className="input-field"
                 type="email"
@@ -492,144 +393,136 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {errors.email && <div style={errorStyle}>{errors.email}</div>}
+              {errors.email && errorJSX(errors.email)}
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <label style={labelStyle}>Senha</label>
-              <div style={{ position: "relative" }}>
-                <input
-                  ref={passwordRef}
-                  className="input-field"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••"
-                  autoComplete="current-password"
-                  style={{ paddingRight: 44 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
-                >
-                  <Icon name={showPassword ? "EyeOff" : "Eye"} className="w-5 h-5" />
-                </button>
-              </div>
-              {errors.password && <div style={errorStyle}>{errors.password}</div>}
+            <div className="mb-2 relative">
+              <label className={labelClass}>Senha</label>
+              <input
+                ref={passwordRef}
+                className="input-field pr-12"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-[34px] text-text-muted hover:text-white transition-colors focus:outline-none"
+              >
+                <Icon name={showPassword ? "EyeOff" : "Eye"} className="w-5 h-5" />
+              </button>
+              {errors.password && errorJSX(errors.password)}
             </div>
 
-            <button style={{ background: "none", border: "none", color: "var(--coral)", fontSize: 13, cursor: "pointer", marginTop: 12 }}>
-              Esqueci minha senha
-            </button>
+            <div className="flex justify-end mb-6">
+              <button className="text-[13px] text-coral hover:text-coral-light transition-colors font-medium cursor-pointer bg-transparent border-none">
+                Esqueci minha senha
+              </button>
+            </div>
 
-            <Button variant="primary" style={{ width: "100%", marginTop: 20, padding: "16px" }} onClick={handleContinueEmail}>
-              Entrar
+            <Button variant="primary" className="w-full py-4 text-center justify-center font-bold text-lg" onClick={handleContinueEmail}>
+              Acessar
             </Button>
           </div>
         )}
 
         {/* STEP 0: Login - CPF */}
         {loginStep === 0 && authAction === "login" && loginMethod === "cpf" && (
-          <div className="animate-fadeIn">
-            <button onClick={() => setLoginMethod(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={() => setLoginMethod(null)} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-              Entrar com CPF
-            </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: 15 }}>
-              Digite seus dados para acessar
-            </p>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">Entrar com CPF</h1>
+            <p className="text-text-muted mb-6 text-[15px]">Acesse com seu documento</p>
 
-            <div>
-              <label style={labelStyle}>CPF</label>
+            <div className="mb-4">
+              <label className={labelClass}>CPF</label>
               <input
                 className="input-field"
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={(e) => setCpf(formatCpf(e.target.value))}
               />
-              {errors.cpf && <div style={errorStyle}>{errors.cpf}</div>}
+              {errors.cpf && errorJSX(errors.cpf)}
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <label style={labelStyle}>Senha</label>
-              <div style={{ position: "relative" }}>
-                <input
-                  ref={passwordRef}
-                  className="input-field"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••"
-                  autoComplete="current-password"
-                  style={{ paddingRight: 44 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
-                >
-                  <Icon name={showPassword ? "EyeOff" : "Eye"} className="w-5 h-5" />
-                </button>
-              </div>
-              {errors.password && <div style={errorStyle}>{errors.password}</div>}
+            <div className="mb-2 relative">
+              <label className={labelClass}>Senha</label>
+              <input
+                ref={passwordRef}
+                className="input-field pr-12"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-[34px] text-text-muted hover:text-white transition-colors focus:outline-none"
+              >
+                <Icon name={showPassword ? "EyeOff" : "Eye"} className="w-5 h-5" />
+              </button>
+              {errors.password && errorJSX(errors.password)}
             </div>
 
-            <button style={{ background: "none", border: "none", color: "var(--coral)", fontSize: 13, cursor: "pointer", marginTop: 12 }}>
-              Esqueci minha senha
-            </button>
+            <div className="flex justify-end mb-6">
+              <button className="text-[13px] text-coral hover:text-coral-light transition-colors font-medium cursor-pointer bg-transparent border-none">
+                Esqueci minha senha
+              </button>
+            </div>
 
-            <Button variant="primary" style={{ width: "100%", marginTop: 20, padding: "16px" }} onClick={handleContinueCpf}>
-              Entrar
+            <Button variant="primary" className="w-full py-4 text-center justify-center font-bold text-lg bg-gradient-to-r from-[#6C5CE7] to-[#8C7BFF] hover:shadow-[#6C5CE7]/40 shadow-xl border-none" onClick={handleContinueCpf}>
+              Acessar
             </Button>
           </div>
         )}
 
         {/* STEP 1: OTP Input */}
         {loginStep === 1 && (
-          <div className="animate-fadeIn">
-            <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginBottom: 24, fontSize: 14 }}>
+          <div className="animate-slideLeft">
+            <button onClick={handleBack} className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors text-sm font-medium mb-6">
               <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
             </button>
 
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
-              Digite o código
-            </h1>
-            <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: 15 }}>
-              Enviamos para <span style={{ color: "var(--coral)", fontWeight: 600 }}>{phone}</span>
+            <h1 className="text-2xl font-black mb-2 font-display text-white tracking-tight">Confirme o código</h1>
+            <p className="text-text-muted mb-8 text-[15px] leading-relaxed">
+              Enviamos um código de 6 dígitos para o número <br/>
+              <span className="text-coral font-bold ml-1">{phone}</span>
             </p>
 
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 24 }}>
+            <div className="flex gap-2.5 justify-center mb-8">
               {otp.map((digit, index) => (
                 <input
                   key={index}
                   id={`otp-${index}`}
-                  className="input-field"
+                  className="w-12 h-14 bg-surface-2 border border-border rounded-xl text-center text-2xl font-black text-white focus:border-coral focus:ring-4 focus:ring-coral/20 outline-none transition-all shadow-inner"
                   maxLength={1}
-                  style={{ width: 48, height: 56, textAlign: "center", fontSize: 22, fontWeight: 700, padding: 0 }}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                 />
               ))}
             </div>
 
-            <Button variant="primary" style={{ width: "100%", padding: "16px" }} onClick={handleVerifyOtp}>
+            <Button variant="primary" className="w-full py-4 justify-center text-lg font-bold" onClick={handleVerifyOtp}>
               Verificar
             </Button>
 
-            <p style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", marginTop: 16 }}>
-              Reenviar código em <span style={{ color: "var(--coral)", fontWeight: 600 }}>0:59</span>
+            <p className="text-[13px] text-text-muted text-center mt-6">
+              Não recebeu? Reenviar código em <span className="text-coral font-bold ml-1">0:59</span>
             </p>
           </div>
         )}
 
         {/* STEP 2: Success */}
         {loginStep === 2 && (
-          <div className="animate-scaleIn" style={{ textAlign: "center", padding: "40px 0" }}>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(0,200,151,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-              <Icon name="Check" className="w-8 h-8" style={{ color: "var(--success)" }} />
+          <div className="animate-scaleIn text-center py-10">
+            <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(0,200,151,0.2)]">
+              <Icon name="Check" className="w-10 h-10 text-success" />
             </div>
-            <h2 style={{ fontWeight: 800, marginBottom: 8, fontSize: 22 }}>Bem-vindo!</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: 15 }}>Redirecionando...</p>
+            <h2 className="text-3xl font-black text-white mb-2 font-display">Tudo certo!</h2>
+            <p className="text-text-muted text-[15px]">Redirecionando para o seu dashboard...</p>
           </div>
         )}
       </div>

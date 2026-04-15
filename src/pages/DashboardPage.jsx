@@ -15,7 +15,13 @@ import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 
 const DashboardPage = () => {
-  const { navigate, formData, setLegalStep, logout, userData, userDocuments, setUserDocuments, userId, isLoading, setCurrentStep } = useApp();
+  const {
+    navigate, formData, logout, userData,
+    userDocuments, setUserDocuments, userId, isLoading,
+    setCurrentStep,
+    setLegalStep,
+    setDocumentType, setSelectedVariant, setLegalFormData, setDisabledFields,
+  } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
@@ -49,7 +55,16 @@ const DashboardPage = () => {
       setCurrentStep(0);
       navigate("editor");
     } else {
-      setLegalStep(0);
+      // Restaurar estado do rascunho jurídico se disponível
+      if (doc.draft) {
+        if (doc.draft.documentType) setDocumentType(doc.draft.documentType);
+        if (doc.draft.selectedVariant) setSelectedVariant(doc.draft.selectedVariant);
+        if (doc.draft.legalFormData) setLegalFormData(doc.draft.legalFormData);
+        if (doc.draft.disabledFields) setDisabledFields(doc.draft.disabledFields);
+        setLegalStep(doc.draft.legalStep ?? 1);
+      } else {
+        setLegalStep(0);
+      }
       navigate("legalEditor");
     }
   };

@@ -9,10 +9,11 @@
 import React, { useState, useCallback, memo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button, Input, Textarea, Select, Badge, Tag, FieldHint, QuickSuggestion, ExperienceTypeSelector, FieldWithIcon, VisualExample, QuickFillCard, AppNavbar, AppStepper, BottomNavigation, ErrorMessage, SaveIndicator } from "../components/UI";
+import { Card, Button, Input, Textarea, Select, Badge, Tag, FieldHint, QuickSuggestion, ExperienceTypeSelector, FieldWithIcon, VisualExample, QuickFillCard, AppNavbar, AppStepper, BottomNavigation, ErrorMessage, SaveIndicator, ConfirmDialog } from "../components/UI";
 import { STEPS, STEP_DESCRIPTIONS, SKILLS_OPTIONS, LANGUAGE_LEVELS, EDUCATION_STATUS, FIELD_HINTS } from "../data/constants";
 import { validateStep, getStepStatus } from "../utils/validation";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
+import { useConfirm } from "../hooks/useConfirm";
 
 // Labels e Errors formatados via Tailwind classes
 const labelClass = "block text-[12px] font-bold text-text-muted mb-1.5 uppercase tracking-wide ml-1";
@@ -132,6 +133,7 @@ const EditorPage = () => {
 
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
+  const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const isDirty = saveStatus === "saving" || saveStatus === "idle";
   useUnsavedChanges(isDirty);
@@ -422,7 +424,21 @@ const EditorPage = () => {
     }
   };
 
-  const handleGoHome = () => navigate("dashboard");
+  const handleGoHome = async () => {
+    const hasContent = formData?.nome?.trim();
+    if (!hasContent) {
+      navigate("dashboard");
+      return;
+    }
+    const confirmed = await requestConfirm({
+      title: "Sair do editor",
+      message: "Seu progresso foi salvo automaticamente. Deseja voltar ao Dashboard?",
+      confirmLabel: "Ir ao Dashboard",
+      cancelLabel: "Continuar editando",
+      danger: false,
+    });
+    if (confirmed) navigate("dashboard");
+  };
 
   const handleStepClick = (step) => {
     if (step < currentStep) {
@@ -481,6 +497,12 @@ const EditorPage = () => {
         isFirstStep={isFirstStep}
         isLastStep={isLastStep}
         nextLabel={isLastStep ? "✓ Visualizar Mágica" : undefined}
+      />
+
+      <ConfirmDialog
+        {...confirmState}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </div>
   );

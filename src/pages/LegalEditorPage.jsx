@@ -39,6 +39,7 @@ import {
   ConfirmDialog,
 } from "../components/UI";
 import showToast from "../utils/toast";
+import StorageService from "../utils/storage";
 import { generateMockFormData } from "../utils/mockData";
 import {
   LEGAL_DOCUMENTS,
@@ -77,6 +78,9 @@ const LegalEditorPage = () => {
     saveStatus,
     lastSaved,
     triggerLegalSave,
+    userDocuments,
+    setUserDocuments,
+    userId,
   } = useApp();
 
   // ─── Estado local ───
@@ -217,11 +221,61 @@ const LegalEditorPage = () => {
     }
   };
 
-  // ─── Salvar para depois e ir ao dashboard ───
-  const handleSaveLater = async () => {
-    await triggerLegalSave();
+  // ─── Salvar para depois — cria/atualiza card de rascunho no dashboard ───
+  const handleSaveLater = () => {
+    if (!selectedDoc) {
+      navigate("dashboard");
+      return;
+    }
+
+    // Snapshot do estado atual para restaurar depois
+    const draftSnapshot = {
+      documentType: selectedDoc,
+      selectedVariant,
+      legalFormData,
+      disabledFields,
+      legalStep: currentStep,
+    };
+
+    const title = selectedDoc.name + (currentVariantObj ? ` — ${currentVariantObj.name}` : "");
+    const now = new Date();
+    const dateLabel = now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
+
+    // Verifica se já existe um rascunho deste documento para evitar duplicatas
+    const existingDraftIdx = (userDocuments || []).findIndex(
+      (d) => d.status === "rascunho" && d.type === selectedDoc.id && d._draftOrigin === "legalEditor"
+    );
+
+    let updated;
+    if (existingDraftIdx >= 0) {
+      updated = (userDocuments || []).map((d, i) =>
+        i === existingDraftIdx
+          ? { ...d, title, date: dateLabel, draft: draftSnapshot, updatedAt: now.toISOString() }
+          : d
+      );
+    } else {
+      const newCard = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
+        title,
+        type: selectedDoc.id,
+        template: currentVariantObj?.name || selectedDoc.name,
+        date: dateLabel,
+        status: "rascunho",
+        draft: draftSnapshot,
+        _draftOrigin: "legalEditor",
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        userId,
+      };
+      updated = [...(userDocuments || []), newCard];
+    }
+
+    setUserDocuments(updated);
+    StorageService.saveDocuments(updated, userId);
+    triggerLegalSave?.();
+
     navigate("dashboard");
-    showToast.success("Rascunho salvo! Você pode continuar de onde parou.");
+    showToast.success("Rascunho salvo! Continue de onde parou a qualquer momento.");
   };
 
   // ─── Ir para Home com confirmação se houver dados ───
@@ -233,14 +287,15 @@ const LegalEditorPage = () => {
     }
     const confirmed = await requestConfirm({
       title: "Sair do editor",
-      message: "Seu rascunho será salvo automaticamente. Deseja voltar ao início?",
-      confirmLabel: "Salvar e sair",
+      message: selectedDoc
+        ? "Deseja salvar o rascunho e sair? Você poderá continuar de onde parou."
+        : "Deseja sair? Você ainda não selecionou um tipo de documento.",
+      confirmLabel: selectedDoc ? "Salvar e sair" : "Sair",
       cancelLabel: "Continuar editando",
       danger: false,
     });
     if (confirmed) {
-      navigate("dashboard");
-      showToast.success("Rascunho salvo!");
+      handleSaveLater();
     }
   };
 

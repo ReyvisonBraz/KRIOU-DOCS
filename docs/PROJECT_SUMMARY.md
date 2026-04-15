@@ -20,46 +20,119 @@ The user (Reyvison) is building "Kriou Docs" - a React application for creating 
 5. **PDF Generation**: Using `jspdf` library - already functional
 6. **Project Structure**: Refactored from single monolithic App.jsx into modular structure with components, context, hooks, pages, utils, and data folders
 
-## Accomplished
+---
 
-### Completed:
+## Completed Items
 
-- ✅ Project restructuring into modular architecture (components, context, hooks, pages, utils, data)
-- ✅ PDF download functionality in PreviewPage (connects to jsPDF)
-- ✅ Form validation in EditorPage (required fields with error display)
-- ✅ Mobile responsiveness (added responsive styles to Theme.jsx)
-- ✅ Document editing (loads mock data when editing existing documents)
-- ✅ User profile page (ProfilePage.jsx with account info)
-- ✅ Legal documents structure (LEGAL_DOCUMENT_TYPES in constants.js)
-- ✅ Added Bell and HelpCircle icons
-- ✅ Legal documents wizard (LegalEditorPage.jsx - 4-step wizard)
-- ✅ Legal PDF generator (legalPdfGenerator.js)
-- ✅ Document type selection (TemplatesPage - choose resume vs legal)
-- ✅ Dashboard legal button enabled
-- ✅ Checkout supports legal documents
-- ✅ Preview supports legal documents
+### ✅ Security (Fase 1)
+- [x] **CPF Validation** — Mod11 algorithm implemented in `validation.js`
+  - Rejects all-same-digit sequences (e.g., `000.000.000-00`)
+  - Full checksum validation for both digits
+- [x] **Email Validation** — RFC-compliant pattern in `validation.js`
+- [x] **Rate Limiter** — Client-side protection in `rateLimiter.js`
+  - Login: 5 attempts / 15 min
+  - OTP: 3 attempts / 10 min
+  - Uses sessionStorage (expires when tab closes)
+- [x] **Sanitization** — XSS prevention in `sanitization.js`
+  - `sanitizeText()` — strips HTML tags
+  - `sanitizeFormData()` — recursive object sanitization
+  - Works in Web Workers (no DOMPurify dependency)
+- [x] **useUnsavedChanges** hook — warns on page close/navigation
+- [x] **useConfirm** hook — async confirmation dialog without blocking UI
+- [x] **ErrorBoundary** — graceful error handling with fallback UI
 
-### Files Created/Modified:
+### ✅ Quality (Fase 2/4)
+- [x] **Centralized Formatting** — `formatCpf`, `formatPhone`, `formatCnpj`, `formatCep`, `formatCurrency`, `formatDate` in `formatting.js`
+- [x] **Centralized Styles** — `LABEL_STYLE`, `ERROR_STYLE`, `SECTION_TITLE_STYLE`, `INPUT_BASE_STYLE`, `CARD_STYLE`, `GLASS_STYLE` in `constants/styles.js`
+- [x] **Centralized Timing** — `DEBOUNCE_AUTOSAVE_MS`, `SAVE_FEEDBACK_DELAY_MS`, etc. in `constants/timing.js`
+- [x] **Centralized Storage Keys** — `STORAGE_KEYS` pattern with user isolation in `storage.js`
+- [x] **Logger utility** — Console logging utility
 
-- `src/components/Icons.jsx` - Added Bell, HelpCircle icons
-- `src/components/Theme.jsx` - Added responsive styles
-- `src/components/UI.jsx` - Reusable UI components
-- `src/context/AppContext.jsx` - Global state with localStorage persistence + legal state
-- `src/data/constants.js` - Added LEGAL_DOCUMENT_TYPES and LEGAL_DOCUMENT_STEPS
-- `src/hooks/index.js` - Custom hooks (useForm, useDebounce, etc.)
-- `src/pages/EditorPage.jsx` - Added validation + error display
-- `src/pages/PreviewPage.jsx` - Added PDF download + legal support
-- `src/pages/DashboardPage.jsx` - Document editing + legal button enabled
-- `src/pages/ProfilePage.jsx` - User profile
-- `src/pages/TemplatesPage.jsx` - Document type selection (resume vs legal)
-- `src/pages/LegalEditorPage.jsx` - NEW: Wizard for legal documents
-- `src/pages/CheckoutPage.jsx` - Payment flow + legal support
-- `src/utils/validation.js` - Form validation rules
-- `src/utils/responsive.js` - Responsive utilities
-- `src/utils/pdfGenerator.js` - PDF generation utility (resume)
-- `src/utils/legalPdfGenerator.js` - NEW: Legal PDF generation
-- `src/utils/storage.js` - localStorage utilities
-- `src/App.jsx` - Added legalEditor route
+### ✅ Performance (Fase 3)
+- [x] **Code Splitting** — Lazy loading routes in `App.jsx`
+  - DashboardPage, TemplatesPage, EditorPage, PreviewPage, CheckoutPage, ProfilePage, LegalEditorPage loaded on demand
+  - LandingPage and LoginPage loaded immediately (entry points)
+- [x] **Suspense Boundaries** — Loading spinner fallback for lazy routes
+- [x] **PDF Web Worker** — `pdfWorker.js` generates PDFs in background thread
+- [x] **usePDF Hook** — `usePDF.js` manages worker lifecycle and download trigger
+- [x] **useAutoSave Hook** — Debounced auto-save with status feedback (`idle`, `saving`, `saved`, `error`)
+- [x] **Sonner Toaster** — Configured in `App.jsx` at bottom-center
+
+### ✅ Tests
+- [x] `validation.test.js` — CPF validation tests (6+ cases)
+- [x] `formatting.test.js` — formatCpf, formatPhone tests
+- [x] `sanitization.test.js` — sanitizeText tests
+- [x] `useAutoSave.hook.test.js` — hook behavior tests
+- [x] `Button.component.test.jsx` — component tests
+- [x] `loginValidation.test.js` — login flow validation tests
+
+### ✅ Dependencies Installed
+- `vitest`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`
+- `jsdom`
+- `rollup-plugin-visualizer`
+- `sonner` — toast notifications
+
+---
+
+## What's Left to Do
+
+### 🔴 CRITICAL — Security
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Remove password from `useState` in LoginPage | ❌ TODO | Use `useRef` instead |
+| DOMPurify installation | ⚠️ PARTIAL | Using custom stripHtml instead |
+| Migrate drafts to `sessionStorage` | ❌ TODO | Currently still using `localStorage` |
+| Migrate session data to `sessionStorage` | ❌ TODO | Session still in `localStorage` |
+| Backend price validation | ❌ TODO | Price hardcoded in `CheckoutPage` |
+
+### 🟠 HIGH — Architecture
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Split `UI.jsx` into components/ | ❌ TODO | 1,365 lines — needs modularization |
+| Split `AppContext` into contexts/ | ❌ TODO | AuthContext, ResumeContext, LegalContext, UIContext |
+| Create `services/` layer | ❌ TODO | authService, documentService, pdfService, storageService |
+| Lazy load legal documents by type | ❌ TODO | 1,949 lines loaded always |
+| IndexedDB for large drafts | ❌ TODO | localStorage has 5-10MB limit |
+
+### 🟡 MEDIUM — UX
+
+| Item | Status | Notes |
+|------|--------|-------|
+| `SaveIndicator` component | ❌ TODO | Show save status in navbar |
+| `SkeletonCard` component | ❌ TODO | Loading skeleton for document list |
+| `EmptyState` component | ❌ TODO | Empty dashboard state |
+| `FormField` component | ❌ TODO | Reusable label + input + error wrapper |
+| `AppNavbar` component | ❌ TODO | Unified navbar for all pages |
+| `AppStepper` component | ❌ TODO | Step indicator for wizards |
+| `BottomNavigation` component | ❌ TODO | Back/Next navigation |
+| `ConfirmDialog` component | ❌ TODO | Destructive action confirmation |
+| Replace `console.error` with toasts | ⚠️ PARTIAL | Audit all occurrences |
+| Remove mock data from Dashboard | ❌ TODO | Connect to real context data |
+| Form progress bar | ❌ TODO | Visual fill percentage |
+
+### 🟡 MEDIUM — Accessibility
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Audit `aria-labels` | ❌ TODO | All interactive elements |
+| Audit `role="alert"` on errors | ❌ TODO | Error messages |
+| Audit `role="dialog"` on modals | ❌ TODO | Modal accessibility |
+| Keyboard navigation | ❌ TODO | Tab order and focus management |
+| Responsive testing (375px, 768px, 1280px) | ❌ TODO | Physical or emulated testing |
+
+### 🟢 LOW — Quality of Life
+
+| Item | Status | Notes |
+|------|--------|-------|
+| JSDoc on all public functions | ⚠️ PARTIAL | Core utils done, need full audit |
+| Remove prototype dead code | ⚠️ PARTIAL | Check if files still exist in root |
+| `npm run build` analysis | ❌ TODO | Run and verify bundle size < 300KB |
+| `npm run test:coverage` | ❌ TODO | Verify ≥ 80% on critical utils |
+| Manual E2E testing | ❌ TODO | All user flows |
+
+---
 
 ## Project Structure
 
@@ -67,44 +140,70 @@ The user (Reyvison) is building "Kriou Docs" - a React application for creating 
 KRIOU-DOCS/
 ├── src/
 │   ├── components/
-│   │   ├── Icons.jsx        # SVG icon library (extended with Bell, HelpCircle)
-│   │   ├── Theme.jsx        # Global styles + responsive utilities
-│   │   └── UI.jsx          # Reusable Button, Card, Input, etc.
+│   │   ├── ErrorBoundary.jsx      ✅
+│   │   ├── Icons.jsx
+│   │   ├── Theme.jsx
+│   │   ├── UI.jsx                 ⚠️ Needs splitting
+│   │   └── ui/
+│   │       ├── layout.jsx
+│   │       ├── legal-helpers.jsx
+│   │       ├── primitives.jsx
+│   │       └── resume-helpers.jsx
+│   ├── constants/
+│   │   ├── styles.js              ✅
+│   │   ├── timing.js              ✅
+│   │   ├── storage.js             ✅
+│   │   └── responsive.js
 │   ├── context/
-│   │   └── AppContext.jsx  # Global state (navigation, form, auth)
+│   │   └── AppContext.jsx         ⚠️ Needs splitting
 │   ├── data/
-│   │   └── constants.js    # Templates, steps, legal document types
+│   │   ├── constants.js
+│   │   └── legalDocuments.js      ⚠️ Needs lazy loading
 │   ├── hooks/
-│   │   └── index.js        # useForm, useDebounce, useLocalStorage, etc.
+│   │   ├── index.js
+│   │   ├── useAutoSave.js         ✅
+│   │   ├── useConfirm.js          ✅
+│   │   ├── useUnsavedChanges.js  ✅
+│   │   └── usePDF.js             ✅
 │   ├── pages/
-│   │   ├── LandingPage.jsx # Marketing landing page
-│   │   ├── LoginPage.jsx   # OTP authentication (mocked)
-│   │   ├── DashboardPage.jsx # Document list + editing
-│   │   ├── TemplatesPage.jsx # Resume template selection
-│   │   ├── EditorPage.jsx   # 7-step wizard with validation
-│   │   ├── PreviewPage.jsx  # Resume preview + PDF download
-│   │   ├── CheckoutPage.jsx # Payment (mocked)
-│   │   └── ProfilePage.jsx  # User profile (NEW)
+│   │   ├── LandingPage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── DashboardPage.jsx
+│   │   ├── TemplatesPage.jsx
+│   │   ├── EditorPage.jsx
+│   │   ├── PreviewPage.jsx
+│   │   ├── CheckoutPage.jsx
+│   │   ├── ProfilePage.jsx
+│   │   └── LegalEditorPage.jsx
 │   ├── utils/
-│   │   ├── pdfGenerator.js # jsPDF integration
-│   │   ├── storage.js      # localStorage wrapper
-│   │   ├── validation.js   # Form validation rules (NEW)
-│   │   └── responsive.js   # Responsive utilities (NEW)
-│   ├── App.jsx             # Router with all pages
-│   └── main.jsx           # Entry point
-├── package.json
-└── .gitignore
+│   │   ├── formatting.js          ✅
+│   │   ├── validation.js          ✅
+│   │   ├── sanitization.js        ✅
+│   │   ├── rateLimiter.js         ✅
+│   │   ├── storage.js            ✅
+│   │   ├── pdfGenerator.js
+│   │   ├── legalPdfGenerator.js
+│   │   ├── responsive.js
+│   │   ├── toast.js
+│   │   └── mockData.js
+│   ├── workers/
+│   │   └── pdfWorker.js           ✅
+│   └── App.jsx                   ✅ (code splitting done)
+├── plano-evolucao/
+│   ├── 00-VISAO-GERAL.md
+│   ├── 01-SEGURANCA.md
+│   ├── 02-ARQUITETURA.md
+│   ├── 03-PERFORMANCE.md
+│   ├── 04-QUALIDADE.md
+│   ├── 05-UX-FUNCIONALIDADES.md
+│   ├── 06-TESTES.md
+│   ├── 07-CRONOGRAMA.md
+│   └── 08-CHECKLIST-EXECUCAO.md
+└── docs/
+    ├── PROJECT_SUMMARY.md         ← This file
+    ├── HISTORICO-PROJETO-KRIOU-DOCS.md
+    └── PLANO-REFATORACAO.md
 ```
-
-## What's Left (Future Work)
-
-1. **Real backend integration** - Login/OTP (Twilio/WhatsApp API), Database
-2. **Real payment integration** - MercadoPago API
-3. **Legal document templates** - [AGUARDANDO MODELO PADRÃO] - Campos específicos para cada tipo de contrato
-4. **Code splitting** - Address the 500KB+ chunk warning
-5. **Loading states** - Add proper loading spinners
-6. **Error boundaries** - Add React error handling
-7. **Tests** - Unit/integration tests
 
 ---
 
@@ -115,6 +214,57 @@ KRIOU-DOCS/
 | Compra e Venda | ✅ Available | Nome/CPF comprador/vendedor, descrição imóvel, valor, forma pagamento, data |
 | Aluguel | ✅ Available | Nome/CPF locador/locatário, endereço, valor aluguel/caucão, prazos |
 | Procuração | ✅ Available | Nome/CPF outorgante/outorgado, poderes, validade |
-| Doação | ❌ Coming Soon | - |
-| Declaração Residência | ❌ Coming Soon | - |
-| União Estável | ❌ Coming Soon | - |
+| Doação | ✅ Available | Donation documents with variants |
+| União Estável | ✅ Available | Contract and dissolution variants |
+| Recibo | ✅ Available | Payment and rental receipt variants |
+| Dissolução | ✅ Available | Union dissolution with pension/sharing variants |
+
+---
+
+## Next Steps (Priority Order)
+
+### 1. Security Fixes (Week 1)
+```
+- [ ] Remove password from useState in LoginPage.jsx
+- [ ] Audit localStorage for PII — migrate sensitive data to sessionStorage
+- [ ] Implement server-side price validation
+```
+
+### 2. Component Architecture (Week 2-3)
+```
+- [ ] Split UI.jsx into Button/, Card/, Form/, Layout/, Navigation/, Feedback/
+- [ ] Create AppNavbar, AppStepper, BottomNavigation
+- [ ] Create SaveIndicator, SkeletonCard, EmptyState, FormField, ConfirmDialog
+- [ ] Split AppContext → AuthContext + ResumeContext + LegalContext + UIContext
+```
+
+### 3. Service Layer (Week 3-4)
+```
+- [ ] Create src/services/authService.js
+- [ ] Create src/services/documentService.js
+- [ ] Create src/services/pdfService.js
+- [ ] Migrate legalDocuments.js to lazy loading per type
+- [ ] Consider IndexedDB for large draft storage
+```
+
+### 4. UX Polish (Week 5)
+```
+- [ ] Replace all console.error with toast.error()
+- [ ] Connect DashboardPage to real data (remove mocks)
+- [ ] Add form progress indicator
+- [ ] Accessibility audit and fixes
+- [ ] Responsive testing across breakpoints
+```
+
+### 5. Production Readiness (Week 6-7)
+```
+- [ ] Run npm run build — analyze bundle
+- [ ] Run npm run test:coverage — verify ≥ 80% on critical utils
+- [ ] Manual E2E testing all flows
+- [ ] Fix any bugs found
+```
+
+---
+
+*Document generated: Abril 2026*
+*Last updated: Abril 2026*

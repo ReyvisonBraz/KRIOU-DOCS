@@ -19,7 +19,7 @@ import showToast from "../utils/toast";
  * CheckoutPage - Payment flow for document purchase
  */
 const CheckoutPage = () => {
-  const { navigate, selectedTemplate, formData, phone, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields } = useApp();
+  const { navigate, selectedTemplate, formData, email, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields } = useApp();
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const { generatePDF, isGenerating } = usePDF();
 
@@ -63,10 +63,10 @@ const CheckoutPage = () => {
   };
 
   /**
-   * Get display phone number or default
+   * Get display email or default
    */
-  const getDisplayPhone = () => {
-    return phone || "(11) 99999-9999";
+  const getDisplayEmail = () => {
+    return email || "seu e-mail";
   };
 
   /**
@@ -117,16 +117,16 @@ const CheckoutPage = () => {
             Seu {getDocumentTypeLabel().toLowerCase()} está sendo gerado...
           </p>
           <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 32 }}>
-            Você receberá o PDF no seu WhatsApp em instantes.
+            Você já pode baixar o PDF do seu documento.
           </p>
 
-          {/* WhatsApp Delivery Card */}
+          {/* Email Delivery Card */}
           <Card style={{ padding: 20, marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
-              <Icon name="MessageCircle" className="w-6 h-6" />
+              <Icon name="Mail" className="w-6 h-6" />
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>Enviando via WhatsApp</div>
-                <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{getDisplayPhone()}</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Confirmação enviada para</div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{getDisplayEmail()}</div>
               </div>
               <div
                 style={{

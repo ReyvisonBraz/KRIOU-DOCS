@@ -1,62 +1,73 @@
 /**
  * ============================================
- * KRIOU DOCS - Auth Context
+ * KRIOU DOCS - Auth Context (Supabase)
  * ============================================
- * Gerencia autenticação: sessão, userId, login, logout.
- * Não armazena CPF, telefone nem dados PII em texto puro.
- *
- * @module context/AuthContext
+ * Gerencia sessão via Supabase Auth + Google OAuth.
+ * Substitui o fluxo mock de telefone/OTP.
  */
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-import StorageService from "../utils/storage";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { supabase } from "../lib/supabase";
 
 export const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children, onNavigate }) => {
-  const [loginStep, setLoginStep] = useState(0);
-  const [phone, setPhone]         = useState("");
-  const [otp, setOtp]             = useState(["", "", "", "", "", ""]);
-  const [userData, setUserData]   = useState({ nome: "", sobrenome: "", cpf: "" });
-  const [userId, setUserId]       = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [session, setSession]             = useState(null);
+  const [user, setUser]                   = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  const login = useCallback((phoneNumber, userDataInput) => {
-    const newUserId = phoneNumber.replace(/\D/g, "");
+  useEffect(() => {
+    // Lê sessão existente salva pelo Supabase no localStorage
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsAuthLoading(false);
+    });
 
-    setUserId(newUserId);
-    setPhone(phoneNumber);
-    setUserData(userDataInput || { nome: "", sobrenome: "", cpf: "" });
-    setLoginStep(2);
+    // Escuta mudanças em tempo real (login, logout, refresh de token)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsAuthLoading(false);
+    });
 
-    if (StorageService.isAvailable()) {
-      StorageService.migrateLegacyData(newUserId);
-      StorageService.saveSession({
-        isAuthenticated: true,
-        userId: newUserId,
-        displayName: userDataInput?.nome || "",
-        loginTime: new Date().toISOString(),
-      });
-    }
+    return () => subscription.unsubscribe();
+  }, []);
 
-    setTimeout(() => onNavigate?.("dashboard"), 1500);
-  }, [onNavigate]);
+  const signInWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+    if (error) throw error;
+  }, []);
 
-  const logout = useCallback((currentUserId) => {
-    setLoginStep(0);
-    setOtp(["", "", "", "", "", ""]);
-    setPhone("");
-    setUserData({ nome: "", sobrenome: "", cpf: "" });
-    StorageService.clearSession(currentUserId ?? userId);
-    onNavigate?.("landing");
-  }, [onNavigate, userId]);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  // Helpers de conveniência
+  const userId      = user?.id ?? null;
+  const displayName = user?.user_metadata?.full_name
+                   || user?.user_metadata?.name
+                   || user?.email?.split("@")[0]
+                   || "Usuário";
+  const avatarUrl   = user?.user_metadata?.avatar_url ?? null;
+  const email       = user?.email ?? null;
 
   const value = {
-    loginStep, setLoginStep,
-    phone, setPhone,
-    otp, setOtp,
-    userData, setUserData,
-    userId, setUserId,
-    login, logout,
+    session,
+    user,
+    userId,
+    displayName,
+    avatarUrl,
+    email,
+    isAuthLoading,
+    signInWithGoogle,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

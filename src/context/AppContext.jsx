@@ -3,19 +3,16 @@
  * KRIOU DOCS - Application Context (Orquestrador)
  * ============================================
  * Compõe AuthContext + ResumeContext + LegalContext
- * e expõe useApp() com a API unificada que todos
- * os componentes já usam. Zero breaking change.
+ * e expõe useApp() com a API unificada.
  *
- * Estrutura interna:
- *   AuthProvider   → userId, loginStep, phone, login, logout
- *   ResumeProvider → formData, templates, saveStatus, documents
- *   LegalProvider  → legalFormData, documentType, variants
- *
- * @module context/AppContext
+ * Auth: Supabase (Google OAuth) — sem localStorage de sessão.
+ * Documentos: carregados do Supabase após login.
+ * Drafts: permanecem em localStorage (zero latência de rede).
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import StorageService from "../utils/storage";
+import { DocumentService } from "../services/DocumentService";
 import { APP_INIT_DELAY_MS } from "../constants/timing";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { ResumeProvider, useResume } from "./ResumeContext";
@@ -32,22 +29,22 @@ const RESTORABLE_PAGES = new Set([
 ]);
 
 const NavigationProvider = ({ children }) => {
-  const [currentPage, setCurrentPage] = useState("landing");
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Detecta callback do Google OAuth na URL
+    if (window.location.pathname === "/auth/callback") return "authCallback";
+    return "landing";
+  });
 
-  // Ref para evitar pushState recursivo quando o popstate dispara setCurrentPage
   const isPopstateRef = useRef(false);
 
   const navigate = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
 
-    // Empurra uma entrada no histórico do browser (permite botão Voltar)
-    // mas só quando a navegação veio do app (não de um evento popstate)
     if (!isPopstateRef.current) {
       window.history.pushState({ page }, "", window.location.pathname);
     }
 
-    // Persiste no localStorage para restaurar após F5
     if (RESTORABLE_PAGES.has(page)) {
       StorageService.savePage(page);
     } else {
@@ -55,22 +52,13 @@ const NavigationProvider = ({ children }) => {
     }
   }, []);
 
-  // Escuta o botão Voltar / Avançar do browser
   useEffect(() => {
     const handlePopstate = (event) => {
       const page = event.state?.page;
-      if (page) {
-        isPopstateRef.current = true;
-        setCurrentPage(page);
-        window.scrollTo(0, 0);
-        isPopstateRef.current = false;
-      } else {
-        // Sem estado (entrada inicial sem pushState) → vai para landing
-        isPopstateRef.current = true;
-        setCurrentPage("landing");
-        window.scrollTo(0, 0);
-        isPopstateRef.current = false;
-      }
+      isPopstateRef.current = true;
+      setCurrentPage(page || "landing");
+      window.scrollTo(0, 0);
+      isPopstateRef.current = false;
     };
 
     window.addEventListener("popstate", handlePopstate);
@@ -84,62 +72,58 @@ const NavigationProvider = ({ children }) => {
   );
 };
 
-// ─── Bootstrap: lê localStorage e hidrata os providers filhos ────────────────
+// ─── Bootstrap: hidrata providers com dados do Supabase ──────────────────────
 
 const AppBootstrap = ({ children }) => {
-  const { setUserId, setUserData, setLoginStep } = useAuth();
-  const { setFormData, setUserDocuments }                = useResume();
-  const { setLegalFormData }                             = useLegal();
-  const { navigate }                                     = useContext(NavigationContext);
-  const { setIsLoading, setSaveStatus }                  = useContext(UIContext);
+  const { userId, isAuthLoading }        = useAuth();
+  const { setFormData, setUserDocuments } = useResume();
+  const { setLegalFormData }              = useLegal();
+  const { navigate }                      = useContext(NavigationContext);
+  const { setIsLoading }                  = useContext(UIContext);
 
   useEffect(() => {
-    const init = () => {
-      if (StorageService.isAvailable()) {
-        const savedSession    = StorageService.loadSession(null);
-        const currentUserId   = savedSession?.userId || null;
+    // Aguarda Supabase resolver a sessão antes de inicializar
+    if (isAuthLoading) return;
 
-        if (currentUserId) {
-          setUserId(currentUserId);
-
-          const docs = StorageService.loadDocuments(currentUserId);
+    const init = async () => {
+      if (userId) {
+        // Carrega documentos finalizados do Supabase
+        try {
+          const docs = await DocumentService.fetchAll();
           if (docs.length > 0) setUserDocuments(docs);
-
-          const resumeDraft = StorageService.loadDraft(currentUserId, "resume");
-          if (resumeDraft) setFormData(resumeDraft);
-
-          const legalDraft = StorageService.loadDraft(currentUserId, "legal");
-          if (legalDraft) setLegalFormData(legalDraft);
-
-          setUserData({ nome: savedSession.displayName || "", sobrenome: "", cpf: "" });
-          setLoginStep(2);
-
-          // Restaura a última página visitada; cai no dashboard se não houver
-          const savedPage = StorageService.loadPage();
-          const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
-          setTimeout(() => navigate(targetPage), 500);
-        } else {
-          const savedFormData = StorageService.loadFormData();
-          if (savedFormData) setFormData(savedFormData);
-
-          const savedLegalFormData = StorageService.loadLegalFormData();
-          if (savedLegalFormData) setLegalFormData(savedLegalFormData);
+        } catch (err) {
+          console.error("[AppBootstrap] Erro ao carregar documentos:", err);
         }
+
+        // Carrega drafts do localStorage (rápido, sem latência)
+        const resumeDraft = StorageService.loadDraft(userId, "resume");
+        if (resumeDraft) setFormData(resumeDraft);
+
+        const legalDraft = StorageService.loadDraft(userId, "legal");
+        if (legalDraft) setLegalFormData(legalDraft);
+
+        // Restaura última página ou vai ao dashboard
+        const savedPage  = StorageService.loadPage();
+        const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+        setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
       }
+
       setIsLoading(false);
     };
 
-    const timer = setTimeout(init, APP_INIT_DELAY_MS);
-    return () => clearTimeout(timer);
+    // Não inicializa na página de callback — ela gerencia sua própria navegação
+    if (window.location.pathname !== "/auth/callback") {
+      init();
+    } else {
+      setIsLoading(false);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthLoading, userId]);
 
   return children;
 };
 
-// ─── InnerProviders: lê userId do AuthContext e passa para dependentes ────────
-// Necessário porque ResumeProvider/LegalProvider dependem de userId,
-// que só existe após AuthProvider estar montado.
+// ─── InnerProviders ───────────────────────────────────────────────────────────
 
 const InnerProviders = ({ children, isLoading, setSaveStatus }) => {
   const { userId } = useAuth();
@@ -165,28 +149,20 @@ export const AppProvider = ({ children }) => {
   return (
     <UIContext.Provider value={{ isLoading, setIsLoading, checkoutComplete, setCheckoutComplete, saveStatus, setSaveStatus }}>
       <NavigationProvider>
-        <NavigationContext.Consumer>
-          {({ navigate }) => (
-            <AuthProvider onNavigate={navigate}>
-              <InnerProviders isLoading={isLoading} setSaveStatus={setSaveStatus}>
-                {children}
-              </InnerProviders>
-            </AuthProvider>
-          )}
-        </NavigationContext.Consumer>
+        <AuthProvider>
+          <InnerProviders isLoading={isLoading} setSaveStatus={setSaveStatus}>
+            {children}
+          </InnerProviders>
+        </AuthProvider>
       </NavigationProvider>
     </UIContext.Provider>
   );
 };
 
-// ─── AppContext unificado — mantém API existente de useApp() ─────────────────
+// ─── useApp — Hook unificado ──────────────────────────────────────────────────
 
 const AppContext = createContext(null);
 
-/**
- * useApp — Hook unificado. Agrega todos os sub-contextos numa única
- * interface para zero breaking change nos componentes existentes.
- */
 export const useApp = () => {
   const nav    = useContext(NavigationContext);
   const ui     = useContext(UIContext);
@@ -198,54 +174,55 @@ export const useApp = () => {
     throw new Error("useApp must be used within AppProvider");
   }
 
-  // Wrappers que precisam de userId atualizado no momento da chamada
-  const logout = useCallback(() => {
-    auth.logout(auth.userId);
-  }, [auth]);
+  const logout = useCallback(async () => {
+    StorageService.clearPage();
+    await auth.logout();
+    nav.navigate("landing");
+  }, [auth, nav]);
 
   return {
     // Navegação
     currentPage: nav.currentPage,
     navigate: nav.navigate,
 
-    // Auth
-    loginStep: auth.loginStep,   setLoginStep: auth.setLoginStep,
-    phone: auth.phone,           setPhone: auth.setPhone,
-    otp: auth.otp,               setOtp: auth.setOtp,
-    userData: auth.userData,     setUserData: auth.setUserData,
-    userId: auth.userId,
-    login: auth.login,
+    // Auth (Supabase)
+    userId:          auth.userId,
+    displayName:     auth.displayName,
+    avatarUrl:       auth.avatarUrl,
+    email:           auth.email,
+    isAuthLoading:   auth.isAuthLoading,
+    signInWithGoogle: auth.signInWithGoogle,
     logout,
 
     // Resume
     selectedTemplate: resume.selectedTemplate,   setSelectedTemplate: resume.setSelectedTemplate,
-    templates: resume.templates,
-    currentStep: resume.currentStep,             setCurrentStep: resume.setCurrentStep,
-    formData: resume.formData,                   setFormData: resume.setFormData,
-    updateForm: resume.updateForm,
-    resetForm: () => resume.resetForm(legal.resetLegalForm),
-    saveStatus: resume.saveStatus,
-    lastSaved: resume.lastSaved,
-    triggerSave: resume.triggerSave,
-    userDocuments: resume.userDocuments,         setUserDocuments: resume.setUserDocuments,
-    saveDocument: (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate),
-    filter: resume.filter,                       setFilter: resume.setFilter,
+    templates:        resume.templates,
+    currentStep:      resume.currentStep,         setCurrentStep: resume.setCurrentStep,
+    formData:         resume.formData,            setFormData: resume.setFormData,
+    updateForm:       resume.updateForm,
+    resetForm:        () => resume.resetForm(legal.resetLegalForm),
+    saveStatus:       resume.saveStatus,
+    lastSaved:        resume.lastSaved,
+    triggerSave:      resume.triggerSave,
+    userDocuments:    resume.userDocuments,        setUserDocuments: resume.setUserDocuments,
+    saveDocument:     (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate),
+    filter:           resume.filter,              setFilter: resume.setFilter,
 
     // Legal
-    documentType: legal.documentType,            setDocumentType: legal.setDocumentType,
-    selectedVariant: legal.selectedVariant,      setSelectedVariant: legal.setSelectedVariant,
-    legalFormData: legal.legalFormData,          setLegalFormData: legal.setLegalFormData,
-    disabledFields: legal.disabledFields,        setDisabledFields: legal.setDisabledFields,
-    legalStep: legal.legalStep,                  setLegalStep: legal.setLegalStep,
+    documentType:      legal.documentType,        setDocumentType: legal.setDocumentType,
+    selectedVariant:   legal.selectedVariant,     setSelectedVariant: legal.setSelectedVariant,
+    legalFormData:     legal.legalFormData,       setLegalFormData: legal.setLegalFormData,
+    disabledFields:    legal.disabledFields,      setDisabledFields: legal.setDisabledFields,
+    legalStep:         legal.legalStep,           setLegalStep: legal.setLegalStep,
     legalDocumentTypes: legal.legalDocumentTypes,
-    updateLegalField: legal.updateLegalField,
+    updateLegalField:  legal.updateLegalField,
     selectDocumentType: legal.selectDocumentType,
-    resetLegalForm: legal.resetLegalForm,
-    triggerLegalSave: legal.triggerSave,
+    resetLegalForm:    legal.resetLegalForm,
+    triggerLegalSave:  legal.triggerSave,
 
     // UI
-    isLoading: ui.isLoading,
-    checkoutComplete: ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,
+    isLoading:         ui.isLoading,
+    checkoutComplete:  ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,
   };
 };
 

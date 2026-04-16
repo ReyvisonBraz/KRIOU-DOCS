@@ -54,10 +54,9 @@ const getUserSessionKey = (userId) => userId
  * Storage Service - Centralized localStorage management
  */
 const StorageService = {
-  // ─── User Session Management ───
+  // ─── User Session Management (DEPRECATED — sessão gerenciada pelo Supabase Auth) ───
   /**
-   * Save user session with user ID for isolation
-   * @param {Object} session - Session data including userId
+   * @deprecated Sessão agora é gerenciada pelo Supabase Auth. Não usar.
    */
   saveSession: (session) => {
     try {
@@ -74,11 +73,7 @@ const StorageService = {
   },
 
   /**
-   * Load user session by userId.
-   * When userId is null, scans all kriou session keys and returns
-   * the most recently active one (used on app boot before userId is known).
-   * @param {string|null} userId - User ID or null to find any active session
-   * @returns {Object|null} Session data or null
+   * @deprecated Sessão agora é gerenciada pelo Supabase Auth. Não usar.
    */
   loadSession: (userId = null) => {
     try {
@@ -112,8 +107,7 @@ const StorageService = {
   },
 
   /**
-   * Clear user session (logout)
-   * @param {string} userId - User ID to logout
+   * @deprecated Sessão agora é gerenciada pelo Supabase Auth. Não usar.
    */
   clearSession: (userId = null) => {
     try {
@@ -461,8 +455,7 @@ const StorageService = {
   },
 
   /**
-   * Migrate legacy data to user-specific storage
-   * @param {string} userId - User ID to migrate data to
+   * @deprecated Migração de dados legados não é mais necessária. Não usar.
    */
   migrateLegacyData: (userId) => {
     try {

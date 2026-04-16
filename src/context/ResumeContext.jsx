@@ -11,6 +11,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { INITIAL_FORM_DATA, RESUME_TEMPLATES } from "../data/constants";
 import StorageService from "../utils/storage";
+import { DocumentService } from "../services/DocumentService";
 import { sanitizeFormData } from "../utils/sanitization";
 import { useAutoSave } from "../hooks/useAutoSave";
 
@@ -51,26 +52,29 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     legalResetFn?.();
   }, [userId]);
 
-  const saveDocument = useCallback((documentData, documentType, selectedTpl) => {
+  const saveDocument = useCallback(async (documentData, documentType, selectedTpl) => {
     const docType = documentType ? "legal" : "resume";
 
-    const newDoc = {
-      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
-      ...documentData,
-      type: docType,
-      template: selectedTpl?.name || documentType?.name || "Padrão",
-      date: new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
-      createdAt: new Date().toISOString(),
-      status: "finalizado",
-      userId,
+    const docPayload = {
+      type:             docType,
+      title:            documentData.nome || documentType?.name || "Documento",
+      template:         selectedTpl?.name || documentType?.name || "Padrão",
+      status:           "finalizado",
+      formData:         docType === "resume" ? documentData : null,
+      legalData:        docType === "legal"  ? documentData : null,
+      documentTypeName: documentType?.name  || null,
     };
 
-    const updatedDocs = [...userDocuments, newDoc];
-    setUserDocuments(updatedDocs);
-    StorageService.saveDocuments(updatedDocs, userId);
-    StorageService.clearDraft(userId, docType);
-    return newDoc;
-  }, [userDocuments, userId]);
+    try {
+      const newDoc = await DocumentService.insert(docPayload, userId);
+      setUserDocuments((prev) => [...prev, newDoc]);
+      StorageService.clearDraft(userId, docType);
+      return newDoc;
+    } catch (err) {
+      console.error("[ResumeContext] Erro ao salvar documento:", err);
+      throw err;
+    }
+  }, [userId]);
 
   const value = {
     selectedTemplate, setSelectedTemplate,

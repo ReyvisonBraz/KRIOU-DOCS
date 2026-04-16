@@ -25,6 +25,9 @@ export default defineConfig({
           if (id.includes('node_modules/sonner')) {
             return 'vendor-sonner';
           }
+          if (id.includes('@supabase')) {
+            return 'vendor-supabase';
+          }
         },
       },
     },

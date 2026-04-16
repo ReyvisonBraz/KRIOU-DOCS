@@ -20,24 +20,37 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 
 // Páginas carregadas sob demanda (code splitting)
-const DashboardPage   = lazy(() => import("./pages/DashboardPage"));
-const TemplatesPage   = lazy(() => import("./pages/TemplatesPage"));
-const EditorPage      = lazy(() => import("./pages/EditorPage"));
-const PreviewPage     = lazy(() => import("./pages/PreviewPage"));
-const CheckoutPage    = lazy(() => import("./pages/CheckoutPage"));
-const ProfilePage     = lazy(() => import("./pages/ProfilePage"));
-const LegalEditorPage = lazy(() => import("./pages/LegalEditorPage"));
+const DashboardPage       = lazy(() => import("./pages/DashboardPage"));
+const TemplatesPage       = lazy(() => import("./pages/TemplatesPage"));
+const EditorPage          = lazy(() => import("./pages/EditorPage"));
+const PreviewPage         = lazy(() => import("./pages/PreviewPage"));
+const CheckoutPage        = lazy(() => import("./pages/CheckoutPage"));
+const ProfilePage         = lazy(() => import("./pages/ProfilePage"));
+const LegalEditorPage     = lazy(() => import("./pages/LegalEditorPage"));
+const AuthCallbackPage    = lazy(() => import("./pages/AuthCallbackPage"));
+const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
+
+// Wrapper para passar onNavigate às páginas que precisam navegar antes do contexto estar pronto
+const withNavigate = (Component) => {
+  const Wrapped = () => {
+    const { navigate } = useApp();
+    return <Component onNavigate={navigate} />;
+  };
+  return Wrapped;
+};
 
 const routes = {
-  landing:     LandingPage,
-  login:       LoginPage,
-  dashboard:   DashboardPage,
-  templates:   TemplatesPage,
-  editor:      EditorPage,
-  preview:     PreviewPage,
-  checkout:    CheckoutPage,
-  profile:     ProfilePage,
-  legalEditor: LegalEditorPage,
+  landing:         LandingPage,
+  login:           LoginPage,
+  authCallback:    withNavigate(AuthCallbackPage),
+  completeProfile: withNavigate(CompleteProfilePage),
+  dashboard:       DashboardPage,
+  templates:       TemplatesPage,
+  editor:          EditorPage,
+  preview:         PreviewPage,
+  checkout:        CheckoutPage,
+  profile:         ProfilePage,
+  legalEditor:     LegalEditorPage,
 };
 
 const PageFallback = () => (

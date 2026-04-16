@@ -7,3 +7,9 @@ node_modules/
 
 # Build
 dist/
+
+# Claude Code (configurações locais de cada dev)
+.claude/settings.local.json
+
+# Artefato Windows
+nul

@@ -4,7 +4,7 @@ const permuta = {
   id: "permuta",
   name: "Contrato de Permuta",
   description: "Troca de bens entre duas partes (imóvel por imóvel, veículo, etc.)",
-  icon: "RefreshCw",
+  icon: "Repeat",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 533",
 

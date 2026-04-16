@@ -4,7 +4,7 @@ const recibo = {
   id: "recibo",
   name: "Recibo",
   description: "Comprovante de pagamento ou recebimento de valores",
-  icon: "FileText",
+  icon: "FileCheck",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 319 a 322",
 

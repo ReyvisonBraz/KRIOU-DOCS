@@ -4,7 +4,7 @@ const doacao = {
   id: "doacao",
   name: "Contrato de Doação",
   description: "Transferência gratuita de bens entre pessoas",
-  icon: "Award",
+  icon: "Gift",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 538 a 564",
 

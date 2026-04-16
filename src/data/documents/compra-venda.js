@@ -4,7 +4,7 @@ const compraVenda = {
   id: "compra-venda",
   name: "Compra e Venda",
   description: "Contrato para compra e venda de bens (imóvel, veículo, terreno)",
-  icon: "FileText",
+  icon: "Tag",
   available: true,
   legislation: "Código Civil Brasileiro (Lei 10.406/2002), Arts. 481 a 532",
 

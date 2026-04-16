@@ -9,7 +9,7 @@ const comodato = {
   id: "comodato",
   name: "Contrato de Comodato",
   description: "Empréstimo gratuito de bem (imóvel, veículo, equipamento)",
-  icon: "FileText",
+  icon: "Key",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 579 a 585",
 

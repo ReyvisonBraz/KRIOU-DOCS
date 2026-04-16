@@ -4,7 +4,7 @@ const autorizacaoViagem = {
   id: "autorizacao-viagem",
   name: "Autorização de Viagem",
   description: "Autorização para menor de idade viajar desacompanhado de um dos pais",
-  icon: "MapPin",
+  icon: "Plane",
   available: true,
   legislation: "Estatuto da Criança e do Adolescente (Lei 8.069/90), Art. 83 e 84",
 

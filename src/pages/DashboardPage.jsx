@@ -39,6 +39,13 @@ const DashboardPage = () => {
     { id: "compra-venda", label: "Compra/Venda", icon: "FileText" },
     { id: "locacao", label: "Locação", icon: "Home" },
     { id: "procuracao", label: "Procuração", icon: "Shield" },
+    { id: "comodato", label: "Comodato", icon: "Key" },
+    { id: "doacao", label: "Doação", icon: "Gift" },
+    { id: "recibo", label: "Recibos", icon: "FileCheck" },
+    { id: "uniao-estavel", label: "União Estável", icon: "Heart" },
+    { id: "autorizacao-viagem", label: "Aut. Viagem", icon: "Plane" },
+    { id: "permuta", label: "Permuta", icon: "Repeat" },
+    { id: "prestacao-servicos", label: "Prest. Serviços", icon: "Wrench" },
   ];
 
   const getFilteredDocs = () => {

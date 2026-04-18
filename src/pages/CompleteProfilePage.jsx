@@ -50,7 +50,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
         cpf:       cpf.replace(/\D/g, ""),
       });
       showToast.success("Cadastro concluído! Bem-vindo ao Kriou Docs.");
-      onNavigate("dashboard");
+      onNavigate("welcome");
     } catch (err) {
       console.error("[CompleteProfile] Erro ao salvar perfil:", err);
       showToast.error("Erro ao salvar dados. Tente novamente.");

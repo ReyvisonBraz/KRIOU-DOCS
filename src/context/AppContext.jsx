@@ -78,12 +78,17 @@ const AppBootstrap = ({ children }) => {
   const { userId, isAuthLoading }        = useAuth();
   const { setFormData, setUserDocuments } = useResume();
   const { setLegalFormData }              = useLegal();
-  const { navigate }                      = useContext(NavigationContext);
+  const { navigate, currentPage }         = useContext(NavigationContext);
   const { setIsLoading }                  = useContext(UIContext);
 
   useEffect(() => {
     // Aguarda Supabase resolver a sessão antes de inicializar
     if (isAuthLoading) return;
+
+    // Páginas de autenticação/onboarding gerenciam sua própria navegação — não interferir
+    const isAuthPage = currentPage === "authCallback" || currentPage === "completeProfile"
+                    || currentPage === "welcome"
+                    || window.location.pathname === "/auth/callback";
 
     const init = async () => {
       if (userId) {
@@ -102,17 +107,21 @@ const AppBootstrap = ({ children }) => {
         const legalDraft = StorageService.loadDraft(userId, "legal");
         if (legalDraft) setLegalFormData(legalDraft);
 
-        // Restaura última página ou vai ao dashboard
-        const savedPage  = StorageService.loadPage();
-        const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
-        setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
+        // Só redireciona se NÃO estiver em página de autenticação
+        if (!isAuthPage) {
+          const savedPage  = StorageService.loadPage();
+          const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+          setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
+        }
       }
 
       setIsLoading(false);
     };
 
-    // Não inicializa na página de callback — ela gerencia sua própria navegação
-    if (window.location.pathname !== "/auth/callback") {
+    if (!isAuthPage) {
+      init();
+    } else if (userId) {
+      // Em páginas de auth com userId: carrega dados mas não redireciona
       init();
     } else {
       setIsLoading(false);

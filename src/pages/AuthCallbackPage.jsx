@@ -26,10 +26,12 @@ const AuthCallbackPage = ({ onNavigate }) => {
 
       try {
         const profile = await DocumentService.fetchProfile();
-        if (DocumentService.isProfileComplete(profile)) {
-          onNavigate("dashboard");
-        } else {
+        if (!DocumentService.isProfileComplete(profile)) {
           onNavigate("completeProfile");
+        } else if (!DocumentService.isOnboardingDone(profile)) {
+          onNavigate("welcome");
+        } else {
+          onNavigate("dashboard");
         }
       } catch {
         onNavigate("dashboard");

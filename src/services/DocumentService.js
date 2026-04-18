@@ -110,4 +110,24 @@ export const DocumentService = {
   isProfileComplete(profile) {
     return !!(profile?.nome?.trim() && profile?.sobrenome?.trim() && profile?.cpf?.trim());
   },
+
+  /**
+   * Verifica se o onboarding foi concluído.
+   */
+  isOnboardingDone(profile) {
+    return !!profile?.onboarding_done;
+  },
+
+  /**
+   * Marca o onboarding como concluído no perfil do usuário.
+   */
+  async markOnboardingDone() {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ onboarding_done: true })
+      .eq("id", (await supabase.auth.getUser()).data.user?.id);
+
+    if (error) throw error;
+    return true;
+  },
 };

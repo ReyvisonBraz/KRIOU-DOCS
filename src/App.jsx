@@ -29,12 +29,17 @@ const ProfilePage         = lazy(() => import("./pages/ProfilePage"));
 const LegalEditorPage     = lazy(() => import("./pages/LegalEditorPage"));
 const AuthCallbackPage    = lazy(() => import("./pages/AuthCallbackPage"));
 const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
+const WelcomePage         = lazy(() => import("./pages/WelcomePage"));
 
 // Wrapper para passar onNavigate às páginas que precisam navegar antes do contexto estar pronto
-const withNavigate = (Component) => {
+const withNavigate = (Component, extraProps = {}) => {
   const Wrapped = () => {
-    const { navigate } = useApp();
-    return <Component onNavigate={navigate} />;
+    const app = useApp();
+    const resolved = {};
+    for (const [key, fn] of Object.entries(extraProps)) {
+      resolved[key] = typeof fn === "function" ? fn(app) : fn;
+    }
+    return <Component onNavigate={app.navigate} {...resolved} />;
   };
   return Wrapped;
 };
@@ -44,6 +49,7 @@ const routes = {
   login:           LoginPage,
   authCallback:    withNavigate(AuthCallbackPage),
   completeProfile: withNavigate(CompleteProfilePage),
+  welcome:         withNavigate(WelcomePage, { displayName: (app) => app.displayName }),
   dashboard:       DashboardPage,
   templates:       TemplatesPage,
   editor:          EditorPage,

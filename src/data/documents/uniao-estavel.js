@@ -64,7 +64,8 @@ const uniaoEstavel = {
         fields: [
           field("data_inicio_uniao", "Data de Início da Convivência", "date", {
             required: true,
-            hint: "Data em que o casal passou a viver junto como se casados fossem.",
+            hint: "Data em que o casal começou a viver junto como se casados fossem. Não precisa ser exata — pode ser uma data aproximada.",
+            whyImportant: "Define o início da união estável para fins de direitos patrimoniais e previdenciários.",
           }),
           field("regime_bens", "Regime de Bens", "select", {
             required: true,
@@ -73,17 +74,22 @@ const uniaoEstavel = {
               "Comunhão Universal de Bens",
               "Separação Total de Bens",
             ],
-            hint: "Comunhão Parcial: bens adquiridos durante a união são de ambos. Separação: cada um fica com o que é seu.",
+            hint: "Define como os bens do casal serão tratados:\n• Comunhão Parcial (mais comum): o que cada um tinha antes fica separado; o que comprarem juntos durante a união pertence aos dois.\n• Comunhão Universal: tudo é de ambos, inclusive o que tinham antes.\n• Separação Total: cada um é dono do que é seu, mesmo durante a união.",
+            whyImportant: "O regime de bens determina como o patrimônio será dividido em caso de separação ou falecimento. É uma das decisões mais importantes do contrato.",
           }),
           field("endereco_residencia", "Endereço de Residência do Casal", "text", {
             required: false,
             placeholder: "Endereço onde moram juntos",
             example: "Rua das Palmeiras, 456, São Paulo/SP",
+            hint: "Endereço onde o casal reside em conjunto. Ajuda a comprovar a convivência.",
+            whatHappensIfEmpty: "O contrato será gerado sem o endereço de residência conjunta.",
             disableable: true,
           }),
           field("filhos_uniao", "Possuem Filhos em Comum?", "select", {
             required: false,
             options: ["Não", "Sim"],
+            hint: "Se o casal possui filhos biológicos ou adotivos em comum.",
+            whatHappensIfEmpty: "O contrato não mencionará filhos.",
             disableable: true,
           }),
         ],
@@ -98,22 +104,24 @@ const uniaoEstavel = {
         fields: [
           field("data_inicio_uniao_diss", "Data de Início da União", "date", {
             required: true,
-            hint: "Quando a união estável começou.",
+            hint: "Quando a união estável começou. Use a data aproximada em que passaram a conviver.",
           }),
           field("data_fim_uniao", "Data de Fim da Convivência", "date", {
             required: true,
-            hint: "Data em que a convivência foi encerrada.",
+            hint: "Data em que a convivência foi encerrada, ou seja, quando pararam de viver juntos.",
           }),
           field("motivo_dissolucao", "Motivo", "select", {
             required: false,
             options: ["Consensual (ambos concordam)", "Litigiosa (há discordância)"],
-            hint: "Consensual: ambos concordam em encerrar. Litigiosa: há divergências.",
+            hint: "'Consensual' = ambos concordam em terminar. 'Litigiosa' = há desacordos que podem precisar de um juiz para resolver. Se for litigiosa com filhos menores, será necessário um advogado.",
+            whatHappensIfEmpty: "O contrato não especificará o motivo da dissolução.",
             disableable: true,
           }),
           field("partilha_bens", "Houve Partilha de Bens?", "select", {
             required: false,
             options: ["Não há bens a partilhar", "Sim - Amigável", "Sim - Judicial"],
-            hint: "Se possuem bens adquiridos durante a união, é necessário dividir.",
+            hint: "'Partilha' é a divisão dos bens adquiridos durante a união. 'Amigável' = ambos concordam com a divisão. 'Judicial' = um juiz decide como dividir.",
+            whatHappensIfEmpty: "O contrato não detalhará a partilha de bens.",
             disableable: true,
           }),
           field("descricao_partilha", "Descrição da Partilha", "textarea", {
@@ -121,18 +129,23 @@ const uniaoEstavel = {
             placeholder: "Descreva como os bens serão divididos...",
             example:
               "O imóvel localizado na Rua X ficará com o companheiro A. O veículo placa XYZ ficará com o companheiro B.",
-            hint: "Detalhe quais bens ficam com cada parte.",
+            hint: "Detalhe quais bens ficam com cada parte: imóveis, veículos, contas bancárias, eletrodomésticos, etc.",
+            whyImportant: "Sem uma descrição clara da partilha, podem surgir conflitos futuros sobre a propriedade dos bens.",
+            whatHappensIfEmpty: "O contrato será gerado sem detalhes de partilha.",
             disableable: true,
           }),
           field("pensao_alimenticia", "Haverá Pensão Alimentícia?", "select", {
             required: false,
             options: ["Não", "Sim - Para companheiro(a)", "Sim - Para filhos", "Sim - Para ambos"],
+            hint: "'Pensão alimentícia' é um valor mensal que uma parte paga à outra (ou aos filhos) para garantir a subsistência. Pode ser acordada ou definida por juiz.",
+            whatHappensIfEmpty: "O contrato declarará que ambas as partes renunciam à pensão alimentícia entre si.",
             disableable: true,
           }),
           field("valor_pensao", "Valor da Pensão", "money", {
             required: false,
             placeholder: "R$ 0,00",
-            hint: "Valor mensal da pensão, se aplicável.",
+            hint: "Valor mensal da pensão alimentícia combinada entre as partes.",
+            whatHappensIfEmpty: "O contrato não mencionará valor de pensão.",
             disableable: true,
           }),
         ],
@@ -142,8 +155,8 @@ const uniaoEstavel = {
 
   clientNotes: [
     "A união estável pode ser registrada em cartório para ter mais segurança jurídica.",
-    "O regime de bens pode ser alterado mediante acordo entre as partes.",
-    "Na dissolução consensual, ambas as partes devem concordar com os termos.",
+    "O regime de bens pode ser alterado mediante acordo entre as partes e escritura pública.",
+    "Na dissolução consensual, ambas as partes devem concordar com todos os termos.",
   ],
 
   internalNotes: [
@@ -162,17 +175,17 @@ const uniaoEstavel = {
       },
       {
         type: "paragraph",
-        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDO(A) CONVIVENTE,",
+        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDO(A) CONVIVENTE.",
       },
       {
         type: "paragraph",
-        text: "em conjunto denominados partes, ambos signatários, maiores e capazes, firmam entre si o presente contrato de união estável que será regulado pelas cláusulas e condições a seguir estabelecidas.",
+        text: "Em conjunto denominados partes, ambos signatários, maiores e capazes, firmam entre si o presente contrato de união estável que será regulado pelas cláusulas e condições a seguir estabelecidas.",
       },
       {
         type: "clause",
         number: "1ª",
         title: "DO TERMO",
-        text: "As partes declaram para todos os fins legais e a quem possa interessar, que mantêm um relacionamento estável, visto que têm entre si uma relação pública, contínua, duradoura e com o objetivo de constituição de família desde {data_inicio_uniao}{?, , com residência em {endereco_residencia}}, caracterizando, portanto, união estável, prevista nos artigos 1.723 a 1.727 do Código Civil e na Lei n.º 9.278/96.",
+        text: "As partes declaram para todos os fins legais e a quem possa interessar, que mantêm um relacionamento estável, público, contínuo, duradouro e com o objetivo de constituição de família desde {data_inicio_uniao}{?, , com residência em {endereco_residencia}}, caracterizando, portanto, união estável, prevista nos artigos 1.723 a 1.727 do Código Civil e na Lei n.º 9.278/96.",
       },
       {
         type: "clause",
@@ -196,7 +209,7 @@ const uniaoEstavel = {
         title: "DOS DEVERES",
         paragraphs: [
           "As partes, reciprocamente, concordam e se obrigam a ter a união que aqui se estipula respaldada na lealdade, fidelidade, respeito, assistência e, ainda, na guarda, sustento e educação dos filhos.",
-          "{?, § 1º. As partes declaram possuir filhos em comum: {filhos_uniao}.}",
+          "{?, § 1º. As partes declaram que possuem filhos em comum: {filhos_uniao}.}",
           "§ 2º. As partes indicam mutuamente, um em relação ao outro, como a pessoa de confiança para manter-se no hospital como acompanhante, ao seu lado, em caso de impossibilidade de manifestar a própria vontade.",
         ],
       },
@@ -212,7 +225,7 @@ const uniaoEstavel = {
         title: "DA EXTINÇÃO DO CONTRATO",
         paragraphs: [
           "As partes, de comum acordo, estabelecem que quando um deles, ou ambos, não mais desejar a permanência da união, impõe-se a obrigação de distratar amigavelmente o presente contrato, preferencialmente pela via extrajudicial.",
-          "§ 1º. A união também será considerada extinta com a morte de uma das partes ou pela vontade de qualquer uma das partes.",
+          "§ 1º. A união também será considerada extinta com o falecimento de uma das partes ou pela vontade de qualquer uma das partes.",
         ],
       },
       {
@@ -253,17 +266,17 @@ const uniaoEstavel = {
       },
       {
         type: "paragraph",
-        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDA PARTE,",
+        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDA PARTE.",
       },
       {
         type: "paragraph",
-        text: "em conjunto denominados partes, ambos signatários, maiores e capazes, acordam livremente entre si a presente declaração de dissolução de união estável.",
+        text: "Em conjunto denominados partes, ambos signatários, maiores e capazes, acordam livremente entre si a presente declaração de dissolução de união estável.",
       },
       {
         type: "clause",
         number: "1ª",
         title: "DA UNIÃO ESTÁVEL",
-        text: "As partes declaram para todos os fins legais que mantiveram uma relação de convivência pública e contínua desde {data_inicio_uniao_diss}, caracterizada como união estável nos termos dos artigos 1.723 a 1.727 do Código Civil, e, em comum acordo, decidiram encerrá-la na data de {data_fim_uniao}{?, , por motivo: {motivo_dissolucao}}.",
+        text: "As partes declaram para todos os fins legais que mantiveram uma relação de convivência pública e contínua desde {data_inicio_uniao_diss}, caracterizada como união estável nos termos dos artigos 1.723 a 1.727 do Código Civil, e decidiram, de livre e espontânea vontade, encerrar a convivência na data de {data_fim_uniao}{?, , sendo a dissolução de natureza {motivo_dissolucao}}.",
       },
       {
         type: "clause",
@@ -277,7 +290,7 @@ const uniaoEstavel = {
         title: "DA PARTILHA DE BENS",
         paragraphs: [
           "{?, Situação da partilha: {partilha_bens}.}",
-          "{?, Descrição da partilha acordada: {descricao_partilha}.}",
+          "{?, Descrição da partilha acordada entre as partes: {descricao_partilha}.}",
         ],
       },
       {
@@ -285,8 +298,8 @@ const uniaoEstavel = {
         number: "4ª",
         title: "DOS ALIMENTOS",
         paragraphs: [
-          "{?, Pensão alimentícia: {pensao_alimenticia}{?, , no valor mensal de {valor_pensao}}.}",
-          "As partes que não solicitam pensão reconhecem ter condições de arcar com a própria sobrevivência e renunciam ao direito de pleitear alimentos.",
+          "{?, As partes acordam pensão alimentícia: {pensao_alimenticia}{?, , no valor mensal de {valor_pensao}}.}",
+          "As partes que não pleiteiam pensão alimentícia declaram ter plenas condições de prover a própria subsistência, renunciando expressamente ao direito de pleitear alimentos uma da outra.",
         ],
       },
       {

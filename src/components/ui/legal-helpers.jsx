@@ -146,9 +146,16 @@ export const SectionHeader = ({ title, subtitle, icon, number }) => {
 };
 
 /**
- * LegalHelpButton - Botão de ajuda destacado para campos jurídicos
+ * LegalHelpButton - Botão de ajuda detalhado para campos jurídicos.
+ *
+ * Exibe um tooltip com até 5 seções:
+ * 1. O que é isso? (hint)
+ * 2. Exemplo de preenchimento (example)
+ * 3. Por que é importante? (whyImportant)
+ * 4. O que acontece se não preencher? (whatHappensIfEmpty) — só para opcionais
+ * 5. Onde encontrar (whereFind)
  */
-export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
+export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHappensIfEmpty, label }) => {
   const [open, setOpen] = React.useState(false);
   const buttonRef = React.useRef(null);
   const tooltipRef = React.useRef(null);
@@ -158,7 +165,7 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
     if (!buttonRef.current) return { right: 0 };
 
     const buttonRect = buttonRef.current.getBoundingClientRect();
-    const tooltipWidth = 320;
+    const tooltipWidth = 340;
     const windowWidth = window.innerWidth;
 
     // Se o botão estiver muito à direita, centraliza na tela
@@ -197,6 +204,9 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
   }, [open]);
 
   const tooltipPosition = getTooltipStyle();
+
+  // Conta quantas seções serão exibidas para decidir o layout
+  const sectionCount = [hint, example, whyImportant, whatHappensIfEmpty, whereFind].filter(Boolean).length;
 
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
@@ -259,8 +269,10 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
               top: "100%",
               right: 0,
               marginTop: 8,
-              width: 320,
+              width: 340,
               maxWidth: "calc(100vw - 48px)",
+              maxHeight: "70vh",
+              overflowY: "auto",
               background: "var(--surface)",
               border: "2px solid var(--teal)",
               borderRadius: 14,
@@ -269,6 +281,7 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
               boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
               ...tooltipPosition,
             }}>
+            {/* Header */}
             <div style={{
               display: "flex",
               alignItems: "center",
@@ -278,35 +291,38 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
               borderBottom: "1px solid var(--border)",
             }}>
               <span style={{ fontSize: 20 }}>💡</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)" }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
                 Ajuda: {label}
               </span>
               <button
                 onClick={() => setOpen(false)}
                 style={{
-                  marginLeft: "auto",
                   background: "none",
                   border: "none",
                   color: "var(--text-muted)",
                   cursor: "pointer",
                   fontSize: 16,
+                  padding: "2px 4px",
+                  borderRadius: 4,
                 }}
               >
                 ✕
               </button>
             </div>
 
+            {/* 1. O que é isso? */}
             {hint && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4 }}>
-                  O que é isso?
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 13 }}>📖</span> O que é isso?
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>
                   {hint}
                 </div>
               </div>
             )}
 
+            {/* 2. Exemplo */}
             {example && (
               <div style={{
                 padding: 12,
@@ -315,8 +331,8 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
                 border: "1px dashed var(--border)",
                 marginBottom: 12,
               }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4 }}>
-                  Exemplo de preenchimento
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
                 </div>
                 <div style={{
                   fontSize: 14,
@@ -329,6 +345,43 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
               </div>
             )}
 
+            {/* 3. Por que é importante? */}
+            {whyImportant && (
+              <div style={{
+                padding: 10,
+                background: "rgba(0,210,211,0.06)",
+                borderRadius: 8,
+                border: "1px solid rgba(0,210,211,0.15)",
+                marginBottom: 12,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>
+                  {whyImportant}
+                </div>
+              </div>
+            )}
+
+            {/* 4. O que acontece se não preencher? (apenas opcionais) */}
+            {whatHappensIfEmpty && (
+              <div style={{
+                padding: 10,
+                background: "rgba(108,99,255,0.06)",
+                borderRadius: 8,
+                border: "1px solid rgba(108,99,255,0.15)",
+                marginBottom: 12,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>
+                  {whatHappensIfEmpty}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Onde encontrar */}
             {whereFind && (
               <div style={{
                 padding: 10,
@@ -336,8 +389,8 @@ export const LegalHelpButton = ({ hint, example, whereFind, label }) => {
                 borderRadius: 8,
                 border: "1px solid rgba(249,168,37,0.2)",
               }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4 }}>
-                  📋 Onde encontrar
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
                   {whereFind}
@@ -461,7 +514,10 @@ export const ClientNoteBanner = ({ notes }) => {
 };
 
 /**
- * LegalFieldRenderer - Renderiza um campo jurídico com ajuda, exemplo e toggle opcional
+ * LegalFieldRenderer - Renderiza um campo jurídico com ajuda, exemplo e toggle opcional.
+ *
+ * Suporta os campos extras: whyImportant, whatHappensIfEmpty, que são
+ * passados ao LegalHelpButton para enriquecer o tooltip de ajuda.
  */
 export const LegalFieldRenderer = ({
   fieldDef,
@@ -473,7 +529,7 @@ export const LegalFieldRenderer = ({
 }) => {
   const isOptional = fieldDef.disableable && !fieldDef.required;
   const isDisabled = disabled;
-  const hasHelp = fieldDef.hint || fieldDef.example || fieldDef.whereFind;
+  const hasHelp = fieldDef.hint || fieldDef.example || fieldDef.whereFind || fieldDef.whyImportant || fieldDef.whatHappensIfEmpty;
 
   return (
     <div style={{
@@ -514,6 +570,8 @@ export const LegalFieldRenderer = ({
               hint={fieldDef.hint}
               example={fieldDef.example}
               whereFind={fieldDef.whereFind}
+              whyImportant={fieldDef.whyImportant}
+              whatHappensIfEmpty={fieldDef.whatHappensIfEmpty}
               label={fieldDef.label}
             />
           </div>
@@ -527,6 +585,25 @@ export const LegalFieldRenderer = ({
             onToggle={onToggleDisabled}
             label="Preencher este campo"
           />
+        </div>
+      )}
+
+      {/* Nota sobre impacto quando desabilitado */}
+      {isDisabled && fieldDef.whatHappensIfEmpty && (
+        <div style={{
+          fontSize: 11,
+          color: "var(--text-muted)",
+          padding: "6px 10px",
+          background: "rgba(108,99,255,0.05)",
+          borderRadius: 6,
+          border: "1px solid rgba(108,99,255,0.1)",
+          lineHeight: 1.5,
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 6,
+        }}>
+          <span style={{ fontSize: 12, flexShrink: 0 }}>ℹ️</span>
+          {fieldDef.whatHappensIfEmpty}
         </div>
       )}
 

@@ -1,1 +1,0 @@
-import{n as e}from"./vendor-sonner-Bt0uEXv2.js";var t={success:(t,n={})=>e.success(t,{duration:3e3,...n}),error:(t,n={})=>e.error(t,{duration:5e3,...n}),info:(t,n={})=>e(t,{duration:3e3,...n}),loading:(t,n={})=>e.loading(t,{...n}),dismiss:t=>e.dismiss(t)};export{t};

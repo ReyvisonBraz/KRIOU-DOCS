@@ -48,15 +48,18 @@ const procuracao = {
         field("validade", "Prazo de Validade", "select", {
           required: true,
           options: ["30 dias", "90 dias", "6 meses", "1 ano", "Indeterminada"],
-          hint: "Por quanto tempo esta procuração será válida. Se não souber, escolha 'Indeterminada'.",
+          hint: "Por quanto tempo esta procuração será válida. Após o prazo, ela perde o efeito automaticamente. Se não souber, escolha 'Indeterminada' — você pode revogar a qualquer momento.",
+          whyImportant: "Define até quando o procurador pode agir em seu nome. Prazos menores são mais seguros.",
         }),
         field("cidade_proc", "Cidade", "text", {
           required: true,
           placeholder: "Cidade, UF",
           example: "São Paulo, SP",
+          hint: "Cidade onde a procuração está sendo emitida.",
         }),
         field("data_proc", "Data de Assinatura", "date", {
           required: true,
+          hint: "Data em que a procuração será assinada.",
         }),
       ],
     },
@@ -81,19 +84,23 @@ const procuracao = {
               "Poderes Gerais (Ampla)",
               "Outra",
             ],
-            hint: "Para que esta procuração será usada. Escolha a mais específica possível.",
+            hint: "Para que esta procuração será usada. Quanto mais específica a finalidade, mais seguro para você. 'Poderes Gerais' dá amplos poderes ao procurador — use com cuidado.",
+            whyImportant: "Uma procuração muito ampla pode ser usada para atos que você não desejava. Prefira finalidades específicas.",
           }),
           field("poderes_desc", "Descrição dos Poderes", "textarea", {
             required: true,
             placeholder: "Descreva o que a pessoa poderá fazer...",
             example:
               "Representar o outorgante junto ao Cartório de Registro de Imóveis para assinar escritura de compra e venda do imóvel localizado na Rua...",
-            hint: "Descreva com detalhes o que o outorgado poderá fazer em seu nome. Quanto mais específico, mais seguro.",
+            hint: "Descreva com detalhes o que o procurador poderá fazer em seu nome. Inclua detalhes específicos como endereço do imóvel, nome do banco, número do processo, etc.",
+            whyImportant: "Poderes vagos podem gerar insegurança jurídica. Quanto mais detalhado, mais protegido você estará.",
           }),
           field("substabelecimento", "Permitir Substabelecimento?", "select", {
             required: false,
             options: ["Não", "Sim, com reserva de poderes", "Sim, sem reserva de poderes"],
-            hint: "Substabelecimento permite que o outorgado passe os poderes para outra pessoa.",
+            hint: "'Substabelecimento' significa que o procurador pode passar os poderes dele para outra pessoa. 'Com reserva' = ele continua tendo os poderes também. 'Sem reserva' = ele perde os poderes e passa tudo para o outro.",
+            whyImportant: "Se permitir substabelecimento, seu procurador pode designar outra pessoa que você nem conhece para agir em seu nome.",
+            whatHappensIfEmpty: "O contrato será gerado sem menção a substabelecimento, ou seja, o procurador não poderá transferir os poderes.",
             disableable: true,
           }),
         ],
@@ -110,13 +117,15 @@ const procuracao = {
             required: true,
             placeholder: "Ex: 123.456/SP",
             example: "123.456/SP",
-            hint: "Número de inscrição do advogado na Ordem dos Advogados do Brasil.",
-            whereFind: "Pergunte ao seu advogado ou consulte no site da OAB.",
+            hint: "Número de inscrição do advogado na OAB (Ordem dos Advogados do Brasil). Formato: número/estado (ex: 123.456/SP).",
+            whereFind: "Pergunte ao seu advogado ou consulte no site da OAB do seu estado (ex: oabsp.org.br para São Paulo).",
+            whyImportant: "É obrigatório para que o advogado possa representá-lo em qualquer processo judicial.",
           }),
           field("tipo_processo", "Tipo de Processo", "select", {
             required: false,
             options: ["Cível", "Trabalhista", "Criminal", "Família", "Tributário", "Todos"],
-            hint: "Em qual tipo de processo o advogado irá representá-lo.",
+            hint: "'Cível' = problemas de dinheiro, contratos, danos. 'Trabalhista' = questões de emprego. 'Criminal' = crimes. 'Família' = divórcio, guarda, pensão. 'Tributário' = impostos.",
+            whatHappensIfEmpty: "A procuração será ampla, valendo para qualquer tipo de processo.",
             disableable: true,
           }),
           field("poderes_especiais", "Poderes Especiais (Cláusula Ad Judicia)", "textarea", {
@@ -124,12 +133,14 @@ const procuracao = {
             placeholder: "Poderes para o foro em geral...",
             example:
               "Poderes para o foro em geral, conforme art. 105 do CPC, e os especiais para receber, dar quitação, transigir, desistir, renunciar, reconhecer a procedência do pedido.",
-            hint: "Os poderes para atuar em processos judiciais. O texto padrão (exemplo) cobre a maioria dos casos.",
+            hint: "Os 'poderes especiais' permitem que o advogado faça ações importantes como: aceitar acordos, desistir do processo, receber dinheiro em seu nome. O texto de exemplo cobre a maioria das situações.",
+            whyImportant: "Sem poderes especiais, o advogado não pode fazer acordo, receber valores ou desistir do processo em seu nome.",
           }),
           field("substabelecimento_jud", "Permitir Substabelecimento?", "select", {
             required: false,
             options: ["Não", "Sim, com reserva de poderes", "Sim, sem reserva de poderes"],
-            hint: "Permite que o advogado passe poderes para outro advogado.",
+            hint: "Permite que o advogado passe os poderes para outro advogado (colega de escritório, por exemplo). 'Com reserva' = ambos podem atuar. 'Sem reserva' = só o novo advogado atua.",
+            whatHappensIfEmpty: "A procuração será gerada sem permissão de substabelecimento.",
             disableable: true,
           }),
         ],
@@ -139,7 +150,7 @@ const procuracao = {
 
   clientNotes: [
     "Procuração particular não precisa ir ao cartório, mas para atos imobiliários é recomendável reconhecer firma.",
-    "Você pode revogar (cancelar) a procuração a qualquer momento, bastando notificar o outorgado.",
+    "Você pode revogar (cancelar) a procuração a qualquer momento, bastando notificar o outorgado por escrito.",
     "A procuração Ad Judicia (para advogado) é obrigatória para ter representação em processos judiciais.",
   ],
 
@@ -164,19 +175,15 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "a quem confiro os mais amplos, gerais e ilimitados poderes para: {poderes_desc}.",
+        text: "a quem confiro poderes para, em meu nome e por minha conta: {poderes_desc}.",
       },
       {
         type: "paragraph",
-        text: "{?, O substabelecimento é: {substabelecimento}.}",
+        text: "{?, Substabelecimento: {substabelecimento}.}",
       },
       {
         type: "paragraph",
-        text: "Esta procuração é válida por: {validade}.",
-      },
-      {
-        type: "paragraph",
-        text: "(NÃO É NECESSÁRIA AUTENTICAÇÃO EM CARTÓRIO para procuração particular)",
+        text: "Esta procuração é válida pelo prazo de {validade}, a contar da data de sua assinatura.",
       },
       {
         type: "date",
@@ -193,7 +200,7 @@ const procuracao = {
     "ad-judicia": [
       {
         type: "title",
-        text: "PROCURAÇÃO AD JUDICIA",
+        text: "PROCURAÇÃO AD JUDICIA ET EXTRA",
       },
       {
         type: "paragraph",
@@ -201,17 +208,17 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Sr.(a) {outorgado_nome}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?, , residente e domiciliado(a) em {outorgado_endereco}}{?, , {outorgado_cidade}},",
+        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Dr.(a) {outorgado_nome}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?, , com escritório em {outorgado_endereco}}{?, , {outorgado_cidade}},",
       },
       {
         type: "paragraph",
-        text: "a quem confiro os mais amplos e gerais poderes para:",
+        text: "a quem confiro amplos poderes para o foro em geral, com os poderes especiais de:",
       },
       {
         type: "clause",
         number: "I",
         title: "",
-        text: "Representar-me em qualquer juízo ou tribunal, em qualquer instância, nas ações e procedimentos de qualquer natureza, incluindo ações cíveis, trabalhistas, criminais, tributárias, previdenciárias;",
+        text: "Representar-me em qualquer juízo ou tribunal, em qualquer instância, nas ações e procedimentos de qualquer natureza, incluindo ações cíveis, trabalhistas, criminais, tributárias e previdenciárias;",
       },
       {
         type: "clause",
@@ -251,7 +258,7 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "Poderes especiais: {poderes_especiais}.",
+        text: "Poderes especiais conferidos: {poderes_especiais}.",
       },
       {
         type: "paragraph",
@@ -259,7 +266,7 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "Esta procuração é válida por: {validade}.",
+        text: "Esta procuração é válida pelo prazo de {validade}, a contar da data de sua assinatura.",
       },
       {
         type: "date",

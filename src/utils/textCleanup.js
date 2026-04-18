@@ -15,7 +15,7 @@
  * A ordem importa: regras mais específicas primeiro.
  */
 const CLEANUP_RULES = [
-  // ─── Padrões com marcador de campo ausente (\x00) ───────────────────────
+  // ─── Padrões com marcador de campo ausente (\x00) ─────────────────────────
 
   // "portador(a) do RG n.º \x00 e" → remove toda a frase do RG
   [/portador\(a\) da? (?:Cédula de Identidade )?RG?\s+n\.º\s+\x00\s+e\b/g, ""],
@@ -23,6 +23,12 @@ const CLEANUP_RULES = [
   [/portador\(a\) da? (?:Cédula de Identidade )?RG?\s+n\.º\s+\x00\s*,/g, ""],
   // "portador(a) do RG n.º \x00" no fim de frase
   [/portador\(a\) da? (?:Cédula de Identidade )?RG?\s+n\.º\s+\x00/g, ""],
+
+  // "inscrito(a) no CPF sob n.º \x00" (quando CPF também falta — edge case)
+  [/inscrito\(a\) no CPF\/?(?:MF)?\s+sob\s+n\.º\s+\x00\s*,?/g, ""],
+
+  // "portador(a) do Passaporte n.º \x00" (autorização de viagem)
+  [/portador\(a\) do Passaporte\s+n\.º\s+\x00\s*,?/g, ""],
 
   // "n.º \x00 e" → "e" (resquício quando só "n.º" sobra)
   [/\bn\.º\s+\x00\s+e\b/g, "e"],
@@ -45,6 +51,16 @@ const CLEANUP_RULES = [
   // "por \x00"
   [/\bpor\s+\x00\s*[,.]?/g, ""],
 
+  // "para \x00"
+  [/\bpara\s+\x00\s*[,.]?/g, ""],
+
+  // "com \x00," ou "com \x00"
+  [/\bcom\s+\x00\s*,/g, ""],
+  [/\bcom\s+\x00/g, ""],
+
+  // "ao \x00" / "à \x00"
+  [/\b[àa]o?\s+\x00\s*[,.]?/g, ""],
+
   // ", \x00," → ","
   [/,\s*\x00\s*,/g, ","],
   // "\x00," → remove marcador e vírgula
@@ -60,16 +76,24 @@ const CLEANUP_RULES = [
 
   // "e e " → "e " (conector duplicado após remoção)
   [/\be\s+e\b/g, "e"],
-  // ",," → ","
+  // ", ," → "," (vírgula dupla)
   [/,\s*,/g, ","],
+  // Espaço antes de vírgula: " ," → ","
+  [/\s+,/g, ","],
   // Vírgula antes de ponto, dois-pontos ou ponto-e-vírgula
   [/,\s*([.;:])/g, "$1"],
   // Vírgula antes de "e de outro lado" (padrão de contratos com duas partes)
   [/,\s*(e de outro lado)/g, " $1"],
+  // Vírgula antes de "doravante"
+  [/,\s*,\s*(doravante)/g, ", $1"],
   // Ponto final duplo
   [/\.\s*\./g, "."],
   // Dois espaços → um
   [/\s{2,}/g, " "],
+  // ", ." → "."
+  [/,\s*\./g, "."],
+  // ". ," → "."
+  [/\.\s*,/g, "."],
 
   // ─── Vírgulas solitárias no início ou final de frase ─────────────────────
   // ", e " no início de cláusula

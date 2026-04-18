@@ -54,20 +54,24 @@ const doacao = {
         field("tipo_bem_doacao", "Tipo de Bem", "select", {
           required: true,
           options: ["Imóvel (Casa/Apartamento)", "Terreno", "Veículo", "Dinheiro", "Outro"],
-          hint: "Qual tipo de bem está sendo doado.",
+          hint: "Qual tipo de bem está sendo doado. Para imóveis, será necessário escritura pública no cartório.",
         }),
         field("descricao_bem_doacao", "Descrição do Bem", "textarea", {
           required: true,
           placeholder: "Descreva detalhadamente o bem doado...",
           example:
             "Imóvel residencial localizado na Rua das Flores, 100, Matrícula nº 12.345 do 1º CRI de São Paulo.",
-          hint: "Descreva com detalhes o bem, incluindo identificação (matrícula, placa, etc.).",
+          hint: "Descreva com detalhes o bem sendo doado. Para imóveis: endereço e matrícula. Para veículos: marca, modelo, placa e RENAVAM. Para dinheiro: valor total.",
+          whyImportant: "Uma descrição detalhada evita confusão sobre o que está sendo doado e protege ambas as partes.",
         }),
         field("valor_estimado_doacao", "Valor Estimado do Bem", "money", {
           required: false,
           placeholder: "R$ 0,00",
           example: "R$ 300.000,00",
-          hint: "Valor de mercado estimado do bem. Necessário para cálculo do ITCMD (imposto sobre doação).",
+          hint: "Valor de mercado estimado do bem. É necessário para o cálculo do ITCMD, que é o imposto cobrado pelo estado sobre doações (varia de 2% a 8% dependendo do estado).",
+          whereFind: "Para imóveis: valor venal no IPTU ou avaliação de mercado. Para veículos: tabela FIPE (fipe.org.br).",
+          whyImportant: "O ITCMD (Imposto sobre Transmissão Causa Mortis e Doação) é obrigatório. Sem o valor estimado, pode haver problemas com o fisco estadual.",
+          whatHappensIfEmpty: "O contrato será gerado sem o valor do bem. Isso pode dificultar o registro e o pagamento do ITCMD.",
           disableable: true,
         }),
       ],
@@ -102,13 +106,15 @@ const doacao = {
           field("tipo_usufruto", "Tipo de Usufruto", "select", {
             required: true,
             options: ["Vitalício (até o falecimento do doador)", "Por prazo determinado"],
-            hint: "Vitalício: o doador usa o bem enquanto viver. Por prazo: por tempo definido.",
+            hint: "'Usufruto' significa que o doador continua usando o bem mesmo após doar. 'Vitalício' = usa enquanto viver. 'Por prazo' = usa por um tempo determinado. É muito usado quando pais doam imóvel para filhos mas querem continuar morando lá.",
+            whyImportant: "Garante que o doador não ficará sem moradia ou sem o benefício do bem mesmo após a doação.",
           }),
           field("prazo_usufruto", "Prazo do Usufruto (se determinado)", "text", {
             required: false,
             placeholder: "Ex: 10 anos",
             example: "10 anos a partir da data da doação",
-            hint: "Só preencha se escolheu 'Por prazo determinado' acima.",
+            hint: "Só preencha se escolheu 'Por prazo determinado' acima. Informe por quanto tempo o doador manterá o direito de uso.",
+            whatHappensIfEmpty: "Se o tipo for 'Vitalício', não há prazo. O usufruto dura até o falecimento do doador.",
             disableable: true,
           }),
         ],
@@ -128,12 +134,13 @@ const doacao = {
               "Falecimento do donatário sem herdeiros",
               "Outra condição",
             ],
-            hint: "Em qual situação o bem retorna ao doador.",
+            hint: "'Reversão' significa que, se acontecer a condição descrita, o bem volta para quem doou. É uma forma de proteger o patrimônio familar.",
+            whyImportant: "Garante que o bem doado não vá para terceiros em caso de falecimento do donatário.",
           }),
           field("condicao_reversao_desc", "Descrição da Condição (se outra)", "textarea", {
             required: false,
             placeholder: "Descreva a condição personalizada...",
-            hint: "Só preencha se escolheu 'Outra condição' acima.",
+            hint: "Só preencha se escolheu 'Outra condição' acima. Descreva em detalhes quando o bem deve voltar ao doador.",
             disableable: true,
           }),
         ],
@@ -143,8 +150,8 @@ const doacao = {
 
   clientNotes: [
     "Doação de imóvel acima de determinado valor exige escritura pública (cartório).",
-    "A doação está sujeita ao imposto ITCMD (varia por estado, geralmente 4% a 8%).",
-    "Doação com usufruto: você doa, mas continua morando/usando o bem.",
+    "A doação está sujeita ao imposto ITCMD (varia por estado, geralmente 2% a 8% do valor do bem).",
+    "Doação com usufruto: você doa, mas continua morando/usando o bem até o fim do prazo ou até falecer.",
     "Doação pode ser anulada por ingratidão do donatário (art. 557 do Código Civil).",
   ],
 
@@ -161,11 +168,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}.",
-      },
-      {
-        type: "paragraph",
-        text: "As partes têm entre si, justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -173,7 +176,7 @@ const doacao = {
         title: "DO OBJETO",
         paragraphs: [
           "O(A) DOADOR(A) transfere ao(à) DONATÁRIO(A), a título de doação pura e simples, o seguinte bem: {tipo_bem_doacao} — {descricao_bem_doacao}.",
-          "{?, Valor estimado do bem: {valor_estimado_doacao}.}",
+          "{?, O valor estimado do bem doado é de {valor_estimado_doacao}.}",
         ],
       },
       {
@@ -186,23 +189,23 @@ const doacao = {
         type: "clause",
         number: "3ª",
         title: "DA IRRETRATABILIDADE",
-        text: "A presente doação é irretratável e irrevogável, conforme art. 548 do Código Civil Brasileiro.",
+        text: "A presente doação é feita de forma livre, irretratável e irrevogável, conforme art. 548 do Código Civil Brasileiro, ressalvadas as hipóteses legais de revogação por ingratidão.",
       },
       {
         type: "clause",
         number: "4ª",
         title: "DA RESPONSABILIDADE",
-        text: "O(A) DONATÁRIO(A) responde pelos ônus e despesas do bem a partir da data de assinatura deste instrumento.",
+        text: "O(A) DONATÁRIO(A) passa a responder por todos os ônus, encargos e despesas do bem a partir da data de assinatura deste instrumento, incluindo impostos, taxas e eventuais manutenções.",
       },
       {
         type: "clause",
         number: "5ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {cidade_doacao}.",
+        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste instrumento, as partes elegem o Foro da Comarca de {cidade_doacao}.",
       },
       {
         type: "closing",
-        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor.",
+        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor e forma, na presença de duas testemunhas.",
       },
       {
         type: "date",
@@ -228,11 +231,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO COM RESERVA DE USUFRUTO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}.",
-      },
-      {
-        type: "paragraph",
-        text: "As partes têm entre si, justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO COM RESERVA DE USUFRUTO, de um lado, como DOADOR(A) e USUFRUTUÁRIO(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A) e NU-PROPRIETÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -240,26 +239,26 @@ const doacao = {
         title: "DO OBJETO",
         paragraphs: [
           "O(A) DOADOR(A) transfere ao(à) DONATÁRIO(A), a título de doação, o seguinte bem: {tipo_bem_doacao} — {descricao_bem_doacao}.",
-          "{?, Valor estimado do bem: {valor_estimado_doacao}.}",
+          "{?, O valor estimado do bem doado é de {valor_estimado_doacao}.}",
         ],
       },
       {
         type: "clause",
         number: "2ª",
         title: "DA RESERVA DE USUFRUTO",
-        text: "O(A) DOADOR(A) reserva para si o usufruto {tipo_usufruto} do bem acima descrito{?, , pelo prazo de {prazo_usufruto}}, mantendo o direito de usar, gozar e fruir do bem durante o período de usufruto.",
+        text: "O(A) DOADOR(A) reserva para si o usufruto {tipo_usufruto} do bem acima descrito{?, , pelo prazo de {prazo_usufruto}}, mantendo o direito de usar, gozar e fruir do bem durante o período de usufruto, nos termos dos artigos 1.390 a 1.411 do Código Civil.",
       },
       {
         type: "clause",
         number: "3ª",
         title: "DA ACEITAÇÃO",
-        text: "O(A) DONATÁRIO(A) aceita a doação com a reserva de usufruto, declarando receber o bem na condição descrita.",
+        text: "O(A) DONATÁRIO(A) aceita a doação com a reserva de usufruto, declarando estar ciente de que a posse plena do bem lhe será transferida somente após a extinção do usufruto.",
       },
       {
         type: "clause",
         number: "4ª",
         title: "DA IRRETRATABILIDADE",
-        text: "A presente doação é irretratável e irrevogável, conforme art. 548 do Código Civil Brasileiro.",
+        text: "A presente doação é feita de forma livre, irretratável e irrevogável, conforme art. 548 do Código Civil Brasileiro.",
       },
       {
         type: "clause",
@@ -275,7 +274,7 @@ const doacao = {
       },
       {
         type: "closing",
-        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor.",
+        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor e forma, na presença de duas testemunhas.",
       },
       {
         type: "date",
@@ -301,11 +300,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO COM CLÁUSULA DE REVERSÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}.",
-      },
-      {
-        type: "paragraph",
-        text: "As partes têm entre si, justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO COM CLÁUSULA DE REVERSÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -313,7 +308,7 @@ const doacao = {
         title: "DO OBJETO",
         paragraphs: [
           "O(A) DOADOR(A) transfere ao(à) DONATÁRIO(A), a título de doação, o seguinte bem: {tipo_bem_doacao} — {descricao_bem_doacao}.",
-          "{?, Valor estimado do bem: {valor_estimado_doacao}.}",
+          "{?, O valor estimado do bem doado é de {valor_estimado_doacao}.}",
         ],
       },
       {
@@ -322,27 +317,27 @@ const doacao = {
         title: "DA CLÁUSULA DE REVERSÃO",
         paragraphs: [
           "A presente doação fica sujeita à cláusula de reversão na hipótese de: {condicao_reversao}.",
-          "{?, Descrição da condição: {condicao_reversao_desc}.}",
-          "Verificada a condição de reversão, o bem voltará ao patrimônio do(a) DOADOR(A) ou de seus herdeiros, conforme art. 547 do Código Civil.",
+          "{?, Detalhes da condição: {condicao_reversao_desc}.}",
+          "Verificada a condição de reversão, o bem retornará ao patrimônio do(a) DOADOR(A) ou de seus herdeiros legítimos, conforme art. 547 do Código Civil.",
         ],
       },
       {
         type: "clause",
         number: "3ª",
         title: "DA ACEITAÇÃO",
-        text: "O(A) DONATÁRIO(A) aceita a doação com a cláusula de reversão, declarando estar ciente de suas condições.",
+        text: "O(A) DONATÁRIO(A) aceita a doação com a cláusula de reversão, declarando estar ciente de todas as suas condições.",
       },
       {
         type: "clause",
         number: "4ª",
         title: "DA IRRETRATABILIDADE",
-        text: "Excetuada a hipótese de reversão prevista neste instrumento, a doação é irretratável e irrevogável.",
+        text: "Excetuada a hipótese de reversão prevista neste instrumento, a presente doação é irretratável e irrevogável.",
       },
       {
         type: "clause",
         number: "5ª",
         title: "DA RESPONSABILIDADE",
-        text: "O(A) DONATÁRIO(A) responde pelos ônus e despesas do bem a partir da data de assinatura deste instrumento.",
+        text: "O(A) DONATÁRIO(A) passa a responder por todos os ônus, encargos e despesas do bem a partir da data de assinatura deste instrumento.",
       },
       {
         type: "clause",
@@ -352,7 +347,7 @@ const doacao = {
       },
       {
         type: "closing",
-        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor.",
+        text: "E, por estarem assim justas e contratadas, assinam o presente instrumento em duas vias de igual teor e forma, na presença de duas testemunhas.",
       },
       {
         type: "date",

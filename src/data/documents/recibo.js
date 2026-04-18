@@ -35,13 +35,15 @@ const recibo = {
           required: true,
           placeholder: "Nome de quem recebeu",
           example: "Maria da Silva Santos",
-          hint: "Nome completo da pessoa ou empresa que recebeu o pagamento.",
+          hint: "Nome completo da pessoa ou razão social da empresa que recebeu o pagamento.",
+          whyImportant: "Identifica quem recebeu o dinheiro. Deve coincidir com o nome no CPF ou CNPJ informado.",
         }),
         field("cpf_recebedor", "CPF / CNPJ", "cpf", {
           required: true,
           placeholder: "000.000.000-00",
           example: "123.456.789-00",
-          hint: "CPF (pessoa física) ou CNPJ (empresa) de quem recebeu.",
+          hint: "CPF (se pessoa física, 11 dígitos) ou CNPJ (se empresa, 14 dígitos) de quem recebeu o pagamento.",
+          whereFind: "CPF: documento de identidade, CNH ou site da Receita Federal. CNPJ: nota fiscal, contrato social ou site da Receita Federal.",
         }),
       ],
     },
@@ -55,11 +57,13 @@ const recibo = {
           required: true,
           placeholder: "Nome de quem pagou",
           example: "João Pereira Lima",
+          hint: "Nome completo da pessoa ou empresa que efetuou o pagamento.",
         }),
         field("cpf_pagador", "CPF / CNPJ", "cpf", {
           required: true,
           placeholder: "000.000.000-00",
           example: "987.654.321-00",
+          hint: "CPF ou CNPJ de quem fez o pagamento.",
         }),
       ],
     },
@@ -72,9 +76,11 @@ const recibo = {
           required: true,
           placeholder: "Cidade, UF",
           example: "São Paulo, SP",
+          hint: "Cidade onde o recibo está sendo emitido.",
         }),
         field("data_recibo", "Data do Recibo", "date", {
           required: true,
+          hint: "Data em que o pagamento foi feito ou o recibo está sendo emitido.",
         }),
       ],
     },
@@ -92,18 +98,21 @@ const recibo = {
             required: true,
             placeholder: "R$ 0,00",
             example: "R$ 3.500,00",
-            hint: "Valor total que foi recebido.",
+            hint: "Valor total que foi recebido. Informe o valor exato computado.",
+            whyImportant: "É a prova do valor pago. Deve coincidir com o que foi efetivamente recebido.",
           }),
           field("referente_a", "Referente a", "textarea", {
             required: true,
             placeholder: "Descreva o motivo do pagamento...",
             example: "Prestação de serviço de consultoria realizada no mês de março/2026.",
-            hint: "Descreva pelo quê o pagamento está sendo feito.",
+            hint: "Descreva pelo que está sendo pago: serviço prestado, produto vendido, dívida quitada, etc. Seja específico para evitar dúvidas futuras.",
+            whyImportant: "Sem uma descrição clara do motivo, o recibo perde valor como comprovante. Detalhe o serviço, produto ou obrigação que gerou o pagamento.",
           }),
           field("forma_pgto_recibo", "Forma de Pagamento", "select", {
             required: false,
             options: ["Dinheiro", "PIX", "Transferência Bancária", "Cheque", "Cartão", "Boleto"],
-            hint: "Como o pagamento foi feito.",
+            hint: "Como o pagamento foi feito. Ajuda a comprovar a transação em caso de dúvida.",
+            whatHappensIfEmpty: "O recibo será gerado sem especificar como o pagamento foi feito.",
             disableable: true,
           }),
         ],
@@ -120,21 +129,26 @@ const recibo = {
             required: true,
             placeholder: "R$ 0,00",
             example: "R$ 1.500,00",
+            hint: "Valor do aluguel pago neste mês.",
           }),
           field("mes_referencia", "Mês de Referência", "text", {
             required: true,
             placeholder: "Ex: Março/2026",
             example: "Março/2026",
-            hint: "Mês a que se refere o pagamento do aluguel.",
+            hint: "Mês e ano a que se refere o pagamento do aluguel. Ex: Janeiro/2026, Fevereiro/2026, etc.",
+            whyImportant: "Identifica qual mês está sendo pago. Sem essa informação, não é possível comprovar a quitação de um mês específico.",
           }),
           field("endereco_imovel_recibo", "Endereço do Imóvel", "text", {
             required: true,
             placeholder: "Endereço completo do imóvel alugado",
             example: "Rua das Palmeiras, 456, Apt 12A, São Paulo/SP",
+            hint: "Endereço completo do imóvel alugado, para identificar a qual imóvel o recibo se refere.",
           }),
           field("forma_pgto_aluguel", "Forma de Pagamento", "select", {
             required: false,
             options: ["Dinheiro", "PIX", "Transferência Bancária", "Cheque", "Boleto"],
+            hint: "Como o aluguel foi pago.",
+            whatHappensIfEmpty: "O recibo será gerado sem especificar a forma de pagamento.",
             disableable: true,
           }),
         ],
@@ -157,7 +171,7 @@ const recibo = {
       },
       {
         type: "paragraph",
-        text: "Eu, {nome_recebedor}, CPF/CNPJ: {cpf_recebedor}, declaro que RECEBI de {nome_pagador}, CPF/CNPJ: {cpf_pagador}, a quantia de {valor_recibo},",
+        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, declaro para os devidos fins que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, a quantia de {valor_recibo} ({valor_recibo}),",
       },
       {
         type: "paragraph",
@@ -166,6 +180,10 @@ const recibo = {
       {
         type: "paragraph",
         text: "{?, Forma de pagamento: {forma_pgto_recibo}.}",
+      },
+      {
+        type: "paragraph",
+        text: "Para maior clareza e na falta de outro documento, firmo o presente recibo para que produza seus devidos efeitos legais.",
       },
       {
         type: "date",
@@ -186,15 +204,19 @@ const recibo = {
       },
       {
         type: "paragraph",
-        text: "Recebi de {nome_pagador}, CPF/CNPJ: {cpf_pagador}, a quantia de {valor_aluguel_recibo},",
+        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, na qualidade de LOCADOR(A), declaro que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, na qualidade de LOCATÁRIO(A), a quantia de {valor_aluguel_recibo},",
       },
       {
         type: "paragraph",
-        text: "referente ao aluguel do imóvel situado em {endereco_imovel_recibo}, referente ao mês de {mes_referencia}.",
+        text: "referente ao aluguel do imóvel situado em {endereco_imovel_recibo}, correspondente ao mês de {mes_referencia}.",
       },
       {
         type: "paragraph",
         text: "{?, Forma de pagamento: {forma_pgto_aluguel}.}",
+      },
+      {
+        type: "paragraph",
+        text: "Para maior clareza, firmo o presente recibo dando plena e total quitação do valor acima descrito.",
       },
       {
         type: "date",
@@ -203,7 +225,7 @@ const recibo = {
       {
         type: "signatures",
         parties: [
-          { role: "Locador / Credor", fieldKey: "nome_recebedor" },
+          { role: "Locador(a) / Recebedor(a)", fieldKey: "nome_recebedor" },
         ],
       },
     ],

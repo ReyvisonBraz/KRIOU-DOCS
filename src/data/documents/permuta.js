@@ -106,11 +106,11 @@ const permuta = {
       },
       {
         type: "paragraph",
-        text: "Entre as partes abaixo qualificadas: de um lado, {permutante1_nome}{?, , {permutante1_nacionalidade}}{?, , {permutante1_estado_civil}}{?, , {permutante1_profissao}}{?, , portador(a) do RG n.º {permutante1_rg} e }inscrito(a) no CPF sob n.º {permutante1_cpf}{?, , residente e domiciliado(a) em {permutante1_endereco}}{?, , {permutante1_cidade}}, doravante denominado(a) PRIMEIRO(A) PERMUTANTE,",
+        text: "Entre as partes abaixo qualificadas: de um lado, {permutante1_nome}{?, , {permutante1_nacionalidade}}{?, , {permutante1_estado_civil}}{?, , {permutante1_profissao}}{?, , portador(a) do RG n.º {permutante1_rg} e }inscrito(a) no CPF sob n.º {permutante1_cpf}{?any, , residente e domiciliado(a) em {permutante1_endereco?}, {permutante1_cidade?}}, doravante denominado(a) PRIMEIRO(A) PERMUTANTE,",
       },
       {
         type: "paragraph",
-        text: "e de outro lado, {permutante2_nome}{?, , {permutante2_nacionalidade}}{?, , {permutante2_estado_civil}}{?, , {permutante2_profissao}}{?, , portador(a) do RG n.º {permutante2_rg} e }inscrito(a) no CPF sob n.º {permutante2_cpf}{?, , residente e domiciliado(a) em {permutante2_endereco}}{?, , {permutante2_cidade}}, doravante denominado(a) SEGUNDO(A) PERMUTANTE.",
+        text: "e de outro lado, {permutante2_nome}{?, , {permutante2_nacionalidade}}{?, , {permutante2_estado_civil}}{?, , {permutante2_profissao}}{?, , portador(a) do RG n.º {permutante2_rg} e }inscrito(a) no CPF sob n.º {permutante2_cpf}{?any, , residente e domiciliado(a) em {permutante2_endereco?}, {permutante2_cidade?}}, doravante denominado(a) SEGUNDO(A) PERMUTANTE.",
       },
       {
         type: "paragraph",

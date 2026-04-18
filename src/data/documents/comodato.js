@@ -2,7 +2,7 @@ import { field, pessoaFisicaFields } from "./_shared.js";
 
 // Parágrafo de abertura reutilizado nas duas variantes
 const abrirParteComodato = (prefixo, rotulo) =>
-  `{${prefixo}_nome}{?, , {${prefixo}_nacionalidade}}{?, , {${prefixo}_estado_civil}}{?, , {${prefixo}_profissao}}{?, , portador(a) do RG n.º {${prefixo}_rg} e }inscrito(a) no CPF sob n.º {${prefixo}_cpf}{?, , residente e domiciliado(a) em {${prefixo}_endereco}}{?, , {${prefixo}_cidade}}`;
+  `{${prefixo}_nome}{?, , {${prefixo}_nacionalidade}}{?, , {${prefixo}_estado_civil}}{?, , {${prefixo}_profissao}}{?, , portador(a) do RG n.º {${prefixo}_rg} e }inscrito(a) no CPF sob n.º {${prefixo}_cpf}{?any, , residente e domiciliado(a) em {${prefixo}_endereco?}, {${prefixo}_cidade?}}`;
 
 const comodato = {
   id: "comodato",

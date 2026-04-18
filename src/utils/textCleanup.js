@@ -37,8 +37,9 @@ const CLEANUP_RULES = [
   // "n.º \x00" isolado
   [/\bn\.º\s+\x00/g, ""],
 
-  // "em \x00," → remove preposição + vírgula
-  [/\bem\s+\x00\s*,/g, ""],
+  // "em \x00, content" → mantém "em" e remove apenas o marcador + vírgula
+  // (ex: "residente em \x00, São Paulo" → "residente em São Paulo")
+  [/\bem\s+\x00\s*,\s*/g, "em "],
   // "em \x00." → mantém ponto
   [/\bem\s+\x00\s*\./g, "."],
   // "em \x00" no meio ou fim
@@ -100,6 +101,13 @@ const CLEANUP_RULES = [
   [/^,\s*/g, ""],
   // " ," no fim de frase
   [/\s*,$/, ""],
+
+  // ─── Separadores faltantes antes de termos fixos ──────────────────────────
+  // Quando campos opcionais são removidos, "inscrito(a)" pode ficar colado ao
+  // campo anterior sem separador. Ex: "casado(a)inscrito(a)" → "casado(a), inscrito(a)"
+  [/([^\s,])inscrito\(a\)/g, "$1, inscrito(a)"],
+  // Mesmo tratamento para "portador(a)" que pode colidir após remoção de opcional
+  [/([^\s,])portador\(a\)/g, "$1, portador(a)"],
 ];
 
 /**

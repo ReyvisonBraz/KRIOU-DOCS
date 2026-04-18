@@ -127,4 +127,4 @@ export const pessoaFisicaFields = (prefix, papel) => [
  * @returns {string} - Template do parágrafo com placeholders
  */
 export const parteQualificacaoText = (prefix, rotulo) =>
-  `${rotulo}: {${prefix}_nome}{?, , {${prefix}_nacionalidade}}{?, , {${prefix}_estado_civil}}{?, , {${prefix}_profissao}}{?, portador(a) do RG n.º {${prefix}_rg} e }inscrito(a) no CPF sob n.º {${prefix}_cpf}{?, , residente e domiciliado(a) em {${prefix}_endereco}}{?, , {${prefix}_cidade}}`;
+  `${rotulo}: {${prefix}_nome}{?, , {${prefix}_nacionalidade}}{?, , {${prefix}_estado_civil}}{?, , {${prefix}_profissao}}{?, portador(a) do RG n.º {${prefix}_rg} e }inscrito(a) no CPF sob n.º {${prefix}_cpf}{?any, , residente e domiciliado(a) em {${prefix}_endereco?}, {${prefix}_cidade?}}`;

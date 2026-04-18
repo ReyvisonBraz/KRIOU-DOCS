@@ -373,7 +373,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?, , residente e domiciliado(a) em {vendedor_endereco}}{?, , {vendedor_cidade}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?, , residente e domiciliado(a) em {comprador_endereco}}{?, , {comprador_cidade}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -449,7 +449,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?, , residente e domiciliado(a) em {vendedor_endereco}}{?, , {vendedor_cidade}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?, , residente e domiciliado(a) em {comprador_endereco}}{?, , {comprador_cidade}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -518,7 +518,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?, , residente e domiciliado(a) em {vendedor_endereco}}{?, , {vendedor_cidade}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?, , residente e domiciliado(a) em {comprador_endereco}}{?, , {comprador_cidade}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",

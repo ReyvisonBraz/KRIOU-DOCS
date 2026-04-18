@@ -217,7 +217,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "Eu, {autorizante_nome}{?, , {autorizante_nacionalidade}}{?, , {autorizante_estado_civil}}{?, , {autorizante_profissao}}{?, , portador(a) do RG n.º {autorizante_rg} e }inscrito(a) no CPF sob n.º {autorizante_cpf}{?, , residente e domiciliado(a) em {autorizante_endereco}}{?, , {autorizante_cidade}}, na qualidade de {parentesco} do(a) menor abaixo identificado(a),",
+        text: "Eu, {autorizante_nome}{?, , {autorizante_nacionalidade}}{?, , {autorizante_estado_civil}}{?, , {autorizante_profissao}}{?, , portador(a) do RG n.º {autorizante_rg} e }inscrito(a) no CPF sob n.º {autorizante_cpf}{?any, , residente e domiciliado(a) em {autorizante_endereco?}, {autorizante_cidade?}}, na qualidade de {parentesco} do(a) menor abaixo identificado(a),",
       },
       {
         type: "paragraph",
@@ -258,7 +258,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "Eu, {autorizante_nome}{?, , {autorizante_nacionalidade}}{?, , {autorizante_estado_civil}}{?, , {autorizante_profissao}}{?, , portador(a) do RG n.º {autorizante_rg} e }inscrito(a) no CPF sob n.º {autorizante_cpf}{?, , residente e domiciliado(a) em {autorizante_endereco}}{?, , {autorizante_cidade}}, na qualidade de {parentesco} do(a) menor abaixo identificado(a),",
+        text: "Eu, {autorizante_nome}{?, , {autorizante_nacionalidade}}{?, , {autorizante_estado_civil}}{?, , {autorizante_profissao}}{?, , portador(a) do RG n.º {autorizante_rg} e }inscrito(a) no CPF sob n.º {autorizante_cpf}{?any, , residente e domiciliado(a) em {autorizante_endereco?}, {autorizante_cidade?}}, na qualidade de {parentesco} do(a) menor abaixo identificado(a),",
       },
       {
         type: "paragraph",

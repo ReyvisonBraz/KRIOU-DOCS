@@ -168,7 +168,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?any, , residente e domiciliado(a) em {doador_endereco?}, {doador_cidade?}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?any, , residente e domiciliado(a) em {donatario_endereco?}, {donatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -231,7 +231,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO COM RESERVA DE USUFRUTO, de um lado, como DOADOR(A) e USUFRUTUÁRIO(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A) e NU-PROPRIETÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO COM RESERVA DE USUFRUTO, de um lado, como DOADOR(A) e USUFRUTUÁRIO(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?any, , residente e domiciliado(a) em {doador_endereco?}, {doador_cidade?}}, e de outro lado, como DONATÁRIO(A) e NU-PROPRIETÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?any, , residente e domiciliado(a) em {donatario_endereco?}, {donatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -300,7 +300,7 @@ const doacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de DOAÇÃO COM CLÁUSULA DE REVERSÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?, , residente e domiciliado(a) em {doador_endereco}}{?, , {doador_cidade}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?, , residente e domiciliado(a) em {donatario_endereco}}{?, , {donatario_cidade}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de DOAÇÃO COM CLÁUSULA DE REVERSÃO, de um lado, como DOADOR(A): {doador_nome}{?, , {doador_nacionalidade}}{?, , {doador_estado_civil}}{?, , {doador_profissao}}{?, , portador(a) do RG n.º {doador_rg} e }inscrito(a) no CPF sob n.º {doador_cpf}{?any, , residente e domiciliado(a) em {doador_endereco?}, {doador_cidade?}}, e de outro lado, como DONATÁRIO(A): {donatario_nome}{?, , {donatario_nacionalidade}}{?, , {donatario_estado_civil}}{?, , {donatario_profissao}}{?, , portador(a) do RG n.º {donatario_rg} e }inscrito(a) no CPF sob n.º {donatario_cpf}{?any, , residente e domiciliado(a) em {donatario_endereco?}, {donatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",

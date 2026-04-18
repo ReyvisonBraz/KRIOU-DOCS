@@ -212,7 +212,7 @@ const locacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?, , residente e domiciliado(a) em {locador_endereco}}{?, , {locador_cidade}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?, , residente e domiciliado(a) em {locatario_endereco}}{?, , {locatario_cidade}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -296,7 +296,7 @@ const locacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?, , residente e domiciliado(a) em {locador_endereco}}{?, , {locador_cidade}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?, , residente e domiciliado(a) em {locatario_endereco}}{?, , {locatario_cidade}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",

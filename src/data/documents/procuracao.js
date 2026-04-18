@@ -167,11 +167,11 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de procuração, eu {outorgante_nome}{?, , {outorgante_nacionalidade}}{?, , {outorgante_estado_civil}}{?, , {outorgante_profissao}}{?, , portador(a) do RG n.º {outorgante_rg} e }inscrito(a) no CPF/MF sob n.º {outorgante_cpf}{?, , residente e domiciliado(a) em {outorgante_endereco}}{?, , {outorgante_cidade}},",
+        text: "Por este instrumento particular de procuração, eu {outorgante_nome}{?, , {outorgante_nacionalidade}}{?, , {outorgante_estado_civil}}{?, , {outorgante_profissao}}{?, , portador(a) do RG n.º {outorgante_rg} e }inscrito(a) no CPF/MF sob n.º {outorgante_cpf}{?any, , residente e domiciliado(a) em {outorgante_endereco?}, {outorgante_cidade?}},",
       },
       {
         type: "paragraph",
-        text: "nomeio e constituo meu(minha) bastante procurador(a) o(a) Sr.(a) {outorgado_nome}{?, , {outorgado_nacionalidade}}{?, , {outorgado_estado_civil}}{?, , {outorgado_profissao}}{?, , portador(a) do RG n.º {outorgado_rg} e }inscrito(a) no CPF/MF sob n.º {outorgado_cpf}{?, , residente e domiciliado(a) em {outorgado_endereco}}{?, , {outorgado_cidade}},",
+        text: "nomeio e constituo meu(minha) bastante procurador(a) o(a) Sr.(a) {outorgado_nome}{?, , {outorgado_nacionalidade}}{?, , {outorgado_estado_civil}}{?, , {outorgado_profissao}}{?, , portador(a) do RG n.º {outorgado_rg} e }inscrito(a) no CPF/MF sob n.º {outorgado_cpf}{?any, , residente e domiciliado(a) em {outorgado_endereco?}, {outorgado_cidade?}},",
       },
       {
         type: "paragraph",
@@ -204,11 +204,11 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de procuração, eu {outorgante_nome}{?, , {outorgante_nacionalidade}}{?, , {outorgante_estado_civil}}{?, , {outorgante_profissao}}{?, , portador(a) do RG n.º {outorgante_rg} e }inscrito(a) no CPF/MF sob n.º {outorgante_cpf}{?, , residente e domiciliado(a) em {outorgante_endereco}}{?, , {outorgante_cidade}},",
+        text: "Por este instrumento particular de procuração, eu {outorgante_nome}{?, , {outorgante_nacionalidade}}{?, , {outorgante_estado_civil}}{?, , {outorgante_profissao}}{?, , portador(a) do RG n.º {outorgante_rg} e }inscrito(a) no CPF/MF sob n.º {outorgante_cpf}{?any, , residente e domiciliado(a) em {outorgante_endereco?}, {outorgante_cidade?}},",
       },
       {
         type: "paragraph",
-        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Dr.(a) {outorgado_nome}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?, , com escritório em {outorgado_endereco}}{?, , {outorgado_cidade}},",
+        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Dr.(a) {outorgado_nome}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?any, , com escritório em {outorgado_endereco?}, {outorgado_cidade?}},",
       },
       {
         type: "paragraph",

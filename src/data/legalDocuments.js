@@ -134,13 +134,36 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
 
   /**
    * Interpola o texto e limpa artefatos gramaticais.
-   * Opera em 4 passos para garantir ordem correta de substituição.
+   * Opera em 5 passos para garantir ordem correta de substituição.
    */
   const interpolateAdaptive = (text) => {
+    // ── Passo 0: segmentos "qualquer campo" {?any, ...} ──────────────────
+    // Renderiza o segmento se PELO MENOS UM campo opcional ({field?}) tiver valor.
+    // Campos opcionais dentro: {field?} → valor ou \x00 se ausente.
+    // Útil para blocos com prefixo fixo (ex: "residente em {endereco?}, {cidade?}"):
+    // garante que o prefixo só apareça quando ao menos um dado estiver preenchido.
+    let result = text.replace(
+      /\{\?any,\s*((?:[^{}]|\{[^}]*\})*)\}/g,
+      (_, segment) => {
+        // Coleta todas as chaves referenciadas (com ou sem ?)
+        const keys = [];
+        segment.replace(/\{(\w+)\??\}/g, (__, k) => keys.push(k));
+
+        // Remove o segmento inteiro se TODOS os campos estiverem ausentes
+        if (keys.length === 0 || keys.every(isAbsent)) return "";
+
+        // Pelo menos um campo presente: interpola opcionais ({field?} → valor ou \x00)
+        return segment.replace(/\{(\w+)\?\}/g, (__, k) =>
+          isAbsent(k) ? "\x00" : (formData[k] || "")
+        );
+        // Nota: {field} sem ? dentro de {?any} serão tratados no Passo 3
+      }
+    );
+
     // ── Passo 1: segmentos condicionais {?, ...{field1}... {field2}...} ─────
     // Remove o segmento inteiro se QUALQUER campo dentro estiver ausente.
     // Suporta múltiplos campos no mesmo segmento.
-    let result = text.replace(
+    result = result.replace(
       /\{\?,\s*((?:[^{}]|\{[^}]*\})*)\}/g,
       (_, segment) => {
         // Coleta todas as chaves de campo referenciadas dentro do segmento
@@ -181,17 +204,31 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
       case "date":
         return { ...block, text: interpolateAdaptive(block.text) };
 
-      case "clause":
+      case "clause": {
+        const interpolatedText = block.text
+          ? interpolateAdaptive(block.text)
+          : undefined;
+        const interpolatedParagraphs = block.paragraphs
+          ? block.paragraphs
+              .map(interpolateAdaptive)
+              // Remove parágrafos que ficaram completamente vazios após interpolação
+              .filter((p) => p.trim() !== "")
+          : undefined;
+
+        // Se a cláusula ficou sem nenhum conteúdo após interpolação,
+        // descarta o bloco inteiro para não renderizar um título órfão.
+        const hasContent =
+          (interpolatedText && interpolatedText.trim() !== "") ||
+          (interpolatedParagraphs && interpolatedParagraphs.length > 0);
+
+        if (!hasContent) return null;
+
         return {
           ...block,
-          text: block.text ? interpolateAdaptive(block.text) : undefined,
-          paragraphs: block.paragraphs
-            ? block.paragraphs
-                .map(interpolateAdaptive)
-                // Remove parágrafos que ficaram completamente vazios após interpolação
-                .filter((p) => p.trim() !== "")
-            : undefined,
+          text: interpolatedText,
+          paragraphs: interpolatedParagraphs,
         };
+      }
 
       case "signatures":
         return {
@@ -205,7 +242,7 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
       default:
         return block;
     }
-  });
+  }).filter(Boolean); // Remove blocos nulos (cláusulas sem conteúdo)
 };
 
 /**

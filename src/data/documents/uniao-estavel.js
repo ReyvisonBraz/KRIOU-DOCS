@@ -171,11 +171,11 @@ const uniaoEstavel = {
       },
       {
         type: "paragraph",
-        text: "Este instrumento particular de união estável tem de um lado {companheiro1_nome}{?, , {companheiro1_nacionalidade}}{?, , {companheiro1_estado_civil}}{?, , {companheiro1_profissao}}{?, , portador(a) do RG n.º {companheiro1_rg} e }inscrito(a) no CPF sob n.º {companheiro1_cpf}{?, , residente e domiciliado(a) em {companheiro1_endereco}}{?, , {companheiro1_cidade}}, doravante denominado(a) PRIMEIRO(A) CONVIVENTE,",
+        text: "Este instrumento particular de união estável tem de um lado {companheiro1_nome}{?, , {companheiro1_nacionalidade}}{?, , {companheiro1_estado_civil}}{?, , {companheiro1_profissao}}{?, , portador(a) do RG n.º {companheiro1_rg} e }inscrito(a) no CPF sob n.º {companheiro1_cpf}{?any, , residente e domiciliado(a) em {companheiro1_endereco?}, {companheiro1_cidade?}}, doravante denominado(a) PRIMEIRO(A) CONVIVENTE,",
       },
       {
         type: "paragraph",
-        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDO(A) CONVIVENTE.",
+        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?any, , residente e domiciliado(a) em {companheiro2_endereco?}, {companheiro2_cidade?}}, doravante denominado(a) SEGUNDO(A) CONVIVENTE.",
       },
       {
         type: "paragraph",
@@ -262,11 +262,11 @@ const uniaoEstavel = {
       },
       {
         type: "paragraph",
-        text: "Este instrumento particular de dissolução de União Estável tem de um lado {companheiro1_nome}{?, , {companheiro1_nacionalidade}}{?, , {companheiro1_estado_civil}}{?, , {companheiro1_profissao}}{?, , portador(a) do RG n.º {companheiro1_rg} e }inscrito(a) no CPF sob n.º {companheiro1_cpf}{?, , residente e domiciliado(a) em {companheiro1_endereco}}{?, , {companheiro1_cidade}}, doravante denominado(a) PRIMEIRA PARTE,",
+        text: "Este instrumento particular de dissolução de União Estável tem de um lado {companheiro1_nome}{?, , {companheiro1_nacionalidade}}{?, , {companheiro1_estado_civil}}{?, , {companheiro1_profissao}}{?, , portador(a) do RG n.º {companheiro1_rg} e }inscrito(a) no CPF sob n.º {companheiro1_cpf}{?any, , residente e domiciliado(a) em {companheiro1_endereco?}, {companheiro1_cidade?}}, doravante denominado(a) PRIMEIRA PARTE,",
       },
       {
         type: "paragraph",
-        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?, , residente e domiciliado(a) em {companheiro2_endereco}}{?, , {companheiro2_cidade}}, doravante denominado(a) SEGUNDA PARTE.",
+        text: "e de outro lado {companheiro2_nome}{?, , {companheiro2_nacionalidade}}{?, , {companheiro2_estado_civil}}{?, , {companheiro2_profissao}}{?, , portador(a) do RG n.º {companheiro2_rg} e }inscrito(a) no CPF sob n.º {companheiro2_cpf}{?any, , residente e domiciliado(a) em {companheiro2_endereco?}, {companheiro2_cidade?}}, doravante denominado(a) SEGUNDA PARTE.",
       },
       {
         type: "paragraph",

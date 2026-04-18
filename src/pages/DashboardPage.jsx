@@ -16,7 +16,7 @@ import showToast from "../utils/toast";
 
 const DashboardPage = () => {
   const {
-    navigate, formData, logout, userData,
+    navigate, formData, logout, profile,
     userDocuments, setUserDocuments, userId, isLoading,
     setCurrentStep,
     setLegalStep,
@@ -92,7 +92,7 @@ const DashboardPage = () => {
   };
 
   const getUserName = () => {
-    const name = userData?.nome || formData.nome;
+    const name = profile?.nome || formData.nome;
     return name ? name.split(" ")[0] : "Usuário";
   };
 

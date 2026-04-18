@@ -16,12 +16,12 @@ import StorageService from "../utils/storage";
  * ProfilePage - User profile and settings
  */
 const ProfilePage = () => {
-  const { navigate, logout, userData, formData, userId, userDocuments } = useApp();
+  const { navigate, logout, profile, email, userId, userDocuments } = useApp();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const displayName = userData?.nome || formData?.nome || "Usuário";
-  const displayEmail = formData?.email || null;
-  const displayCity = formData?.cidade || null;
+  const displayName  = profile?.nome ? `${profile.nome} ${profile.sobrenome || ""}`.trim() : "Usuário";
+  const displayEmail = email || null;
+  const displayCity  = null;
 
   /**
    * Get user initials for avatar
@@ -47,6 +47,7 @@ const ProfilePage = () => {
   const handleDeleteData = () => {
     if (userId) {
       StorageService.clearUserData(userId);
+      localStorage.removeItem(`kriou_onboarding_${userId}_seen`);
     }
     logout();
   };

@@ -28,10 +28,9 @@ const AuthCallbackPage = ({ onNavigate }) => {
         const profile = await DocumentService.fetchProfile();
         if (!DocumentService.isProfileComplete(profile)) {
           onNavigate("completeProfile");
-        } else if (!DocumentService.isOnboardingDone(profile)) {
-          onNavigate("welcome");
         } else {
-          onNavigate("dashboard");
+          const seen = localStorage.getItem(`kriou_onboarding_${session.user.id}_seen`);
+          onNavigate(seen ? "dashboard" : "welcome");
         }
       } catch {
         onNavigate("dashboard");

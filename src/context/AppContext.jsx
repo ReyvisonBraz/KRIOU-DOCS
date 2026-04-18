@@ -79,7 +79,7 @@ const AppBootstrap = ({ children }) => {
   const { setFormData, setUserDocuments } = useResume();
   const { setLegalFormData }              = useLegal();
   const { navigate, currentPage }         = useContext(NavigationContext);
-  const { setIsLoading }                  = useContext(UIContext);
+  const { setIsLoading, setProfile }      = useContext(UIContext);
 
   useEffect(() => {
     // Aguarda Supabase resolver a sessão antes de inicializar
@@ -92,6 +92,14 @@ const AppBootstrap = ({ children }) => {
 
     const init = async () => {
       if (userId) {
+        // Carrega perfil do usuário (nome, sobrenome)
+        try {
+          const prof = await DocumentService.fetchProfile();
+          if (prof) setProfile(prof);
+        } catch (err) {
+          console.error("[AppBootstrap] Erro ao carregar perfil:", err);
+        }
+
         // Carrega documentos finalizados do Supabase
         try {
           const docs = await DocumentService.fetchAll();
@@ -154,9 +162,10 @@ export const AppProvider = ({ children }) => {
   const [isLoading, setIsLoading]               = useState(true);
   const [checkoutComplete, setCheckoutComplete] = useState(false);
   const [saveStatus, setSaveStatus]             = useState("saved");
+  const [profile, setProfile]                   = useState(null);
 
   return (
-    <UIContext.Provider value={{ isLoading, setIsLoading, checkoutComplete, setCheckoutComplete, saveStatus, setSaveStatus }}>
+    <UIContext.Provider value={{ isLoading, setIsLoading, checkoutComplete, setCheckoutComplete, saveStatus, setSaveStatus, profile, setProfile }}>
       <NavigationProvider>
         <AuthProvider>
           <InnerProviders isLoading={isLoading} setSaveStatus={setSaveStatus}>
@@ -232,6 +241,7 @@ export const useApp = () => {
     // UI
     isLoading:         ui.isLoading,
     checkoutComplete:  ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,
+    profile:           ui.profile,                setProfile: ui.setProfile,
   };
 };
 

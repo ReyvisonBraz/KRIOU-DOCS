@@ -4,7 +4,7 @@
  * ============================================
  * Main router component that renders pages
  * based on current navigation state.
- * 
+ *
  * @module App
  */
 
@@ -32,14 +32,10 @@ const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
 const WelcomePage         = lazy(() => import("./pages/WelcomePage"));
 
 // Wrapper para passar onNavigate às páginas que precisam navegar antes do contexto estar pronto
-const withNavigate = (Component, extraProps = {}) => {
+const withNavigate = (Component) => {
   const Wrapped = () => {
-    const app = useApp();
-    const resolved = {};
-    for (const [key, fn] of Object.entries(extraProps)) {
-      resolved[key] = typeof fn === "function" ? fn(app) : fn;
-    }
-    return <Component onNavigate={app.navigate} {...resolved} />;
+    const { navigate } = useApp();
+    return <Component onNavigate={navigate} />;
   };
   return Wrapped;
 };
@@ -49,7 +45,7 @@ const routes = {
   login:           LoginPage,
   authCallback:    withNavigate(AuthCallbackPage),
   completeProfile: withNavigate(CompleteProfilePage),
-  welcome:         withNavigate(WelcomePage, { displayName: (app) => app.displayName }),
+  welcome:         WelcomePage,
   dashboard:       DashboardPage,
   templates:       TemplatesPage,
   editor:          EditorPage,

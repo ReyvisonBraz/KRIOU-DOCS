@@ -160,53 +160,116 @@ export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHa
   const buttonRef = React.useRef(null);
   const tooltipRef = React.useRef(null);
 
-  // ─── Verifica se o tooltip está fora da tela e centraliza ───
+  // Detecta mobile (≤ 640px) para usar modal fixo em vez de tooltip flutuante
+  const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 640;
+
+  // ─── Posição do tooltip (apenas no desktop) ───
   const getTooltipStyle = () => {
-    if (!buttonRef.current) return { right: 0 };
-
-    const buttonRect = buttonRef.current.getBoundingClientRect();
+    if (isMobile() || !buttonRef.current) return {};
+    const buttonRect  = buttonRef.current.getBoundingClientRect();
     const tooltipWidth = 340;
-    const windowWidth = window.innerWidth;
-
-    // Se o botão estiver muito à direita, centraliza na tela
+    const windowWidth  = window.innerWidth;
     if (buttonRect.right + tooltipWidth > windowWidth - 20) {
-      const centerOffset = (windowWidth - tooltipWidth) / 2;
-      return {
-        left: Math.max(10, centerOffset),
-        right: "auto",
-      };
+      return { left: Math.max(10, (windowWidth - tooltipWidth) / 2), right: "auto" };
     }
-
     return { right: 0 };
   };
 
   // ─── Fecha ao clicar fora ───
-  const handleClickOutside = (e) => {
-    if (tooltipRef.current && !tooltipRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
-      setOpen(false);
-    }
-  };
-
   React.useEffect(() => {
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      // Scroll para o tooltip se estiver fora da tela
-      setTimeout(() => {
-        if (tooltipRef.current) {
-          const tooltipRect = tooltipRef.current.getBoundingClientRect();
-          if (tooltipRect.top < 0 || tooltipRect.bottom > window.innerHeight) {
-            tooltipRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        }
-      }, 50);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (!open) return;
+    const handleClickOutside = (e) => {
+      if (
+        tooltipRef.current && !tooltipRef.current.contains(e.target) &&
+        buttonRef.current && !buttonRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    // Bloqueia scroll do body no mobile
+    if (isMobile()) document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
+  const mobile = isMobile();
   const tooltipPosition = getTooltipStyle();
 
-  // Conta quantas seções serão exibidas para decidir o layout
-  const sectionCount = [hint, example, whyImportant, whatHappensIfEmpty, whereFind].filter(Boolean).length;
+  // Conteúdo do painel de ajuda (reutilizado em ambos os modos)
+  const HelpContent = () => (
+    <>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        marginBottom: 14, paddingBottom: 10,
+        borderBottom: "1px solid var(--border)",
+      }}>
+        <span style={{ fontSize: 20 }}>💡</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
+          Ajuda: {label}
+        </span>
+        <button
+          onClick={() => setOpen(false)}
+          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 18, padding: "2px 6px", borderRadius: 4, lineHeight: 1 }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* 1. O que é isso? */}
+      {hint && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 13 }}>📖</span> O que é isso?
+          </div>
+          <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>{hint}</div>
+        </div>
+      )}
+
+      {/* 2. Exemplo */}
+      {example && (
+        <div style={{ padding: 12, background: "var(--surface-2)", borderRadius: 10, border: "1px dashed var(--border)", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
+          </div>
+          <div style={{ fontSize: 14, color: "var(--teal)", fontWeight: 600 }}>"{example}"</div>
+        </div>
+      )}
+
+      {/* 3. Por que é importante? */}
+      {whyImportant && (
+        <div style={{ padding: 10, background: "rgba(0,210,211,0.06)", borderRadius: 8, border: "1px solid rgba(0,210,211,0.15)", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whyImportant}</div>
+        </div>
+      )}
+
+      {/* 4. Se não preencher? */}
+      {whatHappensIfEmpty && (
+        <div style={{ padding: 10, background: "rgba(108,99,255,0.06)", borderRadius: 8, border: "1px solid rgba(108,99,255,0.15)", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whatHappensIfEmpty}</div>
+        </div>
+      )}
+
+      {/* 5. Onde encontrar */}
+      {whereFind && (
+        <div style={{ padding: 10, background: "rgba(249,168,37,0.08)", borderRadius: 8, border: "1px solid rgba(249,168,37,0.2)" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{whereFind}</div>
+        </div>
+      )}
+    </>
+  );
 
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
@@ -215,189 +278,79 @@ export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHa
         onClick={() => setOpen(!open)}
         title="Clique para ver ajuda sobre este campo"
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 10,
+          width: 32, height: 32, borderRadius: 10,
           border: open ? "2px solid var(--teal)" : "2px solid rgba(0,210,211,0.5)",
           background: open
             ? "linear-gradient(135deg, var(--teal) 0%, #00a8a9 100%)"
             : "linear-gradient(135deg, rgba(0,210,211,0.18) 0%, rgba(0,210,211,0.08) 100%)",
           color: open ? "#fff" : "var(--teal)",
-          fontSize: 15,
-          fontWeight: 900,
-          cursor: "pointer",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.2s",
-          flexShrink: 0,
+          fontSize: 15, fontWeight: 900, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.2s", flexShrink: 0,
           boxShadow: open ? "0 2px 8px rgba(0,210,211,0.4)" : "none",
           letterSpacing: "-0.5px",
         }}
-        onMouseEnter={(e) => {
-          if (!open) {
-            e.currentTarget.style.borderColor = "var(--teal)";
-            e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,210,211,0.3) 0%, rgba(0,210,211,0.12) 100%)";
-            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,210,211,0.25)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!open) {
-            e.currentTarget.style.borderColor = "rgba(0,210,211,0.5)";
-            e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,210,211,0.18) 0%, rgba(0,210,211,0.08) 100%)";
-            e.currentTarget.style.boxShadow = "none";
-          }
-        }}
+        onMouseEnter={(e) => { if (!open) { e.currentTarget.style.borderColor = "var(--teal)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,210,211,0.25)"; } }}
+        onMouseLeave={(e) => { if (!open) { e.currentTarget.style.borderColor = "rgba(0,210,211,0.5)"; e.currentTarget.style.boxShadow = "none"; } }}
       >
         ?
       </button>
 
       {open && (
         <>
+          {/* Backdrop */}
           <div
             onClick={() => setOpen(false)}
             style={{
-              position: "fixed",
-              top: 0, left: 0, right: 0, bottom: 0,
-              zIndex: 90,
+              position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 90,
+              background: mobile ? "rgba(0,0,0,0.6)" : "transparent",
             }}
           />
-          <div
-            ref={tooltipRef}
-            style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              marginTop: 8,
-              width: 340,
-              maxWidth: "calc(100vw - 48px)",
-              maxHeight: "70vh",
-              overflowY: "auto",
-              background: "var(--surface)",
-              border: "2px solid var(--teal)",
-              borderRadius: 14,
-              padding: 18,
-              zIndex: 100,
-              boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
-              ...tooltipPosition,
-            }}>
-            {/* Header */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 14,
-              paddingBottom: 10,
-              borderBottom: "1px solid var(--border)",
-            }}>
-              <span style={{ fontSize: 20 }}>💡</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
-                Ajuda: {label}
-              </span>
-              <button
-                onClick={() => setOpen(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  fontSize: 16,
-                  padding: "2px 4px",
-                  borderRadius: 4,
-                }}
-              >
-                ✕
-              </button>
+
+          {mobile ? (
+            /* ── Mobile: bottom-sheet modal fixo ── */
+            <div
+              ref={tooltipRef}
+              style={{
+                position: "fixed",
+                bottom: 0, left: 0, right: 0,
+                maxHeight: "75vh",
+                overflowY: "auto",
+                background: "var(--surface)",
+                borderTop: "2px solid var(--teal)",
+                borderRadius: "20px 20px 0 0",
+                padding: "20px 20px 32px",
+                zIndex: 100,
+                boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+              }}
+            >
+              {/* Handle bar */}
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: "var(--border)", margin: "0 auto 16px" }} />
+              <HelpContent />
             </div>
-
-            {/* 1. O que é isso? */}
-            {hint && (
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 13 }}>📖</span> O que é isso?
-                </div>
-                <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>
-                  {hint}
-                </div>
-              </div>
-            )}
-
-            {/* 2. Exemplo */}
-            {example && (
-              <div style={{
-                padding: 12,
-                background: "var(--surface-2)",
-                borderRadius: 10,
-                border: "1px dashed var(--border)",
-                marginBottom: 12,
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
-                </div>
-                <div style={{
-                  fontSize: 14,
-                  color: "var(--teal)",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 600,
-                }}>
-                  "{example}"
-                </div>
-              </div>
-            )}
-
-            {/* 3. Por que é importante? */}
-            {whyImportant && (
-              <div style={{
-                padding: 10,
-                background: "rgba(0,210,211,0.06)",
-                borderRadius: 8,
-                border: "1px solid rgba(0,210,211,0.15)",
-                marginBottom: 12,
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>
-                  {whyImportant}
-                </div>
-              </div>
-            )}
-
-            {/* 4. O que acontece se não preencher? (apenas opcionais) */}
-            {whatHappensIfEmpty && (
-              <div style={{
-                padding: 10,
-                background: "rgba(108,99,255,0.06)",
-                borderRadius: 8,
-                border: "1px solid rgba(108,99,255,0.15)",
-                marginBottom: 12,
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>
-                  {whatHappensIfEmpty}
-                </div>
-              </div>
-            )}
-
-            {/* 5. Onde encontrar */}
-            {whereFind && (
-              <div style={{
-                padding: 10,
-                background: "rgba(249,168,37,0.08)",
-                borderRadius: 8,
-                border: "1px solid rgba(249,168,37,0.2)",
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
-                  {whereFind}
-                </div>
-              </div>
-            )}
-          </div>
+          ) : (
+            /* ── Desktop: tooltip flutuante ── */
+            <div
+              ref={tooltipRef}
+              style={{
+                position: "absolute",
+                top: "100%", marginTop: 8,
+                width: 340,
+                maxWidth: "calc(100vw - 48px)",
+                maxHeight: "70vh",
+                overflowY: "auto",
+                background: "var(--surface)",
+                border: "2px solid var(--teal)",
+                borderRadius: 14,
+                padding: 18,
+                zIndex: 100,
+                boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
+                ...tooltipPosition,
+              }}
+            >
+              <HelpContent />
+            </div>
+          )}
         </>
       )}
     </div>

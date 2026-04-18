@@ -112,8 +112,7 @@ const LegalEditorPage = () => {
   // ─── Effect para scroll quando muda de etapa ───
   useEffect(() => {
     scrollToTop();
-    scrollToNavigation();
-  }, [currentStep, scrollToTop, scrollToNavigation]);
+  }, [currentStep, scrollToTop]);
 
   // ─── Confirm dialog ───
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
@@ -429,7 +428,20 @@ const LegalEditorPage = () => {
   );
 
   // ─── Render: Step 2 - Preenchimento por seções ───
-  const renderFillForm = () => (
+  const renderFillForm = () => {
+    // Calcula progresso dos campos obrigatórios
+    const allRequiredFields = currentSections.flatMap((s) =>
+      s.fields.filter((f) => f.required && !disabledFields[f.key])
+    );
+    const filledRequired = allRequiredFields.filter(
+      (f) => legalFormData[f.key] && String(legalFormData[f.key]).trim() !== ""
+    );
+    const requiredTotal  = allRequiredFields.length;
+    const requiredFilled = filledRequired.length;
+    const progressPct    = requiredTotal > 0 ? Math.round((requiredFilled / requiredTotal) * 100) : 0;
+    const allDone        = requiredFilled === requiredTotal && requiredTotal > 0;
+
+    return (
     <div className="animate-fadeIn">
       <div style={{ marginBottom: 24 }}>
         <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
@@ -444,9 +456,46 @@ const LegalEditorPage = () => {
         }}>
           <span style={{ fontSize: 14 }}>💡</span>
           Campos com <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios.
-          Campos opcionais podem ser desabilitados com o toggle.
-          Clique no botão <strong style={{ color: "var(--teal)" }}>?</strong> para ver ajuda.
+          Clique no botão <strong style={{ color: "var(--teal)" }}>?</strong> para ver ajuda detalhada.
         </p>
+
+        {/* Barra de progresso de campos obrigatórios */}
+        {requiredTotal > 0 && (
+          <div style={{
+            marginTop: 14,
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: allDone
+              ? "rgba(0,200,151,0.08)"
+              : showErrors && requiredFilled < requiredTotal
+                ? "rgba(233,69,96,0.06)"
+                : "rgba(255,255,255,0.03)",
+            border: `1px solid ${allDone ? "rgba(0,200,151,0.25)" : showErrors && requiredFilled < requiredTotal ? "rgba(233,69,96,0.2)" : "rgba(255,255,255,0.07)"}`,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: allDone ? "var(--success)" : "var(--text-muted)" }}>
+                {allDone ? "✅ Todos os campos obrigatórios preenchidos!" : `Campos obrigatórios`}
+              </span>
+              <span style={{
+                fontSize: 12, fontWeight: 800,
+                color: allDone ? "var(--success)" : requiredFilled === 0 ? "var(--coral)" : "var(--text)",
+              }}>
+                {requiredFilled} / {requiredTotal}
+              </span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${progressPct}%`,
+                borderRadius: 3,
+                background: allDone
+                  ? "var(--success)"
+                  : progressPct > 50 ? "var(--teal)" : progressPct > 0 ? "var(--gold)" : "var(--coral)",
+                transition: "width 0.4s ease",
+              }} />
+            </div>
+          </div>
+        )}
 
         {/* Banner de demonstração */}
         <div style={{
@@ -528,7 +577,8 @@ const LegalEditorPage = () => {
         </div>
       ))}
     </div>
-  );
+    );
+  };
 
   // ─── Render: Step 3 - Revisão ───
   const renderReview = () => (

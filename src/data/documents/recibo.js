@@ -98,8 +98,15 @@ const recibo = {
             required: true,
             placeholder: "R$ 0,00",
             example: "R$ 3.500,00",
-            hint: "Valor total que foi recebido. Informe o valor exato computado.",
+            hint: "Valor total que foi recebido. Informe o valor exato.",
             whyImportant: "É a prova do valor pago. Deve coincidir com o que foi efetivamente recebido.",
+          }),
+          field("valor_extenso", "Valor por Extenso", "text", {
+            required: true,
+            placeholder: "Ex: três mil e quinhentos reais",
+            example: "três mil e quinhentos reais",
+            hint: "Escreva o valor por extenso em português. Isso é obrigatório em documentos financeiros para evitar adulterações.",
+            whyImportant: "O valor por extenso é a forma mais segura de registrar um pagamento — evita que o número seja alterado.",
           }),
           field("referente_a", "Referente a", "textarea", {
             required: true,
@@ -131,6 +138,13 @@ const recibo = {
             example: "R$ 1.500,00",
             hint: "Valor do aluguel pago neste mês.",
           }),
+          field("valor_extenso_aluguel", "Valor por Extenso", "text", {
+            required: true,
+            placeholder: "Ex: um mil e quinhentos reais",
+            example: "um mil e quinhentos reais",
+            hint: "Escreva o valor do aluguel por extenso em português.",
+            whyImportant: "O valor por extenso é a forma mais segura de registrar um pagamento — evita que o número seja alterado.",
+          }),
           field("mes_referencia", "Mês de Referência", "text", {
             required: true,
             placeholder: "Ex: Março/2026",
@@ -158,6 +172,7 @@ const recibo = {
 
   clientNotes: [
     "O recibo é seu comprovante de pagamento. Guarde-o por pelo menos 5 anos.",
+    "Preencha o valor por extenso com atenção — é a proteção mais importante contra fraudes.",
     "Para valores altos, é recomendável que o recibo seja assinado na presença de testemunhas.",
   ],
 
@@ -171,7 +186,7 @@ const recibo = {
       },
       {
         type: "paragraph",
-        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, declaro para os devidos fins que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, a quantia de {valor_recibo} ({valor_recibo}),",
+        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, declaro para os devidos fins que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, a quantia de {valor_recibo} ({valor_extenso}),",
       },
       {
         type: "paragraph",
@@ -180,6 +195,10 @@ const recibo = {
       {
         type: "paragraph",
         text: "{?, Forma de pagamento: {forma_pgto_recibo}.}",
+      },
+      {
+        type: "paragraph",
+        text: "Declaro, para todos os fins de direito, que o valor acima descrito foi integralmente recebido, dando ao pagador plena e total quitação da obrigação referida, nada mais tendo a reclamar a este título.",
       },
       {
         type: "paragraph",
@@ -204,7 +223,7 @@ const recibo = {
       },
       {
         type: "paragraph",
-        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, na qualidade de LOCADOR(A), declaro que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, na qualidade de LOCATÁRIO(A), a quantia de {valor_aluguel_recibo},",
+        text: "Eu, {nome_recebedor}, inscrito(a) no CPF/CNPJ sob n.º {cpf_recebedor}, na qualidade de LOCADOR(A), declaro que RECEBI de {nome_pagador}, inscrito(a) no CPF/CNPJ sob n.º {cpf_pagador}, na qualidade de LOCATÁRIO(A), a quantia de {valor_aluguel_recibo} ({valor_extenso_aluguel}),",
       },
       {
         type: "paragraph",
@@ -213,6 +232,10 @@ const recibo = {
       {
         type: "paragraph",
         text: "{?, Forma de pagamento: {forma_pgto_aluguel}.}",
+      },
+      {
+        type: "paragraph",
+        text: "Declaro, para todos os fins de direito, que o valor acima descrito foi integralmente recebido, dando ao(à) LOCATÁRIO(A) plena, geral e irrevogável quitação referente à competência do mês de {mes_referencia}, nada mais tendo a reclamar a este título.",
       },
       {
         type: "paragraph",

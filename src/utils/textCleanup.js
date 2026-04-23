@@ -7,6 +7,9 @@
  * Exemplo de bug que este módulo corrige:
  *   Input:  "portador(a) do RG n.º \x00 e inscrito(a) no CPF"
  *   Output: "inscrito(a) no CPF"
+ *
+ *   Input:  "de profissão \x00, inscrito(a)"
+ *   Output: "inscrito(a)"
  */
 
 /**
@@ -37,6 +40,13 @@ const CLEANUP_RULES = [
   // "n.º \x00" isolado
   [/\bn\.º\s+\x00/g, ""],
 
+  // ─── Prefixo "de profissão" ausente ──────────────────────────────────────
+  // "de profissão \x00," → remove tudo incluindo vírgula
+  [/,?\s*de profissão\s+\x00\s*,/g, ""],
+  // "de profissão \x00" → remove sem deixar vírgula residual
+  [/,?\s*de profissão\s+\x00/g, ""],
+
+  // ─── Prefixo "em" ausente ─────────────────────────────────────────────────
   // "em \x00, content" → mantém "em" e remove apenas o marcador + vírgula
   // (ex: "residente em \x00, São Paulo" → "residente em São Paulo")
   [/\bem\s+\x00\s*,\s*/g, "em "],
@@ -108,6 +118,12 @@ const CLEANUP_RULES = [
   [/([^\s,])inscrito\(a\)/g, "$1, inscrito(a)"],
   // Mesmo tratamento para "portador(a)" que pode colidir após remoção de opcional
   [/([^\s,])portador\(a\)/g, "$1, portador(a)"],
+
+  // ─── Foro residual (quando campo foro fica vazio) ─────────────────────────
+  // "Comarca de ." → "Comarca local."
+  [/Comarca de\s*\./g, "Comarca local."],
+  // "Comarca de  " (espaços duplos) → "Comarca de "
+  [/Comarca de\s{2,}/g, "Comarca de "],
 ];
 
 /**

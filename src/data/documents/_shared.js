@@ -4,6 +4,7 @@
  * Este arquivo centraliza:
  * - A factory function `field()` para criar definições de campo
  * - A função `pessoaFisicaFields()` que gera os campos padrão de pessoa física
+ * - A função `parteQualificacaoText()` para qualificação formal das partes
  *
  * Todos os módulos de documentos importam daqui.
  */
@@ -119,12 +120,18 @@ export const pessoaFisicaFields = (prefix, papel) => [
 
 /**
  * Gera o parágrafo de qualificação de uma parte (pessoa física) para o corpo do documento.
+ *
+ * Sintaxe de qualificação formal pt-BR:
+ *   PAPEL: Nome, [nacionalidade], [estado civil], [de profissão Profissão],
+ *          [portador(a) do RG n.º XX e] inscrito(a) no CPF sob n.º XX,
+ *          [residente e domiciliado(a) em Endereço, Cidade]
+ *
  * Usa sintaxe {?, ...} para remover condicionalmente campos opcionais sem deixar
- * palavras órfãs no texto.
+ * palavras órfãs no texto. "de profissão" é prefixo formal padrão em contratos br.
  *
  * @param {string} prefix - Prefixo dos campos (ex: "vendedor")
  * @param {string} rotulo - Rótulo no documento (ex: "VENDEDOR")
  * @returns {string} - Template do parágrafo com placeholders
  */
 export const parteQualificacaoText = (prefix, rotulo) =>
-  `${rotulo}: {${prefix}_nome}{?, , {${prefix}_nacionalidade}}{?, , {${prefix}_estado_civil}}{?, , {${prefix}_profissao}}{?, portador(a) do RG n.º {${prefix}_rg} e }inscrito(a) no CPF sob n.º {${prefix}_cpf}{?any, , residente e domiciliado(a) em {${prefix}_endereco?}, {${prefix}_cidade?}}`;
+  `${rotulo}: {${prefix}_nome}{?, , {${prefix}_nacionalidade}}{?, , {${prefix}_estado_civil}}{?, , de profissão {${prefix}_profissao}}{?, portador(a) do RG n.º {${prefix}_rg} e }inscrito(a) no CPF sob n.º {${prefix}_cpf}{?any, , residente e domiciliado(a) em {${prefix}_endereco?}, {${prefix}_cidade?}}`;

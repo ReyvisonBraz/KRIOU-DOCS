@@ -110,6 +110,30 @@ export const getRequiredFields = (docId, variantId) => {
   return getAllFieldsForVariant(docId, variantId).filter((f) => f.required);
 };
 
+// ─── Utilitários de formatação ───────────────────────────────────────────────
+
+/**
+ * Formata uma data ISO (YYYY-MM-DD) para o formato extenso pt-BR.
+ * Ex: "2026-04-22" → "22 de abril de 2026"
+ * @param {string} dateStr - Data no formato ISO ou já formatada
+ * @returns {string} - Data formatada em pt-BR
+ */
+export const formatDateBR = (dateStr) => {
+  if (!dateStr) return dateStr;
+  // Verifica se já está no formato extenso
+  if (/\d{1,2} de \w+ de \d{4}/.test(dateStr)) return dateStr;
+  // Tenta parsear ISO (YYYY-MM-DD)
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return dateStr;
+  const [, year, month, day] = match;
+  const meses = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+  ];
+  const mesNome = meses[parseInt(month, 10) - 1];
+  return `${parseInt(day, 10)} de ${mesNome} de ${year}`;
+};
+
 /**
  * Retorna o corpo do documento para uma variante, interpolando os valores do formulário.
  *
@@ -117,6 +141,9 @@ export const getRequiredFields = (docId, variantId) => {
  *   {fieldKey}           → obrigatório: mostra [fieldKey] se ausente
  *   {fieldKey?}          → opcional simples: vira \x00 se ausente (limpeza posterior)
  *   {?, texto {field}}   → segmento condicional: remove TUDO se algum field dentro estiver ausente
+ *   {caucao_ausente_aviso} → placeholder especial para fallback de garantia locatícia
+ *
+ * Datas ISO (YYYY-MM-DD) são automaticamente convertidas para extenso pt-BR.
  *
  * O motor de limpeza em src/utils/textCleanup.js remove artefatos gramaticais
  * (palavras órfãs, vírgulas duplas, preposições pendentes, etc.).
@@ -133,16 +160,36 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
     disabledFields[key] || !formData[key] || String(formData[key]).trim() === "";
 
   /**
+   * Formata o valor de um campo antes de inserir no template.
+   * Datas ISO são convertidas para pt-BR extenso.
+   */
+  const formatFieldValue = (key, value) => {
+    if (!value) return value;
+    // Campos de data: formata para extenso pt-BR
+    const str = String(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return formatDateBR(str);
+    return str;
+  };
+
+  /**
    * Interpola o texto e limpa artefatos gramaticais.
-   * Opera em 5 passos para garantir ordem correta de substituição.
+   * Opera em 6 passos para garantir ordem correta de substituição.
    */
   const interpolateAdaptive = (text) => {
+    // ── Passo especial: placeholder de aviso de garantia ausente ──────────
+    // {caucao_ausente_aviso} → texto explicativo quando caução não está preenchida
+    let result = text.replace(/\{caucao_ausente_aviso\}/g, () => {
+      const caucaoPreenchida = !isAbsent("valor_caucao");
+      if (caucaoPreenchida) return ""; // já tem cláusula com valor — sem aviso
+      return "As partes acordam, de forma expressa e consensual, que não será exigida qualquer modalidade de garantia locatícia (caução, fiança, seguro de fiança ou cessão fiduciária), ficando o contrato desprovido de garantia, nos termos do artigo 37 da Lei 8.245/91.";
+    });
+
     // ── Passo 0: segmentos "qualquer campo" {?any, ...} ──────────────────
     // Renderiza o segmento se PELO MENOS UM campo opcional ({field?}) tiver valor.
     // Campos opcionais dentro: {field?} → valor ou \x00 se ausente.
     // Útil para blocos com prefixo fixo (ex: "residente em {endereco?}, {cidade?}"):
     // garante que o prefixo só apareça quando ao menos um dado estiver preenchido.
-    let result = text.replace(
+    result = result.replace(
       /\{\?any,\s*((?:[^{}]|\{[^}]*\})*)\}/g,
       (_, segment) => {
         // Coleta todas as chaves referenciadas (com ou sem ?)
@@ -154,7 +201,7 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
 
         // Pelo menos um campo presente: interpola opcionais ({field?} → valor ou \x00)
         return segment.replace(/\{(\w+)\?\}/g, (__, k) =>
-          isAbsent(k) ? "\x00" : (formData[k] || "")
+          isAbsent(k) ? "\x00" : (formatFieldValue(k, formData[k]) || "")
         );
         // Nota: {field} sem ? dentro de {?any} serão tratados no Passo 3
       }
@@ -173,8 +220,10 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
         // Remove o segmento se qualquer chave estiver ausente
         if (keys.length === 0 || keys.some(isAbsent)) return "";
 
-        // Interpola todos os campos dentro do segmento
-        return segment.replace(/\{(\w+)\}/g, (__, k) => formData[k] || "");
+        // Interpola todos os campos dentro do segmento, com formatação
+        return segment.replace(/\{(\w+)\}/g, (__, k) =>
+          formatFieldValue(k, formData[k]) || ""
+        );
       }
     );
 
@@ -182,12 +231,14 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
     // Converte campos ausentes em marcador \x00 para limpeza posterior
     result = result.replace(/\{(\w+)\?\}/g, (_, key) => {
       if (isAbsent(key)) return "\x00";
-      return formData[key];
+      return formatFieldValue(key, formData[key]);
     });
 
     // ── Passo 3: campos obrigatórios {fieldKey} ───────────────────────────
     // Mostra o valor ou [fieldKey] se ausente (indica que o campo é obrigatório)
-    result = result.replace(/\{(\w+)\}/g, (_, key) => formData[key] || `[${key}]`);
+    result = result.replace(/\{(\w+)\}/g, (_, key) =>
+      formatFieldValue(key, formData[key]) || `[${key}]`
+    );
 
     // ── Passo 4: limpeza gramatical ───────────────────────────────────────
     // Remove palavras órfãs e artefatos deixados pelo marcador \x00

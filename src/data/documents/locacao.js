@@ -73,7 +73,7 @@ const locacao = {
           hint: "Caução é um valor dado como garantia, como um 'depósito de segurança'. Normalmente equivale a 3 meses de aluguel. Será devolvida ao final do contrato se não houver danos ao imóvel nem dívidas.",
           whereFind: "Combinado entre as partes. A lei permite no máximo 3 meses de aluguel como caução.",
           whyImportant: "Protege o proprietário contra danos ao imóvel ou inadimplência. É a garantia mais comum em contratos de aluguel.",
-          whatHappensIfEmpty: "O contrato será gerado sem cláusula de caução. O proprietário pode exigir outra forma de garantia.",
+          whatHappensIfEmpty: "O contrato será gerado declarando expressamente que não há garantia locatícia, conforme acordo entre as partes.",
           disableable: true,
         }),
         field("indice_reajuste", "Índice de Reajuste", "select", {
@@ -212,19 +212,19 @@ const locacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , de profissão {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , de profissão {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
         number: "1ª",
         title: "DO OBJETO",
-        text: "O(A) LOCADOR(A) cede ao(à) LOCATÁRIO(A), para fins exclusivos de moradia, o imóvel do tipo {tipo_imovel_loc} situado em {endereco_imovel_loc}, {cidade_imovel_loc}{?, , imóvel entregue {mobiliado}}.",
+        text: "O(A) LOCADOR(A) cede ao(à) LOCATÁRIO(A), para fins exclusivos de moradia, o imóvel do tipo {tipo_imovel_loc} situado em {endereco_imovel_loc}, {cidade_imovel_loc}{?, , entregue {mobiliado}}.",
       },
       {
         type: "clause",
         number: "2ª",
         title: "DO PRAZO",
-        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}.",
+        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}, totalizando o período contratual estabelecido entre as partes. Findo este prazo, havendo interesse de ambas as partes na continuidade da locação, o contrato poderá ser renovado mediante novo instrumento.",
       },
       {
         type: "clause",
@@ -238,8 +238,11 @@ const locacao = {
       {
         type: "clause",
         number: "4ª",
-        title: "DA GARANTIA",
-        text: "{?, A título de garantia locatícia, o(a) LOCATÁRIO(A) deposita neste ato a quantia de {valor_caucao} a título de caução, que será restituída ao término do contrato, após a vistoria do imóvel, desde que não haja débitos pendentes ou danos ao imóvel.}",
+        title: "DA GARANTIA LOCATÍCIA",
+        paragraphs: [
+          "{?, A título de garantia locatícia, o(a) LOCATÁRIO(A) deposita neste ato a quantia de {valor_caucao} a título de caução, que será restituída ao término do contrato, após vistoria do imóvel, desde que não haja débitos pendentes ou danos ao imóvel. O valor depositado a título de caução não poderá ser utilizado pelo(a) LOCATÁRIO(A) para pagamento de aluguéis, salvo com expressa anuência do(a) LOCADOR(A).}",
+          "{caucao_ausente_aviso}",
+        ],
       },
       {
         type: "clause",
@@ -253,20 +256,36 @@ const locacao = {
       {
         type: "clause",
         number: "6ª",
-        title: "DA VEDAÇÃO DE SUBLOCAÇÃO",
-        text: "É vedada a sublocação, cessão ou transferência total ou parcial do imóvel sem autorização prévia e por escrito do(a) LOCADOR(A), sob pena de rescisão imediata do contrato.",
+        title: "DA CONSERVAÇÃO E USO DO IMÓVEL",
+        text: "O(A) LOCATÁRIO(A) obriga-se a usar o imóvel locado somente para fins residenciais, conservando-o em perfeitas condições de higiene e habitabilidade, devolvendo-o ao final do contrato nas mesmas condições em que o recebeu, ressalvado o desgaste natural decorrente do uso ordinário.",
       },
       {
         type: "clause",
         number: "7ª",
-        title: "DAS BENFEITORIAS",
-        text: "O(A) LOCATÁRIO(A) não poderá realizar benfeitorias no imóvel sem autorização prévia e por escrito do(a) LOCADOR(A). As benfeitorias necessárias serão indenizáveis; as úteis dependerão de acordo prévio; as voluptuárias não serão indenizadas, podendo ser retiradas desde que não prejudiquem o imóvel.",
+        title: "DA VEDAÇÃO DE SUBLOCAÇÃO",
+        text: "É vedada a sublocação, cessão ou transferência total ou parcial do imóvel sem autorização prévia e por escrito do(a) LOCADOR(A), sob pena de rescisão imediata do contrato e pagamento de multa equivalente a três aluguéis mensais.",
       },
       {
         type: "clause",
         number: "8ª",
+        title: "DAS BENFEITORIAS",
+        text: "O(A) LOCATÁRIO(A) não poderá realizar benfeitorias no imóvel sem autorização prévia e por escrito do(a) LOCADOR(A). As benfeitorias necessárias serão indenizáveis; as úteis dependerão de acordo prévio; as voluptuárias não serão indenizadas, podendo ser retiradas pelo(a) LOCATÁRIO(A) desde que não prejudiquem o imóvel.",
+      },
+      {
+        type: "clause",
+        number: "9ª",
+        title: "DAS DISPOSIÇÕES GERAIS",
+        paragraphs: [
+          "O presente contrato obriga as partes e seus sucessores, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
+          "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se feitas por escrito e assinadas por ambas as partes.",
+          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+        ],
+      },
+      {
+        type: "clause",
+        number: "10ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {cidade_contrato_loc}.",
+        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {cidade_contrato_loc}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",
@@ -296,7 +315,7 @@ const locacao = {
       },
       {
         type: "paragraph",
-        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
+        text: "Por este instrumento particular de contrato de locação, de um lado, como LOCADOR(A): {locador_nome}{?, , {locador_nacionalidade}}{?, , {locador_estado_civil}}{?, , de profissão {locador_profissao}}{?, , portador(a) do RG n.º {locador_rg} e }inscrito(a) no CPF sob n.º {locador_cpf}{?any, , residente e domiciliado(a) em {locador_endereco?}, {locador_cidade?}}, e de outro lado, como LOCATÁRIO(A): {locatario_nome}{?, , {locatario_nacionalidade}}{?, , {locatario_estado_civil}}{?, , de profissão {locatario_profissao}}{?, , portador(a) do RG n.º {locatario_rg} e }inscrito(a) no CPF sob n.º {locatario_cpf}{?any, , residente e domiciliado(a) em {locatario_endereco?}, {locatario_cidade?}}, têm entre si justo e contratado o que segue:",
       },
       {
         type: "clause",
@@ -308,40 +327,62 @@ const locacao = {
         type: "clause",
         number: "2ª",
         title: "DO PRAZO",
-        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}.",
+        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}. Nos termos do artigo 51 da Lei 8.245/91, o(a) LOCATÁRIO(A) terá direito à renovação compulsória do contrato, desde que preenchidos os requisitos legais.",
       },
       {
         type: "clause",
         number: "3ª",
         title: "DO ALUGUEL",
         paragraphs: [
-          "O aluguel mensal é de {valor_aluguel}, pagável até o dia {dia_vencimento} de cada mês.",
+          "O aluguel mensal é de {valor_aluguel}, pagável até o dia {dia_vencimento} de cada mês, mediante recibo ou depósito em conta bancária indicada pelo(a) LOCADOR(A).",
           "{?, Parágrafo único. O aluguel será reajustado anualmente pelo índice {indice_reajuste}, ou por outro índice que venha a substituí-lo oficialmente.}",
         ],
       },
       {
         type: "clause",
         number: "4ª",
-        title: "DA GARANTIA",
-        text: "{?, A título de garantia locatícia, o(a) LOCATÁRIO(A) deposita neste ato a quantia de {valor_caucao} a título de caução, a ser restituída ao término do contrato, após a vistoria do imóvel, desde que não existam débitos pendentes.}",
+        title: "DA GARANTIA LOCATÍCIA",
+        paragraphs: [
+          "{?, A título de garantia locatícia, o(a) LOCATÁRIO(A) deposita neste ato a quantia de {valor_caucao} a título de caução, a ser restituída ao término do contrato, após vistoria do imóvel, desde que não existam débitos pendentes.}",
+          "{caucao_ausente_aviso}",
+        ],
       },
       {
         type: "clause",
         number: "5ª",
         title: "DA DESTINAÇÃO",
-        text: "O imóvel será utilizado exclusivamente para atividade comercial{?, de {finalidade_com}}. A mudança de atividade comercial dependerá de autorização prévia e por escrito do(a) LOCADOR(A).",
+        text: "O imóvel será utilizado exclusivamente para atividade comercial{?, de {finalidade_com}}. A mudança de atividade comercial dependerá de autorização prévia e por escrito do(a) LOCADOR(A), sob pena de rescisão do contrato.",
       },
       {
         type: "clause",
         number: "6ª",
-        title: "DA VEDAÇÃO DE CESSÃO",
-        text: "É vedada a cessão, sublocação ou transferência do ponto comercial sem autorização prévia e por escrito do(a) LOCADOR(A), sob pena de rescisão contratual imediata.",
+        title: "DAS DESPESAS",
+        paragraphs: [
+          "O(A) LOCATÁRIO(A) responsabiliza-se pelo pagamento de todas as despesas de consumo (água, energia elétrica, gás, telefone e condomínio, se houver) durante a vigência do contrato.",
+          "{?, O IPTU, no valor mensal aproximado de {valor_iptu}, ficará a cargo do(a) LOCATÁRIO(A), conforme acordado entre as partes.}",
+        ],
       },
       {
         type: "clause",
         number: "7ª",
+        title: "DA VEDAÇÃO DE CESSÃO",
+        text: "É vedada a cessão, sublocação ou transferência do ponto comercial sem autorização prévia e por escrito do(a) LOCADOR(A), sob pena de rescisão contratual imediata e pagamento de multa equivalente a três aluguéis.",
+      },
+      {
+        type: "clause",
+        number: "8ª",
+        title: "DAS DISPOSIÇÕES GERAIS",
+        paragraphs: [
+          "O presente contrato obriga as partes e seus sucessores, sendo considerado título executivo extrajudicial para todos os fins de direito.",
+          "As partes declaram que leram e compreenderam todos os termos deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se feitas por escrito e assinadas por ambas as partes.",
+          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+        ],
+      },
+      {
+        type: "clause",
+        number: "9ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas ou litígios, as partes elegem o Foro da Comarca de {cidade_contrato_loc}.",
+        text: "Para dirimir quaisquer dúvidas ou litígios, as partes elegem o Foro da Comarca de {cidade_contrato_loc}, com renúncia a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",

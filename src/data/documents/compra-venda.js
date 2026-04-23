@@ -373,7 +373,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -418,8 +418,18 @@ const compraVenda = {
       {
         type: "clause",
         number: "5ª",
+        title: "DAS DISPOSIÇÕES GERAIS",
+        paragraphs: [
+          "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
+          "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se realizadas mediante aditivo contratual escrito e assinado por ambas as partes.",
+          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+        ],
+      },
+      {
+        type: "clause",
+        number: "6ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {?, {foro}}{?, {cidade_contrato}}.",
+        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {foro}{?, {foro} — }{cidade_contrato}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",
@@ -449,7 +459,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -487,8 +497,18 @@ const compraVenda = {
       {
         type: "clause",
         number: "5ª",
+        title: "DAS DISPOSIÇÕES GERAIS",
+        paragraphs: [
+          "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
+          "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor.",
+          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+        ],
+      },
+      {
+        type: "clause",
+        number: "6ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {?, {foro}}{?, {cidade_contrato}}.",
+        text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {cidade_contrato}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",
@@ -518,7 +538,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -559,8 +579,18 @@ const compraVenda = {
       {
         type: "clause",
         number: "5ª",
+        title: "DAS DISPOSIÇÕES GERAIS",
+        paragraphs: [
+          "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
+          "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor.",
+          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+        ],
+      },
+      {
+        type: "clause",
+        number: "6ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {?, {foro}}{?, {cidade_contrato}}.",
+        text: "Para dirimir quaisquer dúvidas, as partes elegem o Foro da Comarca de {cidade_contrato}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",

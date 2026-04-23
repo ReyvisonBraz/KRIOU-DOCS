@@ -695,23 +695,19 @@ const LegalEditorPage = () => {
 
         case "clause":
           return (
-            <div key={i} style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: "#111", lineHeight: 1.8, textAlign: "justify" }}>
-                <strong>CLÁUSULA {block.number} – {block.title}</strong>
+            <div key={i} style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#111", lineHeight: 1.6, textAlign: "justify", marginBottom: 8 }}>
+                CLÁUSULA {block.number} — {block.title.toUpperCase()}
               </p>
               {block.text && (
-                <p style={{ fontSize: 13, color: "#222", lineHeight: 1.8, textAlign: "justify", marginTop: 4 }}>
+                <p style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginBottom: 12, paddingLeft: 8 }}>
                   {block.text}
                 </p>
               )}
               {block.paragraphs && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ paddingLeft: 24 }}>
                   {block.paragraphs.map((p, j) => (
-                    <p key={j} style={{
-                      fontSize: 13, color: "#222", lineHeight: 1.8,
-                      paddingLeft: p.startsWith("I") || p.startsWith("V") ? 16 : 0,
-                      marginBottom: 2,
-                    }}>
+                    <p key={j} style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginBottom: 6 }}>
                       {p}
                     </p>
                   ))}
@@ -722,40 +718,26 @@ const LegalEditorPage = () => {
 
         case "closing":
           return (
-            <p key={i} style={{
-              fontSize: 13, color: "#222", lineHeight: 1.8,
-              textAlign: "justify", marginTop: 24, marginBottom: 16,
-            }}>
+            <p key={i} style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginTop: 24, marginBottom: 16 }}>
               {block.text}
             </p>
           );
 
         case "date":
           return (
-            <p key={i} style={{
-              fontSize: 13, color: "#222", marginBottom: 32, marginTop: 8,
-            }}>
+            <p key={i} style={{ fontSize: 14, color: "#222", marginBottom: 32, marginTop: 16 }}>
               {block.text}
             </p>
           );
 
         case "signatures":
           return (
-            <div key={i} style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`,
-              gap: 32, marginTop: 16, marginBottom: 32,
-            }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`, gap: 32, marginTop: 40, marginBottom: 40 }}>
               {block.parties.map((party, j) => (
                 <div key={j} style={{ textAlign: "center" }}>
-                  <div style={{
-                    borderBottom: "1px solid #333",
-                    paddingBottom: 4,
-                    marginBottom: 6,
-                    minHeight: 40,
-                  }} />
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>{party.role}</p>
-                  <p style={{ fontSize: 12, color: "#555" }}>{party.name}</p>
+                  <div style={{ borderBottom: "1px solid #000", marginBottom: 8, minHeight: 40 }} />
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#000" }}>{party.role}</p>
+                  <p style={{ fontSize: 12, color: "#444" }}>{party.name}</p>
                 </div>
               ))}
             </div>
@@ -764,16 +746,12 @@ const LegalEditorPage = () => {
         case "witnesses":
           return (
             <div key={i} style={{ marginTop: 24 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 16 }}>
-                TESTEMUNHAS:
-              </p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#000", marginBottom: 16 }}>TESTEMUNHAS:</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
                 {Array.from({ length: block.count }).map((_, j) => (
                   <div key={j}>
-                    <div style={{ borderBottom: "1px solid #999", marginBottom: 4, minHeight: 32 }} />
-                    <p style={{ fontSize: 11, color: "#555" }}>
-                      {j + 1}ª Testemunha — Nome: _____________________________ RG: _______________
-                    </p>
+                    <div style={{ borderBottom: "1px solid #ccc", marginBottom: 4, minHeight: 32 }} />
+                    <p style={{ fontSize: 11, color: "#666" }}>{j + 1}ª Testemunha — Nome/RG</p>
                   </div>
                 ))}
               </div>
@@ -785,40 +763,21 @@ const LegalEditorPage = () => {
       }
     };
 
-    // Fallback: mostra campos organizados por seção quando não há body definido
     const renderFallback = () => (
-      <>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "#111", textTransform: "uppercase" }}>
-            {selectedDoc?.name}
-          </h3>
-          <p style={{ fontSize: 13, color: "#666" }}>{currentVariantObj?.name}</p>
-          <div style={{ width: 60, height: 2, background: "#333", margin: "12px auto 0" }} />
-        </div>
-        {currentSections.map((section) => {
-          const filled = section.fields.filter(
-            (f) => !disabledFields[f.key] && legalFormData[f.key]?.trim()
-          );
-          if (!filled.length) return null;
-          return (
-            <div key={section.id} style={{ marginBottom: 20 }}>
-              <h4 style={{
-                fontSize: 12, fontWeight: 700, color: "#444",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                borderBottom: "1px solid #eee", paddingBottom: 6, marginBottom: 10,
-              }}>
-                {section.title}
-              </h4>
-              {filled.map((f) => (
-                <div key={f.key} style={{ display: "flex", gap: 8, marginBottom: 5, paddingLeft: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#555", minWidth: "38%" }}>{f.label}:</span>
-                  <span style={{ fontSize: 13, color: "#333" }}>{legalFormData[f.key]}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </>
+      <div style={{ padding: 40 }}>
+        <h3 style={{ textAlign: "center", marginBottom: 30 }}>{selectedDoc?.name}</h3>
+        {currentSections.map((s) => (
+          <div key={s.id} style={{ marginBottom: 15 }}>
+            <h4 style={{ fontSize: 12, textTransform: "uppercase", color: "#666", marginBottom: 8 }}>{s.title}</h4>
+            {s.fields.map((f) => (
+              <div key={f.key} style={{ display: "flex", gap: 10, fontSize: 13, marginBottom: 4 }}>
+                <span style={{ fontWeight: 600 }}>{f.label}:</span>
+                <span>{legalFormData[f.key] || "—"}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     );
 
     return (
@@ -832,35 +791,58 @@ const LegalEditorPage = () => {
           </p>
         </div>
 
-        <Card style={{ padding: "48px 56px", background: "white", color: "#1a1a1a", fontFamily: "Georgia, 'Times New Roman', serif" }}>
-          {hasBody
-            ? docBody.map((block, i) => renderBlock(block, i))
-            : renderFallback()
-          }
+        {/* Paper container */}
+        <div style={{
+          background: "#fff",
+          borderRadius: 4,
+          boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.03)",
+          maxWidth: 760,
+          margin: "0 auto",
+          overflow: "hidden",
+        }}>
+          {/* Faixa decorativa topo */}
+          <div style={{ height: 5, background: "linear-gradient(90deg, #0f2041 0%, #00b4b4 100%)" }} />
 
-          {/* Legislação */}
-          {selectedDoc?.legislation && (
-            <div style={{
-              marginTop: 32, padding: 12,
-              background: "#f8f8f8", borderRadius: 6,
-              fontSize: 11, color: "#888", textAlign: "center",
-              fontFamily: "sans-serif",
-            }}>
-              Base Legal: {selectedDoc.legislation}
-            </div>
-          )}
-
-          {/* Footer */}
           <div style={{
-            marginTop: 24, paddingTop: 14,
-            borderTop: "1px solid #ddd", textAlign: "center",
-            fontFamily: "sans-serif",
+            padding: "52px 68px 60px",
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            color: "#1a1a1a",
+            position: "relative",
           }}>
-            <p style={{ fontSize: 10, color: "#aaa" }}>
-              Documento gerado por Kriou Docs — {new Date().toLocaleDateString("pt-BR")}
-            </p>
+            {/* Faixa lateral esquerda */}
+            <div style={{
+              position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+              background: "linear-gradient(180deg, #00b4b4 0%, rgba(0,180,180,0) 100%)",
+            }} />
+
+            {hasBody
+              ? docBody.map((block, i) => renderBlock(block, i))
+              : renderFallback()
+            }
+
+            {selectedDoc?.legislation && (
+              <div style={{
+                marginTop: 36, padding: "10px 16px",
+                background: "#f5f7fb", borderRadius: 6,
+                borderLeft: "3px solid #0f2041",
+                fontSize: 10.5, color: "#666",
+                fontFamily: "system-ui, sans-serif",
+              }}>
+                <strong style={{ color: "#0f2041" }}>Base Legal:</strong> {selectedDoc.legislation}
+              </div>
+            )}
+
+            <div style={{
+              marginTop: 24, paddingTop: 14,
+              borderTop: "1px solid #e8e8e8", textAlign: "center",
+              fontFamily: "system-ui, sans-serif",
+            }}>
+              <p style={{ fontSize: 9.5, color: "#bbb", letterSpacing: "0.04em" }}>
+                DOCUMENTO GERADO POR KRIOU DOCS · {new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).toUpperCase()}
+              </p>
+            </div>
           </div>
-        </Card>
+        </div>
 
         <div style={{ marginTop: 24, textAlign: "center" }}>
           <Button variant="primary" icon="Download" onClick={() => navigate("checkout")}

@@ -103,13 +103,29 @@ export const DocumentService = {
   },
 
   /**
-   * Atualiza nome, sobrenome e CPF do perfil.
+   * Atualiza nome, sobrenome, CPF e dados do Google.
+   * Salva tudo para o painel admin futuro.
    */
-  async updateProfile({ nome, sobrenome, cpf }) {
+  async updateProfile({ nome, sobrenome, cpf, googleData }) {
+    // Pega o user atual do Supabase Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Se tiver googleData, usa ela. Senão, pega do user atual
+    const email = googleData?.email || user?.email || null;
+    const avatar_url = googleData?.avatar_url || user?.raw_user_meta_data?.avatar_url || null;
+    const google_id = user?.raw_user_meta_data?.sub || null;
+
     const { data, error } = await supabase
       .from("profiles")
-      .update({ nome, sobrenome, cpf })
-      .eq("id", (await supabase.auth.getUser()).data.user?.id)
+      .update({ 
+        nome, 
+        sobrenome, 
+        cpf,
+        email,
+        avatar_url,
+        google_id,
+      })
+      .eq("id", user?.id)
       .select()
       .single();
 

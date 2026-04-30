@@ -7,23 +7,43 @@
  * para registro interno antes de acessar o app.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DocumentService } from "../services/DocumentService";
 import { Icon } from "../components/Icons";
 import showToast from "../utils/toast";
 import { validateCpf } from "../utils/validation";
 import { formatCpf } from "../utils/formatting";
+import { useAuth } from "../context/AuthContext";
 
 const labelClass = "block text-[12px] font-bold text-text-muted mb-1.5 uppercase tracking-wide ml-1";
 const inputClass = "w-full bg-surface-2 border border-border rounded-xl px-4 py-3.5 text-[15px] outline-none text-white placeholder-text-muted/60 transition-all focus:border-coral focus:ring-2 focus:ring-coral/20";
 const inputErrorClass = "border-coral ring-2 ring-coral/20";
 
 const CompleteProfilePage = ({ onNavigate }) => {
+  const { user } = useAuth();
   const [nome, setNome]           = useState("");
   const [sobrenome, setSobrenome] = useState("");
   const [cpf, setCpf]             = useState("");
   const [errors, setErrors]       = useState({});
   const [isSaving, setIsSaving]   = useState(false);
+
+  // Auto-preencher sobrenome com dados do Google se disponível
+  useEffect(() => {
+    if (user) {
+      const rawMeta = user.raw_user_meta_data || {};
+      const meta = user.user_metadata || rawMeta;
+      const fullName = meta?.full_name || meta?.name || "";
+      if (fullName) {
+        const parts = fullName.split(" ");
+        if (parts.length > 1) {
+          setNome(parts[0]);
+          setSobrenome(parts.slice(1).join(" "));
+        } else {
+          setNome(fullName);
+        }
+      }
+    }
+  }, [user]);
 
   const validate = () => {
     const errs = {};
@@ -44,10 +64,20 @@ const CompleteProfilePage = ({ onNavigate }) => {
 
     setIsSaving(true);
     try {
+      // Preparar googleData com dados do Google
+      const rawMeta = user?.raw_user_meta_data || {};
+      const meta = user?.user_metadata || rawMeta;
+      const googleData = {
+        email: user?.email || meta?.email || null,
+        avatar_url: meta?.avatar_url || null,
+        google_id: rawMeta?.sub || null,
+      };
+
       await DocumentService.updateProfile({
         nome:      nome.trim(),
         sobrenome: sobrenome.trim(),
         cpf:       cpf.replace(/\D/g, ""),
+        googleData,
       });
       showToast.success("Cadastro concluído! Bem-vindo ao Kriou Docs.");
       onNavigate("welcome");

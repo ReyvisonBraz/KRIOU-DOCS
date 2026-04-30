@@ -15,6 +15,7 @@ export const DocumentService = {
     const { data, error } = await supabase
       .from("documents")
       .select("*")
+      .eq("status", "finalizado")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -24,10 +25,16 @@ export const DocumentService = {
       type:             row.type,
       title:            row.title,
       template:         row.template,
+      templateId:       row.template_id,
+      templateName:     row.template_name,
       status:           row.status,
       formData:         row.form_data,
       legalData:        row.legal_data,
+      documentType:     row.document_type,
       documentTypeName: row.document_type_name,
+      variantId:        row.variant_id,
+      variantName:      row.variant_name,
+      variant:         row.variant,
       date:             new Date(row.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
       createdAt:        row.created_at,
       userId:           row.user_id,
@@ -45,10 +52,16 @@ export const DocumentService = {
         type:               doc.type,
         title:              doc.title || "Sem título",
         template:           doc.template || null,
+        template_id:        doc.templateId || null,
+        template_name:      doc.templateName || null,
         status:             doc.status || "finalizado",
         form_data:          doc.formData   || null,
         legal_data:         doc.legalData  || null,
+        document_type:      doc.documentType || null,
         document_type_name: doc.documentTypeName || null,
+        variant_id:         doc.variantId || null,
+        variant_name:       doc.variantName || null,
+        variant:            doc.variant || null,
       })
       .select()
       .single();

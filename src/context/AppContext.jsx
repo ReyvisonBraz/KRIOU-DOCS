@@ -223,7 +223,7 @@ export const useApp = () => {
     lastSaved:        resume.lastSaved,
     triggerSave:      resume.triggerSave,
     userDocuments:    resume.userDocuments,        setUserDocuments: resume.setUserDocuments,
-    saveDocument:     (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate),
+    saveDocument:     (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }),
     filter:           resume.filter,              setFilter: resume.setFilter,
 
     // Legal

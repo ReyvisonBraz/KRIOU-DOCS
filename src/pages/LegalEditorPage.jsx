@@ -38,7 +38,7 @@ const STEPS = [
 
 const DocTypeCard = ({ doc, onClick, isSelected }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   return (
     <Card
       onClick={onClick}
@@ -64,7 +64,7 @@ const DocTypeCard = ({ doc, onClick, isSelected }) => {
         background: "linear-gradient(135deg, rgba(0,210,211,0.1) 0%, transparent 100%)",
         borderRadius: "0 8px 0 80px",
       }} />
-      
+
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16, position: "relative" }}>
         <div style={{
           width: 52,
@@ -77,17 +77,17 @@ const DocTypeCard = ({ doc, onClick, isSelected }) => {
           flexShrink: 0,
           transition: "all 0.2s ease",
         }}>
-          <Icon 
-            name={doc.icon} 
-            className="w-6 h-6" 
-            style={{ 
+          <Icon
+            name={doc.icon}
+            className="w-6 h-6"
+            style={{
               color: isSelected ? "var(--teal)" : "var(--teal)",
               transform: isHovered ? "scale(1.1)" : "scale(1)",
               transition: "transform 0.2s ease",
-            }} 
+            }}
           />
         </div>
-        
+
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{doc.name}</h3>
@@ -108,14 +108,14 @@ const DocTypeCard = ({ doc, onClick, isSelected }) => {
           <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.4, marginBottom: doc.variants?.length > 1 ? 12 : 0 }}>
             {doc.description || "Documento jurídico para uso profissional"}
           </p>
-          
+
           {doc.variants?.length > 1 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {doc.variants.map((v) => (
                 <span key={v.id} style={{
-                  fontSize: 11, 
+                  fontSize: 11,
                   padding: "3px 10px",
-                  background: "var(--surface-2)", 
+                  background: "var(--surface-2)",
                   borderRadius: 100,
                   color: "var(--text-muted)",
                   fontWeight: 500,
@@ -133,28 +133,28 @@ const DocTypeCard = ({ doc, onClick, isSelected }) => {
 
 const SectionProgressBar = ({ requiredFilled, requiredTotal, allDone }) => {
   const progressPct = requiredTotal > 0 ? Math.round((requiredFilled / requiredTotal) * 100) : 0;
-  
+
   const getProgressColor = () => {
     if (allDone) return "var(--success)";
     if (progressPct > 50) return "var(--teal)";
     if (progressPct > 0) return "var(--gold)";
     return "var(--coral)";
   };
-  
+
   return (
     <div style={{
       marginTop: 16,
       padding: "16px 20px",
       borderRadius: 14,
-      background: allDone 
-        ? "rgba(0,200,151,0.08)" 
+      background: allDone
+        ? "rgba(0,200,151,0.08)"
         : "rgba(255,255,255,0.03)",
       border: `1px solid ${allDone ? "rgba(0,200,151,0.25)" : "rgba(255,255,255,0.07)"}`,
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ 
-          fontSize: 13, 
-          fontWeight: 700, 
+        <span style={{
+          fontSize: 13,
+          fontWeight: 700,
           color: allDone ? "var(--success)" : "var(--text-muted)",
           display: "flex",
           alignItems: "center",
@@ -177,11 +177,11 @@ const SectionProgressBar = ({ requiredFilled, requiredTotal, allDone }) => {
           {progressPct}%
         </span>
       </div>
-      <div style={{ 
-        height: 6, 
-        borderRadius: 4, 
-        background: "rgba(255,255,255,0.08)", 
-        overflow: "hidden" 
+      <div style={{
+        height: 6,
+        borderRadius: 4,
+        background: "rgba(255,255,255,0.08)",
+        overflow: "hidden"
       }}>
         <div style={{
           height: "100%",
@@ -514,13 +514,13 @@ const LegalEditorPage = () => {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {currentSections.map((section, i) => (
               <span key={section.id} style={{
-                fontSize: 12, 
+                fontSize: 12,
                 padding: "6px 14px",
-                background: "var(--surface-3)", 
+                background: "var(--surface-3)",
                 borderRadius: 8,
                 color: "var(--text)",
-                display: "flex", 
-                alignItems: "center", 
+                display: "flex",
+                alignItems: "center",
                 gap: 6,
                 fontWeight: 500,
               }}>
@@ -556,10 +556,10 @@ const LegalEditorPage = () => {
           Campos com <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios
         </div>
 
-        <SectionProgressBar 
-          requiredFilled={requiredFilled} 
-          requiredTotal={requiredTotal} 
-          allDone={allDone} 
+        <SectionProgressBar
+          requiredFilled={requiredFilled}
+          requiredTotal={requiredTotal}
+          allDone={allDone}
         />
 
         <div style={{
@@ -585,10 +585,10 @@ const LegalEditorPage = () => {
               </p>
             </div>
           </div>
-          <Button 
-            variant="secondary" 
-            size="small" 
-            icon="Wand2" 
+          <Button
+            variant="secondary"
+            size="small"
+            icon="Wand2"
             onClick={handleFillDemo}
             style={{ background: "var(--teal)", color: "white", border: "none" }}
           >
@@ -885,9 +885,9 @@ const LegalEditorPage = () => {
         </div>
 
         <div style={{ marginTop: 24, textAlign: "center" }}>
-          <Button 
-            variant="primary" 
-            icon="Download" 
+          <Button
+            variant="primary"
+            icon="Download"
             onClick={() => navigate("checkout")}
             style={{ padding: "14px 32px", fontSize: 15 }}
           >

@@ -52,17 +52,23 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     legalResetFn?.();
   }, [userId]);
 
-  const saveDocument = useCallback(async (documentData, documentType, selectedTpl) => {
+  const saveDocument = useCallback(async (documentData, documentType, selectedTpl, variantData) => {
     const docType = documentType ? "legal" : "resume";
 
     const docPayload = {
-      type:             docType,
-      title:            documentData.nome || documentType?.name || "Documento",
-      template:         selectedTpl?.name || documentType?.name || "Padrão",
-      status:           "finalizado",
-      formData:         docType === "resume" ? documentData : null,
-      legalData:        docType === "legal"  ? documentData : null,
-      documentTypeName: documentType?.name  || null,
+      type:              docType,
+      title:             documentData.nome || documentData.title || documentType?.name || "Documento",
+      template:          selectedTpl || null,
+      templateId:        selectedTpl?.id || null,
+      templateName:      selectedTpl?.name || documentType?.name || "Padrão",
+      status:            "finalizado",
+      formData:          docType === "resume" ? documentData : null,
+      legalData:         docType === "legal"  ? documentData : null,
+      documentType:      documentType?.id   || null,
+      documentTypeName:  documentType?.name  || null,
+      variantId:         variantData?.id     || null,
+      variantName:      variantData?.name   || null,
+      variant:          variantData         || null,
     };
 
     try {

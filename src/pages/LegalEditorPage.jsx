@@ -467,13 +467,29 @@ const LegalEditorPage = () => {
         )}
 
         <Button
-          variant="secondary"
+          variant="primary"
           icon="ClipboardList"
           onClick={() => setShowRequirements(true)}
-          style={{ marginTop: 14 }}
+          style={{ marginTop: 16, padding: "14px 24px", fontSize: 14, fontWeight: 700 }}
         >
           Ver requisitos do documento
         </Button>
+      </div>
+
+      <div style={{
+        marginTop: 16,
+        padding: "16px 20px",
+        background: "linear-gradient(135deg, rgba(233,69,96,0.08) 0%, rgba(0,210,211,0.08) 100%)",
+        border: "1px solid rgba(233,69,96,0.15)",
+        borderRadius: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+      }}>
+        <Icon name="Info" className="w-5 h-5" style={{ color: "var(--coral)" }} />
+        <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>
+          <strong style={{ color: "var(--text)" }}>Não sabe o que precisa?</strong> Clique acima para ver os requisitos mínimos, essenciais e completos.
+        </p>
       </div>
 
       <VariantSelector

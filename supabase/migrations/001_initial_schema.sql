@@ -44,25 +44,25 @@ CREATE TABLE IF NOT EXISTS documents (
 
   -- Tipo e identificação
   type VARCHAR(20) NOT NULL, -- 'resume' ou 'legal'
-  document_type VARCHAR(50),    -- 'compra-venda', 'locacao', etc (null para resume)
+  document_type VARCHAR(50),
   title VARCHAR(255) NOT NULL,
 
   -- Status do documento
-  status VARCHAR(20) DEFAULT 'draft', -- 'draft', 'finalizado', 'excluido'
+  status VARCHAR(20) DEFAULT 'draft',
 
   -- Dados do documento (JSON)
-  form_data JSONB,     -- dados do currículo
-  legal_data JSONB,    -- dados do documento jurídico
+  form_data JSONB,
+  legal_data JSONB,
 
   -- Template utilizado
-  template_id VARCHAR(50),      -- ID do template (para resume)
-  template_name VARCHAR(100),  -- Nome do template
-  template JSONB,               -- Objeto completo do template
+  template_id VARCHAR(50),
+  template_name VARCHAR(100),
+  template JSONB,
 
   -- Variante (para jurídicos)
   variant_id VARCHAR(50),
   variant_name VARCHAR(100),
-  variant JSONB,                -- Objeto completo da variante
+  variant JSONB,
 
   -- Metadados
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -89,25 +89,25 @@ CREATE TRIGGER update_documents_updated_at
   BEFORE UPDATE ON documents
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- ─── RLS (Segurança) ───────────────────────────────────────────────────────
--- Usuários só veem os próprios documentos
+-- ─── RLS (Segurança) ────────────────────────────────────────────────────────
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policy: usuários veem/editam só seus próprios documentos
-CREATE OR REPLACE POLICY "Users can manage own documents"
+DROP POLICY IF EXISTS "Users can manage own documents" ON documents;
+CREATE POLICY "Users can manage own documents"
   ON documents FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
 -- Policy: usuários veem/editam só seu próprio perfil
-CREATE OR REPLACE POLICY "Users can manage own profile"
+DROP POLICY IF EXISTS "Users can manage own profile" ON profiles;
+CREATE POLICY "Users can manage own profile"
   ON profiles FOR ALL
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
 -- ─── Permissões para Supabase ───────────────────────────────────────────────
--- Permite INSERT automatico no profiles via trigger (sembreaking RLS)
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON profiles TO anon, authenticated;
 GRANT ALL ON documents TO anon, authenticated;

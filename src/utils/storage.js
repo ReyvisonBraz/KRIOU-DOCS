@@ -27,21 +27,12 @@ const STORAGE_KEYS = {
 };
 
 // ─── Storage Keys with User Context ───
-const getUserKey = (baseKey, userId) => `kriou_user_${userId}_${baseKey}`;
-
 /**
  * Generate storage key for user documents
  */
 const getUserDocumentsKey = (userId) => userId 
   ? `kriou_user_${userId}_documents` 
   : STORAGE_KEYS.USER_DOCUMENTS;
-
-/**
- * Generate storage key for user drafts
- */
-const getUserDraftsKey = (userId) => userId 
-  ? `kriou_user_${userId}_drafts` 
-  : "kriou_guest_draft";
 
 /**
  * Generate storage key for user session
@@ -423,7 +414,7 @@ const StorageService = {
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },

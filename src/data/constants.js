@@ -48,6 +48,46 @@ export const RESUME_TEMPLATES = [
     accent: "#FFFFFF",
     tag: null,
   },
+  {
+    id: "minimalista",
+    name: "Minimalista",
+    desc: "Simples e objetivo",
+    color: "#2C3E50",
+    accent: "#95A5A6",
+    tag: null,
+  },
+  {
+    id: "corporativo",
+    name: "Corporativo",
+    desc: "Profissional e tradicional",
+    color: "#1E3A5F",
+    accent: "#3498DB",
+    tag: "Popular",
+  },
+  {
+    id: "moderno",
+    name: "Moderno",
+    desc: "Design contemporâneo",
+    color: "#2C2C54",
+    accent: "#A855F7",
+    tag: "Novo",
+  },
+  {
+    id: "elegante",
+    name: "Elegante",
+    desc: "Sofisticado e refinado",
+    color: "#1C1C1C",
+    accent: "#D4AF37",
+    tag: null,
+  },
+  {
+    id: "startup",
+    name: "Startup",
+    desc: "Vibrante e inovador",
+    color: "#FF6B35",
+    accent: "#F7C948",
+    tag: "Novo",
+  },
 ];
 
 // ─── Document Types (Coming Soon) ───

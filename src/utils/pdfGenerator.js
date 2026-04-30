@@ -68,7 +68,7 @@ export const generateResumePDF = (formData, template) => {
 
   // ─── Objective Section ───
   if (formData.objetivo) {
-    currentY = addSectionHeader(doc, "OBJETIVO", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "OBJETIVO", currentY, primaryRGB, margin, contentWidth);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     const objectiveLines = doc.splitTextToSize(formData.objetivo, contentWidth);
@@ -79,7 +79,7 @@ export const generateResumePDF = (formData, template) => {
   // ─── Experience Section ───
   const hasExperiencias = formData.experiencias?.some((exp) => exp.empresa);
   if (hasExperiencias) {
-    currentY = addSectionHeader(doc, "EXPERIÊNCIA PROFISSIONAL", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "EXPERIÊNCIA PROFISSIONAL", currentY, primaryRGB, margin, contentWidth);
     
     formData.experiencias
       .filter((exp) => exp.empresa)
@@ -121,7 +121,7 @@ export const generateResumePDF = (formData, template) => {
   // ─── Education Section ───
   const hasFormacoes = formData.formacoes?.some((f) => f.instituicao);
   if (hasFormacoes) {
-    currentY = addSectionHeader(doc, "FORMAÇÃO ACADÊMICA", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "FORMAÇÃO ACADÊMICA", currentY, primaryRGB, margin, contentWidth);
     
     formData.formacoes
       .filter((f) => f.instituicao)
@@ -150,7 +150,7 @@ export const generateResumePDF = (formData, template) => {
   // ─── Skills Section ───
   const hasHabilidades = formData.habilidades?.length > 0;
   if (hasHabilidades) {
-    currentY = addSectionHeader(doc, "HABILIDADES", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "HABILIDADES", currentY, primaryRGB, margin, contentWidth);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -165,7 +165,7 @@ export const generateResumePDF = (formData, template) => {
   // ─── Languages Section ───
   const hasIdiomas = formData.idiomas?.some((i) => i.idioma);
   if (hasIdiomas) {
-    currentY = addSectionHeader(doc, "IDIOMAS", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "IDIOMAS", currentY, primaryRGB, margin, contentWidth);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -182,7 +182,7 @@ export const generateResumePDF = (formData, template) => {
 
   // ─── Courses/Extras Section ───
   if (formData.cursos && formData.cursos.trim()) {
-    currentY = addSectionHeader(doc, "CURSOS E CERTIFICAÇÕES", currentY, primaryRGB);
+    currentY = addSectionHeader(doc, "CURSOS E CERTIFICAÇÕES", currentY, primaryRGB, margin, contentWidth);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -207,9 +207,11 @@ export const generateResumePDF = (formData, template) => {
  * @param {string} title - Section title
  * @param {number} y - Y position
  * @param {Object} color - RGB color object
+ * @param {number} margin - Page margin
+ * @param {number} contentWidth - Usable content width
  * @returns {number} New Y position
  */
-const addSectionHeader = (doc, title, y, color) => {
+const addSectionHeader = (doc, title, y, color, margin, contentWidth) => {
   doc.setFillColor(color.r, color.g, color.b);
   doc.rect(margin, y - 3, contentWidth, 6, "F");
   

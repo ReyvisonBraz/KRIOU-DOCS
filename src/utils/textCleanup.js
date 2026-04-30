@@ -12,6 +12,7 @@
  *   Output: "inscrito(a)"
  */
 
+/* eslint-disable no-control-regex */
 /**
  * Regras de limpeza ordenadas para artefatos gramaticais em português.
  * Cada regra é [padrão, substituição].

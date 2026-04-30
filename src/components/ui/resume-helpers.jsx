@@ -323,7 +323,7 @@ export const VisualExample = ({ type, example }) => {
   );
 };
 
-export const QuickFillCard = ({ title, examples, onSelect }) => {
+export const QuickFillCard = ({ examples, onSelect }) => {
   return (
     <div style={{
       marginTop: 16,

@@ -61,11 +61,6 @@ const RUAS = [
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const pickN = (arr, n) => {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
-};
-
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const mockNome = () => {

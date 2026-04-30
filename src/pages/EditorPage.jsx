@@ -11,7 +11,7 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, Input, Textarea, Select, Badge, Tag, FieldHint, QuickSuggestion, ExperienceTypeSelector, FieldWithIcon, VisualExample, QuickFillCard, AppNavbar, AppStepper, BottomNavigation, ErrorMessage, SaveIndicator, ConfirmDialog } from "../components/UI";
 import { STEPS, STEP_DESCRIPTIONS, SKILLS_OPTIONS, LANGUAGE_LEVELS, EDUCATION_STATUS, FIELD_HINTS } from "../data/constants";
-import { validateStep, getStepStatus } from "../utils/validation";
+import { validateStep } from "../utils/validation";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import { useConfirm } from "../hooks/useConfirm";
 

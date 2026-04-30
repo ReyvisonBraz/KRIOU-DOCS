@@ -1,24 +1,3 @@
-/**
- * ============================================
- * KRIOU DOCS - Legal Editor Page (Redesenhado)
- * ============================================
- * Wizard de 5 passos para documentos jurídicos:
- *
- * 1. Escolha do tipo de documento
- * 2. Escolha da variante (ex: Imóvel vs Veículo)
- * 3. Preenchimento por seções com ajuda
- * 4. Revisão dos dados
- * 5. Preview + Checkout
- *
- * Funcionalidades:
- * - Seletor de variantes (sem duplicar documento)
- * - Botões de ajuda destacados em cada campo
- * - Exemplos de preenchimento inline
- * - Toggle para desabilitar campos opcionais
- * - Observações separadas (cliente vs interno)
- * - Formulário organizado por seções
- */
-
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
@@ -42,26 +21,179 @@ import showToast from "../utils/toast";
 import StorageService from "../utils/storage";
 import { generateMockFormData } from "../utils/mockData";
 import {
-  LEGAL_DOCUMENTS,
-  getDocumentById,
   getAvailableDocuments,
   getSectionsForVariant,
   validateFields,
   getDocumentBody,
 } from "../data/legalDocuments";
 
-// ─── Steps do wizard ───
 const STEPS = [
-  { label: "Tipo de Documento", key: "type" },
-  { label: "Variação", key: "variant" },
-  { label: "Preencher Dados", key: "fill" },
-  { label: "Revisão", key: "review" },
-  { label: "Visualizar", key: "preview" },
+  { label: "Tipo", key: "type", icon: "FileText" },
+  { label: "Variação", key: "variant", icon: "GitBranch" },
+  { label: "Preencher", key: "fill", icon: "Edit" },
+  { label: "Revisão", key: "review", icon: "Check" },
+  { label: "Visualizar", key: "preview", icon: "Eye" },
 ];
 
-/**
- * LegalEditorPage - Wizard completo para documentos jurídicos
- */
+const DocTypeCard = ({ doc, onClick, isSelected }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <Card
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        cursor: "pointer",
+        padding: 24,
+        border: isSelected ? "2px solid var(--teal)" : "1.5px solid var(--border)",
+        transition: "all 0.2s ease",
+        position: "relative",
+        overflow: "hidden",
+        transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: isHovered ? "0 12px 32px rgba(0,210,211,0.15)" : "none",
+      }}
+    >
+      <div style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        width: 80,
+        height: 80,
+        background: "linear-gradient(135deg, rgba(0,210,211,0.1) 0%, transparent 100%)",
+        borderRadius: "0 8px 0 80px",
+      }} />
+      
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, position: "relative" }}>
+        <div style={{
+          width: 52,
+          height: 52,
+          borderRadius: 14,
+          background: isSelected ? "rgba(0,210,211,0.15)" : "rgba(0,210,211,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          transition: "all 0.2s ease",
+        }}>
+          <Icon 
+            name={doc.icon} 
+            className="w-6 h-6" 
+            style={{ 
+              color: isSelected ? "var(--teal)" : "var(--teal)",
+              transform: isHovered ? "scale(1.1)" : "scale(1)",
+              transition: "transform 0.2s ease",
+            }} 
+          />
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{doc.name}</h3>
+            {isSelected && (
+              <div style={{
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                background: "var(--teal)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <Icon name="Check" className="w-3 h-3" style={{ color: "white" }} />
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.4, marginBottom: doc.variants?.length > 1 ? 12 : 0 }}>
+            {doc.description || "Documento jurídico para uso profissional"}
+          </p>
+          
+          {doc.variants?.length > 1 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {doc.variants.map((v) => (
+                <span key={v.id} style={{
+                  fontSize: 11, 
+                  padding: "3px 10px",
+                  background: "var(--surface-2)", 
+                  borderRadius: 100,
+                  color: "var(--text-muted)",
+                  fontWeight: 500,
+                }}>
+                  {v.icon} {v.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+const SectionProgressBar = ({ requiredFilled, requiredTotal, allDone }) => {
+  const progressPct = requiredTotal > 0 ? Math.round((requiredFilled / requiredTotal) * 100) : 0;
+  
+  const getProgressColor = () => {
+    if (allDone) return "var(--success)";
+    if (progressPct > 50) return "var(--teal)";
+    if (progressPct > 0) return "var(--gold)";
+    return "var(--coral)";
+  };
+  
+  return (
+    <div style={{
+      marginTop: 16,
+      padding: "16px 20px",
+      borderRadius: 14,
+      background: allDone 
+        ? "rgba(0,200,151,0.08)" 
+        : "rgba(255,255,255,0.03)",
+      border: `1px solid ${allDone ? "rgba(0,200,151,0.25)" : "rgba(255,255,255,0.07)"}`,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <span style={{ 
+          fontSize: 13, 
+          fontWeight: 700, 
+          color: allDone ? "var(--success)" : "var(--text-muted)",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}>
+          {allDone ? (
+            <>
+              <Icon name="Check" className="w-4 h-4" />
+              Formulário completo!
+            </>
+          ) : (
+            <>Campos obrigatórios — {requiredFilled} de {requiredTotal}</>
+          )}
+        </span>
+        <span style={{
+          fontSize: 13,
+          fontWeight: 800,
+          color: getProgressColor(),
+        }}>
+          {progressPct}%
+        </span>
+      </div>
+      <div style={{ 
+        height: 6, 
+        borderRadius: 4, 
+        background: "rgba(255,255,255,0.08)", 
+        overflow: "hidden" 
+      }}>
+        <div style={{
+          height: "100%",
+          width: `${progressPct}%`,
+          borderRadius: 4,
+          background: getProgressColor(),
+          transition: "width 0.4s ease, background 0.3s ease",
+        }} />
+      </div>
+    </div>
+  );
+};
+
 const LegalEditorPage = () => {
   const {
     navigate,
@@ -83,16 +215,13 @@ const LegalEditorPage = () => {
     userId,
   } = useApp();
 
-  // ─── Estado local ───
   const [selectedDoc, setSelectedDoc] = useState(documentType || null);
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
 
-  // ─── Refs para scroll ───
   const bottomNavRef = useRef(null);
   const contentRef = useRef(null);
 
-  // ─── Scroll para botão de navegação ───
   const scrollToNavigation = useCallback(() => {
     setTimeout(() => {
       if (bottomNavRef.current) {
@@ -101,7 +230,6 @@ const LegalEditorPage = () => {
     }, 150);
   }, []);
 
-  // ─── Scroll para o topo do conteúdo ───
   const scrollToTop = useCallback(() => {
     if (contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -109,27 +237,20 @@ const LegalEditorPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // ─── Effect para scroll quando muda de etapa ───
   useEffect(() => {
     scrollToTop();
   }, [currentStep, scrollToTop]);
 
-  // ─── Confirm dialog ───
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
-  // ─── Aviso de alterações não salvas ───
   const isDirty = saveStatus === "saving" || saveStatus === "idle";
   useUnsavedChanges(isDirty);
 
-  // ─── Documentos disponíveis ───
   const availableDocs = getAvailableDocuments();
-
-  // ─── Seções da variante atual ───
   const currentSections = selectedDoc && selectedVariant
     ? getSectionsForVariant(selectedDoc.id, selectedVariant)
     : [];
 
-  // ─── Handlers ───
   const handleSelectDoc = (doc) => {
     setSelectedDoc(doc);
     setDocumentType(doc);
@@ -142,20 +263,12 @@ const LegalEditorPage = () => {
     scrollToNavigation();
   };
 
-  const handleSelectVariant = (variantId) => {
-    setSelectedVariant(variantId);
-    setStepErrors({});
-    setShowErrors(false);
-    scrollToNavigation();
-  };
-
   const handleUpdateField = useCallback((key, value) => {
     setLegalFormData((prev) => ({ ...prev, [key]: value }));
   }, [setLegalFormData]);
 
   const handleToggleDisabled = (key) => {
     setDisabledFields((prev) => ({ ...prev, [key]: !prev[key] }));
-    // Limpar valor se desabilitou
     if (!disabledFields[key]) {
       setLegalFormData((prev) => {
         const next = { ...prev };
@@ -170,7 +283,6 @@ const LegalEditorPage = () => {
     return stepErrors[key] || null;
   };
 
-  // ─── Preencher com dados fictícios para demonstração ───
   const handleFillDemo = () => {
     const mockData = generateMockFormData(selectedDoc.id, selectedVariant, currentSections);
     setLegalFormData(mockData);
@@ -180,27 +292,15 @@ const LegalEditorPage = () => {
     showToast.success("Dados de demonstração preenchidos! Avance para visualizar o documento.");
   };
 
-  // ─── Navegação ───
   const handleNext = () => {
     if (currentStep === 0 && !selectedDoc) return;
-
-    if (currentStep === 1) {
-      if (!selectedVariant) return;
-      setCurrentStep(2);
-      return;
-    }
+    if (currentStep === 1 && !selectedVariant) return;
 
     if (currentStep === 2) {
-      const validation = validateFields(
-        selectedDoc.id,
-        selectedVariant,
-        legalFormData,
-        disabledFields
-      );
+      const validation = validateFields(selectedDoc.id, selectedVariant, legalFormData, disabledFields);
       if (!validation.valid) {
         setStepErrors(validation.errors);
         setShowErrors(true);
-        // Scroll para o primeiro erro
         const firstErrorKey = Object.keys(validation.errors)[0];
         const el = document.getElementById(`field-${firstErrorKey}`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -220,14 +320,13 @@ const LegalEditorPage = () => {
     }
   };
 
-  // ─── Salvar para depois — cria/atualiza card de rascunho no dashboard ───
   const handleSaveLater = () => {
     if (!selectedDoc) {
       navigate("dashboard");
       return;
     }
 
-    // Snapshot do estado atual para restaurar depois
+    const variantObj = selectedDoc?.variants?.find((v) => v.id === selectedVariant);
     const draftSnapshot = {
       documentType: selectedDoc,
       selectedVariant,
@@ -236,11 +335,10 @@ const LegalEditorPage = () => {
       legalStep: currentStep,
     };
 
-    const title = selectedDoc.name + (currentVariantObj ? ` — ${currentVariantObj.name}` : "");
+    const title = selectedDoc.name + (variantObj ? ` — ${variantObj.name}` : "");
     const now = new Date();
     const dateLabel = now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
 
-    // Verifica se já existe um rascunho deste documento para evitar duplicatas
     const existingDraftIdx = (userDocuments || []).findIndex(
       (d) => d.status === "rascunho" && d.type === selectedDoc.id && d._draftOrigin === "legalEditor"
     );
@@ -257,7 +355,7 @@ const LegalEditorPage = () => {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
         title,
         type: selectedDoc.id,
-        template: currentVariantObj?.name || selectedDoc.name,
+        template: variantObj?.name || selectedDoc.name,
         date: dateLabel,
         status: "rascunho",
         draft: draftSnapshot,
@@ -272,12 +370,10 @@ const LegalEditorPage = () => {
     setUserDocuments(updated);
     StorageService.saveDocuments(updated, userId);
     triggerLegalSave?.();
-
     navigate("dashboard");
     showToast.success("Rascunho salvo! Continue de onde parou a qualquer momento.");
   };
 
-  // ─── Ir para Home com confirmação se houver dados ───
   const handleGoHome = async () => {
     const hasDraft = Object.keys(legalFormData).length > 0 || currentStep > 0;
     if (!hasDraft) {
@@ -293,97 +389,77 @@ const LegalEditorPage = () => {
       cancelLabel: "Continuar editando",
       danger: false,
     });
-    if (confirmed) {
-      handleSaveLater();
-    }
+    if (confirmed) handleSaveLater();
   };
 
-  // ─── Variante selecionada (objeto completo) ───
   const currentVariantObj = selectedDoc?.variants?.find((v) => v.id === selectedVariant);
 
-  // ─── Render: Step 0 - Escolha do tipo de documento ───
+  const allRequiredFields = currentSections.flatMap((s) =>
+    s.fields.filter((f) => f.required && !disabledFields[f.key])
+  );
+  const filledRequired = allRequiredFields.filter(
+    (f) => legalFormData[f.key] && String(legalFormData[f.key]).trim() !== ""
+  );
+  const requiredTotal = allRequiredFields.length;
+  const requiredFilled = filledRequired.length;
+  const allDone = requiredFilled === requiredTotal && requiredTotal > 0;
+  const filledCount = Object.keys(legalFormData).filter((k) => legalFormData[k] && legalFormData[k].trim() !== "").length;
+
+  const completedSteps = new Set(STEPS.map((_, i) => i).filter((i) => i < currentStep));
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === STEPS.length - 1;
+
+  const nextLabel = isLastStep ? "Gerar PDF" : currentStep === 2 ? "Revisar" : "Avançar";
+  const navTitle = selectedDoc
+    ? selectedDoc.name + (currentVariantObj && currentStep > 1 ? ` — ${currentVariantObj.name}` : "")
+    : "Documento Jurídico";
+
   const renderDocTypeSelection = () => (
     <div className="animate-fadeIn">
       <div style={{ marginBottom: 32 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
           Qual documento você precisa?
         </h2>
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 15, color: "var(--text-muted)" }}>
           Selecione o tipo de documento jurídico que deseja criar
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-        {availableDocs.map((doc, index) => (
-          <Card
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+        {availableDocs.map((doc) => (
+          <DocTypeCard
             key={doc.id}
-            className="animate-fadeUp"
+            doc={doc}
             onClick={() => handleSelectDoc(doc)}
-            style={{
-              cursor: "pointer",
-              padding: 24,
-              animationDelay: `${index * 0.08}s`,
-              border: "2px solid var(--border)",
-              transition: "all .2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--teal)";
-              e.currentTarget.style.transform = "translateY(-3px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: 12,
-                background: "rgba(0,210,211,0.1)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <Icon name={doc.icon} className="w-6 h-6" style={{ color: "var(--teal)" }} />
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{doc.name}</h3>
-                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.4 }}>{doc.description}</p>
-                {doc.variants.length > 1 && (
-                  <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-                    {doc.variants.map((v) => (
-                      <span key={v.id} style={{
-                        fontSize: 11, padding: "3px 10px",
-                        background: "var(--surface-3)", borderRadius: 100,
-                        color: "var(--text-muted)",
-                      }}>
-                        {v.icon} {v.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+            isSelected={selectedDoc?.id === doc.id}
+          />
         ))}
       </div>
     </div>
   );
 
-  // ─── Render: Step 1 - Escolha da variante ───
   const renderVariantSelection = () => (
     <div className="animate-fadeIn">
       <div style={{ marginBottom: 28 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
           {selectedDoc?.name}
         </h2>
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 15, color: "var(--text-muted)" }}>
           Escolha a variação do documento. Cada opção adapta os campos automaticamente.
         </p>
         {selectedDoc?.legislation && (
           <div style={{
-            marginTop: 12, fontSize: 12, color: "var(--text-muted)",
-            display: "flex", alignItems: "center", gap: 6,
+            marginTop: 14,
+            padding: "12px 16px",
+            background: "var(--surface-2)",
+            borderRadius: 10,
+            fontSize: 12,
+            color: "var(--text-muted)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
           }}>
-            <span style={{ fontSize: 14 }}>⚖️</span>
+            <Icon name="Scale" className="w-4 h-4" style={{ color: "var(--teal)" }} />
             {selectedDoc.legislation}
           </div>
         )}
@@ -395,27 +471,31 @@ const LegalEditorPage = () => {
         onSelect={setSelectedVariant}
       />
 
-      {/* Preview do que muda */}
-      {currentVariantObj && (
+      {currentVariantObj && currentSections.length > 0 && (
         <div style={{
-          marginTop: 28, padding: 20,
-          background: "var(--surface-2)", borderRadius: 14,
+          marginTop: 24,
+          padding: 20,
+          background: "var(--surface-2)",
+          borderRadius: 14,
           border: "1px solid var(--border)",
         }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20 }}>{currentVariantObj.icon}</span>
+            <span style={{ fontSize: 18 }}>{currentVariantObj.icon}</span>
             {currentVariantObj.name}
-          </div>
-          <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>
-            Este documento terá as seguintes seções:
+            <Badge variant="teal" style={{ marginLeft: 8 }}>{currentSections.length} seções</Badge>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {currentSections.map((section, i) => (
               <span key={section.id} style={{
-                fontSize: 12, padding: "6px 14px",
-                background: "var(--surface-3)", borderRadius: 8,
+                fontSize: 12, 
+                padding: "6px 14px",
+                background: "var(--surface-3)", 
+                borderRadius: 8,
                 color: "var(--text)",
-                display: "flex", alignItems: "center", gap: 6,
+                display: "flex", 
+                alignItems: "center", 
+                gap: 6,
+                fontWeight: 500,
               }}>
                 <span style={{ color: "var(--teal)", fontWeight: 700 }}>{i + 1}</span>
                 {section.title}
@@ -427,83 +507,40 @@ const LegalEditorPage = () => {
     </div>
   );
 
-  // ─── Render: Step 2 - Preenchimento por seções ───
-  const renderFillForm = () => {
-    // Calcula progresso dos campos obrigatórios
-    const allRequiredFields = currentSections.flatMap((s) =>
-      s.fields.filter((f) => f.required && !disabledFields[f.key])
-    );
-    const filledRequired = allRequiredFields.filter(
-      (f) => legalFormData[f.key] && String(legalFormData[f.key]).trim() !== ""
-    );
-    const requiredTotal  = allRequiredFields.length;
-    const requiredFilled = filledRequired.length;
-    const progressPct    = requiredTotal > 0 ? Math.round((requiredFilled / requiredTotal) * 100) : 0;
-    const allDone        = requiredFilled === requiredTotal && requiredTotal > 0;
-
-    return (
+  const renderFillForm = () => (
     <div className="animate-fadeIn">
       <div style={{ marginBottom: 24 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 6 }}>
           Preencha os Dados
         </h2>
         <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
           {selectedDoc?.name} — {currentVariantObj?.name}
         </p>
-        <p style={{
-          fontSize: 12, color: "var(--text-muted)", marginTop: 6,
-          display: "flex", alignItems: "center", gap: 6,
+
+        <div style={{
+          marginTop: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 13,
+          color: "var(--text-muted)",
         }}>
-          <span style={{ fontSize: 14 }}>💡</span>
-          Campos com <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios.
-          Clique no botão <strong style={{ color: "var(--teal)" }}>?</strong> para ver ajuda detalhada.
-        </p>
+          <Icon name="Info" className="w-4 h-4" style={{ color: "var(--teal)" }} />
+          Campos com <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios
+        </div>
 
-        {/* Barra de progresso de campos obrigatórios */}
-        {requiredTotal > 0 && (
-          <div style={{
-            marginTop: 14,
-            padding: "12px 16px",
-            borderRadius: 12,
-            background: allDone
-              ? "rgba(0,200,151,0.08)"
-              : showErrors && requiredFilled < requiredTotal
-                ? "rgba(233,69,96,0.06)"
-                : "rgba(255,255,255,0.03)",
-            border: `1px solid ${allDone ? "rgba(0,200,151,0.25)" : showErrors && requiredFilled < requiredTotal ? "rgba(233,69,96,0.2)" : "rgba(255,255,255,0.07)"}`,
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: allDone ? "var(--success)" : "var(--text-muted)" }}>
-                {allDone ? "✅ Todos os campos obrigatórios preenchidos!" : `Campos obrigatórios`}
-              </span>
-              <span style={{
-                fontSize: 12, fontWeight: 800,
-                color: allDone ? "var(--success)" : requiredFilled === 0 ? "var(--coral)" : "var(--text)",
-              }}>
-                {requiredFilled} / {requiredTotal}
-              </span>
-            </div>
-            <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-              <div style={{
-                height: "100%",
-                width: `${progressPct}%`,
-                borderRadius: 3,
-                background: allDone
-                  ? "var(--success)"
-                  : progressPct > 50 ? "var(--teal)" : progressPct > 0 ? "var(--gold)" : "var(--coral)",
-                transition: "width 0.4s ease",
-              }} />
-            </div>
-          </div>
-        )}
+        <SectionProgressBar 
+          requiredFilled={requiredFilled} 
+          requiredTotal={requiredTotal} 
+          allDone={allDone} 
+        />
 
-        {/* Banner de demonstração */}
         <div style={{
           marginTop: 16,
-          padding: "14px 18px",
-          background: "linear-gradient(135deg, rgba(0,210,211,0.08) 0%, rgba(108,99,255,0.08) 100%)",
+          padding: "16px 20px",
+          background: "linear-gradient(135deg, rgba(0,210,211,0.06) 0%, rgba(108,99,255,0.06) 100%)",
           border: "1.5px dashed var(--teal)",
-          borderRadius: 12,
+          borderRadius: 14,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -511,41 +548,30 @@ const LegalEditorPage = () => {
           flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 22 }}>🎭</span>
+            <Icon name="Wand2" className="w-6 h-6" style={{ color: "var(--teal)" }} />
             <div>
               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: 0 }}>
                 Preencher com dados de demonstração
               </p>
               <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "2px 0 0" }}>
-                Pré-visualize o documento com dados fictícios antes de preencher os seus.
+                Pré-visualize o documento com dados fictícios
               </p>
             </div>
           </div>
-          <button
+          <Button 
+            variant="secondary" 
+            size="small" 
+            icon="Wand2" 
             onClick={handleFillDemo}
-            style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "9px 18px",
-              background: "var(--teal)", color: "#fff",
-              border: "none", borderRadius: 8,
-              fontSize: 13, fontWeight: 700, cursor: "pointer",
-              whiteSpace: "nowrap",
-              boxShadow: "0 2px 8px rgba(0,210,211,0.3)",
-              transition: "opacity .15s",
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.85"}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+            style={{ background: "var(--teal)", color: "white", border: "none" }}
           >
-            <Icon name="Wand2" className="w-4 h-4" />
             Preencher Demo
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Observações do cliente */}
       <ClientNoteBanner notes={selectedDoc?.clientNotes} />
 
-      {/* Seções do formulário */}
       {currentSections.map((section, sectionIndex) => (
         <div key={section.id} style={{ marginBottom: 8 }}>
           <SectionHeader
@@ -577,14 +603,12 @@ const LegalEditorPage = () => {
         </div>
       ))}
     </div>
-    );
-  };
+  );
 
-  // ─── Render: Step 3 - Revisão ───
   const renderReview = () => (
     <div className="animate-fadeIn">
       <div style={{ marginBottom: 24 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
           Revise os Dados
         </h2>
         <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
@@ -592,11 +616,10 @@ const LegalEditorPage = () => {
         </p>
       </div>
 
-      {/* Header do documento */}
       <Card style={{ padding: 20, marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 12,
+            width: 52, height: 52, borderRadius: 14,
             background: "rgba(0,210,211,0.1)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
@@ -606,13 +629,14 @@ const LegalEditorPage = () => {
             <h3 style={{ fontWeight: 700, fontSize: 18 }}>{selectedDoc?.name}</h3>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <Badge variant="teal">{currentVariantObj?.icon} {currentVariantObj?.name}</Badge>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Documento Jurídico</span>
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                {filledCount} campos preenchidos
+              </span>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Dados por seção */}
       {currentSections.map((section) => {
         const filledFields = section.fields.filter(
           (f) => !disabledFields[f.key] && legalFormData[f.key] && legalFormData[f.key].trim() !== ""
@@ -625,7 +649,11 @@ const LegalEditorPage = () => {
               fontSize: 14, fontWeight: 700, color: "var(--teal)",
               marginBottom: 14, paddingBottom: 10,
               borderBottom: "1px solid var(--border)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}>
+              <Icon name="Folder" className="w-4 h-4" />
               {section.title}
             </h4>
             <div style={{
@@ -648,13 +676,12 @@ const LegalEditorPage = () => {
         );
       })}
 
-      {/* Status de validação */}
       <div style={{
         marginTop: 16, padding: 14,
         background: "rgba(0,200,151,0.1)", borderRadius: 10,
         display: "flex", alignItems: "center", gap: 10,
       }}>
-        <Icon name="Check" className="w-5 h-5" style={{ color: "var(--success)" }} />
+        <Icon name="CheckCircle" className="w-5 h-5" style={{ color: "var(--success)" }} />
         <span style={{ fontSize: 14, color: "var(--success)", fontWeight: 600 }}>
           Todos os campos obrigatórios estão preenchidos
         </span>
@@ -662,7 +689,6 @@ const LegalEditorPage = () => {
     </div>
   );
 
-  // ─── Render: Step 4 - Preview ───
   const renderPreview = () => {
     const docBody = getDocumentBody(selectedDoc?.id, selectedVariant, legalFormData, disabledFields);
     const hasBody = docBody && docBody.length > 0;
@@ -682,7 +708,6 @@ const LegalEditorPage = () => {
               <div style={{ width: 60, height: 2, background: "#222", margin: "12px auto 0" }} />
             </div>
           );
-
         case "paragraph":
           return (
             <p key={i} style={{
@@ -692,7 +717,6 @@ const LegalEditorPage = () => {
               {block.text}
             </p>
           );
-
         case "clause":
           return (
             <div key={i} style={{ marginBottom: 20 }}>
@@ -715,21 +739,18 @@ const LegalEditorPage = () => {
               )}
             </div>
           );
-
         case "closing":
           return (
             <p key={i} style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginTop: 24, marginBottom: 16 }}>
               {block.text}
             </p>
           );
-
         case "date":
           return (
             <p key={i} style={{ fontSize: 14, color: "#222", marginBottom: 32, marginTop: 16 }}>
               {block.text}
             </p>
           );
-
         case "signatures":
           return (
             <div key={i} style={{ display: "grid", gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`, gap: 32, marginTop: 40, marginBottom: 40 }}>
@@ -742,7 +763,6 @@ const LegalEditorPage = () => {
               ))}
             </div>
           );
-
         case "witnesses":
           return (
             <div key={i} style={{ marginTop: 24 }}>
@@ -757,7 +777,6 @@ const LegalEditorPage = () => {
               </div>
             </div>
           );
-
         default:
           return null;
       }
@@ -783,7 +802,7 @@ const LegalEditorPage = () => {
     return (
       <div className="animate-fadeIn">
         <div style={{ marginBottom: 24 }}>
-          <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+          <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
             Visualização do Documento
           </h2>
           <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
@@ -791,7 +810,6 @@ const LegalEditorPage = () => {
           </p>
         </div>
 
-        {/* Paper container */}
         <div style={{
           background: "#fff",
           borderRadius: 4,
@@ -800,7 +818,6 @@ const LegalEditorPage = () => {
           margin: "0 auto",
           overflow: "hidden",
         }}>
-          {/* Faixa decorativa topo */}
           <div style={{ height: 5, background: "linear-gradient(90deg, #0f2041 0%, #00b4b4 100%)" }} />
 
           <div style={{
@@ -809,16 +826,12 @@ const LegalEditorPage = () => {
             color: "#1a1a1a",
             position: "relative",
           }}>
-            {/* Faixa lateral esquerda */}
             <div style={{
               position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
               background: "linear-gradient(180deg, #00b4b4 0%, rgba(0,180,180,0) 100%)",
             }} />
 
-            {hasBody
-              ? docBody.map((block, i) => renderBlock(block, i))
-              : renderFallback()
-            }
+            {hasBody ? docBody.map((block, i) => renderBlock(block, i)) : renderFallback()}
 
             {selectedDoc?.legislation && (
               <div style={{
@@ -845,8 +858,12 @@ const LegalEditorPage = () => {
         </div>
 
         <div style={{ marginTop: 24, textAlign: "center" }}>
-          <Button variant="primary" icon="Download" onClick={() => navigate("checkout")}
-            style={{ padding: "14px 32px", fontSize: 15 }}>
+          <Button 
+            variant="primary" 
+            icon="Download" 
+            onClick={() => navigate("checkout")}
+            style={{ padding: "14px 32px", fontSize: 15 }}
+          >
             Finalizar e Gerar PDF
           </Button>
         </div>
@@ -854,7 +871,6 @@ const LegalEditorPage = () => {
     );
   };
 
-  // ─── Render step content ───
   const renderStepContent = () => {
     switch (currentStep) {
       case 0: return renderDocTypeSelection();
@@ -866,28 +882,8 @@ const LegalEditorPage = () => {
     }
   };
 
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === STEPS.length - 1;
-
-  const completedSteps = new Set(STEPS.map((_, i) => i).filter((i) => i < currentStep));
-
-  const navTitle = selectedDoc
-    ? selectedDoc.name + (currentVariantObj && currentStep > 1 ? ` — ${currentVariantObj.name}` : "")
-    : "Documento Jurídico";
-
-  const filledCount = currentStep === 2 && selectedDoc && selectedVariant
-    ? Object.keys(legalFormData).filter((k) => legalFormData[k] && legalFormData[k].trim() !== "").length
-    : null;
-
-  const nextLabel = isLastStep
-    ? "Gerar PDF"
-    : currentStep === 2
-    ? "Revisar"
-    : "Avançar";
-
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* ─── Top Navigation ─── */}
       <AppNavbar
         title={navTitle}
         leftAction={
@@ -923,12 +919,10 @@ const LegalEditorPage = () => {
         )}
       </AppNavbar>
 
-      {/* ─── Main Content ─── */}
       <div ref={contentRef} className="page-container" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
         {renderStepContent()}
       </div>
 
-      {/* ─── Bottom Navigation ─── */}
       <div ref={bottomNavRef}>
         <BottomNavigation
           onBack={handlePrevious}
@@ -938,7 +932,7 @@ const LegalEditorPage = () => {
           nextLabel={nextLabel}
           onSaveLater={handleSaveLater}
           extraContent={
-            filledCount !== null && (
+            currentStep === 2 && (
               <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ color: "var(--teal)", fontWeight: 700 }}>{filledCount}</span>
                 campos preenchidos
@@ -948,7 +942,6 @@ const LegalEditorPage = () => {
         />
       </div>
 
-      {/* ─── Confirm Dialog (Home / Sair) ─── */}
       <ConfirmDialog
         {...confirmState}
         onConfirm={handleConfirm}

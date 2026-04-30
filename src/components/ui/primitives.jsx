@@ -66,7 +66,6 @@ export const Button = ({
  */
 export const Card = ({
   children,
-  variant = "default",
   interactive = true,
   className = "",
   style = {},
@@ -93,7 +92,6 @@ export const Card = ({
 export const Badge = ({
   children,
   variant = "default",
-  className = "",
   style = {},
   ...props
 }) => {
@@ -126,7 +124,7 @@ export const Badge = ({
 /**
  * Tag - Chip/pill style component
  */
-export const Tag = ({ children, active = false, onClick, className = "", style = {}, ...props }) => {
+export const Tag = ({ children, active = false, onClick, style = {}, ...props }) => {
   return (
     <button
       onClick={onClick}

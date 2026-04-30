@@ -32,10 +32,11 @@ const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
 const WelcomePage         = lazy(() => import("./pages/WelcomePage"));
 
 // Wrapper para passar onNavigate às páginas que precisam navegar antes do contexto estar pronto
+// eslint-disable-next-line no-unused-vars
 const withNavigate = (Component) => {
-  const Wrapped = () => {
+  const Wrapped = (props) => {
     const { navigate } = useApp();
-    return <Component onNavigate={navigate} />;
+    return <Component {...props} onNavigate={navigate} />;
   };
   return Wrapped;
 };

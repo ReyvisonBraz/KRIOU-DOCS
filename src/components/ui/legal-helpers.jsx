@@ -146,6 +146,82 @@ export const SectionHeader = ({ title, subtitle, icon, number }) => {
 };
 
 /**
+ * HelpContent - Componente de conteúdo do tooltip de ajuda
+ * Definido fora para evitar criação durante render
+ */
+const HelpContent = ({ label, hint, example, whereFind, whyImportant, whatHappensIfEmpty, onClose }) => (
+  <>
+    {/* Header */}
+    <div style={{
+      display: "flex", alignItems: "center", gap: 8,
+      marginBottom: 14, paddingBottom: 10,
+      borderBottom: "1px solid var(--border)",
+    }}>
+      <span style={{ fontSize: 20 }}>💡</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
+        Ajuda: {label}
+      </span>
+      <button
+        onClick={onClose}
+        style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 18, padding: "2px 6px", borderRadius: 4, lineHeight: 1 }}
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* 1. O que é isso? */}
+    {hint && (
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 13 }}>📖</span> O que é isso?
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>{hint}</div>
+      </div>
+    )}
+
+    {/* 2. Exemplo */}
+    {example && (
+      <div style={{ padding: 12, background: "var(--surface-2)", borderRadius: 10, border: "1px dashed var(--border)", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
+        </div>
+        <div style={{ fontSize: 14, color: "var(--teal)", fontWeight: 600 }}>"{example}"</div>
+      </div>
+    )}
+
+    {/* 3. Por que é importante? */}
+    {whyImportant && (
+      <div style={{ padding: 10, background: "rgba(0,210,211,0.06)", borderRadius: 8, border: "1px solid rgba(0,210,211,0.15)", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
+        </div>
+        <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whyImportant}</div>
+      </div>
+    )}
+
+    {/* 4. Se não preencher? */}
+    {whatHappensIfEmpty && (
+      <div style={{ padding: 10, background: "rgba(108,99,255,0.06)", borderRadius: 8, border: "1px solid rgba(108,99,255,0.15)", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
+        </div>
+        <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whatHappensIfEmpty}</div>
+      </div>
+    )}
+
+    {/* 5. Onde encontrar */}
+    {whereFind && (
+      <div style={{ padding: 10, background: "rgba(249,168,37,0.08)", borderRadius: 8, border: "1px solid rgba(249,168,37,0.2)" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
+        </div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{whereFind}</div>
+      </div>
+    )}
+  </>
+);
+
+/**
  * LegalHelpButton - Botão de ajuda detalhado para campos jurídicos.
  *
  * Exibe um tooltip com até 5 seções:
@@ -157,23 +233,28 @@ export const SectionHeader = ({ title, subtitle, icon, number }) => {
  */
 export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHappensIfEmpty, label }) => {
   const [open, setOpen] = React.useState(false);
+  const [tooltipPosition, setTooltipPosition] = React.useState({});
   const buttonRef = React.useRef(null);
   const tooltipRef = React.useRef(null);
 
   // Detecta mobile (≤ 640px) para usar modal fixo em vez de tooltip flutuante
   const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 640;
 
-  // ─── Posição do tooltip (apenas no desktop) ───
-  const getTooltipStyle = () => {
-    if (isMobile() || !buttonRef.current) return {};
-    const buttonRect  = buttonRef.current.getBoundingClientRect();
-    const tooltipWidth = 340;
-    const windowWidth  = window.innerWidth;
-    if (buttonRect.right + tooltipWidth > windowWidth - 20) {
-      return { left: Math.max(10, (windowWidth - tooltipWidth) / 2), right: "auto" };
+  // ─── Calcula posição do tooltip (apenas quando abre, no desktop) ───
+  React.useEffect(() => {
+    if (!open || isMobile() || !buttonRef.current) {
+      setTooltipPosition({});
+      return;
     }
-    return { right: 0 };
-  };
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const tooltipWidth = 340;
+    const windowWidth = window.innerWidth;
+    if (buttonRect.right + tooltipWidth > windowWidth - 20) {
+      setTooltipPosition({ left: Math.max(10, (windowWidth - tooltipWidth) / 2), right: "auto" });
+    } else {
+      setTooltipPosition({ right: 0 });
+    }
+  }, [open]);
 
   // ─── Fecha ao clicar fora ───
   React.useEffect(() => {
@@ -196,80 +277,6 @@ export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHa
   }, [open]);
 
   const mobile = isMobile();
-  const tooltipPosition = getTooltipStyle();
-
-  // Conteúdo do painel de ajuda (reutilizado em ambos os modos)
-  const HelpContent = () => (
-    <>
-      {/* Header */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        marginBottom: 14, paddingBottom: 10,
-        borderBottom: "1px solid var(--border)",
-      }}>
-        <span style={{ fontSize: 20 }}>💡</span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
-          Ajuda: {label}
-        </span>
-        <button
-          onClick={() => setOpen(false)}
-          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 18, padding: "2px 6px", borderRadius: 4, lineHeight: 1 }}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* 1. O que é isso? */}
-      {hint && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 13 }}>📖</span> O que é isso?
-          </div>
-          <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>{hint}</div>
-        </div>
-      )}
-
-      {/* 2. Exemplo */}
-      {example && (
-        <div style={{ padding: 12, background: "var(--surface-2)", borderRadius: 10, border: "1px dashed var(--border)", marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
-          </div>
-          <div style={{ fontSize: 14, color: "var(--teal)", fontWeight: 600 }}>"{example}"</div>
-        </div>
-      )}
-
-      {/* 3. Por que é importante? */}
-      {whyImportant && (
-        <div style={{ padding: 10, background: "rgba(0,210,211,0.06)", borderRadius: 8, border: "1px solid rgba(0,210,211,0.15)", marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
-          </div>
-          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whyImportant}</div>
-        </div>
-      )}
-
-      {/* 4. Se não preencher? */}
-      {whatHappensIfEmpty && (
-        <div style={{ padding: 10, background: "rgba(108,99,255,0.06)", borderRadius: 8, border: "1px solid rgba(108,99,255,0.15)", marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
-          </div>
-          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whatHappensIfEmpty}</div>
-        </div>
-      )}
-
-      {/* 5. Onde encontrar */}
-      {whereFind && (
-        <div style={{ padding: 10, background: "rgba(249,168,37,0.08)", borderRadius: 8, border: "1px solid rgba(249,168,37,0.2)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
-          </div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{whereFind}</div>
-        </div>
-      )}
-    </>
-  );
 
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
@@ -326,7 +333,15 @@ export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHa
             >
               {/* Handle bar */}
               <div style={{ width: 40, height: 4, borderRadius: 2, background: "var(--border)", margin: "0 auto 16px" }} />
-              <HelpContent />
+              <HelpContent
+                label={label}
+                hint={hint}
+                example={example}
+                whereFind={whereFind}
+                whyImportant={whyImportant}
+                whatHappensIfEmpty={whatHappensIfEmpty}
+                onClose={() => setOpen(false)}
+              />
             </div>
           ) : (
             /* ── Desktop: tooltip flutuante ── */
@@ -348,7 +363,15 @@ export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHa
                 ...tooltipPosition,
               }}
             >
-              <HelpContent />
+              <HelpContent
+                label={label}
+                hint={hint}
+                example={example}
+                whereFind={whereFind}
+                whyImportant={whyImportant}
+                whatHappensIfEmpty={whatHappensIfEmpty}
+                onClose={() => setOpen(false)}
+              />
             </div>
           )}
         </>

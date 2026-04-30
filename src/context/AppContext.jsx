@@ -29,9 +29,10 @@ const RESTORABLE_PAGES = new Set([
 ]);
 
 const NavigationProvider = ({ children }) => {
+  const pathname = window.location.pathname;
+  console.log("[NavigationProvider] init, pathname:", pathname);
   const [currentPage, setCurrentPage] = useState(() => {
-    // Detecta callback do Google OAuth na URL
-    if (window.location.pathname === "/auth/callback") return "authCallback";
+    if (pathname === "/auth/callback") return "authCallback";
     return "landing";
   });
 

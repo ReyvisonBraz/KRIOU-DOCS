@@ -68,6 +68,7 @@ const PageFallback = () => (
  */
 const PageRouter = () => {
   const { currentPage } = useApp();
+  console.log("[PageRouter] currentPage:", currentPage, "pathname:", window.location.pathname);
   const PageComponent = routes[currentPage] || LandingPage;
 
   return (

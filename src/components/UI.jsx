@@ -62,3 +62,5 @@ export {
 } from "./ui/legal-helpers";
 
 export { DocumentCard } from "./ui/document";
+
+export { default as RequirementsModal } from "./UI/RequirementsModal";

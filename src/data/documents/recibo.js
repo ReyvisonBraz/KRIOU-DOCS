@@ -7,6 +7,14 @@ const recibo = {
   icon: "FileCheck",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 319 a 322",
+  spec: {
+    whenUse: "Para comprovação de pagamento ou recebimento de dinheiro ou bens",
+    parties: ["Recebedor (quem recebe)", "Pagador (quem paga)"],
+    sections: ["Dados do Recebedor", "Dados do Pagador", "Valor e Descrição", "Data", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF"],
+    tips: ["Descreva o motivo do pagamento", "Inclua valor por extenso", "Guarde cópia do recibo"],
+    commonIssues: ["Descrição vaga do pagamento", "Valor diferente do combinado", "Falta de assinatura"],
+  },
 
   defaultVariant: "pagamento",
   variants: [

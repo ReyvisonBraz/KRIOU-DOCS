@@ -11,6 +11,14 @@ const comodato = {
   icon: "Key",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 579 a 585",
+  spec: {
+    whenUse: "Quando alguém cede gratuitamente o uso de um bem para outra pessoa",
+    parties: ["Comodante (quem empresta)", "Comodatário (quem recebe)"],
+    sections: ["Dados do Comodante", "Dados do Comodatário", "Informações do Bem", "Condições de Uso", "Prazo", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Documentação do bem"],
+    tips: ["Bem deve ser devolvido no mesmo estado", "Defina prazo de devolução", "Responsabilidade por danos"],
+    commonIssues: ["Bem danificado na devolução", "Prazo não definido", "Uso diferente do combinado"],
+  },
 
   defaultVariant: "imovel",
   variants: [

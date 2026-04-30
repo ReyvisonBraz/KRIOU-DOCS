@@ -7,6 +7,14 @@ const procuracao = {
   icon: "Shield",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 653 a 692",
+  spec: {
+    whenUse: "Quando uma pessoa precisa que outra atue em seu nome em actos jurídicos ou administrativos",
+    parties: ["Outorgante (quem dá poderes)", "Outorgado (quem recebe poderes)"],
+    sections: ["Dados do Outorgante", "Dados do Outorgado", "Poderes Concedidos", "Validade", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Comprovante de residência"],
+    tips: ["Especifique bem os poderes concedidos", "Defina prazo de validade", "Cartório pode ser necessário para alguns casos"],
+    commonIssues: ["Poderes muito amplos ou genéricos", "Falta de prazo definido", "Procuração sem reconhecimento de firma"],
+  },
 
   defaultVariant: "particular",
   variants: [

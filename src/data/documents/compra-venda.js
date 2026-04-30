@@ -7,6 +7,14 @@ const compraVenda = {
   icon: "Tag",
   available: true,
   legislation: "Código Civil Brasileiro (Lei 10.406/2002), Arts. 481 a 532",
+  spec: {
+    whenUse: "Quando duas partes precisam formalizar a transferência de propriedade de um bem mediante pagamento",
+    parties: ["Vendedor (quem vende)", "Comprador (quem compra)"],
+    sections: ["Dados do Vendedor", "Dados do Comprador", "Informações do Bem", "Valor e Pagamento", "Condições", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Comprovante de residência", "IPTU ou documento do bem"],
+    tips: ["Descreva o bem com detalhes (endereço completo, características)", "Inclua todas as condições de pagamento", "Previna condições rescisórias"],
+    commonIssues: ["Bem com ônus ou pendência", "Valor divergente do mercado", "Pagamento não especificado"],
+  },
 
   defaultVariant: "imovel",
   variants: [

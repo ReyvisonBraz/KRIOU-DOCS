@@ -7,6 +7,14 @@ const permuta = {
   icon: "Repeat",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 533",
+  spec: {
+    whenUse: "Quando duas partes trocam bens entre si (sem dinheiro envolvido ou com complemento)",
+    parties: ["Parte A", "Parte B"],
+    sections: ["Dados da Parte A", "Dados da Parte B", "Informações do Bem de A", "Informações do Bem de B", "Diferença (se houver)", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Documentação dos bens"],
+    tips: ["Defina bem qual bem cada parte recebe", "Se houver diferença de valor, descreva", "Registro dos bens pode ser necessário"],
+    commonIssues: ["Bens com valores muito distintos", "Bens com ônus", "Diferença de valor não especificada"],
+  },
 
   defaultVariant: "geral",
   variants: [

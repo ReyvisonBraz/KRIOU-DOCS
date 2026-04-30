@@ -7,6 +7,14 @@ const autorizacaoViagem = {
   icon: "Plane",
   available: true,
   legislation: "Estatuto da Criança e do Adolescente (Lei 8.069/90), Art. 83 e 84",
+  spec: {
+    whenUse: "Quando menor viaja sozinho, com outro familiar ou para o exterior",
+    parties: ["Responsável legal", "Menor", "Acompanhante (se houver)"],
+    sections: ["Dados do Responsável", "Dados do Menor", "Dados do Acompanhante", "Informações da Viagem", "Assinaturas"],
+    requiredDocs: ["Documentos do menor", "Documentos do responsável", "Se viagem internacional: tradução juramentada"],
+    tips: ["Viagem internacional pode necesitar firma notarizada", "Passaporte deve ser do menor", "Verifique exigências do país de destino"],
+    commonIssues: ["Falta de firma reconhecer", "Documentos desatualizados", "Autorização incompleta"],
+  },
 
   defaultVariant: "nacional",
   variants: [

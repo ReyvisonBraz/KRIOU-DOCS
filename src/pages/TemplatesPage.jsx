@@ -70,7 +70,7 @@ const LegalDocCard = ({ doc, onClick }) => (
   </Card>
 );
 
-const TemplateCard = ({ template, onClick, isSelected }) => {
+const TemplateCard = ({ template, onClick, isSelected, onViewSpec }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -149,10 +149,14 @@ const TemplateCard = ({ template, onClick, isSelected }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: 10,
             animation: "fadeIn 0.15s ease",
           }}>
-            <Button variant="primary" size="small" icon="Eye">
-              Ver Modelo
+            <Button variant="primary" size="small" icon="Eye" onClick={(e) => { e.stopPropagation(); onViewSpec(template); }}>
+              Ver Ficha
+            </Button>
+            <Button variant="secondary" size="small" icon="FileText" onClick={(e) => { e.stopPropagation(); onClick(); }}>
+              Usar
             </Button>
           </div>
         )}
@@ -184,6 +188,240 @@ const TemplateCard = ({ template, onClick, isSelected }) => {
         }
       `}</style>
     </Card>
+  );
+};
+
+const TemplateSpecModal = ({ template, onClose, onSelect }) => {
+  if (!template) return null;
+
+  const spec = template.spec || {};
+  const colorBoxStyle = {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    background: template.color,
+    border: `2px solid ${template.accent}`,
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+        padding: 24,
+        animation: "fadeIn 0.15s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="animate-scaleIn print-spec-card"
+        style={{
+          background: "var(--card-bg)",
+          borderRadius: 20,
+          maxWidth: 600,
+          width: "100%",
+          maxHeight: "90vh",
+          overflow: "auto",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.4)",
+        }}
+      >
+        <div className="print-spec-header" style={{
+          padding: 24,
+          background: `linear-gradient(145deg, ${template.color} 0%, ${template.color}CC 100%)`,
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <h2 className="font-display" style={{ fontSize: 24, fontWeight: 900, color: "white", marginBottom: 4 }}>
+                {template.name}
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>{template.desc}</p>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                border: "none",
+                borderRadius: 8,
+                padding: 8,
+                cursor: "pointer",
+                color: "white",
+              }}
+            >
+              <Icon name="X" className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div style={{ padding: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div style={{
+              padding: 16,
+              background: "var(--surface-2)",
+              borderRadius: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <Icon name="Target" className="w-4 h-4" style={{ color: "var(--coral)" }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Público-alvo</span>
+              </div>
+              <p style={{ fontSize: 13, color: "var(--text)" }}>{spec.target || "Não especificado"}</p>
+            </div>
+
+            <div style={{
+              padding: 16,
+              background: "var(--surface-2)",
+              borderRadius: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={colorBoxStyle} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Paleta de cores</span>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{template.color}</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{template.accent}</p>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 10 }}>
+              Melhores áreas
+            </h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {(spec.bestFor || []).map((area, i) => (
+                <span key={i} style={{
+                  padding: "6px 14px",
+                  background: `${template.color}15`,
+                  color: template.color,
+                  borderRadius: 100,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: `1px solid ${template.color}30`,
+                }}>
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 10 }}>
+              Seções do documento
+            </h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {(spec.sections || []).map((section, i) => (
+                <span key={i} style={{
+                  padding: "6px 14px",
+                  background: "var(--surface-2)",
+                  color: "var(--text)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: "1px solid var(--border)",
+                }}>
+                  {section}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 10 }}>
+              Dicas de preenchimento
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {(spec.tips || []).map((tip, i) => (
+                <div key={i} style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  padding: 10,
+                  background: "var(--surface-2)",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: "var(--text)",
+                }}>
+                  <Icon name="CheckCircle" className="w-4 h-4" style={{ color: "var(--success)", flexShrink: 0, marginTop: 2 }} />
+                  {tip}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{
+            padding: 16,
+            background: "var(--surface-1)",
+            borderRadius: 12,
+            marginBottom: 24,
+          }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 8 }}>
+              Significado das cores
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.5 }}>
+              {spec.colorMeaning || "Não especificado"}
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <Button variant="secondary" onClick={onClose} style={{ flex: 1 }}>
+              Fechar
+            </Button>
+            <Button variant="primary" onClick={() => { onSelect(template); onClose(); }} icon="FileText" style={{ flex: 1 }}>
+              Usar este modelo
+            </Button>
+          </div>
+
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+            <Button
+              variant="secondary"
+              onClick={() => window.print()}
+              icon="Printer"
+              style={{ width: "100%" }}
+            >
+              Imprimir Ficha
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @media print {
+          body { background: white !important; }
+          .print-spec-card {
+            position: absolute !important;
+            inset: 0 !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+          }
+          .print-spec-header {
+            position: static !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          button { display: none !important; }
+        }
+      `}</style>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
   );
 };
 
@@ -222,6 +460,7 @@ const TemplatesPage = () => {
   const [docType, setDocType] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [hoveredDoc, setHoveredDoc] = useState(null);
+  const [specTemplate, setSpecTemplate] = useState(null);
 
   const handleSelectDocType = (type) => {
     setDocType(type);
@@ -546,6 +785,7 @@ const TemplatesPage = () => {
               template={template}
               onClick={() => handleTemplateSelect(template)}
               isSelected={selectedTemplate?.id === template.id}
+              onViewSpec={(t) => setSpecTemplate(t)}
             />
           </div>
         ))}
@@ -586,6 +826,14 @@ const TemplatesPage = () => {
   return (
     <div style={{ minHeight: "100vh", paddingBottom: 80 }}>
       {renderContent()}
+
+      {specTemplate && (
+        <TemplateSpecModal
+          template={specTemplate}
+          onClose={() => setSpecTemplate(null)}
+          onSelect={(t) => handleTemplateSelect(t)}
+        />
+      )}
     </div>
   );
 };

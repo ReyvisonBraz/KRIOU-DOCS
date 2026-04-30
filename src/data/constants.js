@@ -15,6 +15,13 @@ export const RESUME_TEMPLATES = [
     color: "#0F3460",
     accent: "#E94560",
     tag: "Popular",
+    spec: {
+      target: "Profissionais seniores e executivos",
+      bestFor: ["Cargo de gerência", "Diretoria", "Área corporativa"],
+      sections: ["Objetivo", "Experiência", "Formação", "Habilidades", "Idiomas"],
+      tips: ["Foque em resultados mensuráveis", "Destaque liderança", "Use números"],
+      colorMeaning: "Navy transmite autoridade e profissionalismo",
+    },
   },
   {
     id: "criativo",
@@ -23,6 +30,13 @@ export const RESUME_TEMPLATES = [
     color: "#533483",
     accent: "#00D2D3",
     tag: "Novo",
+    spec: {
+      target: "Profissionais criativos e designers",
+      bestFor: ["Agência de publicidade", "Design", "Marketing criativo"],
+      sections: ["Objetivo", "Portfólio", "Experiência", "Formação", "Habilidades"],
+      tips: ["社会实践 experiência criativa", "Inclua links de portfólio", "Seja visual"],
+      colorMeaning: "Roxo com ciano transmite inovação e criatividade",
+    },
   },
   {
     id: "classico",
@@ -31,6 +45,13 @@ export const RESUME_TEMPLATES = [
     color: "#1A1A2E",
     accent: "#F9A825",
     tag: null,
+    spec: {
+      target: "Áreas tradicionais e formais",
+      bestFor: ["Advocacia", "Finanças", "Medicina", "Contabilidade"],
+      sections: ["Objetivo", "Experiência", "Formação", "Idiomas", "Extras"],
+      tips: ["Evite cores vibrantes", "Formato conservador", "Sem firulas"],
+      colorMeaning: "Preto com dourado = tradição e prestígio",
+    },
   },
   {
     id: "tech",
@@ -39,6 +60,13 @@ export const RESUME_TEMPLATES = [
     color: "#0D7377",
     accent: "#14FFEC",
     tag: "Novo",
+    spec: {
+      target: "Profissionais de TI e tecnologia",
+      bestFor: ["Desenvolvimento", "DevOps", "Data Science", "Produto"],
+      sections: ["Objetivo", "Experiência", "Formação", "Habilidades técnicas", "Idiomas"],
+      tips: ["Liste tecnologias específicas", "GitHub/LinkedIn é essencial", "Seja técnico"],
+      colorMeaning: "Verde-ciano transmite tecnologia e inovação",
+    },
   },
   {
     id: "primeiro-emprego",
@@ -47,6 +75,13 @@ export const RESUME_TEMPLATES = [
     color: "#E94560",
     accent: "#FFFFFF",
     tag: null,
+    spec: {
+      target: "Recém-formados e candidatos iniciantes",
+      bestFor: ["Estágio", "Jovem aprendiz", "Primeiro emprego", "Trainee"],
+      sections: ["Objetivo", "Formação", "Cursos extras", "Idiomas", "Experiência"],
+      tips: ["Formação em destaque", "Inclua cursos livres", "Voluntariado conta"],
+      colorMeaning: "Vermelho transmite energia e determinação",
+    },
   },
   {
     id: "minimalista",
@@ -55,6 +90,13 @@ export const RESUME_TEMPLATES = [
     color: "#2C3E50",
     accent: "#95A5A6",
     tag: null,
+    spec: {
+      target: "Profissionais que valorizam clareza",
+      bestFor: ["Consultoria", "Freelance", "Qualquer área", "Mudança de carreira"],
+      sections: ["Objetivo", "Experiência", "Formação", "Habilidades"],
+      tips: ["Pouco texto, muito impacto", "Sem cores desnecessárias", "Foco no conteúdo"],
+      colorMeaning: "Cinza transmite objetividade e maturidade",
+    },
   },
   {
     id: "corporativo",
@@ -63,6 +105,13 @@ export const RESUME_TEMPLATES = [
     color: "#1E3A5F",
     accent: "#3498DB",
     tag: "Popular",
+    spec: {
+      target: "Empresas grande porte e multinacionais",
+      bestFor: ["Bancos", "Consultorias", "Big 4", "Corporações"],
+      sections: ["Objetivo", "Experiência", "Formação", "Habilidades", "Idiomas", "Extras"],
+      tips: ["Formato ATS-friendly", "Palavras-chave da área", "Seja conciso"],
+      colorMeaning: "Azul royal transmite confiança corporativa",
+    },
   },
   {
     id: "moderno",
@@ -71,6 +120,13 @@ export const RESUME_TEMPLATES = [
     color: "#2C2C54",
     accent: "#A855F7",
     tag: "Novo",
+    spec: {
+      target: "Profissionais modernas e startups",
+      bestFor: [" Startups", "Tech", "Digital", "Produtos digitais"],
+      sections: ["Objetivo", "Experiência", "Formação", "Habilidades", "Projetos"],
+      tips: ["Acentos visuais funcionam", "Inclua projetos", "Mostre personalidade"],
+      colorMeaning: "Roxo vibrante transmite modernidade",
+    },
   },
   {
     id: "elegante",
@@ -79,6 +135,13 @@ export const RESUME_TEMPLATES = [
     color: "#1C1C1C",
     accent: "#D4AF37",
     tag: null,
+    spec: {
+      target: "Posições de prestígio e requinte",
+      bestFor: ["Alta gestão", "Fashion", "Luxo", "Eventos"],
+      sections: ["Objetivo", "Experiência", "Formação", "Idiomas", "Extras"],
+      tips: ["Minimalismo elegante", "QUALIDADE above quantidade", "Detalles importam"],
+      colorMeaning: "Dourado sobre preto = sofisticação máxima",
+    },
   },
   {
     id: "startup",
@@ -87,6 +150,13 @@ export const RESUME_TEMPLATES = [
     color: "#FF6B35",
     accent: "#F7C948",
     tag: "Novo",
+    spec: {
+      target: "Ambientes dinâmicos e inovadores",
+      bestFor: [" Startups", "Vagas remotas", "Digital nomad", "Gig economy"],
+      sections: ["Objetivo", "Projetos", "Experiência", "Habilidades", "Idiomas"],
+      tips: ["Foque em adaptação", "Mostre iniciativa", "Flexibilidade é chave"],
+      colorMeaning: "Laranja com amarelo = energia startup",
+    },
   },
 ];
 

@@ -7,6 +7,14 @@ const doacao = {
   icon: "Gift",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 538 a 564",
+  spec: {
+    whenUse: "Quando alguém quer doar um bem de forma gratuita e formal para outra pessoa",
+    parties: ["Doador (quem dá)", "Donatário (quem recebe)"],
+    sections: ["Dados do Doador", "Dados do Donatário", "Informações do Bem", "Condições da Doação", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Comprovante de residência", "Documento do bem"],
+    tips: ["Pode ter ou não ônus para o donatário", "Doações com condição são válidas", "IRC pode incidir em doações de imóveis"],
+    commonIssues: ["Bem com dívidas ou ônus", "Doação condicional mal definida", "Falta de registro"],
+  },
 
   defaultVariant: "simples",
   variants: [

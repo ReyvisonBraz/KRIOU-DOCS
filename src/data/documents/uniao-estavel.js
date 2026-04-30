@@ -7,6 +7,14 @@ const uniaoEstavel = {
   icon: "Heart",
   available: true,
   legislation: "Código Civil Brasileiro, Arts. 1.723 a 1.727",
+  spec: {
+    whenUse: "Para declarar existência de união estável ou dissolvê-la formalmente",
+    parties: ["Companheiro 1", "Companheiro 2"],
+    sections: ["Dados do Companheiro 1", "Dados do Companheiro 2", "Declaração de União", "Direitos e Deveres", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Comprovante de residência conjunto"],
+    tips: ["União deve ser pública e contínua", "Defina patrimonialmente os bens", "Cartório pode ser necessário"],
+    commonIssues: ["Falta de prova de convivência", "Bens não definidos", "Sem prazo de início definido"],
+  },
 
   defaultVariant: "declaracao",
   variants: [

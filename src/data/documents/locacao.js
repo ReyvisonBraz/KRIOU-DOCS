@@ -7,6 +7,14 @@ const locacao = {
   icon: "Home",
   available: true,
   legislation: "Lei 8.245/91 (Lei do Inquilinato) e Código Civil",
+  spec: {
+    whenUse: "Quando um proprietário cede o uso de um imóvel a alguém mediante pagamento de aluguel",
+    parties: ["Locador (proprietário)", "Locatário (inquilino)"],
+    sections: ["Dados do Locador", "Dados do Locatário", "Informações do Imóvel", "Valor e Forma de Pagamento", "Condições", "Assinaturas"],
+    requiredDocs: ["Documentos de identidade", "CPF", "Comprovante de residência", "Contrato anterior (se tiver)"],
+    tips: ["Inclua valor e data do aluguel", "Defina prazo do contrato", "Previna multa por quebra"],
+    commonIssues: ["Imóvel com problemas estruturais", "Valor de aluguel abaixo do mercado", "Fiador ou seguro fiança"],
+  },
 
   defaultVariant: "residencial",
   variants: [

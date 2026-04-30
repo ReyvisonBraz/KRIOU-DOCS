@@ -16,6 +16,7 @@ import {
   BottomNavigation,
   SaveIndicator,
   ConfirmDialog,
+  RequirementsModal,
 } from "../components/UI";
 import showToast from "../utils/toast";
 import StorageService from "../utils/storage";
@@ -218,6 +219,7 @@ const LegalEditorPage = () => {
   const [selectedDoc, setSelectedDoc] = useState(documentType || null);
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
+  const [showRequirements, setShowRequirements] = useState(false);
 
   const bottomNavRef = useRef(null);
   const contentRef = useRef(null);
@@ -463,6 +465,15 @@ const LegalEditorPage = () => {
             {selectedDoc.legislation}
           </div>
         )}
+
+        <Button
+          variant="secondary"
+          icon="ClipboardList"
+          onClick={() => setShowRequirements(true)}
+          style={{ marginTop: 14 }}
+        >
+          Ver requisitos do documento
+        </Button>
       </div>
 
       <VariantSelector
@@ -947,6 +958,14 @@ const LegalEditorPage = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+
+      {showRequirements && (
+        <RequirementsModal
+          doc={selectedDoc}
+          variant={currentVariantObj}
+          onClose={() => setShowRequirements(false)}
+        />
+      )}
     </div>
   );
 };

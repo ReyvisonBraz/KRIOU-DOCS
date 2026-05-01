@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession]             = useState(null);
   const [user, setUser]                 = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [justSignedIn, setJustSignedIn]   = useState(false);
 
   // ─── Inicializacao ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -52,9 +53,15 @@ export const AuthProvider = ({ children }) => {
     // Passo 2: Escuta mudancas em tempo real (login, logout, refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
+      console.log(`[AuthContext] onAuthStateChange: ${event}`, session?.user?.email ?? "sem user");
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoading(false);
+      // SIGNED_IN = login fresco (OAuth ou magic link).
+      // INITIAL_SESSION = sessao restaurada do localStorage (retorno).
+      if (event === "SIGNED_IN") {
+        setJustSignedIn(true);
+      }
     });
 
     return () => {
@@ -63,8 +70,16 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // ─── Reseta justSignedIn apos consumo ─────────────────────────────────────
+  // O AppBootstrap consome esta flag para decidir se vai pro fluxo de
+  // auth callback. Depois de consumida, zera para nao re-disparar.
+  const consumeJustSignedIn = useCallback(() => {
+    setJustSignedIn(false);
+  }, []);
+
   // ─── Login com Google ───────────────────────────────────────────────────────
   const signInWithGoogle = useCallback(async () => {
+    console.log("[AuthContext] signInWithGoogle: iniciando OAuth...");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -101,6 +116,8 @@ export const AuthProvider = ({ children }) => {
     avatarUrl,
     email,
     isAuthLoading,
+    justSignedIn,
+    consumeJustSignedIn,
     signInWithGoogle,
     logout,
   };

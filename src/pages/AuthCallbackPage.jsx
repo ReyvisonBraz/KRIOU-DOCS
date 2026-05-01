@@ -35,10 +35,15 @@ const LOG_PREFIX = "[AuthCallback]";
 
 const AuthCallbackPage = ({ onNavigate }) => {
   const handled = useRef(false);
+  const retryCountRef = useRef(0);
   const [status, setStatus] = useState("Iniciando...");
   const [error, setError] = useState(null);
   const [debug, setDebug] = useState([]);
   const { user } = useAuth();
+
+  // Ref para acessar user no timeout sem disparar re-render do efeito
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; });
 
   // Logger estruturado com timestamp para facilitar correlacao de eventos
   const log = useCallback((msg, data) => {
@@ -51,7 +56,6 @@ const AuthCallbackPage = ({ onNavigate }) => {
     log("Montado", window.location.href);
 
     // ─── resolve() — funcao unica de redirecionamento ──────────────────────
-    // Chamada uma unica vez (via ref handled) quando a sessao e confirmada.
     const resolve = async (session, source) => {
       if (handled.current) return;
       handled.current = true;
@@ -82,31 +86,54 @@ const AuthCallbackPage = ({ onNavigate }) => {
           onNavigate(seen ? "dashboard" : "welcome");
         }
       } catch (err) {
-        // [AuthCallback][ERRO] Falha ao buscar perfil — segue para dashboard
         log("ERRO ao buscar perfil", err.message);
         setStatus("Erro ao carregar dados — indo para dashboard...");
         onNavigate("dashboard");
       }
     };
 
-    // ─── Timeout de seguranca ──────────────────────────────────────────────
-    // Se a sessao nao for estabelecida em TIMEOUT_MS, tenta fallback.
-    const timeout = setTimeout(() => {
+    // ─── Timeout de seguranca com retry ───────────────────────────────────
+    // Em vez de recarregar a pagina (causava loop), faz polling do getSession.
+    const timeout = setTimeout(async () => {
       if (handled.current) return;
-      log(`TIMEOUT — ${TIMEOUT_MS}ms sem resposta`);
+      log(`TIMEOUT — ${TIMEOUT_MS}ms sem resposta (tentativa ${retryCountRef.current})`);
       const hash = window.location.hash;
 
-      if (hash.includes("access_token")) {
-        // Ainda tem o token na URL — o Supabase pode nao ter processado
-        log("Hash com access_token detectado, recarregando pagina...");
+      if (hash.includes("access_token") && retryCountRef.current < 3) {
+        retryCountRef.current++;
+        // Polling gentil: tenta getSession a cada 1s ate 3x antes de reload
+        log(`Hash ainda presente, tentando polling getSession (${retryCountRef.current}/3)...`);
+        for (let i = 0; i < 3; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          if (handled.current) return;
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            log("Polling getSession OK");
+            resolve(session, "timeout-polling");
+            return;
+          }
+        }
+        // Esgotou polling com hash ainda presente — reload como ultimo recurso
+        log("Polling esgotado, recarregando pagina");
         window.location.reload();
-      } else if (user) {
-        // User ja disponivel no contexto, mas resolve() nao foi chamado
-        log("User disponivel no contexto (timeout), redirecionando para dashboard");
-        onNavigate("dashboard");
       } else {
-        log("Nenhum user disponivel, redirecionando para login");
-        onNavigate("login");
+        // Sem hash — ultima tentativa com getSession
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          log("Timeout fallback: sessao encontrada via getSession");
+          resolve(session, "timeout-getSession");
+        } else if (userRef.current) {
+          // User no contexto mas sem sessao via getSession — ainda tenta resolve
+          // Passando a sessao que esta no contexto (via AuthContext)
+          log("Timeout: user no contexto, tentando resolve pela sessao do contexto");
+          supabase.auth.getSession().then(({ data }) => {
+            if (data.session) resolve(data.session, "timeout-context");
+            else onNavigate("login");
+          });
+        } else {
+          log("Nenhum user ou sessao disponivel, redirecionando para login");
+          onNavigate("login");
+        }
       }
     }, TIMEOUT_MS);
 
@@ -136,7 +163,10 @@ const AuthCallbackPage = ({ onNavigate }) => {
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [onNavigate, user, log]);
+    // user intencionalmente fora do deps: se user mudar, o efeito
+    // re-executaria e mataria o listener onAuthStateChange que recebeu
+    // o SIGNED_IN. userRef garante acesso ao valor atualizado no timeout.
+  }, [onNavigate, log]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-navy gap-4 p-8">

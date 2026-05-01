@@ -191,6 +191,8 @@ const AppBootstrap = ({ children }) => {
         const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
         setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
       }
+
+      setIsLoading(false);
     };
 
     // ─── Decisao de inicializacao ────────────────────────────────────────────

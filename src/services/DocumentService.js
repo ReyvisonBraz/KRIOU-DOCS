@@ -204,15 +204,15 @@ export const DocumentService = {
 
     const { data, error } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
+        id: user.id,
         nome,
         sobrenome,
         cpf,
         email,
         avatar_url,
         google_id,
-      })
-      .eq("id", user.id)
+      }, { onConflict: "id" })
       .select()
       .single();
 

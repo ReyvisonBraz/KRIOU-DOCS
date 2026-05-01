@@ -7,63 +7,63 @@
  * FLUXO:
  *   1. Usuario faz login com Google na LoginPage
  *   2. Google redireciona para /auth/callback#access_token=...
- *   3. Supabase detecta o hash e processa o token automaticamente
- *   4. AuthCallbackPage monta, tenta pegar sessao, e redireciona
+ *   3. Supabase detecta o hash e processa o token (async, module-level)
+ *   4. AuthCallbackPage monta, faz polling de getSession() ate achar,
+ *      tambem escuta onAuthStateChange (SIGNED_IN / INITIAL_SESSION)
  *
- * TIMEOUT: 8 segundos — se a sessao nao for estabelecida nesse tempo,
- * tenta fallback (reload se tiver hash, login se nao tiver).
+ * ESTRATEGIA DE POLLING:
+ *   Como AuthCallbackPage e lazy-loaded, o SIGNED_IN pode disparar
+ *   antes do componente montar. Por isso usamos polling ativo de
+ *   getSession() como mecanismo principal, com onAuthStateChange
+ *   como caminho rapido complementar.
  *
- * LOGS: Todos os logs usam prefixo [AuthCallback] para facilitar debug.
- * O painel de debug e visivel em todos os ambientes para auxiliar
- * na resolucao de problemas de autenticacao.
+ * TIMEOUT: 15 segundos — se a sessao nao for encontrada, redireciona
+ * para login.
  *
- * PONTOS DE FALHA CONHECIDOS:
- * - Se o usuario bloquear popups do Google, o fluxo OAuth pode nunca completar
- * - Se o Supabase estiver lento, o timeout de 8s pode disparar antes da sessao
- * - Se o perfil nao existir (usuario antigo pre-trigger), fetchProfile retorna null
+ * LOGS: Prefixo [AuthCallback] para facilitar debug.
  * ============================================
  */
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { DocumentService } from "../services/DocumentService";
-import { useAuth } from "../context/AuthContext";
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
-const TIMEOUT_MS = 8000;
+const POLL_INTERVAL_MS = 500;
+const GIVE_UP_MS = 15000;
 const LOG_PREFIX = "[AuthCallback]";
 
 const AuthCallbackPage = ({ onNavigate }) => {
   const handled = useRef(false);
-  const retryCountRef = useRef(0);
+  const pollTimer = useRef(null);
+  const pollAttempts = useRef(0);
+  const startedAt = useRef(Date.now());
   const [status, setStatus] = useState("Iniciando...");
   const [error, setError] = useState(null);
   const [debug, setDebug] = useState([]);
-  const { user } = useAuth();
-
-  // Ref para acessar user no timeout sem disparar re-render do efeito
-  const userRef = useRef(user);
-  useEffect(() => { userRef.current = user; });
 
   // Logger estruturado com timestamp para facilitar correlacao de eventos
   const log = useCallback((msg, data) => {
     const timestamp = new Date().toISOString().slice(11, 23);
-    console.log(`${LOG_PREFIX} ${msg}`, data ?? "");
+    const elapsed = ((Date.now() - startedAt.current) / 1000).toFixed(1);
+    console.log(`${LOG_PREFIX} [+${elapsed}s] ${msg}`, data ?? "");
     setDebug((prev) => [...prev, { time: timestamp, msg, data }]);
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     log("Montado", window.location.href);
 
     // ─── resolve() — funcao unica de redirecionamento ──────────────────────
     const resolve = async (session, source) => {
-      if (handled.current) return;
+      if (handled.current || cancelled) return;
       handled.current = true;
-      log(`resolve() chamado de: ${source}`, { userId: session?.user?.id });
+      log(`resolve() chamado de: ${source} (tentativa ${pollAttempts.current})`,
+        { userId: session?.user?.id });
 
       if (!session) {
         log("ERRO: sessao null");
-        setError("Sessao nao encontrada. Tentando novamente...");
+        setError("Sessao nao encontrada.");
         setTimeout(() => onNavigate("login"), 2000);
         return;
       }
@@ -92,81 +92,69 @@ const AuthCallbackPage = ({ onNavigate }) => {
       }
     };
 
-    // ─── Timeout de seguranca com retry ───────────────────────────────────
-    // Em vez de recarregar a pagina (causava loop), faz polling do getSession.
-    const timeout = setTimeout(async () => {
-      if (handled.current) return;
-      log(`TIMEOUT — ${TIMEOUT_MS}ms sem resposta (tentativa ${retryCountRef.current})`);
-      const hash = window.location.hash;
+    // ─── Polling: chama getSession() a cada POLL_INTERVAL_MS ──────────────
+    // Este e o mecanismo PRINCIPAL. Como o componente e lazy-loaded,
+    // o SIGNED_IN pode ja ter disparado antes da montagem. O polling
+    // garante que encontramos a sessao mesmo nesse cenario.
+    const poll = async () => {
+      if (handled.current || cancelled) return;
+      pollAttempts.current++;
 
-      if (hash.includes("access_token") && retryCountRef.current < 3) {
-        retryCountRef.current++;
-        // Polling gentil: tenta getSession a cada 1s ate 3x antes de reload
-        log(`Hash ainda presente, tentando polling getSession (${retryCountRef.current}/3)...`);
-        for (let i = 0; i < 3; i++) {
-          await new Promise((r) => setTimeout(r, 1000));
-          if (handled.current) return;
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            log("Polling getSession OK");
-            resolve(session, "timeout-polling");
-            return;
-          }
-        }
-        // Esgotou polling com hash ainda presente — reload como ultimo recurso
-        log("Polling esgotado, recarregando pagina");
-        window.location.reload();
-      } else {
-        // Sem hash — ultima tentativa com getSession
+      try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          log("Timeout fallback: sessao encontrada via getSession");
-          resolve(session, "timeout-getSession");
-        } else if (userRef.current) {
-          // User no contexto mas sem sessao via getSession — ainda tenta resolve
-          // Passando a sessao que esta no contexto (via AuthContext)
-          log("Timeout: user no contexto, tentando resolve pela sessao do contexto");
-          supabase.auth.getSession().then(({ data }) => {
-            if (data.session) resolve(data.session, "timeout-context");
-            else onNavigate("login");
-          });
-        } else {
-          log("Nenhum user ou sessao disponivel, redirecionando para login");
-          onNavigate("login");
+          log(`getSession() OK na tentativa ${pollAttempts.current}`, { email: session.user?.email });
+          resolve(session, `poll-${pollAttempts.current}`);
+          return;
         }
+      } catch (err) {
+        log(`getSession() erro na tentativa ${pollAttempts.current}`, err.message);
       }
-    }, TIMEOUT_MS);
 
-    // ─── Tentativa 1: sessao ja existente (getSession) ────────────────────
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      log("getSession() resultado:", session ? "OK" : "NULL");
-      if (session) {
-        clearTimeout(timeout);
-        resolve(session, "getSession");
+      // Verifica se ja passou do tempo maximo
+      if (Date.now() - startedAt.current > GIVE_UP_MS) {
+        log(`GIVE UP apos ${pollAttempts.current} tentativas em ${GIVE_UP_MS / 1000}s`);
+        setError("Tempo esgotado. Verifique sua conexao.");
+        onNavigate("login");
+        return;
       }
-    });
 
-    // ─── Tentativa 2: escuta evento SIGNED_IN ─────────────────────────────
+      // Agenda proxima tentativa
+      pollTimer.current = setTimeout(poll, POLL_INTERVAL_MS);
+    };
+
+    // Inicia polling imediatamente
+    poll();
+
+    // ─── Listener: caminho rapido complementar ────────────────────────────
+    // Captura SIGNED_IN, INITIAL_SESSION e TOKEN_REFRESHED para resolver
+    // mais rapido que o polling. Nao depende de user do contexto (que
+    // causa re-render e mata o listener).
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      log("onAuthStateChange:", event, session ? "with session" : "without session");
-      if (event === "SIGNED_IN" && session) {
-        clearTimeout(timeout);
+      if (handled.current || cancelled) return;
+      log(`onAuthStateChange: ${event}`, session ? `userId=${session.user?.id}` : "sem sessao");
+
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED")) {
+        clearTimeout(pollTimer.current);
         subscription.unsubscribe();
-        resolve(session, "onAuthStateChange");
+        resolve(session, `event-${event}`);
       } else if (event === "SIGNED_OUT") {
-        log("SIGNED_OUT recebido");
+        log("SIGNED_OUT recebido, redirecionando para login");
+        clearTimeout(pollTimer.current);
         onNavigate("login");
       }
     });
 
     return () => {
-      clearTimeout(timeout);
+      cancelled = true;
+      clearTimeout(pollTimer.current);
       subscription.unsubscribe();
     };
-    // user intencionalmente fora do deps: se user mudar, o efeito
-    // re-executaria e mataria o listener onAuthStateChange que recebeu
-    // o SIGNED_IN. userRef garante acesso ao valor atualizado no timeout.
-  }, [onNavigate, log]);
+    // Nao incluir user/onNavigate/log nas deps: o efeito deve rodar
+    // uma unica vez na montagem. Incluir qualquer dependencia que mude
+    // causaria re-execucao e mataria o listener/polling ativo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-navy gap-4 p-8">

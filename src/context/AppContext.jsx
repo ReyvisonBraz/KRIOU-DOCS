@@ -5,9 +5,20 @@
  * Compõe AuthContext + ResumeContext + LegalContext
  * e expõe useApp() com a API unificada.
  *
- * Auth: Supabase (Google OAuth) — sem localStorage de sessão.
- * Documentos: carregados do Supabase após login.
+ * FLUXO DE INICIALIZACAO:
+ *   1. NavigationProvider — define pagina atual baseada na URL
+ *   2. AuthProvider — restaura sessao Supabase (getSession)
+ *   3. InnerProviders → AppBootstrap — carrega profile + documentos + drafts
+ *
+ * Auth: Supabase (Google OAuth) — sessa gerenciada pelo Supabase, nao localStorage.
+ * Documentos: carregados do Supabas apos login.
  * Drafts: permanecem em localStorage (zero latência de rede).
+ *
+ * LOGS: Todos os logs seguem o padrao [NomeDoModulo] mensagem
+ * para facilitar filtragem no console do browser.
+ *
+ * ERROS: Erros criticos jogam excecao com prefixo [KRIOU_ERRO].
+ * Erros nao-criticos sao logados com console.error e prefixo [ERRO].
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
@@ -18,19 +29,30 @@ import { AuthProvider, useAuth } from "./AuthContext";
 import { ResumeProvider, useResume } from "./ResumeContext";
 import { LegalProvider, useLegal } from "./LegalContext";
 
-// ─── Contextos de navegação e UI ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTEXTOS
+// ═══════════════════════════════════════════════════════════════════════════════
+// NavigationContext: currentPage + navigate
+// UIContext: isLoading, checkoutComplete, saveStatus, profile
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const NavigationContext = createContext(null);
 const UIContext         = createContext(null);
 
-// Páginas válidas que podem ser restauradas após atualização
+// ─── Páginas restauráveia apos refresh ──────────────────────────────────────
+// NOTA: So paginas que fazem sentido restaurar (evita voltar pra landing
+// apos F5). Landing, login, authCallback NAO devem ser restauradas.
 const RESTORABLE_PAGES = new Set([
   "dashboard", "legalEditor", "editor", "templates", "profile", "preview", "checkout",
 ]);
 
+// ─── NavigationProvider ───────────────────────────────────────────────────────
+// Gerencia a navegacao SPA (sem router externo) via history.pushState.
+// A URL real nunca muda — usamos pushState com estado interno.
+// Isso significa que F5 sempre cai na mesma URL (ex: /) e o estado
+// e restaurado do localStorage se a pagina for restaurável.
 const NavigationProvider = ({ children }) => {
   const pathname = window.location.pathname;
-  console.log("[NavigationProvider] init, pathname:", pathname);
   const [currentPage, setCurrentPage] = useState(() => {
     if (pathname === "/auth/callback") return "authCallback";
     return "landing";
@@ -38,6 +60,12 @@ const NavigationProvider = ({ children }) => {
 
   const isPopstateRef = useRef(false);
 
+  // ─── navigate ────────────────────────────────────────────────────────────────
+  // @param {string} page — nome da pagina (ex: "dashboard", "editor")
+  // Salva pagina restaurável no localStorage para recovery apos refresh.
+  // NOTA: window.location.pathname nunca muda — sempre pusha a URL atual.
+  // Isso é intencional (SPA sem rotas reais), mas significa que nao da para
+  // compartilhar links de paginas internas.
   const navigate = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
@@ -53,6 +81,7 @@ const NavigationProvider = ({ children }) => {
     }
   }, []);
 
+  // ─── popstate (botao voltar/avancar do navegador) ─────────────────────────
   useEffect(() => {
     const handlePopstate = (event) => {
       const page = event.state?.page;
@@ -73,7 +102,21 @@ const NavigationProvider = ({ children }) => {
   );
 };
 
-// ─── Bootstrap: hidrata providers com dados do Supabase ──────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ═══════════════════════════════════════════════════════════════════════════════
+// AppBootstrap é executado uma vez quando isAuthLoading muda de true para false.
+// Fluxo:
+//   1. Aguarda AuthProvider resolver sessao (isAuthLoading)
+//   2. Se usuario logado: carrega profile, documentos, drafts do Supabase
+//   3. Redireciona para pagina salva ou dashboard
+//   4. Em paginas de auth (authCallback, completeProfile): carrega dados mas
+//      NAO redireciona (a propria pagina gerencia navegacao)
+//
+// PONTO DE FALHA CONHECIDO: Se fetchProfile() falhar (ex: rede), o usuario
+// fica sem profile na UI mas ainda consegue navegar. Isso é intencional —
+// o erro nao deve bloquear o uso do app.
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const AppBootstrap = ({ children }) => {
   const { userId, isAuthLoading }        = useAuth();
@@ -82,59 +125,77 @@ const AppBootstrap = ({ children }) => {
   const { navigate, currentPage }         = useContext(NavigationContext);
   const { setIsLoading, setProfile }      = useContext(UIContext);
 
+  // ─── Efeito principal de inicializacao ──────────────────────────────────────
+  // Dispara quando isAuthLoading muda (sessao resolvida ou timeout)
   useEffect(() => {
-    // Aguarda Supabase resolver a sessão antes de inicializar
-    if (isAuthLoading) return;
+    // [GUARDA] Aguarda Supabase resolver a sessao antes de inicializar
+    if (isAuthLoading) {
+      return;
+    }
 
-    // Páginas de autenticação/onboarding gerenciam sua própria navegação — não interferir
-    const isAuthPage = currentPage === "authCallback" || currentPage === "completeProfile"
-                    || currentPage === "welcome"
+    // [GUARDA] Paginas de auth gerenciam propria navegacao — nao interferir
+    // NOTA: "welcome" NAO esta aqui intencionalmente — usuario logado na
+    // welcome page ainda precisa carregar perfil e docs em background.
+    // Se adicionar "welcome" aqui, o bootstrap sera pulado e o usuario
+    // na welcome page nao tera dados carregados ao navegar para dashboard.
+    const isAuthPage = currentPage === "authCallback"
+                    || currentPage === "completeProfile"
                     || window.location.pathname === "/auth/callback";
 
+    // ─── init() — carrega todos os dados do usuario ──────────────────────────
     const init = async () => {
-      if (userId) {
-        // Carrega perfil do usuário (nome, sobrenome)
-        try {
-          const prof = await DocumentService.fetchProfile();
-          if (prof) setProfile(prof);
-        } catch (err) {
-          console.error("[AppBootstrap] Erro ao carregar perfil:", err);
-        }
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
 
-        // Carrega documentos finalizados do Supabase
-        try {
-          const docs = await DocumentService.fetchAll();
-          if (docs.length > 0) setUserDocuments(docs);
-        } catch (err) {
-          console.error("[AppBootstrap] Erro ao carregar documentos:", err);
+      // ETAPA 1: Perfil do usuario
+      try {
+        const prof = await DocumentService.fetchProfile();
+        if (prof) {
+          setProfile(prof);
+        } else {
+          // Perfil pode ser null se o trigger handle_new_user nao criou
+          // (ex: usuario criado antes do trigger existir)
         }
+      } catch (err) {
+        // [ERRO] Falha ao carregar perfil — nao critico, usuario continua
+        console.error("[AppBootstrap][ERRO] fetchProfile falhou:", err.message);
+      }
 
-        // Carrega drafts do localStorage (rápido, sem latência)
+      // ETAPA 2: Documentos finalizados do Supabase
+      try {
+        const docs = await DocumentService.fetchAll(userId);
+        if (docs.length > 0) setUserDocuments(docs);
+      } catch (err) {
+        // [ERRO] Falha ao carregar documentos — nao critico
+        console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);
+      }
+
+      // ETAPA 3: Drafts do localStorage (rapido, sem latencia de rede)
+      try {
         const resumeDraft = StorageService.loadDraft(userId, "resume");
         if (resumeDraft) setFormData(resumeDraft);
 
         const legalDraft = StorageService.loadDraft(userId, "legal");
         if (legalDraft) setLegalFormData(legalDraft);
-
-        // Só redireciona se NÃO estiver em página de autenticação
-        if (!isAuthPage) {
-          const savedPage  = StorageService.loadPage();
-          const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
-          setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
-        }
+      } catch (err) {
+        // [ERRO] Falha ao ler drafts do localStorage — raro, mas pode
+        // ocorrer se o localStorage estiver corrompido.
+        console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
       }
 
-      setIsLoading(false);
+      // ETAPA 4: Redirecionamento (so para paginas nao-auth)
+      if (!isAuthPage) {
+        const savedPage  = StorageService.loadPage();
+        const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+        setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
+      }
     };
 
-    if (!isAuthPage) {
-      init();
-    } else if (userId) {
-      // Em páginas de auth com userId: carrega dados mas não redireciona
-      init();
-    } else {
-      setIsLoading(false);
-    }
+    // ─── Decisao de inicializacao ────────────────────────────────────────────
+    init();
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthLoading, userId]);
 

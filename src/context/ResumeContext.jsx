@@ -2,8 +2,23 @@
  * ============================================
  * KRIOU DOCS - Resume Context
  * ============================================
- * Gerencia o formulário de currículo, templates,
- * auto-save e documentos do usuário.
+ * Gerencia formulario de curriculo, templates,
+ * auto-save e documentos do usuario.
+ *
+ * RESPONSABILIDADES:
+ * - Estado do formulario de curriculo (INITIAL_FORM_DATA)
+ * - Templates disponiveis (RESUME_TEMPLATES)
+ * - Steps do wizard (currentStep)
+ * - Auto-save de draft (via useAutoSave hook)
+ * - Documentos finalizados (userDocuments)
+ * - Salvamento de documento no Supabase (saveDocument)
+ *
+ * FLUXO DE SAVE:
+ *   onChange → useAutoSave (debounce 1500ms) → StorageService.saveDraft
+ *   "Finalizar" → saveDocument() → DocumentService.insert → Supabase
+ *
+ * LOGS: Prefixo [ResumeContext] para facilitar filtragem.
+ * ERROS: saveDocument joga excecao — o chamador (page) deve tratar.
  *
  * @module context/ResumeContext
  */
@@ -24,14 +39,15 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   const [userDocuments, setUserDocuments]       = useState([]);
   const [filter, setFilter]                     = useState("todos");
 
-  // Ref para bloquear auto-save durante carregamento inicial
+  // Ref que impede auto-save durante o carregamento inicial
+  // Isso evita sobrescrever drafts carregados pelo AppBootstrap
   const isReadyRef = useRef(false);
 
   useEffect(() => {
     if (!isLoading) isReadyRef.current = true;
   }, [isLoading]);
 
-  // Função de save passada ao hook — só persiste quando pronto
+  // Funcao de auto-save — so persiste quando o provider esta pronto
   const saveFn = useCallback((data) => {
     if (!isReadyRef.current) return;
     StorageService.saveDraft(sanitizeFormData(data), userId, "resume");
@@ -52,6 +68,9 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     legalResetFn?.();
   }, [userId]);
 
+  // ─── saveDocument — Salva documento finalizado no Supabase ──────────────
+  // Diferenca entre resume e legal: documentData carrega os campos corretos
+  // O param documentType quando existe indica documento juridico.
   const saveDocument = useCallback(async (documentData, documentType, selectedTpl, variantData) => {
     const docType = documentType ? "legal" : "resume";
 
@@ -60,7 +79,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       title:             documentData.nome || documentData.title || documentType?.name || "Documento",
       template:          selectedTpl || null,
       templateId:        selectedTpl?.id || null,
-      templateName:      selectedTpl?.name || documentType?.name || "Padrão",
+      templateName:      selectedTpl?.name || documentType?.name || "Padrao",
       status:            "finalizado",
       formData:          docType === "resume" ? documentData : null,
       legalData:         docType === "legal"  ? documentData : null,
@@ -75,9 +94,11 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       const newDoc = await DocumentService.insert(docPayload, userId);
       setUserDocuments((prev) => [...prev, newDoc]);
       StorageService.clearDraft(userId, docType);
+
       return newDoc;
     } catch (err) {
-      console.error("[ResumeContext] Erro ao salvar documento:", err);
+      // [ResumeContext][ERRO] Falha ao salvar documento finalizado
+      console.error("[ResumeContext][ERRO] saveDocument:", err.message);
       throw err;
     }
   }, [userId]);
@@ -97,6 +118,6 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
 
 export const useResume = () => {
   const ctx = useContext(ResumeContext);
-  if (!ctx) throw new Error("useResume must be used within ResumeProvider");
+  if (!ctx) throw new Error("[ResumeContext] useResume deve ser usado dentro de ResumeProvider");
   return ctx;
 };

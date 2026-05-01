@@ -1,12 +1,4 @@
-/**
- * ============================================
- * KRIOU DOCS - Dashboard Page Component
- * ============================================
- * User dashboard showing created documents
- * and quick actions for creating new documents.
- */
-
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, ConfirmDialog } from "../components/UI";
@@ -33,36 +25,60 @@ const DashboardPage = () => {
 
   const allDocs = userDocuments || [];
 
+  // ─── Abas de filtro ─────────────────────────────────────────────────────
+  // NOTA IMPORTANTE: Documentos de curriculo tem doc.type = "resume".
+  // Documentos juridicos tem doc.type = "legal" e doc.documentType
+  // armazena o tipo especifico (ex: "compra-venda", "locacao").
+  // O filtro para abas genericas checa doc.type, e o filtro para abas
+  // especificas checa doc.documentType.
   const tabs = [
-    { id: "todos", label: "Todos", icon: "FileText" },
-    { id: "curriculo", label: "Currículos", icon: "User" },
-    { id: "compra-venda", label: "Compra/Venda", icon: "FileText" },
-    { id: "locacao", label: "Locação", icon: "Home" },
-    { id: "procuracao", label: "Procuração", icon: "Shield" },
-    { id: "comodato", label: "Comodato", icon: "Key" },
-    { id: "doacao", label: "Doação", icon: "Gift" },
-    { id: "recibo", label: "Recibos", icon: "FileCheck" },
-    { id: "uniao-estavel", label: "União Estável", icon: "Heart" },
-    { id: "autorizacao-viagem", label: "Aut. Viagem", icon: "Plane" },
-    { id: "permuta", label: "Permuta", icon: "Repeat" },
-    { id: "prestacao-servicos", label: "Prest. Serviços", icon: "Wrench" },
+    { id: "todos", label: "Todos", icon: "FileText", filterType: "all" },
+    { id: "resume", label: "Currículos", icon: "User", filterType: "type" },
+    { id: "compra-venda", label: "Compra/Venda", icon: "FileText", filterType: "documentType" },
+    { id: "locacao", label: "Locação", icon: "Home", filterType: "documentType" },
+    { id: "procuracao", label: "Procuração", icon: "Shield", filterType: "documentType" },
+    { id: "comodato", label: "Comodato", icon: "Key", filterType: "documentType" },
+    { id: "doacao", label: "Doação", icon: "Gift", filterType: "documentType" },
+    { id: "recibo", label: "Recibos", icon: "FileCheck", filterType: "documentType" },
+    { id: "uniao-estavel", label: "União Estável", icon: "Heart", filterType: "documentType" },
+    { id: "autorizacao-viagem", label: "Aut. Viagem", icon: "Plane", filterType: "documentType" },
+    { id: "permuta", label: "Permuta", icon: "Repeat", filterType: "documentType" },
+    { id: "prestacao-servicos", label: "Prest. Serviços", icon: "Wrench", filterType: "documentType" },
   ];
 
-  const getFilteredDocs = () => {
-    let docs = activeTab === "todos" ? allDocs : allDocs.filter((doc) => doc.type === activeTab);
+  // Mapeia tab id → filtro correto
+  const TAB_FILTER_TYPE = Object.fromEntries(tabs.map(t => [t.id, t.filterType]));
+
+  const getFilteredDocs = useCallback(() => {
+    const filterType = TAB_FILTER_TYPE[activeTab] || "all";
+
+    let docs = allDocs;
+
+    if (filterType === "type") {
+      // Ex: "resume" — filtra por doc.type
+      docs = docs.filter((doc) => doc.type === activeTab);
+    } else if (filterType === "documentType") {
+      // Ex: "compra-venda" — filtra por doc.documentType
+      docs = docs.filter((doc) => doc.documentType === activeTab);
+    }
+    // "all" = sem filtro (mostra todos)
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      docs = docs.filter((doc) => doc.title?.toLowerCase().includes(query) || doc.template?.toLowerCase().includes(query));
+      docs = docs.filter((doc) =>
+        doc.title?.toLowerCase().includes(query) ||
+        doc.template?.toLowerCase().includes(query)
+      );
     }
     return docs;
-  };
+  }, [allDocs, activeTab, searchQuery]);
 
   const handleEditDocument = (doc) => {
-    if (doc.type === "curriculo") {
+    if (doc.type === "resume") {
       setCurrentStep(0);
       navigate("editor");
-    } else {
-      // Restaurar estado do rascunho jurídico se disponível
+    } else if (doc.type === "legal") {
+      // Restaurar estado do documento juridico se disponivel
       if (doc.draft) {
         if (doc.draft.documentType) setDocumentType(doc.draft.documentType);
         if (doc.draft.selectedVariant) setSelectedVariant(doc.draft.selectedVariant);
@@ -85,10 +101,20 @@ const DashboardPage = () => {
       danger: true,
     });
     if (!confirmed) return;
+
+    // Remove da UI imediatamente (otimista)
     const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
     setUserDocuments(updated);
-    StorageService.saveDocuments(updated, userId);
-    showToast.success("Documento excluído.");
+
+    // Persiste no localStorage
+    try {
+      StorageService.saveDocuments(updated, userId);
+      showToast.success("Documento excluído.");
+    } catch (err) {
+      // [DashboardPage][ERRO] Falha ao salvar documentos apos delecao
+      console.error("[DashboardPage][ERRO] saveDocuments falhou apos delecao:", err.message);
+      showToast.error("Documento removido da lista, mas pode nao ter sido salvo no servidor.");
+    }
   };
 
   const getUserName = () => {
@@ -98,10 +124,8 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-navy flex flex-col relative">
-      {/* Background elements */}
       <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-blue/10 blur-[100px] rounded-full pointer-events-none" />
 
-      {/* Navbar */}
       <AppNavbar
         title={<span className="font-display text-2xl font-black cursor-pointer tracking-tight" onClick={() => navigate("landing")}><span className="text-coral">Kriou</span> <span className="text-white">Docs</span></span>}
         rightAction={
@@ -116,19 +140,15 @@ const DashboardPage = () => {
         }
       />
 
-      {/* Main Content */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 z-10 relative">
-        {/* Welcome */}
         <div className="animate-fadeUp mb-8 md:mb-12">
           <h1 className="font-display text-3xl md:text-4xl font-black mb-2 text-white">
-            Olá, <span className="text-coral">{getUserName()}</span> 👋
+            Olá, <span className="text-coral">{getUserName()}</span>
           </h1>
           <p className="text-text-muted text-base md:text-lg">Gerencie seus documentos com facilidade ou crie algo novo agora mesmo.</p>
         </div>
 
-        {/* Action Panel: Search and Buttons */}
         <div className="animate-fadeUp delay-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 bg-surface/40 p-4 md:p-6 rounded-2xl border border-white/5 backdrop-blur-md">
-          {/* Search Bar */}
           <div className="relative w-full md:w-96 flex-shrink-0">
             <Icon name="Search" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
@@ -140,7 +160,6 @@ const DashboardPage = () => {
             />
           </div>
 
-          {/* CTA Buttons */}
           <div className="flex gap-3 w-full md:w-auto">
             <Button variant="primary" icon="Plus" onClick={() => navigate("templates")} className="flex-1 md:flex-none justify-center px-5 py-3 shadow-coral/20 shadow-lg">
               Novo Currículo
@@ -151,13 +170,15 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Tabs - Scrollable */}
         <div className="animate-fadeUp delay-2 mb-8 relative">
           <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory">
             {tabs.map((tab) => {
-              const count = tab.id === "todos" ? allDocs.length : allDocs.filter(d => d.type === tab.id).length;
+              const count = tab.id === "todos" ? allDocs.length :
+                tab.filterType === "type" ? allDocs.filter(d => d.type === tab.id).length :
+                tab.filterType === "documentType" ? allDocs.filter(d => d.documentType === tab.id).length :
+                0;
               const isActive = activeTab === tab.id;
-              
+
               return (
                 <button
                   key={tab.id}
@@ -174,11 +195,9 @@ const DashboardPage = () => {
               );
             })}
           </div>
-          {/* Fade edge effect for tabs overflow on mobile */}
           <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-navy to-transparent pointer-events-none md:hidden" />
         </div>
 
-        {/* Documents Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
@@ -194,7 +213,6 @@ const DashboardPage = () => {
           }
         </div>
 
-        {/* Empty State */}
         {!isLoading && getFilteredDocs().length === 0 && (
           <EmptyState
             icon="Search"
@@ -217,16 +235,10 @@ const DashboardPage = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      
-      {/* Hide scrollbar injected style for tabs specifically */}
+
       <style>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );

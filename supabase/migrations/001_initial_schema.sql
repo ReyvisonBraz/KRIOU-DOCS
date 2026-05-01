@@ -108,6 +108,10 @@ CREATE POLICY "Users can manage own profile"
   WITH CHECK (auth.uid() = id);
 
 -- ─── Permissões para Supabase ───────────────────────────────────────────────
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON profiles TO anon, authenticated;
-GRANT ALL ON documents TO anon, authenticated;
+-- ⚠️ SEGURANCA: Apenas usuarios autenticados podem acessar dados.
+-- O RLS (Row Level Security) abaixo restringe cada usuario aos proprios registros.
+-- O GRANT a anon foi removido intencionalmente — usuarios nao logados
+-- NAO devem poder criar/ler/atualizar/deletar dados.
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT ALL ON profiles TO authenticated;
+GRANT ALL ON documents TO authenticated;

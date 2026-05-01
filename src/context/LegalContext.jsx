@@ -2,8 +2,24 @@
  * ============================================
  * KRIOU DOCS - Legal Context
  * ============================================
- * Gerencia documentos jurídicos: tipo, variante,
- * campos do formulário e auto-save.
+ * Gerencia documentos juridicos: tipo, variante,
+ * campos do formulario e auto-save.
+ *
+ * RESPONSABILIDADES:
+ * - Document type selection (ex: compra-venda, locacao)
+ * - Variant selection (ex: com garantia, sem garantia)
+ * - Formulario do documento juridico (legalFormData)
+ * - Auto-save de draft (via useAutoSave hook)
+ * - Campos desabilitados (disabledFields — para variantes especificas)
+ * - Steps do wizard juridico (legalStep)
+ *
+ * FLUXO DE SELECAO:
+ *   1. Usuario seleciona tipo → selectDocumentType(tipo)
+ *   2. Usuario seleciona variante → setSelectedVariant(var)
+ *   3. Campos aparecem com base na variante
+ *   4. Preenchimento → useAutoSave → StorageService.saveDraft
+ *
+ * LOGS: Prefixo [LegalContext] para facilitar filtragem.
  *
  * @module context/LegalContext
  */
@@ -21,17 +37,16 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [legalFormData, setLegalFormData]     = useState({});
   const [disabledFields, setDisabledFields]   = useState({});
-  // Step próprio do editor jurídico — isolado do currentStep do currículo
   const [legalStep, setLegalStep]             = useState(0);
 
-  // Ref para bloquear auto-save durante carregamento inicial
+  // Ref que impede auto-save durante carregamento inicial
   const isReadyRef = useRef(false);
 
   useEffect(() => {
     if (!isLoading) isReadyRef.current = true;
   }, [isLoading]);
 
-  // Função de save passada ao hook — só persiste quando há dados e está pronto
+  // Funcao de auto-save — so persiste quando pronto e com dados
   const saveFn = useCallback((data) => {
     if (!isReadyRef.current || Object.keys(data).length === 0) return;
     StorageService.saveDraft(sanitizeFormData(data), userId, "legal");
@@ -39,7 +54,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
 
   const { saveStatus, triggerSave } = useAutoSave(legalFormData, saveFn);
 
-  // Repassa saveStatus ao contexto pai (UIContext) via callback
+  // Repassa saveStatus ao UIContext (AppContext) para exibicao global
   useEffect(() => {
     onSaveStatus?.(saveStatus);
   }, [saveStatus, onSaveStatus]);
@@ -79,6 +94,6 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
 
 export const useLegal = () => {
   const ctx = useContext(LegalContext);
-  if (!ctx) throw new Error("useLegal must be used within LegalProvider");
+  if (!ctx) throw new Error("[LegalContext] useLegal deve ser usado dentro de LegalProvider");
   return ctx;
 };

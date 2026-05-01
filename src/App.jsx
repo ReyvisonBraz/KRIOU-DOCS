@@ -2,8 +2,26 @@
  * ============================================
  * KRIOU DOCS - App Router Component
  * ============================================
- * Main router component that renders pages
- * based on current navigation state.
+ * Componente raiz que gerencia rotas (SPA sem router externo)
+ * e providers globais.
+ *
+ * ARVORE DE COMPONENTES:
+ *   ErrorBoundary (raiz)
+ *   └── ThemeProvider
+ *       └── AppProvider
+ *           ├── PageRouter (pagina atual)
+ *           └── Toaster (notificacoes)
+ *
+ * ROTEAMENTO:
+ *   Usa estado interno (currentPage) + history.pushState.
+ *   Nao usa React Router — as transicoes sao controladas pelo
+ *   NavigationProvider no AppContext.
+ *
+ * CODE SPLITTING:
+ *   Paginas internas (dashboard, editor, etc.) sao lazy-loaded.
+ *   Landing e login sao eager (sempre na bundle inicial).
+ *
+ * LOGS: Prefixo [App] / [PageRouter] para facilitar filtragem.
  *
  * @module App
  */
@@ -15,11 +33,11 @@ import { Spinner } from "./components/UI";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "sonner";
 
-// Páginas carregadas na inicialização (rota inicial + login)
+// Rotas eager (sempre na bundle inicial)
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 
-// Páginas carregadas sob demanda (code splitting)
+// Rotas lazy (code splitting — carregadas sob demanda)
 const DashboardPage       = lazy(() => import("./pages/DashboardPage"));
 const TemplatesPage       = lazy(() => import("./pages/TemplatesPage"));
 const EditorPage          = lazy(() => import("./pages/EditorPage"));
@@ -31,7 +49,10 @@ const AuthCallbackPage    = lazy(() => import("./pages/AuthCallbackPage"));
 const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
 const WelcomePage         = lazy(() => import("./pages/WelcomePage"));
 
-// Wrapper para passar onNavigate às páginas que precisam navegar antes do contexto estar pronto
+// ─── withNavigate — Injeta onNavigate em paginas que precisam ──────────────
+// Necessario para AuthCallbackPage e CompleteProfilePage, que sao
+// montadas antes do AppContext estar completamente pronto e precisam
+// navegar programaticamente.
 // eslint-disable-next-line no-unused-vars
 const withNavigate = (Component) => {
   const Wrapped = (props) => {
@@ -41,6 +62,7 @@ const withNavigate = (Component) => {
   return Wrapped;
 };
 
+// ─── Rotas ──────────────────────────────────────────────────────────────────
 const routes = {
   landing:         LandingPage,
   login:           LoginPage,
@@ -56,19 +78,16 @@ const routes = {
   legalEditor:     LegalEditorPage,
 };
 
+// ─── PageFallback — tela de loading enquanto a pagina lazy carrega ──────────
 const PageFallback = () => (
-  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+  <div className="min-h-screen flex items-center justify-center bg-navy">
     <Spinner size={36} />
   </div>
 );
 
-/**
- * PageRouter - Renders the appropriate page based on currentPage state
- * Uses useApp hook to access navigation state
- */
+// ─── PageRouter — renderiza a pagina baseada em currentPage ────────────────
 const PageRouter = () => {
   const { currentPage } = useApp();
-  console.log("[PageRouter] currentPage:", currentPage, "pathname:", window.location.pathname);
   const PageComponent = routes[currentPage] || LandingPage;
 
   return (
@@ -80,19 +99,16 @@ const PageRouter = () => {
   );
 };
 
-/**
- * App - Root application component
- * Wraps application with ThemeProvider for global styles
- * and AppProvider for global state management
- */
+// ─── App — Componente raiz ─────────────────────────────────────────────────
+// NOTA: Apenas um ErrorBoundary (na raiz). O segundo ErrorBoundary
+// que antes envolvia PageRouter foi removido por ser redundante —
+// o ErrorBoundary raiz ja captura erros de todos os filhos.
 const App = () => {
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <AppProvider>
-          <ErrorBoundary>
-            <PageRouter />
-          </ErrorBoundary>
+          <PageRouter />
           <Toaster
             position="bottom-center"
             toastOptions={{

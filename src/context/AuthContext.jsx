@@ -2,8 +2,27 @@
  * ============================================
  * KRIOU DOCS - Auth Context (Supabase)
  * ============================================
- * Gerencia sessão via Supabase Auth + Google OAuth.
- * Substitui o fluxo mock de telefone/OTP.
+ * Gerencia sessao via Supabase Auth + Google OAuth.
+ *
+ * FLUXO:
+ *   1. getSession() na montagem — restaura sessao existente
+ *   2. onAuthStateChange — escuta login/logout/refresh em tempo real
+ *   3. signInWithGoogle — inicia fluxo OAuth
+ *   4. logout — limpa sessao
+ *
+ * SEGURANCA:
+ * - Sessao gerenciada pelo Supabase (localStorage) — nao armazenamos
+ *   tokens manualmente.
+ * - Nao usar saveSession/loadSession do StorageService (deprecated).
+ *
+ * LOGS: Prefixo [AuthContext] para facilitar filtragem.
+ *
+ * PONTOS DE FALHA:
+ * - Se getSession() falhar (rede), isAuthLoading fica true para sempre
+ *   (sem timeout). O AppBootstrap trava nesse estado.
+ * - Se onAuthStateChange disparar SIGNED_OUT inesperadamente, o usuario
+ *   perde o acesso mas a UI pode nao refletir imediatamente.
+ * ============================================
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
@@ -16,28 +35,36 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser]                 = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
+  // ─── Inicializacao ──────────────────────────────────────────────────────────
   useEffect(() => {
-    // Lê sessão existente salva pelo Supabase no localStorage
+    let mounted = true;
+
+    // Passo 1: Restaura sessao existente
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[AuthContext] getSession:", session ? "OK" : "NULL");
-      setSession(session);
-      setUser(session?.user ?? null);
+      if (!mounted) return;
+      if (session) {
+        setSession(session);
+        setUser(session.user ?? null);
+      }
       setIsAuthLoading(false);
     });
 
-    // Escuta mudanças em tempo real (login, logout, refresh de token)
+    // Passo 2: Escuta mudancas em tempo real (login, logout, refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[AuthContext] onAuthStateChange:", event, session ? "with session" : "without session");
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
+  // ─── Login com Google ───────────────────────────────────────────────────────
   const signInWithGoogle = useCallback(async () => {
-    console.log("[AuthContext] signInWithGoogle called");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -45,23 +72,24 @@ export const AuthProvider = ({ children }) => {
       },
     });
     if (error) {
-      console.error("[AuthContext] OAuth error:", error);
+      console.error("[AuthContext][ERRO] signInWithGoogle:", error.message);
       throw error;
     }
   }, []);
 
+  // ─── Logout ─────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
-    console.log("[AuthContext] logout called");
     await supabase.auth.signOut();
   }, []);
 
-  // Extrair metadados do usuário (Supabase pode guardar em raw_user_meta_data)
+  // ─── Metadados do usuario ────────────────────────────────────────────────────
+  // NOTA: Supabase pode armazenar metadados em raw_user_meta_data (Google OAuth)
+  // ou user_metadata (outros providers). Tentamos ambos.
   const rawMeta = user?.raw_user_meta_data || {};
   const meta = user?.user_metadata || rawMeta;
 
-  // Helpers de conveniência
   const userId      = user?.id ?? null;
-  const displayName = meta?.full_name || meta?.name || user?.email?.split("@")[0] || "Usuário";
+  const displayName = meta?.full_name || meta?.name || user?.email?.split("@")[0] || "Usuario";
   const avatarUrl   = meta?.avatar_url ?? null;
   const email       = user?.email ?? null;
 
@@ -77,13 +105,11 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  console.log("[AuthContext] render:", { userId, displayName, email, isAuthLoading });
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error("[AuthContext] useAuth deve ser usado dentro de AuthProvider");
   return ctx;
 };

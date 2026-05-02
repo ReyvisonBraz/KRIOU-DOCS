@@ -371,7 +371,7 @@ const TemplatesPage = () => {
   const handleLegalDocSelect = (doc) => {
     setDocumentType(doc);
     setSelectedVariant(doc.defaultVariant || doc.variants?.[0]?.id);
-    setLegalStep(1);
+    setLegalStep(0);
     navigate("legalEditor");
   };
 

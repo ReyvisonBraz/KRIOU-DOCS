@@ -89,7 +89,8 @@ const DashboardPage = () => {
         if (doc.draft.selectedVariant) setSelectedVariant(doc.draft.selectedVariant);
         if (doc.draft.legalFormData) setLegalFormData(doc.draft.legalFormData);
         if (doc.draft.disabledFields) setDisabledFields(doc.draft.disabledFields);
-        setLegalStep(doc.draft.legalStep ?? 1);
+        const savedStep = doc.draft.legalStep ?? 0;
+        setLegalStep(savedStep > 0 ? savedStep - 1 : 0);
       } else {
         setLegalStep(0);
       }

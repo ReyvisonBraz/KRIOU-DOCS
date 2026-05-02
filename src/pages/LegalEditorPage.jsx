@@ -243,6 +243,16 @@ const LegalEditorPage = () => {
     scrollToTop();
   }, [currentStep, scrollToTop]);
 
+  useEffect(() => {
+    if (documentType && currentStep === 0) {
+      setSelectedDoc(documentType);
+      if (!selectedVariant && documentType.defaultVariant) {
+        setSelectedVariant(documentType.defaultVariant);
+      }
+      setCurrentStep(1);
+    }
+  }, []);
+
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const isDirty = saveStatus === "saving" || saveStatus === "idle";

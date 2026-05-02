@@ -18,9 +18,14 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState("todos");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
+  const handleCreateResume = () => {
+    sessionStorage.setItem("kriou_template_category", "resume");
+    navigate("templates");
+  };
+
   const handleCreateLegalDocument = () => {
-    setLegalStep(0);
-    navigate("legalEditor");
+    sessionStorage.setItem("kriou_template_category", "legal");
+    navigate("templates");
   };
 
   const allDocs = userDocuments || [];
@@ -161,7 +166,7 @@ const DashboardPage = () => {
           </div>
 
           <div className="flex gap-3 w-full md:w-auto">
-            <Button variant="primary" icon="Plus" onClick={() => navigate("templates")} className="flex-1 md:flex-none justify-center px-5 py-3 shadow-coral/20 shadow-lg">
+            <Button variant="primary" icon="Plus" onClick={handleCreateResume} className="flex-1 md:flex-none justify-center px-5 py-3 shadow-coral/20 shadow-lg">
               Novo Currículo
             </Button>
             <Button variant="secondary" icon="FileText" onClick={handleCreateLegalDocument} className="flex-1 md:flex-none justify-center px-5 py-3 border-white/10 bg-surface/80 hover:bg-surface-3">
@@ -221,8 +226,8 @@ const DashboardPage = () => {
             action={
               !searchQuery.trim() && (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-                  <Button variant="primary" onClick={() => navigate("templates")} className="justify-center px-6">Criar Currículo</Button>
-                  <Button variant="secondary" onClick={handleCreateLegalDocument} className="justify-center px-6">Criar Documento Jurídico</Button>
+<Button variant="primary" onClick={handleCreateResume} className="justify-center px-6">Criar Currículo</Button>
+                    <Button variant="secondary" onClick={handleCreateLegalDocument} className="justify-center px-6">Criar Documento Jurídico</Button>
                 </div>
               )
             }

@@ -64,7 +64,7 @@ const AuthCallbackPage = ({ onNavigate }) => {
       if (!session) {
         log("ERRO: sessao null");
         setError("Sessao nao encontrada.");
-        setTimeout(() => onNavigate("login"), 2000);
+        setTimeout(() => onNavigate("login", { replace: true }), 2000);
         return;
       }
 
@@ -78,17 +78,17 @@ const AuthCallbackPage = ({ onNavigate }) => {
         if (!DocumentService.isProfileComplete(profile)) {
           setStatus("Perfil incompleto — redirecionando...");
           log("Perfil incompleto, indo para completeProfile");
-          onNavigate("completeProfile");
+          onNavigate("completeProfile", { replace: true });
         } else {
           setStatus("Login completo! Redirecionando...");
           log("Perfil completo, indo para dashboard");
           const seen = localStorage.getItem(`kriou_onboarding_${session.user.id}_seen`);
-          onNavigate(seen ? "dashboard" : "welcome");
+          onNavigate(seen ? "dashboard" : "welcome", { replace: true });
         }
       } catch (err) {
         log("ERRO ao buscar perfil", err.message);
         setStatus("Erro ao carregar dados — indo para dashboard...");
-        onNavigate("dashboard");
+        onNavigate("dashboard", { replace: true });
       }
     };
 
@@ -115,7 +115,7 @@ const AuthCallbackPage = ({ onNavigate }) => {
       if (Date.now() - startedAt.current > GIVE_UP_MS) {
         log(`GIVE UP apos ${pollAttempts.current} tentativas em ${GIVE_UP_MS / 1000}s`);
         setError("Tempo esgotado. Verifique sua conexao.");
-        onNavigate("login");
+        onNavigate("login", { replace: true });
         return;
       }
 
@@ -141,7 +141,7 @@ const AuthCallbackPage = ({ onNavigate }) => {
       } else if (event === "SIGNED_OUT") {
         log("SIGNED_OUT recebido, redirecionando para login");
         clearTimeout(pollTimer.current);
-        onNavigate("login");
+        onNavigate("login", { replace: true });
       }
     });
 

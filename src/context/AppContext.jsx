@@ -45,22 +45,43 @@ import { LegalProvider, useLegal } from "./LegalContext";
 const NavigationContext = createContext(null);
 const UIContext         = createContext(null);
 
-// ─── Páginas restauráveia apos refresh ──────────────────────────────────────
-// NOTA: So paginas que fazem sentido restaurar (evita voltar pra landing
-// apos F5). Landing, login, authCallback NAO devem ser restauradas.
+// ─── Páginas restauráveis após refresh ──────────────────────────────────────
 const RESTORABLE_PAGES = new Set([
   "dashboard", "legalEditor", "editor", "templates", "profile", "preview", "checkout",
 ]);
 
+// ─── Mapeamento página ↔ path ──────────────────────────────────────────────
+const PAGE_TO_PATH = {
+  landing:         "/",
+  login:           "/login",
+  authCallback:    "/auth/callback",
+  completeProfile: "/complete-profile",
+  welcome:         "/welcome",
+  dashboard:       "/dashboard",
+  templates:       "/templates",
+  editor:          "/editor",
+  preview:         "/preview",
+  checkout:        "/checkout",
+  profile:         "/profile",
+  legalEditor:     "/legal-editor",
+};
+
+const PATH_TO_PAGE = Object.fromEntries(
+  Object.entries(PAGE_TO_PATH).map(([k, v]) => [v, k])
+);
+
 // ─── NavigationProvider ───────────────────────────────────────────────────────
-// Gerencia a navegacao SPA (sem router externo) via history.pushState.
+// Gerencia a navegacao SPA via history.pushState/replaceState.
 //
 // DETECCAO DE OAUTH: Se a URL contiver parametros de autenticacao
 // (access_token, refresh_token, type=recovery, error_description)
 // em qualquer pathname, forca a pagina "authCallback" para que o
-// fluxo de login seja concluido corretamente. Isso cobre o cenario
-// onde o Supabase redireciona para a raiz (/) em vez de /auth/callback
-// por falha de configuracao de Redirect URLs no dashboard.
+// fluxo de login seja concluido corretamente.
+//
+// RESTAURACAO VIA URL: Ao carregar a pagina, detecta qual pagina
+// mostrar baseado no pathname. Se esta em /auth/callback mas sem
+// hash de OAuth (refresh), redireciona para dashboard pois o callback
+// ja foi processado.
 const NavigationProvider = ({ children }) => {
   const pathname = window.location.pathname;
   const hash = window.location.hash;
@@ -70,31 +91,36 @@ const NavigationProvider = ({ children }) => {
                    || hash.includes("type=recovery")
                    || hash.includes("error_description");
 
-  // Log diagnostico para entender onde o OAuth redirect esta caindo
   console.log(
     "[NavigationProvider] Inicializando:",
     { pathname, hash: hash?.slice(0, 50), hasAuthHash }
   );
 
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (pathname === "/auth/callback" || hasAuthHash) return "authCallback";
-    return "landing";
-  });
+  const getInitialPage = () => {
+    if (hasAuthHash || pathname === "/auth/callback") return "authCallback";
+    if (pathname === "/" || pathname === "") return "landing";
+    return PATH_TO_PAGE[pathname] || "landing";
+  };
+
+  const [currentPage, setCurrentPage] = useState(getInitialPage);
 
   const isPopstateRef = useRef(false);
 
   // ─── navigate ────────────────────────────────────────────────────────────────
   // @param {string} page — nome da pagina (ex: "dashboard", "editor")
-  // Salva pagina restaurável no localStorage para recovery apos refresh.
-  // NOTA: window.location.pathname nunca muda — sempre pusha a URL atual.
-  // Isso é intencional (SPA sem rotas reais), mas significa que nao da para
-  // compartilhar links de paginas internas.
-  const navigate = useCallback((page) => {
+  // @param {Object} options — { replace: boolean } para substituir a entrada
+  //   atual no historico em vez de adicionar uma nova (usado apos OAuth callback).
+  // Salva pagina restauravel no localStorage para recovery apos refresh.
+  const navigate = useCallback((page, options = {}) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
 
-    if (!isPopstateRef.current) {
-      window.history.pushState({ page }, "", window.location.pathname);
+    const path = PAGE_TO_PATH[page] || "/";
+
+    if (options.replace) {
+      window.history.replaceState({ page }, "", path);
+    } else if (!isPopstateRef.current) {
+      window.history.pushState({ page }, "", path);
     }
 
     if (RESTORABLE_PAGES.has(page)) {
@@ -109,7 +135,7 @@ const NavigationProvider = ({ children }) => {
     const handlePopstate = (event) => {
       const page = event.state?.page;
       isPopstateRef.current = true;
-      setCurrentPage(page || "landing");
+      setCurrentPage(page || PATH_TO_PAGE[window.location.pathname] || "landing");
       window.scrollTo(0, 0);
       isPopstateRef.current = false;
     };
@@ -128,21 +154,20 @@ const NavigationProvider = ({ children }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // BOOTSTRAP
 // ═══════════════════════════════════════════════════════════════════════════════
-// AppBootstrap é executado quando a sessao e resolvida (isAuthLoading=false).
+// AppBootstrap e executado quando a sessao e resolvida (isAuthLoading=false).
 //
-// Fluxo com justSignedIn:
-//   - Se justSignedIn=true (login fresco via OAuth): redireciona para
-//     authCallback mesmo em pagina nao-auth. O AuthCallbackPage faz o
-//     resto (fetchProfile, completeProfile, dashboard/welcome).
-//   - Se justSignedIn=false (retorno com sessao salva): redireciona
-//     direto para pagina salva ou dashboard.
+// Se o usuario esta autenticado e NAO esta em uma pagina de auth,
+// redireciona para pagina salva ou dashboard.
+// Se esta em authCallback/completeProfile, essas paginas gerenciam
+// propria navegacao — nao interferir.
 //
-// NOTA: justSignedIn e consumido (setado false) apos o primeiro uso
-// para evitar redirecionamentos repetidos.
+// NOTA: justSignedIn nao e mais usado para redirecionamento porque
+// o NavigationProvider ja detecta a URL de callback corretamente
+// e o AuthCallbackPage faz o resolve com replaceState.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const AppBootstrap = ({ children }) => {
-  const { userId, isAuthLoading, justSignedIn, consumeJustSignedIn } = useAuth();
+  const { userId, isAuthLoading } = useAuth();
   const { setFormData, setUserDocuments } = useResume();
   const { setLegalFormData }              = useLegal();
   const { navigate, currentPage }         = useContext(NavigationContext);
@@ -157,13 +182,12 @@ const AppBootstrap = ({ children }) => {
 
     console.log(
       "[AppBootstrap] Efeito disparado:",
-      { userId: userId?.slice(0, 8), isAuthLoading, justSignedIn, currentPage }
+      { userId: userId?.slice(0, 8), isAuthLoading, currentPage }
     );
 
     // [GUARDA] Paginas de auth gerenciam propria navegacao — nao interferir
     const isAuthPage = currentPage === "authCallback"
-                    || currentPage === "completeProfile"
-                    || window.location.pathname === "/auth/callback";
+                    || currentPage === "completeProfile";
 
     // ─── init() — carrega todos os dados do usuario ──────────────────────────
     const init = async () => {
@@ -208,19 +232,10 @@ const AppBootstrap = ({ children }) => {
 
       // ETAPA 4: Redirecionamento (so para paginas nao-auth)
       if (!isAuthPage) {
-        // Se e um login fresco (SIGNED_IN via OAuth), vai pro fluxo
-        // de auth callback em vez de pular direto pro dashboard.
-        // Isso garante que completeProfile seja exibido para novos usuarios.
-        if (justSignedIn) {
-          console.log("[AppBootstrap] justSignedIn=true → redirecionando para authCallback");
-          consumeJustSignedIn();
-          setTimeout(() => navigate("authCallback"), APP_INIT_DELAY_MS);
-        } else {
-          console.log("[AppBootstrap] justSignedIn=false → usuario retornando, indo para saved/dashboard");
-          const savedPage  = StorageService.loadPage();
-          const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
-          setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
-        }
+        console.log("[AppBootstrap] Usuario retornando, indo para saved/dashboard");
+        const savedPage  = StorageService.loadPage();
+        const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+        setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
       } else {
         console.log("[AppBootstrap] Pagina auth, bootstrap concluido sem redirecionamento");
       }
@@ -232,7 +247,7 @@ const AppBootstrap = ({ children }) => {
     init();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthLoading, userId, justSignedIn]);
+  }, [isAuthLoading, userId]);
 
   return children;
 };

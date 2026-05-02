@@ -45,13 +45,10 @@ const AuthCallbackPage = ({ onNavigate }) => {
   const startedAt = useRef(Date.now());
   const [status, setStatus] = useState("Verificando login...");
   const [error, setError] = useState(null);
-  const [debug, setDebug] = useState([]);
 
   const log = useCallback((msg, data) => {
-    const timestamp = new Date().toISOString().slice(11, 23);
     const elapsed = ((Date.now() - startedAt.current) / 1000).toFixed(1);
     console.log(`${LOG_PREFIX} [+${elapsed}s] ${msg}`, data ?? "");
-    setDebug((prev) => [...prev, { time: timestamp, msg, data }]);
   }, []);
 
   useEffect(() => {
@@ -165,30 +162,12 @@ const AuthCallbackPage = ({ onNavigate }) => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-navy gap-4 p-8">
-      <div className="w-12 h-12 border-4 border-coral border-t-transparent rounded-full animate-spin" />
-      <p className="text-text-muted text-lg font-medium">{status}</p>
-      {error && (
-        <p className="text-coral text-sm">{error}</p>
-      )}
-      <div className="mt-8 p-4 bg-surface-2 rounded-lg max-w-md text-left w-full">
-        <p className="text-text-muted text-xs mb-2 font-bold">Debug (console):</p>
-        <div className="text-text-muted text-xs font-mono space-y-1 max-h-48 overflow-y-auto">
-          {debug.map((d, i) => (
-            <div key={i} className="flex gap-2">
-              <span className="text-gray-500">[{d.time}]</span>
-              <span className="text-coral">{d.msg}</span>
-              {d.data !== undefined && <span className="text-gray-400">{JSON.stringify(d.data)}</span>}
-            </div>
-          ))}
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-navy gap-6 p-8">
+      <div className="w-14 h-14 border-[3px] border-coral/30 border-t-coral rounded-full animate-spin" />
+      <div className="flex flex-col items-center gap-2">
+        <p className="text-white text-lg font-semibold">{error ? "Ops!" : status}</p>
+        {error && <p className="text-text-muted text-sm">{error}</p>}
       </div>
-      <button
-        onClick={() => { log("Retry manual"); window.location.reload(); }}
-        className="mt-4 px-6 py-2 bg-coral/20 text-coral rounded-xl text-sm hover:bg-coral/30 transition"
-      >
-        Forcar recarregamento
-      </button>
     </div>
   );
 };

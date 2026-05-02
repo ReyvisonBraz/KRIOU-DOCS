@@ -41,7 +41,7 @@ const WelcomePage = () => {
 
   const finish = () => {
     if (userId) localStorage.setItem(`kriou_onboarding_${userId}_seen`, "1");
-    navigate("dashboard");
+    navigate("dashboard", { replace: true });
   };
 
   const next = () => (slide < TOTAL - 1 ? setSlide((s) => s + 1) : finish());

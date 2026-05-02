@@ -10,19 +10,17 @@
  *   3. signInWithGoogle — inicia fluxo OAuth
  *   4. logout — limpa sessao
  *
+ * ESTADOS:
+ *   - isAuthLoading=true  → sessao ainda nao resolvida (mostra spinner)
+ *   - isAuthLoading=false + userId     → usuario autenticado
+ *   - isAuthLoading=false + userId=null → usuario nao autenticado
+ *
  * SEGURANCA:
  * - Sessao gerenciada pelo Supabase (localStorage) — nao armazenamos
  *   tokens manualmente.
  * - Nao usar saveSession/loadSession do StorageService (deprecated).
  *
  * LOGS: Prefixo [AuthContext] para facilitar filtragem.
- *
- * PONTOS DE FALHA:
- * - Se getSession() falhar (rede), isAuthLoading fica true para sempre
- *   (sem timeout). O AppBootstrap trava nesse estado.
- * - Se onAuthStateChange disparar SIGNED_OUT inesperadamente, o usuario
- *   perde o acesso mas a UI pode nao refletir imediatamente.
- * ============================================
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
@@ -32,15 +30,13 @@ export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession]             = useState(null);
-  const [user, setUser]                 = useState(null);
+  const [user, setUser]                   = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [justSignedIn, setJustSignedIn]   = useState(false);
 
   // ─── Inicializacao ──────────────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
 
-    // Passo 1: Restaura sessao existente
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       if (session) {
@@ -50,31 +46,18 @@ export const AuthProvider = ({ children }) => {
       setIsAuthLoading(false);
     });
 
-    // Passo 2: Escuta mudancas em tempo real (login, logout, refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       console.log(`[AuthContext] onAuthStateChange: ${event}`, session?.user?.email ?? "sem user");
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoading(false);
-      // SIGNED_IN = login fresco (OAuth ou magic link).
-      // INITIAL_SESSION = sessao restaurada do localStorage (retorno).
-      if (event === "SIGNED_IN") {
-        setJustSignedIn(true);
-      }
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
-
-  // ─── Reseta justSignedIn apos consumo ─────────────────────────────────────
-  // O AppBootstrap consome esta flag para decidir se vai pro fluxo de
-  // auth callback. Depois de consumida, zera para nao re-disparar.
-  const consumeJustSignedIn = useCallback(() => {
-    setJustSignedIn(false);
   }, []);
 
   // ─── Login com Google ───────────────────────────────────────────────────────
@@ -98,8 +81,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ─── Metadados do usuario ────────────────────────────────────────────────────
-  // NOTA: Supabase pode armazenar metadados em raw_user_meta_data (Google OAuth)
-  // ou user_metadata (outros providers). Tentamos ambos.
   const rawMeta = user?.raw_user_meta_data || {};
   const meta = user?.user_metadata || rawMeta;
 
@@ -116,8 +97,6 @@ export const AuthProvider = ({ children }) => {
     avatarUrl,
     email,
     isAuthLoading,
-    justSignedIn,
-    consumeJustSignedIn,
     signInWithGoogle,
     logout,
   };

@@ -80,7 +80,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
         googleData,
       });
       showToast.success("Cadastro concluído! Bem-vindo ao Kriou Docs.");
-      onNavigate("welcome");
+      onNavigate("welcome", { replace: true });
     } catch (err) {
       console.error("[CompleteProfile] Erro ao salvar perfil:", err);
       showToast.error("Erro ao salvar dados. Tente novamente.");

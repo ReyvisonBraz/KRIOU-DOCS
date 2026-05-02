@@ -2,26 +2,52 @@
  * ============================================
  * KRIOU DOCS - Application Context (Orquestrador)
  * ============================================
- * Compõe AuthContext + ResumeContext + LegalContext
- * e expõe useApp() com a API unificada.
+ * Compoe AuthContext + ResumeContext + LegalContext
+ * e expoe useApp() com a API unificada.
  *
- * FLUXO DE INICIALIZACAO:
- *   1. NavigationProvider — define pagina atual baseada na URL
+ * FLUXO DE INICIALIZACAO (ordem de execucao):
+ *
+ *   1. NavigationProvider — define pagina inicial baseada na URL
+ *      - Se Tem hash OAuth (#access_token) → authCallback
+ *      - Se URL e /auth/callback (sem hash, refresh) → authCallback
+ *      - Se URL mapeada no PATH_TO_PAGE → pagina correspondente
+ *      - Senao → landing
+ *
  *   2. AuthProvider — restaura sessao Supabase (getSession)
- *   3. InnerProviders → AppBootstrap — carrega profile + documentos + drafts
+ *      - isAuthLoading=true ate resolver
+ *      - Seta userId/session quando autenticado
  *
- * Auth: Supabase (Google OAuth) — sessa gerenciada pelo Supabase, nao localStorage.
- * Documentos: carregados do Supabas apos login.
- * Drafts: permanecem em localStorage (zero latência de rede).
+ *   3. AppBootstrap — carrega dados do usuario apos auth resolvida
+ *      - Se NAO autenticado: para loading, sem redirect
+ *      - Se autenticado E em pagina de auth (authCallback/completeProfile):
+ *        nao redirect — essas paginas gerenciam a si mesmas
+ *      - Se autenticado E em pagina publica (landing/login):
+ *        redirect para dashboard (usuario ja logado nao precisa ver landing)
+ *      - Se autenticado E em pagina interna (dashboard, editor, etc):
+ *        carrega dados, fica onde esta
  *
- * JUST_SIGNED_IN: Quando o AuthContext detecta SIGNED_IN (login fresco
- * via OAuth), seta justSignedIn=true. O AppBootstrap consome esta flag
- * para redirecionar ao fluxo de auth callback em vez de pular direto
- * pro dashboard. Isso garante que completeProfile seja exibido mesmo
- * se o OAuth redirect cair numa pagina nao-auth (ex: /).
+ *   4. AuthCallbackPage — resolve sessao apos OAuth
+ *      - Polling getSession() + listener onAuthStateChange
+ *      - Verifica perfil: incompleto → completeProfile
+ *      - Verifica onboarding: nao visto → welcome
+ *      - Perfil completo + onboarding visto → dashboard
  *
- * LOGS: Todos os logs seguem o padrao [NomeDoModulo] mensagem
- * para facilitar filtragem no console do browser.
+ *   5. CompleteProfilePage — coleta nome/sobrenome/CPF
+ *      - Salva no Supabase via DocumentService.updateProfile()
+ *      - onNavigate("welcome") → WelcomePage
+ *
+ *   6. WelcomePage — tour de onboarding (1x)
+ *      - Salva kriou_onboarding_{userId}_seen no localStorage
+ *      - navigate("dashboard") → DashboardPage
+ *
+ * PAGINAS PUBLICAS (acessiveis sem login):
+ *   landing, login, authCallback
+ *
+ * PAGINAS PROTEGIDAS (requerem autenticacao):
+ *   dashboard, templates, editor, preview, checkout,
+ *   profile, legalEditor, completeProfile, welcome
+ *
+ * LOGS: Todos os logs seguem o padrao [NomeDoModulo] mensagem.
  *
  * ERROS: Erros criticos jogam excecao com prefixo [KRIOU_ERRO].
  * Erros nao-criticos sao logados com console.error e prefixo [ERRO].
@@ -38,19 +64,19 @@ import { LegalProvider, useLegal } from "./LegalContext";
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONTEXTOS
 // ═══════════════════════════════════════════════════════════════════════════════
-// NavigationContext: currentPage + navigate
-// UIContext: isLoading, checkoutComplete, saveStatus, profile
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const NavigationContext = createContext(null);
 const UIContext         = createContext(null);
 
-// ─── Páginas restauráveis após refresh ──────────────────────────────────────
+// ─── Paginas que fazem sentido restaurar apos refresh ─────────────────────────
 const RESTORABLE_PAGES = new Set([
   "dashboard", "legalEditor", "editor", "templates", "profile", "preview", "checkout",
 ]);
 
-// ─── Mapeamento página ↔ path ──────────────────────────────────────────────
+// ─── Paginas publicas (nao requerem autenticacao) ────────────────────────────
+const PUBLIC_PAGES = new Set(["landing", "login", "authCallback"]);
+
+// ─── Mapeamento pagina ↔ path ────────────────────────────────────────────────
 const PAGE_TO_PATH = {
   landing:         "/",
   login:           "/login",
@@ -75,13 +101,10 @@ const PATH_TO_PAGE = Object.fromEntries(
 //
 // DETECCAO DE OAUTH: Se a URL contiver parametros de autenticacao
 // (access_token, refresh_token, type=recovery, error_description)
-// em qualquer pathname, forca a pagina "authCallback" para que o
-// fluxo de login seja concluido corretamente.
+// em qualquer pathname, forca a pagina "authCallback".
 //
 // RESTAURACAO VIA URL: Ao carregar a pagina, detecta qual pagina
-// mostrar baseado no pathname. Se esta em /auth/callback mas sem
-// hash de OAuth (refresh), redireciona para dashboard pois o callback
-// ja foi processado.
+// mostrar baseado no pathname.
 const NavigationProvider = ({ children }) => {
   const pathname = window.location.pathname;
   const hash = window.location.hash;
@@ -103,14 +126,12 @@ const NavigationProvider = ({ children }) => {
   };
 
   const [currentPage, setCurrentPage] = useState(getInitialPage);
-
   const isPopstateRef = useRef(false);
 
-  // ─── navigate ────────────────────────────────────────────────────────────────
+  // ─── navigate ──────────────────────────────────────────────────────────────
   // @param {string} page — nome da pagina (ex: "dashboard", "editor")
-  // @param {Object} options — { replace: boolean } para substituir a entrada
-  //   atual no historico em vez de adicionar uma nova (usado apos OAuth callback).
-  // Salva pagina restauravel no localStorage para recovery apos refresh.
+  // @param {Object} [options] — { replace: boolean } para substituir a entrada
+  //   atual no historico (usado apos OAuth callback para limpar /auth/callback).
   const navigate = useCallback((page, options = {}) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
@@ -156,15 +177,22 @@ const NavigationProvider = ({ children }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // AppBootstrap e executado quando a sessao e resolvida (isAuthLoading=false).
 //
-// Se o usuario esta autenticado e NAO esta em uma pagina de auth,
-// redireciona para pagina salva ou dashboard.
-// Se esta em authCallback/completeProfile, essas paginas gerenciam
-// propria navegacao — nao interferir.
+// Tabela de decisao:
 //
-// NOTA: justSignedIn nao e mais usado para redirecionamento porque
-// o NavigationProvider ja detecta a URL de callback corretamente
-// e o AuthCallbackPage faz o resolve com replaceState.
+//   | Autenticado? | Pagina atual    | Acao                                    |
+//   |-------------|-----------------|-----------------------------------------|
+//   | Nao         | qualquer       | setIsLoading(false), sem redirect       |
+//   | Sim         | authCallback   | carrega dados, NAO redirect             |
+//   | Sim         | completeProfile| carrega dados, NAO redirect             |
+//   | Sim         | welcome        | carrega dados, NAO redirect              |
+//   | Sim         | landing/login  | redirect → dashboard                   |
+//   | Sim         | pagina interna | carrega dados, FICA onde esta          |
+//
+// Paginas de auth (authCallback, completeProfile, welcome) gerenciam
+// propria navegacao — o bootstrap apenas carrega dados em background.
 // ═══════════════════════════════════════════════════════════════════════════════
+
+const AUTH_PAGES = new Set(["authCallback", "completeProfile", "welcome"]);
 
 const AppBootstrap = ({ children }) => {
   const { userId, isAuthLoading } = useAuth();
@@ -173,46 +201,46 @@ const AppBootstrap = ({ children }) => {
   const { navigate, currentPage }         = useContext(NavigationContext);
   const { setIsLoading, setProfile }      = useContext(UIContext);
 
-  // ─── Efeito principal de inicializacao ──────────────────────────────────────
   useEffect(() => {
-    // [GUARDA] Aguarda Supabase resolver a sessao antes de inicializar
-    if (isAuthLoading) {
-      return;
-    }
+    if (isAuthLoading) return;
 
     console.log(
       "[AppBootstrap] Efeito disparado:",
       { userId: userId?.slice(0, 8), isAuthLoading, currentPage }
     );
 
-    // [GUARDA] Paginas de auth gerenciam propria navegacao — nao interferir
-    const isAuthPage = currentPage === "authCallback"
-                    || currentPage === "completeProfile";
+    const isAuthPage   = AUTH_PAGES.has(currentPage);
+    const isPublicPage = PUBLIC_PAGES.has(currentPage);
 
-    // ─── init() — carrega todos os dados do usuario ──────────────────────────
     const init = async () => {
+      // ─── Usuario NAO autenticado ──────────────────────────────────────────
       if (!userId) {
-        console.log("[AppBootstrap] Sem userId, saindo (usuario nao autenticado)");
+        console.log("[AppBootstrap] Nao autenticado, nada a carregar");
         setIsLoading(false);
+
+        // Se esta em pagina protegida, manda pra landing
+        if (!isPublicPage && !isAuthPage) {
+          console.log("[AppBootstrap] Pagina protegida sem auth → landing");
+          navigate("landing", { replace: true });
+        }
         return;
       }
 
-      console.log("[AppBootstrap] Usuario autenticado, carregando dados...");
+      // ─── Usuario autenticado — carregar dados ─────────────────────────────
+      console.log("[AppBootstrap] Autenticado, carregando dados...");
 
-      // ETAPA 1: Perfil do usuario
       try {
         const prof = await DocumentService.fetchProfile();
         if (prof) {
           console.log("[AppBootstrap] Perfil carregado:", { nome: prof.nome, profileComplete: DocumentService.isProfileComplete(prof) });
           setProfile(prof);
         } else {
-          console.log("[AppBootstrap] Perfil nao encontrado (usuario novo ou pre-trigger)");
+          console.log("[AppBootstrap] Perfil nao encontrado");
         }
       } catch (err) {
         console.error("[AppBootstrap][ERRO] fetchProfile falhou:", err.message);
       }
 
-      // ETAPA 2: Documentos finalizados do Supabase
       try {
         const docs = await DocumentService.fetchAll(userId);
         if (docs.length > 0) setUserDocuments(docs);
@@ -220,7 +248,6 @@ const AppBootstrap = ({ children }) => {
         console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);
       }
 
-      // ETAPA 3: Drafts do localStorage
       try {
         const resumeDraft = StorageService.loadDraft(userId, "resume");
         if (resumeDraft) setFormData(resumeDraft);
@@ -230,20 +257,23 @@ const AppBootstrap = ({ children }) => {
         console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
       }
 
-      // ETAPA 4: Redirecionamento (so para paginas nao-auth)
-      if (!isAuthPage) {
-        console.log("[AppBootstrap] Usuario retornando, indo para saved/dashboard");
-        const savedPage  = StorageService.loadPage();
-        const targetPage = (savedPage && RESTORABLE_PAGES.has(savedPage)) ? savedPage : "dashboard";
+      // ─── Redirecionamento pos-login ──────────────────────────────────────
+      if (isAuthPage) {
+        // authCallback/completeProfile/welcome gerenciam propria navegacao
+        console.log("[AppBootstrap] Pagina de auth, sem redirect");
+      } else if (isPublicPage) {
+        // Usuario autenticado em landing/login → dashboard
+        console.log("[AppBootstrap] Autenticado em pagina publica → dashboard");
+        const targetPage = "dashboard";
         setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
       } else {
-        console.log("[AppBootstrap] Pagina auth, bootstrap concluido sem redirecionamento");
+        // Pagina interna (dashboard, editor, etc.) — fica onde esta
+        console.log("[AppBootstrap] Pagina interna, fica onde esta");
       }
 
       setIsLoading(false);
     };
 
-    // ─── Decisao de inicializacao ────────────────────────────────────────────
     init();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -268,7 +298,7 @@ const InnerProviders = ({ children, isLoading, setSaveStatus }) => {
   );
 };
 
-// ─── AppProvider principal ────────────────────────────────────────────────────
+// ─── AppProvider principal ─────────────────────────────────────────────────────
 
 export const AppProvider = ({ children }) => {
   const [isLoading, setIsLoading]               = useState(true);
@@ -311,11 +341,9 @@ export const useApp = () => {
   }, [auth, nav]);
 
   return {
-    // Navegação
     currentPage: nav.currentPage,
     navigate: nav.navigate,
 
-    // Auth (Supabase)
     userId:          auth.userId,
     displayName:     auth.displayName,
     avatarUrl:       auth.avatarUrl,
@@ -324,7 +352,6 @@ export const useApp = () => {
     signInWithGoogle: auth.signInWithGoogle,
     logout,
 
-    // Resume
     selectedTemplate: resume.selectedTemplate,   setSelectedTemplate: resume.setSelectedTemplate,
     templates:        resume.templates,
     currentStep:      resume.currentStep,         setCurrentStep: resume.setCurrentStep,
@@ -338,7 +365,6 @@ export const useApp = () => {
     saveDocument:     (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }),
     filter:           resume.filter,              setFilter: resume.setFilter,
 
-    // Legal
     documentType:      legal.documentType,        setDocumentType: legal.setDocumentType,
     selectedVariant:   legal.selectedVariant,     setSelectedVariant: legal.setSelectedVariant,
     legalFormData:     legal.legalFormData,       setLegalFormData: legal.setLegalFormData,
@@ -350,7 +376,6 @@ export const useApp = () => {
     resetLegalForm:    legal.resetLegalForm,
     triggerLegalSave:  legal.triggerSave,
 
-    // UI
     isLoading:         ui.isLoading,
     checkoutComplete:  ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,
     profile:           ui.profile,                setProfile: ui.setProfile,

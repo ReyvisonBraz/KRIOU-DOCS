@@ -4,12 +4,21 @@
  * ============================================
  * Pagina intermediaria para onde o Google redireciona apos OAuth.
  *
- * FLUXO:
- *   1. Usuario faz login com Google na LoginPage
- *   2. Google redireciona para /auth/callback#access_token=...
- *   3. Supabase detecta o hash e processa o token (async, module-level)
- *   4. AuthCallbackPage monta, faz polling de getSession() ate achar,
- *      tambem escuta onAuthStateChange (SIGNED_IN / INITIAL_SESSION)
+ * FLUXO COMPLETO POS-LOGIN:
+ *
+ *   1. Google redireciona para /auth/callback#access_token=...
+ *   2. Supabase detecta o hash e processa o token
+ *   3. AuthCallbackPage monta, faz polling de getSession()
+ *      ate achar, tambem escuta onAuthStateChange
+ *   4. Quando sessao encontrada:
+ *      a) Perfil incompleto (sem nome/sobrenome/CPF)
+ *         → onNavigate("completeProfile")
+ *      b) Perfil completo + onboarding NAO visto
+ *         → onNavigate("welcome")
+ *      c) Perfil completo + onboarding JA visto
+ *         → onNavigate("dashboard")
+ *   5. Todas as navegacoes usam { replace: true } para limpar
+ *      /auth/callback do historico do navegador.
  *
  * ESTRATEGIA DE POLLING:
  *   Como AuthCallbackPage e lazy-loaded, o SIGNED_IN pode disparar
@@ -17,18 +26,14 @@
  *   getSession() como mecanismo principal, com onAuthStateChange
  *   como caminho rapido complementar.
  *
- * TIMEOUT: 15 segundos — se a sessao nao for encontrada, redireciona
- * para login.
- *
- * LOGS: Prefixo [AuthCallback] para facilitar debug.
- * ============================================
+ * TIMEOUT: 15 segundos — se a sessao nao for encontrada,
+ * redireciona para login com { replace: true }.
  */
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { DocumentService } from "../services/DocumentService";
 
-// ─── Constantes ──────────────────────────────────────────────────────────────
 const POLL_INTERVAL_MS = 500;
 const GIVE_UP_MS = 15000;
 const LOG_PREFIX = "[AuthCallback]";
@@ -38,11 +43,10 @@ const AuthCallbackPage = ({ onNavigate }) => {
   const pollTimer = useRef(null);
   const pollAttempts = useRef(0);
   const startedAt = useRef(Date.now());
-  const [status, setStatus] = useState("Iniciando...");
+  const [status, setStatus] = useState("Verificando login...");
   const [error, setError] = useState(null);
   const [debug, setDebug] = useState([]);
 
-  // Logger estruturado com timestamp para facilitar correlacao de eventos
   const log = useCallback((msg, data) => {
     const timestamp = new Date().toISOString().slice(11, 23);
     const elapsed = ((Date.now() - startedAt.current) / 1000).toFixed(1);
@@ -54,7 +58,13 @@ const AuthCallbackPage = ({ onNavigate }) => {
     let cancelled = false;
     log("Montado", window.location.href);
 
-    // ─── resolve() — funcao unica de redirecionamento ──────────────────────
+    // ─── resolve() — decisao de rota pos-login ────────────────────────────
+    //
+    // Perfil incompleto → completeProfile (coletar nome/sobrenome/CPF)
+    // Perfil completo + onboarding nao visto → welcome (tour)
+    // Perfil completo + onboarding visto → dashboard
+    //
+    // Todas usam { replace: true } para limpar /auth/callback do historico.
     const resolve = async (session, source) => {
       if (handled.current || cancelled) return;
       handled.current = true;
@@ -63,12 +73,12 @@ const AuthCallbackPage = ({ onNavigate }) => {
 
       if (!session) {
         log("ERRO: sessao null");
-        setError("Sessao nao encontrada.");
+        setError("Sessao nao encontrada. Tente fazer login novamente.");
         setTimeout(() => onNavigate("login", { replace: true }), 2000);
         return;
       }
 
-      setStatus("Sessao encontrada! Buscando perfil...");
+      setStatus("Login confirmado! Verificando perfil...");
       log("Sessao OK", { email: session.user?.email });
 
       try {
@@ -76,26 +86,33 @@ const AuthCallbackPage = ({ onNavigate }) => {
         log("Profile fetched", profile);
 
         if (!DocumentService.isProfileComplete(profile)) {
-          setStatus("Perfil incompleto — redirecionando...");
-          log("Perfil incompleto, indo para completeProfile");
+          // ─── Novo usuario ou perfil incompleto → coletar dados ───────────
+          setStatus("Complete seu cadastro...");
+          log("Perfil incompleto → completeProfile");
           onNavigate("completeProfile", { replace: true });
         } else {
-          setStatus("Login completo! Redirecionando...");
-          log("Perfil completo, indo para dashboard");
-          const seen = localStorage.getItem(`kriou_onboarding_${session.user.id}_seen`);
-          onNavigate(seen ? "dashboard" : "welcome", { replace: true });
+          // ─── Perfil completo — verificar onboarding ───────────────────────
+          const onboardingKey = `kriou_onboarding_${session.user.id}_seen`;
+          const seenOnboarding = localStorage.getItem(onboardingKey);
+
+          if (!seenOnboarding) {
+            setStatus("Preparando tour...");
+            log("Perfil completo, onboarding NAO visto → welcome");
+            onNavigate("welcome", { replace: true });
+          } else {
+            setStatus("Redirecionando...");
+            log("Perfil completo, onboarding visto → dashboard");
+            onNavigate("dashboard", { replace: true });
+          }
         }
       } catch (err) {
         log("ERRO ao buscar perfil", err.message);
-        setStatus("Erro ao carregar dados — indo para dashboard...");
+        setStatus("Erro ao carregar perfil. Redirecionando...");
         onNavigate("dashboard", { replace: true });
       }
     };
 
     // ─── Polling: chama getSession() a cada POLL_INTERVAL_MS ──────────────
-    // Este e o mecanismo PRINCIPAL. Como o componente e lazy-loaded,
-    // o SIGNED_IN pode ja ter disparado antes da montagem. O polling
-    // garante que encontramos a sessao mesmo nesse cenario.
     const poll = async () => {
       if (handled.current || cancelled) return;
       pollAttempts.current++;
@@ -111,25 +128,19 @@ const AuthCallbackPage = ({ onNavigate }) => {
         log(`getSession() erro na tentativa ${pollAttempts.current}`, err.message);
       }
 
-      // Verifica se ja passou do tempo maximo
       if (Date.now() - startedAt.current > GIVE_UP_MS) {
         log(`GIVE UP apos ${pollAttempts.current} tentativas em ${GIVE_UP_MS / 1000}s`);
-        setError("Tempo esgotado. Verifique sua conexao.");
+        setError("Tempo esgotado. Verifique sua conexao e tente novamente.");
         onNavigate("login", { replace: true });
         return;
       }
 
-      // Agenda proxima tentativa
       pollTimer.current = setTimeout(poll, POLL_INTERVAL_MS);
     };
 
-    // Inicia polling imediatamente
     poll();
 
-    // ─── Listener: caminho rapido complementar ────────────────────────────
-    // Captura SIGNED_IN, INITIAL_SESSION e TOKEN_REFRESHED para resolver
-    // mais rapido que o polling. Nao depende de user do contexto (que
-    // causa re-render e mata o listener).
+    // ─── Listener: caminho rapido complementar ──────────────────────────────
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (handled.current || cancelled) return;
       log(`onAuthStateChange: ${event}`, session ? `userId=${session.user?.id}` : "sem sessao");
@@ -150,10 +161,7 @@ const AuthCallbackPage = ({ onNavigate }) => {
       clearTimeout(pollTimer.current);
       subscription.unsubscribe();
     };
-    // Nao incluir user/onNavigate/log nas deps: o efeito deve rodar
-    // uma unica vez na montagem. Incluir qualquer dependencia que mude
-    // causaria re-execucao e mataria o listener/polling ativo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -181,15 +189,6 @@ const AuthCallbackPage = ({ onNavigate }) => {
       >
         Forcar recarregamento
       </button>
-      <div className="mt-4 p-4 bg-surface-2 rounded-lg max-w-md text-left">
-        <p className="text-text-muted text-xs mb-2">Dicas se ficar preso aqui:</p>
-        <ul className="text-text-muted text-xs list-disc list-inside space-y-1">
-          <li>Aguarde alguns segundos apos selecionar a conta Google</li>
-          <li>Verifique se nao ficou preso em aba do Google (popup blocker)</li>
-          <li>Se ficar preso, clique em "Forcar recarregamento"</li>
-          <li>Verifique no console do navegador se ha erros de rede (F12 &#62; Console)</li>
-        </ul>
-      </div>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import { useConfirm } from "../hooks/useConfirm";
 import { Icon } from "../components/Icons";
+import { generateDocumentCode } from "../utils/documentCode";
 import {
   Card,
   Button,
@@ -242,14 +243,17 @@ const LegalEditorPage = () => {
           : d
       );
     } else {
+      const code = generateDocumentCode(userDocuments || [], selectedDoc.id);
       const newCard = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
         title,
         type: selectedDoc.id,
+        documentType: selectedDoc.id,
         template: variantObj?.name || selectedDoc.name,
         date: dateLabel,
         status: "rascunho",
         draft: draftSnapshot,
+        code,
         _draftOrigin: "legalEditor",
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
@@ -587,81 +591,236 @@ const LegalEditorPage = () => {
       switch (block.type) {
         case "title":
           return (
-            <div key={i} style={{ textAlign: "center", marginBottom: 28 }}>
+            <div key={i} style={{ textAlign: "center", marginBottom: 28, marginTop: 4 }}>
               <h3 style={{
-                fontSize: 17, fontWeight: 800, color: "#111",
-                textTransform: "uppercase", letterSpacing: "0.05em",
-                lineHeight: 1.4,
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: 19,
+                fontWeight: 700,
+                color: "#161d26",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                lineHeight: 1.35,
+                margin: 0,
               }}>
                 {block.text}
               </h3>
-              <div style={{ width: 60, height: 2, background: "#222", margin: "12px auto 0" }} />
+              <div style={{
+                width: 50,
+                height: 1.5,
+                background: "var(--gold, #a58737)",
+                margin: "14px auto 0",
+                opacity: 0.7,
+              }} />
             </div>
           );
         case "paragraph":
           return (
             <p key={i} style={{
-              fontSize: 13, color: "#222", lineHeight: 1.8,
-              textAlign: "justify", marginBottom: 16,
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: 15,
+              color: "#3a4048",
+              lineHeight: 1.75,
+              textAlign: "justify",
+              textIndent: "1.5em",
+              margin: "0 0 18px 0",
+              wordBreak: "break-word",
             }}>
               {block.text}
             </p>
           );
         case "clause":
           return (
-            <div key={i} style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#111", lineHeight: 1.6, textAlign: "justify", marginBottom: 8 }}>
-                CLÁUSULA {block.number} — {block.title.toUpperCase()}
-              </p>
+            <div key={i} style={{ marginBottom: 14 }}>
+              <div style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 8,
+                marginBottom: 6,
+              }}>
+                <span style={{
+                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--gold, #a58737)",
+                  whiteSpace: "nowrap",
+                }}>
+                  CLÁUSULA {block.number}
+                </span>
+                <span style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "#161d26",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.03em",
+                }}>
+                  {block.title}
+                </span>
+              </div>
+              <div style={{
+                width: "40%",
+                height: 1,
+                background: "var(--border, #d8d6ce)",
+                marginBottom: 8,
+                opacity: 0.5,
+              }} />
               {block.text && (
-                <p style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginBottom: 12, paddingLeft: 8 }}>
+                <p style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: 14.5,
+                  color: "#3a4048",
+                  lineHeight: 1.7,
+                  textAlign: "justify",
+                  margin: "0 0 8px 0",
+                  wordBreak: "break-word",
+                }}>
                   {block.text}
                 </p>
               )}
               {block.paragraphs && (
-                <div style={{ paddingLeft: 24 }}>
-                  {block.paragraphs.map((p, j) => (
-                    <p key={j} style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginBottom: 6 }}>
-                      {p}
-                    </p>
-                  ))}
+                <div style={{ paddingLeft: 16 }}>
+                  {block.paragraphs.map((p, j) => {
+                    const isSubItem = /^[§IVX]+/.test(p.trim());
+                    return (
+                      <p key={j} style={{
+                        fontFamily: "Georgia, 'Times New Roman', serif",
+                        fontSize: 14,
+                        color: "#3a4048",
+                        lineHeight: 1.65,
+                        textAlign: "justify",
+                        marginBottom: 4,
+                        paddingLeft: isSubItem ? 12 : 0,
+                        wordBreak: "break-word",
+                      }}>
+                        {p}
+                      </p>
+                    );
+                  })}
                 </div>
               )}
             </div>
           );
         case "closing":
           return (
-            <p key={i} style={{ fontSize: 14, color: "#222", lineHeight: 1.6, textAlign: "justify", marginTop: 24, marginBottom: 16 }}>
+            <p key={i} style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: 14.5,
+              color: "#767b84",
+              fontStyle: "italic",
+              lineHeight: 1.7,
+              textAlign: "justify",
+              margin: "28px 0 12px 0",
+              wordBreak: "break-word",
+            }}>
               {block.text}
             </p>
           );
         case "date":
           return (
-            <p key={i} style={{ fontSize: 14, color: "#222", marginBottom: 32, marginTop: 16 }}>
+            <p key={i} style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: 15,
+              color: "#3a4048",
+              textAlign: "center",
+              margin: "8px 0 36px 0",
+            }}>
               {block.text}
             </p>
           );
         case "signatures":
           return (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`, gap: 32, marginTop: 40, marginBottom: 40 }}>
+            <div key={i} style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`,
+              gap: 48,
+              marginTop: 44,
+              marginBottom: 20,
+            }}>
               {block.parties.map((party, j) => (
                 <div key={j} style={{ textAlign: "center" }}>
-                  <div style={{ borderBottom: "1px solid #000", marginBottom: 8, minHeight: 40 }} />
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "#000" }}>{party.role}</p>
-                  <p style={{ fontSize: 12, color: "#444" }}>{party.name}</p>
+                  <div style={{
+                    borderBottom: "1.5px dashed #b0ada5",
+                    marginBottom: 8,
+                    minHeight: 44,
+                  }} />
+                  <p style={{
+                    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--gold, #a58737)",
+                    margin: "0 0 2px 0",
+                  }}>
+                    {party.role}
+                  </p>
+                  <p style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: 13.5,
+                    color: "#3a4048",
+                    margin: 0,
+                  }}>
+                    {party.name}
+                  </p>
                 </div>
               ))}
             </div>
           );
         case "witnesses":
           return (
-            <div key={i} style={{ marginTop: 24 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#000", marginBottom: 16 }}>TESTEMUNHAS:</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+            <div key={i} style={{ marginTop: 28 }}>
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#767b84",
+                margin: "0 0 16px 0",
+              }}>
+                TESTEMUNHAS
+              </p>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 40,
+              }}>
                 {Array.from({ length: block.count }).map((_, j) => (
-                  <div key={j}>
-                    <div style={{ borderBottom: "1px solid #ccc", marginBottom: 4, minHeight: 32 }} />
-                    <p style={{ fontSize: 11, color: "#666" }}>{j + 1}ª Testemunha — Nome/RG</p>
+                  <div key={j} style={{ position: "relative" }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                    }}>
+                      <span style={{
+                        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "var(--gold, #a58737)",
+                        background: "rgba(165, 135, 55, 0.1)",
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 2,
+                      }}>
+                        {j + 1}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          borderBottom: "1px dashed #c5c2ba",
+                          marginBottom: 4,
+                          minHeight: 36,
+                        }} />
+                        <p style={{
+                          fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                          fontSize: 10.5,
+                          color: "#a0a5ae",
+                          margin: 0,
+                        }}>
+                          Nome / CPF
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -673,15 +832,55 @@ const LegalEditorPage = () => {
     };
 
     const renderFallback = () => (
-      <div style={{ padding: 40 }}>
-        <h3 style={{ textAlign: "center", marginBottom: 30 }}>{selectedDoc?.name}</h3>
+      <div style={{ padding: 32 }}>
+        <h3 style={{
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontSize: 19,
+          fontWeight: 700,
+          color: "#161d26",
+          textAlign: "center",
+          textTransform: "uppercase",
+          marginBottom: 28,
+        }}>
+          {selectedDoc?.name}
+        </h3>
         {currentSections.map((s) => (
-          <div key={s.id} style={{ marginBottom: 15 }}>
-            <h4 style={{ fontSize: 12, textTransform: "uppercase", color: "#666", marginBottom: 8 }}>{s.title}</h4>
+          <div key={s.id} style={{ marginBottom: 20 }}>
+            <h4 style={{
+              fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "var(--gold, #a58737)",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              margin: "0 0 6px 0",
+            }}>
+              {s.title}
+            </h4>
             {s.fields.map((f) => (
-              <div key={f.key} style={{ display: "flex", gap: 10, fontSize: 13, marginBottom: 4 }}>
-                <span style={{ fontWeight: 600 }}>{f.label}:</span>
-                <span>{legalFormData[f.key] || "—"}</span>
+              <div key={f.key} style={{
+                display: "flex",
+                gap: 12,
+                fontSize: 14,
+                marginBottom: 3,
+                padding: "4px 0",
+                borderBottom: "1px solid rgba(0,0,0,0.04)",
+              }}>
+                <span style={{
+                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                  fontWeight: 600,
+                  color: "#767b84",
+                  minWidth: 120,
+                  fontSize: 12.5,
+                }}>
+                  {f.label}:
+                </span>
+                <span style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  color: "#3a4048",
+                }}>
+                  {legalFormData[f.key] || "\u2014"}
+                </span>
               </div>
             ))}
           </div>
@@ -693,7 +892,7 @@ const LegalEditorPage = () => {
       <div className="animate-fadeIn">
         <div style={{ marginBottom: 24 }}>
           <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-            Visualização do Documento
+            Visualizacao do Documento
           </h2>
           <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
             Revise o documento final antes de gerar o PDF
@@ -701,47 +900,58 @@ const LegalEditorPage = () => {
         </div>
 
         <div style={{
-          background: "#fff",
-          borderRadius: 4,
-          boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.03)",
-          maxWidth: 760,
+          background: "#fcfbf9",
+          borderRadius: 2,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)",
+          maxWidth: 780,
           margin: "0 auto",
           overflow: "hidden",
         }}>
-          <div style={{ height: 5, background: "linear-gradient(90deg, #0f2041 0%, #00b4b4 100%)" }} />
 
           <div style={{
-            padding: "52px 68px 60px",
-            fontFamily: "Georgia, 'Times New Roman', serif",
-            color: "#1a1a1a",
-            position: "relative",
+            padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)",
           }}>
-            <div style={{
-              position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
-              background: "linear-gradient(180deg, #00b4b4 0%, rgba(0,180,180,0) 100%)",
-            }} />
-
             {hasBody ? docBody.map((block, i) => renderBlock(block, i)) : renderFallback()}
 
             {selectedDoc?.legislation && (
-              <div style={{
-                marginTop: 36, padding: "10px 16px",
-                background: "#f5f7fb", borderRadius: 6,
-                borderLeft: "3px solid #0f2041",
-                fontSize: 10.5, color: "#666",
-                fontFamily: "system-ui, sans-serif",
+              <p style={{
+                marginTop: 36,
+                padding: "12px 0",
+                fontSize: 10.5,
+                color: "#767b84",
+                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                fontStyle: "italic",
               }}>
-                <strong style={{ color: "#0f2041" }}>Base Legal:</strong> {selectedDoc.legislation}
-              </div>
+                <strong style={{
+                  color: "#161d26",
+                  fontWeight: 700,
+                  fontStyle: "normal",
+                }}>
+                  Base Legal:
+                </strong>{" "}
+                {selectedDoc.legislation}
+              </p>
             )}
 
             <div style={{
-              marginTop: 24, paddingTop: 14,
-              borderTop: "1px solid #e8e8e8", textAlign: "center",
-              fontFamily: "system-ui, sans-serif",
+              marginTop: 28,
+              paddingTop: 12,
+              borderTop: "1px solid #e8e6dc",
+              textAlign: "center",
             }}>
-              <p style={{ fontSize: 9.5, color: "#bbb", letterSpacing: "0.04em" }}>
-                DOCUMENTO GERADO POR KRIOU DOCS · {new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).toUpperCase()}
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                fontSize: 9.5,
+                color: "#bcb8ae",
+                letterSpacing: "0.06em",
+                margin: 0,
+              }}>
+                DOCUMENTO GERADO POR KRIOU DOCS ·{" "}
+                {new Date().toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                }).toUpperCase()}
               </p>
             </div>
           </div>

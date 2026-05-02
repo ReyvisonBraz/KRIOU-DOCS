@@ -20,7 +20,7 @@ const inputClass = "w-full bg-surface-2 border border-border rounded-xl px-4 py-
 const inputErrorClass = "border-coral ring-2 ring-coral/20";
 
 const CompleteProfilePage = ({ onNavigate }) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [nome, setNome]           = useState("");
   const [sobrenome, setSobrenome] = useState("");
   const [cpf, setCpf]             = useState("");
@@ -94,6 +94,14 @@ const CompleteProfilePage = ({ onNavigate }) => {
       {/* Background blur */}
       <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-purple/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-coral/5 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Sair button */}
+      <button
+        onClick={signOut}
+        className="absolute top-5 right-5 z-20 flex items-center gap-1.5 text-text-muted text-sm font-semibold hover:text-coral transition-colors bg-transparent border-none cursor-pointer"
+      >
+        <Icon name="LogOut" className="w-4 h-4" /> Sair
+      </button>
 
       <div className="w-full max-w-[480px] bg-surface border border-border rounded-3xl p-8 relative z-10 shadow-2xl animate-fadeUp">
         {/* Header */}

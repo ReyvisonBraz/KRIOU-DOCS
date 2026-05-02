@@ -29,6 +29,7 @@ import StorageService from "../utils/storage";
 import { DocumentService } from "../services/DocumentService";
 import { sanitizeFormData } from "../utils/sanitization";
 import { useAutoSave } from "../hooks/useAutoSave";
+import { generateDocumentCode } from "../utils/documentCode";
 
 export const ResumeContext = createContext(null);
 
@@ -38,6 +39,12 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   const [formData, setFormData]                 = useState(INITIAL_FORM_DATA);
   const [userDocuments, setUserDocuments]       = useState([]);
   const [filter, setFilter]                     = useState("todos");
+  // ID do documento sendo editado (null = criando novo)
+  const [editingDocId, setEditingDocId]         = useState(null);
+
+  // Ref para acesso ao valor atual de userDocuments dentro de callbacks stale
+  const userDocsRef = useRef(userDocuments);
+  useEffect(() => { userDocsRef.current = userDocuments; }, [userDocuments]);
 
   // Ref que impede auto-save durante o carregamento inicial
   // Isso evita sobrescrever drafts carregados pelo AppBootstrap
@@ -74,6 +81,10 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   const saveDocument = useCallback(async (documentData, documentType, selectedTpl, variantData) => {
     const docType = documentType ? "legal" : "resume";
 
+    // Gera codigo sequencial baseado nos documentos existentes
+    const docTypeKey = documentType?.id || "resume";
+    const code = generateDocumentCode(userDocsRef.current, docTypeKey);
+
     const docPayload = {
       type:              docType,
       title:             documentData.nome || documentData.title || documentType?.name || "Documento",
@@ -81,6 +92,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       templateId:        selectedTpl?.id || null,
       templateName:      selectedTpl?.name || documentType?.name || "Padrao",
       status:            "finalizado",
+      code:              code,
       formData:          docType === "resume" ? documentData : null,
       legalData:         docType === "legal"  ? documentData : null,
       documentType:      documentType?.id   || null,
@@ -103,13 +115,46 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     }
   }, [userId]);
 
+  // ─── updateDocument — Atualiza documento finalizado no Supabase ───────
+  const updateDocument = useCallback(async (documentId, documentData, documentType, selectedTpl, variantData) => {
+    const docType = documentType ? "legal" : "resume";
+
+    const docPayload = {
+      type:              docType,
+      title:             documentData.nome || documentData.title || documentType?.name || "Documento",
+      template:          selectedTpl || null,
+      templateId:        selectedTpl?.id || null,
+      templateName:      selectedTpl?.name || documentType?.name || "Padrao",
+      formData:          docType === "resume" ? documentData : null,
+      legalData:         docType === "legal"  ? documentData : null,
+      documentType:      documentType?.id   || null,
+      documentTypeName:  documentType?.name  || null,
+      variantId:         variantData?.id     || null,
+      variantName:      variantData?.name   || null,
+      variant:          variantData         || null,
+    };
+
+    try {
+      await DocumentService.update(documentId, docPayload, userId);
+      setUserDocuments((prev) => prev.map((doc) =>
+        doc.id === documentId ? { ...doc, ...docPayload } : doc
+      ));
+      StorageService.clearDraft(userId, docType);
+      setEditingDocId(null);
+    } catch (err) {
+      console.error("[ResumeContext][ERRO] updateDocument:", err.message);
+      throw err;
+    }
+  }, [userId]);
+
   const value = {
     selectedTemplate, setSelectedTemplate,
     templates: RESUME_TEMPLATES,
     currentStep, setCurrentStep,
     formData, setFormData, updateForm, resetForm,
     saveStatus, lastSaved, triggerSave,
-    userDocuments, setUserDocuments, saveDocument,
+    userDocuments, setUserDocuments, saveDocument, updateDocument,
+    editingDocId, setEditingDocId,
     filter, setFilter,
   };
 

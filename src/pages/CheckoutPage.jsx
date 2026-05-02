@@ -7,7 +7,7 @@ import { usePDF } from "../hooks/usePDF";
 import showToast from "../utils/toast";
 
 const CheckoutPage = () => {
-  const { navigate, selectedTemplate, formData, email, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields, saveDocument, userId, setUserDocuments } = useApp();
+  const { navigate, selectedTemplate, formData, email, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields, saveDocument, updateDocument, editingDocId, setEditingDocId } = useApp();
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const [isProcessing, setIsProcessing] = useState(false);
   const { generatePDF } = usePDF();
@@ -26,7 +26,12 @@ const CheckoutPage = () => {
     setIsProcessing(true);
     try {
       const docData = isLegalDocument ? legalFormData : formData;
-      await saveDocument(docData);
+      if (editingDocId) {
+        await updateDocument(editingDocId, docData);
+        setEditingDocId(null);
+      } else {
+        await saveDocument(docData);
+      }
     } catch (err) {
       console.error("[CheckoutPage][ERRO] Falha ao salvar documento:", err);
     }
@@ -37,6 +42,7 @@ const CheckoutPage = () => {
 
   const handleGoToDashboard = () => {
     setCheckoutComplete(false);
+    setEditingDocId(null);
     navigate("dashboard");
   };
 

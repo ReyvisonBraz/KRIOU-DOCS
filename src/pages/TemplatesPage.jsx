@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button } from "../components/UI";
+import { Card, Button, AppNavbar } from "../components/UI";
 import { RESUME_TEMPLATES } from "../data/constants";
 import { getAvailableDocuments } from "../data/legalDocuments";
 
@@ -396,9 +396,18 @@ const TemplatesPage = () => {
   }, [selectedLegalCategory]);
 
   const renderCategorySelection = () => (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", position: "relative" }}>
-      <div style={{ position: "absolute", top: "10%", left: "15%", width: 500, height: 500, background: "radial-gradient(circle, rgba(233,69,96,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 400, height: 400, background: "radial-gradient(circle, rgba(0,210,211,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      <AppNavbar
+        title={<span className="font-bold">Criar Documento</span>}
+        leftAction={
+          <button onClick={() => navigate("dashboard")} className="flex items-center gap-1.5 text-sm font-semibold text-text-muted hover:text-white transition-colors bg-transparent border-none cursor-pointer">
+            <Icon name="ChevronLeft" className="w-5 h-5" /> Voltar
+          </button>
+        }
+      />
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 relative">
+        <div style={{ position: "absolute", top: "10%", left: "15%", width: 500, height: 500, background: "radial-gradient(circle, rgba(233,69,96,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 400, height: 400, background: "radial-gradient(circle, rgba(0,210,211,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       <div className="animate-fadeUp" style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
         <span style={{
@@ -476,6 +485,7 @@ const TemplatesPage = () => {
             </span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

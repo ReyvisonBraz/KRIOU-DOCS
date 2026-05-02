@@ -26,6 +26,7 @@ function mapDocumentRow(row) {
     id:               row.id,
     type:             row.type,
     title:            row.title,
+    code:             row.code,
     template:         row.template,
     templateId:       row.template_id,
     templateName:     row.template_name,
@@ -101,6 +102,7 @@ export const DocumentService = {
         user_id:            userId,
         type:               doc.type,
         title:              doc.title || "Sem título",
+        code:               doc.code || null,
         template:           doc.template || null,
         template_id:        doc.templateId || null,
         template_name:      doc.templateName || null,
@@ -124,9 +126,57 @@ export const DocumentService = {
     return {
       ...doc,
       id:        data.id,
+      code:      doc.code || null,
       createdAt: data.created_at,
       date:      new Date(data.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
     };
+  },
+
+  /**
+   * Atualiza um documento existente no Supabase (usado para re-finalizar
+   * documentos ja salvos apos edicao).
+   *
+   * @param {string} documentId — UUID do documento a atualizar
+   * @param {Object} docData  — Dados atualizados do documento
+   * @param {string} userId   — ID do usuario dono do documento
+   * @returns {Promise<Object>} Dados atualizados do banco
+   *
+   * PONTO DE FALHA: Se documentId nao pertencer ao usuario, o RLS
+   * bloqueia a operacao (0 rows affected). Verificamos via user_id eq.
+   */
+  async update(documentId, docData, userId) {
+    if (!documentId || !userId) {
+      const err = new Error("[DocumentService][ERRO] update: documentId e userId sao obrigatorios");
+      console.error(err.message);
+      throw err;
+    }
+
+    const { data, error } = await supabase
+      .from("documents")
+      .update({
+        title:               docData.title || "Sem titulo",
+        template:            docData.template || null,
+        template_id:         docData.templateId || null,
+        template_name:       docData.templateName || null,
+        form_data:           docData.formData  || null,
+        legal_data:          docData.legalData  || null,
+        document_type:       docData.documentType || null,
+        document_type_name:  docData.documentTypeName || null,
+        variant_id:          docData.variantId || null,
+        variant_name:        docData.variantName || null,
+        variant:             docData.variant || null,
+      })
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[DocumentService][ERRO] update:", error.message, { documentId, userId });
+      throw error;
+    }
+
+    return data;
   },
 
   /**

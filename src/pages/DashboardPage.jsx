@@ -5,6 +5,7 @@ import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, ConfirmDialo
 import { useConfirm } from "../hooks/useConfirm";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
+import { extractPersonData, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
 
 const DashboardPage = () => {
   const {
@@ -13,17 +14,20 @@ const DashboardPage = () => {
     setCurrentStep,
     setLegalStep,
     setDocumentType, setSelectedVariant, setLegalFormData, setDisabledFields,
+    setFormData, setEditingDocId, setSelectedTemplate,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const handleCreateResume = () => {
+    setEditingDocId(null);
     sessionStorage.setItem("kriou_template_category", "resume");
     navigate("templates");
   };
 
   const handleCreateLegalDocument = () => {
+    setEditingDocId(null);
     sessionStorage.setItem("kriou_template_category", "legal");
     navigate("templates");
   };
@@ -60,17 +64,58 @@ const DashboardPage = () => {
     }
 
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      docs = docs.filter((doc) =>
-        doc.title?.toLowerCase().includes(query) ||
-        doc.template?.toLowerCase().includes(query)
-      );
+      const rawQuery = searchQuery.trim();
+      const queryLower = rawQuery.toLowerCase();
+
+      // Detecta o tipo de busca: codigo, CPF, RG ou texto livre
+      const isSearchByCode = looksLikeCode(rawQuery);
+      const isSearchByCPF = looksLikeCPF(rawQuery);
+      const isSearchByRG = !isSearchByCPF && /^\d+$/.test(rawQuery.replace(/\D/g, "")) && rawQuery.replace(/\D/g, "").length >= 6;
+
+      docs = docs.filter((doc) => {
+        // Busca por codigo do documento
+        if (isSearchByCode) {
+          if (doc.code?.toLowerCase().includes(queryLower)) return true;
+        }
+
+        // Busca por CPF
+        if (isSearchByCPF) {
+          const person = extractPersonData(doc);
+          if (person.cpf && normalizeCPF(person.cpf).includes(normalizeCPF(rawQuery))) return true;
+        }
+
+        // Busca por RG
+        if (isSearchByRG) {
+          const person = extractPersonData(doc);
+          if (person.rg && normalizeRG(person.rg).includes(normalizeRG(rawQuery))) return true;
+        }
+
+        // Busca por nome da pessoa
+        const person = extractPersonData(doc);
+        if (person.nome && normalizeName(person.nome).includes(normalizeName(rawQuery))) return true;
+
+        // Busca por titulo, template e code (fallback)
+        return (
+          doc.title?.toLowerCase().includes(queryLower) ||
+          doc.template?.toLowerCase().includes(queryLower) ||
+          doc.code?.toLowerCase().includes(queryLower)
+        );
+      });
     }
     return docs;
   }, [allDocs, activeTab, searchQuery]);
 
   const handleEditDocument = (doc) => {
     if (doc.type === "resume") {
+      if (doc.status === "finalizado" && doc.formData) {
+        setFormData(doc.formData);
+        if (doc.templateId) {
+          setSelectedTemplate({ id: doc.templateId, name: doc.templateName || "Modelo" });
+        }
+        setEditingDocId(doc.id);
+      } else {
+        setEditingDocId(null);
+      }
       setCurrentStep(0);
       navigate("editor");
     } else if (doc.type === "legal") {
@@ -80,8 +125,17 @@ const DashboardPage = () => {
         if (doc.draft.legalFormData) setLegalFormData(doc.draft.legalFormData);
         if (doc.draft.disabledFields) setDisabledFields(doc.draft.disabledFields);
         setLegalStep(doc.draft.legalStep ?? 1);
+        setEditingDocId(null);
+      } else if (doc.status === "finalizado" && doc.legalData) {
+        setDocumentType({ id: doc.documentType, name: doc.documentTypeName || "Documento" });
+        setSelectedVariant(doc.variantId || doc.variant || null);
+        setLegalFormData(doc.legalData);
+        setDisabledFields({});
+        setLegalStep(1);
+        setEditingDocId(doc.id);
       } else {
         setLegalStep(0);
+        setEditingDocId(null);
       }
       navigate("legalEditor");
     }

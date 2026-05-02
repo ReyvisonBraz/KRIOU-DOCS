@@ -11,6 +11,7 @@
 import React from "react";
 import { Badge } from "./primitives";
 import { Icon } from "../Icons";
+import { extractPersonData } from "../../utils/documentCode";
 
 const ICONS = {
   resume: "User",
@@ -83,6 +84,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => 
   const typeLabel = TYPE_LABELS[doc.type] || doc.type;
   const statusVariant = doc.status === "finalizado" ? "success" : "warning";
   const statusLabel = doc.status === "finalizado" ? "Finalizado" : "Rascunho";
+  const person = extractPersonData(doc);
 
   return (
     <div
@@ -100,15 +102,21 @@ export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => 
       <div className={`absolute top-0 left-0 right-0 h-[3px] ${accent} opacity-60 pointer-events-none`} />
 
       <div className="relative p-5">
-        {/* Header row */}
+        {/* Code + type row */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-xl bg-surface-3 border border-white/[0.06]`}>
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-surface-3 border border-white/[0.06]">
               <Icon name={iconName} className="w-4 h-4 text-text-muted" />
             </div>
-            <span className="text-xs font-bold tracking-wide uppercase text-text-muted/70">
-              {typeLabel}
-            </span>
+            {doc.code ? (
+              <span className="text-xs font-mono font-bold tracking-wider text-text/90 bg-surface-3 px-2 py-0.5 rounded-md border border-white/[0.06]">
+                {doc.code}
+              </span>
+            ) : (
+              <span className="text-xs font-bold tracking-wide uppercase text-text-muted/70">
+                {typeLabel}
+              </span>
+            )}
           </div>
           <button
             aria-label={`Excluir ${doc.title}`}
@@ -119,10 +127,30 @@ export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => 
           </button>
         </div>
 
-        {/* Title */}
-        <h3 className="font-display font-bold text-[15px] leading-snug text-white mb-3 line-clamp-2">
-          {doc.title}
-        </h3>
+        {/* Person data (nome, CPF, RG) */}
+        {person.nome && (
+          <div className="mb-2">
+            <p className="font-display font-bold text-[15px] leading-snug text-white truncate">
+              {person.nome}
+            </p>
+            {(person.cpf || person.rg) && (
+              <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-muted/60">
+                {person.cpf && <span>CPF: {person.cpf}</span>}
+                {person.cpf && person.rg && (
+                  <span className="w-0.5 h-0.5 rounded-full bg-text-muted/30 inline-block" />
+                )}
+                {person.rg && <span>RG: {person.rg}</span>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Title fallback when no person name */}
+        {!person.nome && (
+          <h3 className="font-display font-bold text-[15px] leading-snug text-white mb-3 line-clamp-2">
+            {doc.title}
+          </h3>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between">

@@ -40,21 +40,28 @@ const LEGAL_DOC_COLORS = {
 };
 
 const ResumeMiniPreview = ({ template }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 5, height: "100%" }}>
-    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-      <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${template.accent}44`, flexShrink: 0 }} />
-      <div>
-        <div style={{ width: 50, height: 5, background: "#ddd", borderRadius: 2 }} />
-        <div style={{ width: 35, height: 3, background: "#eee", borderRadius: 2, marginTop: 3 }} />
-      </div>
+  <div style={{ display: "flex", gap: 6, height: "100%" }}>
+    {/* Sidebar */}
+    <div style={{ width: 28, minWidth: 28, background: `${template.color}0D`, borderRadius: 4, padding: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ width: 12, height: 12, borderRadius: "50%", background: template.accent, alignSelf: "center", marginBottom: 2 }} />
+      <div style={{ width: "100%", height: 3, background: `${template.color}40`, borderRadius: 1 }} />
+      <div style={{ width: "80%", height: 2, background: `${template.color}20`, borderRadius: 1 }} />
+      <div style={{ width: "100%", height: 1, background: "#eee" }} />
+      <div style={{ width: "90%", height: 2, background: "#eee", borderRadius: 1 }} />
+      <div style={{ width: "75%", height: 2, background: "#eee", borderRadius: 1 }} />
+      <div style={{ width: "85%", height: 2, background: "#eee", borderRadius: 1 }} />
     </div>
-    <div style={{ width: "100%", height: 1, background: "#eee" }} />
-    <div style={{ width: "85%", height: 3, background: "#eee", borderRadius: 2 }} />
-    <div style={{ width: "70%", height: 3, background: "#eee", borderRadius: 2 }} />
-    <div style={{ width: "90%", height: 3, background: "#eee", borderRadius: 2 }} />
-    <div style={{ width: "100%", height: 1, background: "#eee", marginTop: 2 }} />
-    <div style={{ width: "75%", height: 3, background: "#f0f0f0", borderRadius: 2 }} />
-    <div style={{ width: "60%", height: 3, background: "#f0f0f0", borderRadius: 2 }} />
+    {/* Main */}
+    <div style={{ flex: 1, padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ width: 30, height: 3, background: template.accent, borderRadius: 1, opacity: 0.5 }} />
+      <div style={{ width: "95%", height: 2, background: "#e8e8e8", borderRadius: 1 }} />
+      <div style={{ width: "80%", height: 2, background: "#f0f0f0", borderRadius: 1 }} />
+      <div style={{ width: "90%", height: 2, background: "#e8e8e8", borderRadius: 1 }} />
+      <div style={{ width: 30, height: 3, background: template.accent, borderRadius: 1, opacity: 0.5, marginTop: 4 }} />
+      <div style={{ width: "85%", height: 2, background: "#e8e8e8", borderRadius: 1 }} />
+      <div style={{ width: "70%", height: 2, background: "#f0f0f0", borderRadius: 1 }} />
+      <div style={{ width: "75%", height: 2, background: "#e8e8e8", borderRadius: 1 }} />
+    </div>
   </div>
 );
 
@@ -396,18 +403,9 @@ const TemplatesPage = () => {
   }, [selectedLegalCategory]);
 
   const renderCategorySelection = () => (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
-      <AppNavbar
-        title={<span className="font-bold">Criar Documento</span>}
-        leftAction={
-          <button onClick={() => navigate("dashboard")} className="flex items-center gap-1.5 text-sm font-semibold text-text-muted hover:text-white transition-colors bg-transparent border-none cursor-pointer">
-            <Icon name="ChevronLeft" className="w-5 h-5" /> Voltar
-          </button>
-        }
-      />
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 relative">
-        <div style={{ position: "absolute", top: "10%", left: "15%", width: 500, height: 500, background: "radial-gradient(circle, rgba(233,69,96,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 400, height: 400, background: "radial-gradient(circle, rgba(0,210,211,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+    <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 relative">
+      <div style={{ position: "absolute", top: "10%", left: "15%", width: 500, height: 500, background: "radial-gradient(circle, rgba(233,69,96,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 400, height: 400, background: "radial-gradient(circle, rgba(0,210,211,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       <div className="animate-fadeUp" style={{ textAlign: "center", marginBottom: 56, position: "relative", zIndex: 1 }}>
         <span style={{
@@ -486,17 +484,12 @@ const TemplatesPage = () => {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 
   const renderResumeTemplates = () => (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 24px" }}>
       <div className="animate-fadeUp" style={{ marginBottom: 32 }}>
-        <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", marginBottom: 20, display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 500 }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
-          <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
-        </button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -548,11 +541,6 @@ const TemplatesPage = () => {
     return (
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "40px 24px" }}>
         <div className="animate-fadeUp" style={{ marginBottom: 32 }}>
-          <button onClick={handleBack} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", marginBottom: 20, display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 500 }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"} onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
-            <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar
-          </button>
-
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -689,8 +677,18 @@ const TemplatesPage = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", paddingBottom: 80 }}>
-      {renderContent()}
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <AppNavbar
+        title={<span className="font-bold">{docType ? (docType === "resume" ? "Modelos de Currículo" : "Documentos Jurídicos") : "Criar Documento"}</span>}
+        leftAction={
+          <button onClick={() => docType ? handleBack() : navigate("dashboard")} className="flex items-center gap-1.5 text-sm font-semibold text-text-muted hover:text-white transition-colors bg-transparent border-none cursor-pointer">
+            <Icon name="ChevronLeft" className="w-5 h-5" /> {docType ? "Voltar" : "Início"}
+          </button>
+        }
+      />
+      <div className="flex-1 flex flex-col" style={{ paddingBottom: 80 }}>
+        {renderContent()}
+      </div>
       {specTemplate && <TemplateSpecModal template={specTemplate} onClose={() => setSpecTemplate(null)} onSelect={(t) => handleTemplateSelect(t)} />}
       {specLegalDoc && <LegalDocSpecModal doc={specLegalDoc} onClose={() => setSpecLegalDoc(null)} onCreate={handleLegalDocSelect} />}
       <style>{`@keyframes fadeIn { from { opacity:0 } to { opacity:1 } } @keyframes fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }`}</style>

@@ -10,60 +10,39 @@
 import React from "react";
 import { Icon } from "../Icons";
 
-/**
- * EmptyState - Empty content placeholder
- */
 export const EmptyState = ({ icon, title, description, action }) => {
   return (
-    <div style={{ padding: 40, textAlign: "center" }}>
+    <div className="flex flex-col items-center text-center py-16 px-4">
       {icon && (
-        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(233,69,96,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-          <Icon name={icon} className="w-6 h-6" style={{ color: "var(--coral)" }} />
+        <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-5">
+          <Icon name={icon} className="w-7 h-7 text-coral" />
         </div>
       )}
-      {title && <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{title}</div>}
-      {description && <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{description}</div>}
-      {action && <div style={{ marginTop: 16 }}>{action}</div>}
+      {title && <p className="font-display text-lg font-bold text-white mb-2">{title}</p>}
+      {description && <p className="text-sm text-text-muted max-w-md leading-relaxed">{description}</p>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };
 
-/**
- * ErrorMessage — Exibe mensagem de erro de formulário.
- * @param {string} message - Mensagem de erro (não renderiza se falsy)
- * @param {object} style - Estilo extra opcional
- */
 export const ErrorMessage = ({ message, style }) => {
   if (!message) return null;
   return (
     <p
       role="alert"
-      style={{
-        color: "var(--coral, #E94560)",
-        fontSize: "0.78rem",
-        marginTop: 5,
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-        ...style,
-      }}
+      className="flex items-center gap-1 text-[13px] text-coral mt-1.5 font-medium"
+      style={style}
     >
       {message}
     </p>
   );
 };
 
-/**
- * SaveIndicator — Indicador visual do estado de auto-save.
- *
- * @param {"saving"|"saved"|"error"} status - Estado atual do save
- * @param {Date|null} lastSaved             - Timestamp do último save bem-sucedido
- */
 export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
   const isSaving = status === "saving";
   const isError = status === "error";
 
-  const color = isError ? "var(--coral, #E94560)" : isSaving ? "var(--text-muted)" : "var(--success, #00C897)";
+  const color = isError ? "var(--coral)" : isSaving ? "var(--text-muted)" : "var(--success)";
 
   const label = isError
     ? "Erro ao salvar"
@@ -98,51 +77,35 @@ export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
   );
 };
 
-/**
- * SkeletonCard — Placeholder animado enquanto documentos carregam.
- */
 export const SkeletonCard = () => (
-  <div style={{
-    background: "var(--surface-2)",
-    borderRadius: 14,
-    padding: 18,
-    border: "1px solid var(--border)",
-  }}>
-    <style>{`
-      @keyframes skeleton-pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
-      }
-      .skeleton-line {
-        background: var(--surface-3);
-        border-radius: 6px;
-        animation: skeleton-pulse 1.4s ease-in-out infinite;
-      }
-    `}</style>
-    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
-      <div className="skeleton-line" style={{ width: 80, height: 22 }} />
-      <div className="skeleton-line" style={{ width: 64, height: 22, animationDelay: "0.1s" }} />
-    </div>
-    <div className="skeleton-line" style={{ width: "70%", height: 18, marginBottom: 10, animationDelay: "0.2s" }} />
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <div className="skeleton-line" style={{ width: "35%", height: 14, animationDelay: "0.3s" }} />
-      <div className="skeleton-line" style={{ width: "20%", height: 14, animationDelay: "0.35s" }} />
+  <div className="break-inside-avoid rounded-2xl border border-white/[0.06] bg-surface overflow-hidden">
+    <div className="absolute top-0 left-0 right-0 h-[3px] bg-surface-3" />
+    <div className="p-5">
+      <style>{`
+        @keyframes skeleton-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.35; }
+        }
+        .sk-line {
+          background: var(--surface-3);
+          border-radius: 6px;
+          animation: skeleton-pulse 1.4s ease-in-out infinite;
+        }
+      `}</style>
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="sk-line w-8 h-8 rounded-xl" />
+        <div className="sk-line w-20 h-4 rounded-md" />
+      </div>
+      <div className="sk-line w-full h-[18px] mb-1.5 rounded-md" style={{ animationDelay: "0.1s" }} />
+      <div className="sk-line w-3/5 h-[18px] mb-4 rounded-md" style={{ animationDelay: "0.15s" }} />
+      <div className="flex justify-between">
+        <div className="sk-line w-16 h-3 rounded-md" style={{ animationDelay: "0.25s" }} />
+        <div className="sk-line w-14 h-5 rounded-full" style={{ animationDelay: "0.3s" }} />
+      </div>
     </div>
   </div>
 );
 
-/**
- * ConfirmDialog — Modal de confirmação acessível.
- *
- * @param {boolean}  open          - Visibilidade do modal
- * @param {string}   title         - Título do diálogo
- * @param {string}   message       - Mensagem de confirmação
- * @param {string}   confirmLabel  - Label do botão de confirmar
- * @param {string}   cancelLabel   - Label do botão de cancelar
- * @param {boolean}  danger        - Estilo destrutivo no botão confirmar
- * @param {Function} onConfirm     - Callback ao confirmar
- * @param {Function} onCancel      - Callback ao cancelar
- */
 export const ConfirmDialog = ({
   open = false,
   title = "Confirmar ação",
@@ -161,59 +124,37 @@ export const ConfirmDialog = ({
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 24,
-        background: "rgba(0,0,0,0.65)",
-        backdropFilter: "blur(4px)",
-      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-6"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }}
     >
       <div
-        style={{
-          background: "var(--surface, #1a1a2e)",
-          borderRadius: 16,
-          padding: 28,
-          maxWidth: 420,
-          width: "100%",
-          border: "1px solid var(--border)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-        }}
+        className="bg-surface border border-border rounded-2xl p-7 max-w-[420px] w-full shadow-2xl"
       >
         <h2
           id="confirm-dialog-title"
-          style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}
+          className="font-display text-lg font-extrabold text-white mb-2.5"
         >
           {title}
         </h2>
         <p
           id="confirm-dialog-message"
-          style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 24 }}
+          className="text-sm text-text-muted leading-relaxed mb-6"
         >
           {message}
         </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
-            style={{
-              padding: "10px 20px", borderRadius: 10,
-              background: "var(--surface-2)", color: "var(--text-muted)",
-              border: "1px solid var(--border)", fontWeight: 600,
-              fontSize: 13, cursor: "pointer",
-            }}
+            className="px-5 py-2.5 rounded-xl bg-surface-2 text-text-muted border border-border font-semibold text-sm cursor-pointer transition-colors hover:bg-surface-3 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
             autoFocus
-            style={{
-              padding: "10px 20px", borderRadius: 10,
-              background: danger ? "var(--coral, #E94560)" : "var(--teal, #00D2D3)",
-              color: "#fff", border: "none", fontWeight: 700,
-              fontSize: 13, cursor: "pointer",
-            }}
+            className="px-5 py-2.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
+            style={{ background: danger ? "var(--coral)" : "var(--teal)", color: danger ? "#fff" : "var(--navy)" }}
           >
             {confirmLabel}
           </button>

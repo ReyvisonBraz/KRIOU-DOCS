@@ -15,7 +15,7 @@ import { Icon } from "../Icons";
  */
 export const Navbar = ({ children, className = "", style = {}, ...props }) => {
   return (
-    <nav className={`glass ${className}`} style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)", ...style }} {...props}>
+    <nav className={`sticky top-0 z-50 bg-navy/95 border-b border-white/[0.06] ${className}`} style={style} {...props}>
       {children}
     </nav>
   );
@@ -26,7 +26,7 @@ export const Navbar = ({ children, className = "", style = {}, ...props }) => {
  */
 export const GlassPanel = ({ children, className = "", style = {}, ...props }) => {
   return (
-    <div className={`glass ${className}`} style={{ padding: 24, borderRadius: 16, ...style }} {...props}>
+    <div className={`bg-surface border border-border rounded-2xl ${className}`} style={{ padding: 24, ...style }} {...props}>
       {children}
     </div>
   );
@@ -43,16 +43,8 @@ export const GlassPanel = ({ children, className = "", style = {}, ...props }) =
  */
 export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
   <div
-    style={{
-      position: "sticky",
-      top: 0,
-      zIndex: 100,
-      background: "rgba(15, 15, 30, 0.92)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
-      ...style,
-    }}
+    className="sticky top-0 z-[100] bg-navy/95 border-b border-white/[0.06]"
+    style={style}
   >
     <div
       style={{
@@ -204,8 +196,6 @@ export const BottomNavigation = ({
         right: 0,
         zIndex: 50,
         background: "rgba(15, 15, 30, 0.98)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
         borderTop: "1px solid rgba(255,255,255,0.08)",
         padding: "14px 16px 20px",
         ...style,

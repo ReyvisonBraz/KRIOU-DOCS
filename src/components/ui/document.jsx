@@ -3,108 +3,137 @@
  * KRIOU DOCS - Document Card Component
  * ============================================
  * DocumentCard — card reutilizável para currículos e docs jurídicos
+ * com layout masonry/bento-grid, anti-identical-card-grid.
  *
  * @module components/ui/document
  */
 
 import React from "react";
-import { Card } from "./primitives";
 import { Badge } from "./primitives";
 import { Icon } from "../Icons";
 
-/**
- * DocumentCard — Card reutilizável para exibir documentos no Dashboard.
- *
- * @param {Object}   doc            - Objeto do documento
- * @param {Function} onClick        - Handler de clique
- * @param {Function} onDelete       - Handler de exclusão
- * @param {number}   animationDelay - Delay de animação em segundos
- */
+const ICONS = {
+  resume: "User",
+  curriculo: "User",
+  "compra-venda": "Tag",
+  locacao: "Home",
+  procuracao: "Shield",
+  "prestacao-servicos": "Wrench",
+  comodato: "Key",
+  doacao: "Gift",
+  recibo: "FileCheck",
+  "uniao-estavel": "Heart",
+  "autorizacao-viagem": "Plane",
+  permuta: "Repeat",
+  default: "FileText",
+};
+
+const GRADIENTS = {
+  resume: "from-coral/15 to-coral/5",
+  curriculo: "from-coral/15 to-coral/5",
+  "compra-venda": "from-teal/15 to-teal/5",
+  locacao: "from-teal/15 to-teal/5",
+  procuracao: "from-purple/15 to-purple/5",
+  "prestacao-servicos": "from-teal/15 to-teal/5",
+  comodato: "from-gold/15 to-gold/5",
+  doacao: "from-coral/15 to-coral/5",
+  recibo: "from-teal/15 to-teal/5",
+  "uniao-estavel": "from-coral/15 to-coral/5",
+  "autorizacao-viagem": "from-teal/15 to-teal/5",
+  permuta: "from-gold/15 to-gold/5",
+  default: "from-surface-2 to-surface",
+};
+
+const ACCENTS = {
+  resume: "bg-coral",
+  curriculo: "bg-coral",
+  "compra-venda": "bg-teal",
+  locacao: "bg-teal",
+  procuracao: "bg-purple",
+  "prestacao-servicos": "bg-teal",
+  comodato: "bg-gold",
+  doacao: "bg-coral",
+  recibo: "bg-teal",
+  "uniao-estavel": "bg-coral",
+  "autorizacao-viagem": "bg-teal",
+  permuta: "bg-gold",
+  default: "bg-teal",
+};
+
+const TYPE_LABELS = {
+  resume: "Currículo",
+  curriculo: "Currículo",
+  "compra-venda": "Compra/Venda",
+  locacao: "Locação",
+  procuracao: "Procuração",
+  "prestacao-servicos": "Prest. Serviços",
+  comodato: "Comodato",
+  doacao: "Doação",
+  recibo: "Recibo",
+  "uniao-estavel": "União Estável",
+  "autorizacao-viagem": "Autorização de Viagem",
+  permuta: "Permuta",
+};
+
 export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => {
-  const isResume = doc.type === "curriculo";
-
-  const typeColor = isResume ? "var(--coral)" : "var(--teal)";
-  const typeBg = isResume ? "rgba(233,69,96,0.1)" : "rgba(0,210,211,0.1)";
-
-  const typeLabels = {
-    curriculo: "Currículo",
-    "compra-venda": "Compra/Venda",
-    locacao: "Locação",
-    procuracao: "Procuração",
-    "prestacao-servicos": "Prest. Serviços",
-    comodato: "Comodato",
-    doacao: "Doação",
-    recibo: "Recibo",
-    "uniao-estavel": "União Estável",
-    "autorizacao-viagem": "Autorização de Viagem",
-    permuta: "Permuta",
-  };
-  const typeLabel = typeLabels[doc.type] || doc.type;
-
+  const typeKey = doc.type in GRADIENTS ? doc.type : "default";
+  const iconName = ICONS[typeKey] || "FileText";
+  const gradient = GRADIENTS[typeKey] || GRADIENTS.default;
+  const accent = ACCENTS[typeKey] || ACCENTS.default;
+  const typeLabel = TYPE_LABELS[doc.type] || doc.type;
   const statusVariant = doc.status === "finalizado" ? "success" : "warning";
-  const statusLabel = doc.status === "finalizado" ? "✓ Finalizado" : "✎ Rascunho";
+  const statusLabel = doc.status === "finalizado" ? "Finalizado" : "Rascunho";
 
   return (
-    <Card
-      className="animate-fadeUp"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      style={{
-        cursor: "pointer",
-        padding: 18,
-        animationDelay: `${animationDelay}s`,
-        transition: "transform .18s, box-shadow .18s",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "";
-      }}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+      className="animate-fadeUp break-inside-avoid group relative cursor-pointer rounded-2xl border border-white/[0.06] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.12] hover:shadow-xl hover:shadow-black/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+      style={{ animationDelay: `${animationDelay}s` }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-        <span style={{
-          background: typeBg,
-          color: typeColor,
-          padding: "5px 10px",
-          borderRadius: 8,
-          fontSize: 11,
-          fontWeight: 700,
-        }}>
-          {typeLabel}
-        </span>
-        <Badge variant={statusVariant} style={{ fontSize: 10 }}>
-          {statusLabel}
-        </Badge>
-      </div>
+      {/* Background gradient layer */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} pointer-events-none`} />
 
-      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--text)", lineHeight: 1.3 }}>
-        {doc.title}
-      </h3>
+      {/* Accent stripe top (thin, not side-stripe border — that's banned) */}
+      <div className={`absolute top-0 left-0 right-0 h-[3px] ${accent} opacity-60 pointer-events-none`} />
 
-      <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>{doc.template}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span>{doc.date}</span>
-          {onDelete && (
-            <button
-              aria-label={`Excluir ${doc.title}`}
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                color: "var(--text-muted)", padding: 2, display: "flex",
-                alignItems: "center", borderRadius: 4,
-                transition: "color .15s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--coral)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
-            >
-              <Icon name="Trash2" className="w-3 h-3" />
-            </button>
-          )}
+      <div className="relative p-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-xl bg-surface-3 border border-white/[0.06]`}>
+              <Icon name={iconName} className="w-4 h-4 text-text-muted" />
+            </div>
+            <span className="text-xs font-bold tracking-wide uppercase text-text-muted/70">
+              {typeLabel}
+            </span>
+          </div>
+          <button
+            aria-label={`Excluir ${doc.title}`}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-lg text-text-muted/50 hover:text-coral hover:bg-coral/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
+          >
+            <Icon name="Trash2" className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Title */}
+        <h3 className="font-display font-bold text-[15px] leading-snug text-white mb-3 line-clamp-2">
+          {doc.title}
+        </h3>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-text-muted/60">
+            {doc.date}
+          </span>
+          <Badge variant={statusVariant} style={{ fontSize: 10, padding: "3px 8px" }}>
+            {statusLabel}
+          </Badge>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

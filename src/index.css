@@ -87,17 +87,13 @@
 }
 
 @layer components {
-  /* Efeitos e Glassmorphism */
-  .glass {
-    @apply bg-navy/80 backdrop-blur-xl border border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
-  }
-  
-  .glass-card {
-    @apply bg-surface/50 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl transition-all duration-300;
+  /* ─── Surface (sem glassmorphism) ─── */
+  .surface-elevated {
+    @apply bg-surface border border-border rounded-2xl;
   }
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-coral via-coral-light to-teal;
+  .surface-raised {
+    @apply bg-surface-2 border border-border rounded-2xl;
   }
   
   .bg-gradient-premium {
@@ -121,7 +117,7 @@
 
   /* Botões */
   .btn-primary {
-    @apply relative inline-flex items-center justify-center font-bold text-[15px] text-white px-8 py-3.5 rounded-xl border-none cursor-pointer transition-all duration-300 z-10 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.1)] hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98];
+    @apply relative inline-flex items-center justify-center font-bold text-[15px] text-white px-8 py-3.5 rounded-xl border-none cursor-pointer transition-all duration-300 z-10 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.1)] hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy;
     background: linear-gradient(135deg, var(--coral), #D63851);
   }
   .btn-primary:hover {
@@ -129,7 +125,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center bg-surface-2 text-text border border-border rounded-xl px-8 py-3.5 font-semibold text-[15px] cursor-pointer transition-all duration-300 hover:bg-surface-3 hover:border-coral hover:-translate-y-0.5 active:scale-[0.98];
+    @apply inline-flex items-center justify-center bg-surface-2 text-text border border-border rounded-xl px-8 py-3.5 font-semibold text-[15px] cursor-pointer transition-all duration-300 hover:bg-surface-3 hover:border-coral hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy;
   }
 
   .btn-small {

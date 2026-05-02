@@ -242,10 +242,19 @@ const AppBootstrap = ({ children }) => {
       }
 
       try {
-        const docs = await DocumentService.fetchAll(userId);
-        if (docs.length > 0) setUserDocuments(docs);
+        const supaDocs = await DocumentService.fetchAll(userId);
+        const localDocs = StorageService.loadDocuments(userId);
+        const localDrafts = Array.isArray(localDocs)
+          ? localDocs.filter(d => d.status === "rascunho")
+          : [];
+        const merged = [...supaDocs, ...localDrafts];
+        setUserDocuments(merged);
       } catch (err) {
         console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);
+        const localDocs = StorageService.loadDocuments(userId);
+        if (Array.isArray(localDocs) && localDocs.length > 0) {
+          setUserDocuments(localDocs);
+        }
       }
 
       try {

@@ -7,7 +7,7 @@ import { usePDF } from "../hooks/usePDF";
 import showToast from "../utils/toast";
 
 const CheckoutPage = () => {
-  const { navigate, selectedTemplate, formData, email, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields } = useApp();
+  const { navigate, selectedTemplate, formData, email, checkoutComplete, setCheckoutComplete, documentType, legalFormData, selectedVariant, disabledFields, saveDocument, userId, setUserDocuments } = useApp();
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const [isProcessing, setIsProcessing] = useState(false);
   const { generatePDF } = usePDF();
@@ -24,7 +24,12 @@ const CheckoutPage = () => {
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const docData = isLegalDocument ? legalFormData : formData;
+      await saveDocument(docData);
+    } catch (err) {
+      console.error("[CheckoutPage][ERRO] Falha ao salvar documento:", err);
+    }
     setCheckoutComplete(true);
     setIsProcessing(false);
     showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");

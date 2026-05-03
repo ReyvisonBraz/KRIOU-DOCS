@@ -259,6 +259,42 @@ const AppBootstrap = ({ children }) => {
           ? localDocs.filter(d => d.status === "rascunho")
           : [];
         const merged = [...supaDocs, ...localDrafts];
+
+        // Cria cards virtuais para rascunhos salvos via auto-save que nao
+        // tem card correspondente (ex: curriculos salvos apenas via saveDraft)
+        const resumeDraft = StorageService.loadDraft(userId, "resume");
+        const legalDraft  = StorageService.loadDraft(userId, "legal");
+
+        const hasResumeCard = merged.some(d => d.status === "rascunho" && d.type === "resume");
+        if (!hasResumeCard && resumeDraft && Object.keys(resumeDraft).length > 2) {
+          const now = new Date();
+          merged.push({
+            id: `draft-resume-${userId}`,
+            title: resumeDraft.nome || "Currículo (Rascunho)",
+            type: "resume",
+            status: "rascunho",
+            draft: { formData: resumeDraft, selectedTemplate: null, currentStep: 0 },
+            _draftOrigin: "autoSave",
+            date: now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
+            userId,
+          });
+        }
+
+        const hasLegalCard = merged.some(d => d.status === "rascunho" && d.type !== "resume");
+        if (!hasLegalCard && legalDraft && Object.keys(legalDraft).length > 2) {
+          const now = new Date();
+          merged.push({
+            id: `draft-legal-${userId}`,
+            title: "Documento Jurídico (Rascunho)",
+            type: "legal",
+            status: "rascunho",
+            draft: { legalFormData: legalDraft, documentType: null, selectedVariant: null, disabledFields: {}, legalStep: 1 },
+            _draftOrigin: "autoSave",
+            date: now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
+            userId,
+          });
+        }
+
         setUserDocuments(merged);
       } catch (err) {
         console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);

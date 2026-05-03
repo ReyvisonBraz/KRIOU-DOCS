@@ -248,7 +248,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[960px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-[1200px] mx-auto">
             {PRICING_PLANS.map((plan, i) => (
               <div
                 key={plan.id}
@@ -292,6 +292,50 @@ const LandingPage = () => {
                 </button>
               </div>
             ))}
+              <div
+                className="flex flex-col p-8 rounded-2xl border animate-fade-up relative bg-surface border-[rgba(37,211,102,0.25)]"
+                style={{ animationDelay: "0.4s", background: "linear-gradient(155deg, var(--surface) 0%, rgba(37,211,102,0.04) 100%)" }}
+              >
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-white px-4 py-1 rounded-full text-[11px] font-extrabold tracking-widest uppercase" style={{ background: "#25D366" }}>
+                  Sob medida
+                </div>
+                <h3 className="font-display text-xl font-bold text-text mb-1">Personalizado</h3>
+                <p className="text-sm text-text-muted mb-4 font-medium">Sob consulta</p>
+
+                <ul className="flex-1 space-y-3 mb-8">
+                  {[
+                    "Contrato feito para você",
+                    "Consultoria jurídica inclusa",
+                    "Revisão ilimitada",
+                    "Atendimento via WhatsApp",
+                  ].map((f, fi) => (
+                    <li key={fi} className="flex items-start gap-3 text-sm text-text-dim">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(37,211,102,0.15)" }}>
+                        <Icon name="Check" className="w-3 h-3" style={{ color: "#25D366" }} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <a
+                  href="https://wa.me/5591986450659?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20contrato%20personalizado."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full justify-center touch-target font-bold flex items-center gap-2 py-3.5 rounded-xl text-white cursor-pointer text-[15px]"
+                  style={{
+                    background: "#25D366",
+                    border: "none",
+                    textDecoration: "none",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,211,102,0.35)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <span style={{ fontSize: 18 }}>💬</span>
+                  Falar no WhatsApp
+                </a>
+              </div>
           </div>
         </section>
 

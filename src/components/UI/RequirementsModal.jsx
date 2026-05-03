@@ -181,6 +181,393 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
         WebkitBackdropFilter: "blur(6px)",
       }}
     >
+      {/* ── Print Document (hidden on screen, visible on print) ── */}
+      <div
+        className="print-document"
+        onClick={(e) => e.stopPropagation()}
+        style={{ display: "none" }}
+      >
+        {/* Print header */}
+        <div style={{ textAlign: "center", marginBottom: "6mm", paddingBottom: "4mm", borderBottom: "2px solid #1a1a1a" }}>
+          <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "18pt", color: "#1a1a1a", letterSpacing: "0.06em", marginBottom: "1mm" }}>
+            KRIOU DOCS
+          </div>
+          <div style={{ fontSize: "10pt", fontWeight: 600, color: "#555" }}>
+            Checklist de Requisitos
+          </div>
+        </div>
+
+        {/* Document info */}
+        <div style={{ margin: "4mm 0" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2mm 4mm" }}>
+            <div>
+              <span style={{ fontWeight: 600, fontSize: "9pt", color: "#555" }}>Documento: </span>
+              <span style={{ fontSize: "9pt", color: "#1a1a1a" }}>{doc.name || doc.title}</span>
+            </div>
+            <div>
+              <span style={{ fontWeight: 600, fontSize: "9pt", color: "#555" }}>Nivel: </span>
+              <span style={{ fontSize: "9pt", fontWeight: 700, color: "#1a1a1a", textTransform: "uppercase" }}>{active.label}</span>
+            </div>
+            {variant ? (
+              <div>
+                <span style={{ fontWeight: 600, fontSize: "9pt", color: "#555" }}>Variante: </span>
+                <span style={{ fontSize: "9pt", color: "#1a1a1a" }}>{variant.name}</span>
+              </div>
+            ) : null}
+            <div>
+              <span style={{ fontWeight: 600, fontSize: "9pt", color: "#555" }}>Data: </span>
+              <span style={{ fontSize: "9pt", color: "#1a1a1a" }}>{today}</span>
+            </div>
+          </div>
+        </div>
+
+        <hr style={{ border: "none", borderTop: "1px solid #ccc", margin: "3mm 0" }} />
+
+        {/* Count bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            margin: "3mm 0",
+            padding: "2mm 3mm",
+            background: "#f5f5f5",
+            borderRadius: "2mm",
+            border: "1px solid #ddd",
+            breakInside: "avoid",
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              flexShrink: 0,
+              background:
+                active.color === "var(--text-muted)"
+                  ? "#888"
+                  : active.color === "var(--gold)"
+                    ? "#d4af37"
+                    : active.color === "var(--coral)"
+                      ? "#e74c3c"
+                      : "#333",
+            }}
+          />
+          <span style={{ fontSize: "10pt", fontWeight: 700, color: "#1a1a1a" }}>
+            {requirements.count} campos necessarios
+          </span>
+          <span
+            style={{
+              fontSize: "7pt",
+              fontWeight: 800,
+              color: "#555",
+              textTransform: "uppercase",
+              padding: "1mm 3mm",
+              background: "#e8e8e8",
+              borderRadius: "2mm",
+              marginLeft: "auto",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {active.label}
+          </span>
+        </div>
+
+        {/* Obrigatorios */}
+        {requirements.obrigatorios.length > 0 ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "9pt",
+                  fontWeight: 800,
+                  color: "#1a1a1a",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                OBRIGATORIOS ({requirements.obrigatorios.length})
+              </span>
+              <span style={{ fontSize: "7pt", color: "#888" }}>
+                Nao funciona sem estes
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1mm 4mm" }}>
+              {requirements.obrigatorios.map((req, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "1mm 0",
+                    fontSize: "9pt",
+                    color: "#1a1a1a",
+                    breakInside: "avoid",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      background: "#e74c3c",
+                    }}
+                  />
+                  {req}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Opcionais */}
+        {requirements.opcionais.length > 0 ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "9pt",
+                  fontWeight: 800,
+                  color: "#1a1a1a",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                OPCIONAIS ({requirements.opcionais.length})
+              </span>
+              <span style={{ fontSize: "7pt", color: "#888" }}>
+                {selectedLevel === "completo"
+                  ? "Recomendado para maxima seguranca"
+                  : "Importantes para protecao completa"}
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1mm 4mm" }}>
+              {requirements.opcionais.map((req, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "1mm 0",
+                    fontSize: "9pt",
+                    color: "#1a1a1a",
+                    breakInside: "avoid",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      background: "#20b4a6",
+                    }}
+                  />
+                  {req}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Extras */}
+        {requirements.extras.length > 0 ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "9pt",
+                  fontWeight: 800,
+                  color: "#1a1a1a",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                EXTRAS ({requirements.extras.length})
+              </span>
+              <span style={{ fontSize: "7pt", color: "#888" }}>
+                Detalhes para documentos premium
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1mm 4mm" }}>
+              {requirements.extras.map((req, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "1mm 0",
+                    fontSize: "9pt",
+                    color: "#1a1a1a",
+                    breakInside: "avoid",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      background: "#d4af37",
+                    }}
+                  />
+                  {req}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* When to use */}
+        {spec.whenUse ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                fontSize: "9pt",
+                fontWeight: 800,
+                color: "#1a1a1a",
+                textTransform: "uppercase",
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              QUANDO USAR ESTE DOCUMENTO
+            </div>
+            <div style={{ fontSize: "9pt", lineHeight: 1.6, color: "#333", padding: "0 1mm" }}>
+              {spec.whenUse}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Required docs */}
+        {spec.requiredDocs && spec.requiredDocs.length > 0 ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                fontSize: "9pt",
+                fontWeight: 800,
+                color: "#1a1a1a",
+                textTransform: "uppercase",
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              DOCUMENTOS NECESSARIOS
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "2mm", padding: "0 1mm" }}>
+              {spec.requiredDocs.map((d, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontSize: "8pt",
+                    padding: "1mm 3mm",
+                    background: "#eaeaea",
+                    borderRadius: "1mm",
+                    color: "#444",
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Tips */}
+        {spec.tips && spec.tips.length > 0 ? (
+          <div style={{ marginBottom: "4mm", breakInside: "avoid" }}>
+            <div
+              style={{
+                fontSize: "9pt",
+                fontWeight: 800,
+                color: "#1a1a1a",
+                textTransform: "uppercase",
+                marginBottom: "2mm",
+                padding: "1.5mm 3mm",
+                background: "#f3f3f3",
+                borderRadius: "1mm",
+              }}
+            >
+              DICAS IMPORTANTES
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5mm", padding: "0 1mm" }}>
+              {spec.tips.map((tip, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 5,
+                    fontSize: "9pt",
+                    color: "#333",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <span style={{ fontWeight: 700, flexShrink: 0 }}>•</span>
+                  <span>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Page footer (fixed for multi-page) */}
+        <div
+          className="print-page-footer"
+          style={{
+            marginTop: "6mm",
+            padding: "3mm 0",
+            borderTop: "1px solid #aaa",
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "7pt",
+            color: "#888",
+          }}
+        >
+          <span>Kriou Docs</span>
+          <span className="print-page-num">Pagina </span>
+        </div>
+      </div>
+
       {/* ── Modal card ── */}
       <div
         className="print-modal"
@@ -198,19 +585,6 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           boxShadow: "0 32px 80px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3)",
         }}
       >
-        {/* ── Print-only header ── */}
-        <div
-          className="print-only print-header"
-          style={{ display: "none" }}
-        >
-          <h1 className="print-header-title">
-            KRIOU DOCS - Requisitos do Documento
-          </h1>
-          <p className="print-header-subtitle">
-            {doc.name || doc.title}{variant ? ` \u2014 ${variant.name}` : ""}
-          </p>
-        </div>
-
         {/* ── Header ── */}
         <div
           style={{
@@ -805,205 +1179,69 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
             Imprimir Checklist
           </button>
         </div>
-
-        {/* ── Print-only footer ── */}
-        <div
-          className="print-only print-footer"
-          style={{ display: "none" }}
-        >
-          <span>Data: {today}</span>
-          <span className="print-footer-page"></span>
-        </div>
       </div>
 
       <style>{`
         @media print {
           @page {
             size: A4;
-            margin: 15mm 12mm;
+            margin: 12mm 15mm 20mm 15mm;
           }
 
-          /* ── Overlay: remove backdrop, make static ── */
+          /* Hide everything on the page */
+          body {
+            visibility: hidden !important;
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          /* Show only the print overlay */
+          .print-overlay,
+          .print-overlay * {
+            visibility: visible !important;
+          }
           .print-overlay {
             position: static !important;
-            background: none !important;
+            background: #fff !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            padding: 0 !important;
             display: block !important;
-          }
-
-          /* ── Modal card: full page width, no constraints ── */
-          .print-modal {
             max-width: none !important;
-            width: 100% !important;
-            max-height: none !important;
-            overflow: visible !important;
-            border: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            background: #fff !important;
-            display: block !important;
+            padding: 0 !important;
           }
 
-          /* ── Hide interactive UI chrome ── */
-          .print-hide {
+          /* Hide interactive modal */
+          .print-modal {
             display: none !important;
           }
 
-          /* ── Show print-only elements ── */
-          .print-only {
+          /* Show print document */
+          .print-document {
             display: block !important;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            color: #1a1a1a !important;
+          }
+          .print-document * {
+            text-shadow: none !important;
           }
 
-          /* ── Body: allow full overflow ── */
-          .print-body {
-            overflow: visible !important;
-            flex: none !important;
-          }
-
-          /* ── Print header ── */
-          .print-header {
-            padding: 0 0 6mm 0;
-            margin: 0 0 8mm 0;
-            border-bottom: 2px solid #222;
-          }
-          .print-header-title {
-            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-            font-weight: 900;
-            font-size: 16pt;
-            color: #111 !important;
-            margin: 0 0 4pt 0;
-            line-height: 1.2;
-            letter-spacing: 0.01em;
-          }
-          .print-header-subtitle {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 600;
-            font-size: 11pt;
-            color: #333 !important;
-            margin: 0;
-            line-height: 1.3;
-          }
-
-          /* ── Print footer ── */
-          .print-footer {
+          /* Page footer - fixed to bottom of every page */
+          .print-page-footer {
             position: fixed !important;
             bottom: 0;
-            left: 12mm;
-            right: 12mm;
+            left: 15mm;
+            right: 15mm;
             display: flex !important;
             justify-content: space-between;
-            align-items: center;
             padding: 3mm 0;
-            border-top: 1px solid #333;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 8pt;
-            color: #555 !important;
+            border-top: 1px solid #aaa;
+            font-size: 7pt;
+            color: #888 !important;
             background: #fff !important;
           }
-          .print-footer-page::after {
-            content: "P\u00E1gina " counter(page);
-          }
-
-          /* ── Document icon ── */
-          .print-doc-icon {
-            background: #f0f0f0 !important;
-            border: 1px solid #ccc !important;
-            color: #555 !important;
-          }
-
-          /* ── Document title ── */
-          .print-doc-title {
-            font-size: 14pt !important;
-            color: #111 !important;
-          }
-
-          /* ── Subtitle ── */
-          .print-subtitle {
-            font-size: 10pt !important;
-            color: #444 !important;
-          }
-
-          /* ── Count bar ── */
-          .print-count-bar {
-            background: #f7f7f7 !important;
-            border: 1px solid #ddd !important;
-            break-inside: avoid;
-          }
-
-          /* ── Level badge ── */
-          .print-level-badge {
-            background: #e8e8e8 !important;
-            border: 1px solid #bbb !important;
-            color: #444 !important;
-          }
-
-          /* ── When to use section ── */
-          .print-when-use {
-            background: #f7f7f7 !important;
-            border: 1px solid #ddd !important;
-            break-inside: avoid;
-          }
-          .print-when-use [style*="color"] {
-            color: #333 !important;
-          }
-
-          /* ── Sections ── */
-          .print-section {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-
-          /* ── Section headers ── */
-          .print-section-header {
-            background: #f3f3f3 !important;
-            break-inside: avoid;
-          }
-
-          /* ── Badges (OBRIGAT\u00D3RIO / OPCIONAL / EXTRAS) ── */
-          .print-badge {
-            background: #e0e0e0 !important;
-            border: 1px solid #aaa !important;
-          }
-
-          /* ── Requirement items ── */
-          .print-item {
-            background: #fff !important;
-            border: 1px solid #ddd !important;
-          }
-
-          /* ── Required docs section ── */
-          .print-required {
-            background: #f7f7f7 !important;
-            border: 1px solid #ddd !important;
-            break-inside: avoid;
-          }
-          .print-required [style*="background"] {
-            background: #e8e8e8 !important;
-          }
-          .print-required [style*="border"] {
-            border: 1px solid #ccc !important;
-          }
-
-          /* ── Tips section ── */
-          .print-tips {
-            background: #f7f7f7 !important;
-            border: 1px solid #ddd !important;
-            break-inside: avoid;
-          }
-          .print-tips [style*="color"] {
-            color: #333 !important;
-          }
-
-          /* ── Force black-on-white for all content ── */
-          .print-modal,
-          .print-modal div,
-          .print-modal span,
-          .print-modal p,
-          .print-modal h2 {
-            text-shadow: none !important;
-            background-image: none !important;
+          .print-page-num::after {
+            content: counter(page);
           }
         }
       `}</style>

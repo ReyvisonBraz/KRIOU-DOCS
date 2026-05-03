@@ -6,6 +6,7 @@ import { useConfirm } from "../hooks/useConfirm";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 import { extractPersonData, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
+import { INITIAL_FORM_DATA } from "../data/constants";
 
 const DashboardPage = () => {
   const {
@@ -22,12 +23,22 @@ const DashboardPage = () => {
 
   const handleCreateResume = () => {
     setEditingDocId(null);
+    setFormData(INITIAL_FORM_DATA);
+    setSelectedTemplate(null);
+    setCurrentStep(0);
+    StorageService.clearDraft(userId, "resume");
     sessionStorage.setItem("kriou_template_category", "resume");
     navigate("templates");
   };
 
   const handleCreateLegalDocument = () => {
     setEditingDocId(null);
+    setLegalFormData({});
+    setDocumentType(null);
+    setSelectedVariant(null);
+    setDisabledFields({});
+    setLegalStep(0);
+    StorageService.clearDraft(userId, "legal");
     sessionStorage.setItem("kriou_template_category", "legal");
     navigate("templates");
   };
@@ -107,16 +118,30 @@ const DashboardPage = () => {
           setSelectedTemplate({ id: doc.templateId, name: doc.templateName || "Modelo" });
         }
         setEditingDocId(doc.id);
+        setCurrentStep(0);
+        navigate("editor");
+      } else if (doc.draft?.formData) {
+        setFormData(doc.draft.formData);
+        setEditingDocId(null);
+        setCurrentStep(doc.draft.currentStep ?? 0);
+        if (doc.draft.selectedTemplate) {
+          setSelectedTemplate(doc.draft.selectedTemplate);
+          navigate("editor");
+        } else {
+          sessionStorage.setItem("kriou_template_category", "resume");
+          navigate("templates");
+        }
       } else {
         setEditingDocId(null);
+        setCurrentStep(0);
+        navigate("editor");
       }
-      setCurrentStep(0);
-      navigate("editor");
     } else if (doc.type === "legal") {
       if (doc.draft) {
         if (doc.draft.documentType) setDocumentType(doc.draft.documentType);
         if (doc.draft.selectedVariant) setSelectedVariant(doc.draft.selectedVariant);
         if (doc.draft.legalFormData) setLegalFormData(doc.draft.legalFormData);
+        if (doc.draft.formData) setLegalFormData(doc.draft.formData); // compatibilidade com draft antigo
         if (doc.draft.disabledFields) setDisabledFields(doc.draft.disabledFields);
         setLegalStep(doc.draft.legalStep ?? 1);
         setEditingDocId(null);
@@ -337,6 +362,92 @@ const DashboardPage = () => {
               </div>
             )}
           </div>
+        </section>
+
+        {/* ─── Contrato Personalizado CTA ─── */}
+        <section style={{ marginBottom: 32 }}>
+          <a
+            href="https://wa.me/5591986450659?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20contrato%20personalizado."
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 20,
+              padding: "20px 24px",
+              borderRadius: 16,
+              background: "linear-gradient(135deg, rgba(37,211,102,0.10) 0%, rgba(37,211,102,0.03) 100%)",
+              border: "1.5px solid rgba(37,211,102,0.20)",
+              textDecoration: "none",
+              transition: "all 0.25s ease",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(37,211,102,0.40)";
+              e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.14) 0%, rgba(37,211,102,0.05) 100%)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 32px rgba(37,211,102,0.10)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(37,211,102,0.20)";
+              e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.10) 0%, rgba(37,211,102,0.03) 100%)";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: "rgba(37,211,102,0.15)",
+              border: "1.5px solid rgba(37,211,102,0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Icon name="WhatsApp" className="w-6 h-6" style={{ color: "#25D366" }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 16,
+                fontWeight: 700,
+                color: "var(--text)",
+                margin: "0 0 3px",
+                letterSpacing: "-0.02em",
+              }}>
+                Precisa de um contrato mais personalizado?
+              </h3>
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 13,
+                color: "var(--text-dim)",
+                margin: 0,
+                lineHeight: 1.5,
+              }}>
+                Fale conosco pelo WhatsApp e receba um documento sob medida para sua necessidade.
+              </p>
+            </div>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "10px 18px",
+              borderRadius: 12,
+              background: "#25D366",
+              color: "#fff",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 700,
+              fontSize: 13,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              border: "none",
+            }}>
+              <Icon name="WhatsApp" className="w-4 h-4" />
+              Chamar no WhatsApp
+            </div>
+          </a>
         </section>
 
         {/* ─── Command Bar ─── */}

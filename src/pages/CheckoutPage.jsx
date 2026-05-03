@@ -4,6 +4,7 @@ import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
+import { sanitizeFormData } from "../utils/sanitization";
 import showToast from "../utils/toast";
 
 /* ───────────────────────────────────────────
@@ -425,19 +426,21 @@ const CheckoutPage = () => {
   const handlePayment = async () => {
     setIsProcessing(true);
     try {
-      const docData = isLegalDocument ? legalFormData : formData;
+      const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
       if (editingDocId) {
         await updateDocument(editingDocId, docData);
         setEditingDocId(null);
       } else {
         await saveDocument(docData);
       }
+      setCheckoutComplete(true);
+      showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
     } catch (err) {
       console.error("[CheckoutPage][ERRO] Falha ao salvar documento:", err);
+      showToast.error("Erro ao salvar documento. Tente novamente.");
+    } finally {
+      setIsProcessing(false);
     }
-    setCheckoutComplete(true);
-    setIsProcessing(false);
-    showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
   };
 
   const handleGoToDashboard = () => {

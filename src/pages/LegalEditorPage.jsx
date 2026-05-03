@@ -136,6 +136,14 @@ const LegalEditorPage = () => {
   const [showErrors, setShowErrors] = useState(false);
   const [showRequirements, setShowRequirements] = useState(false);
 
+  // Sincroniza selectedDoc com documentType quando ele muda externamente
+  // (ex: handleEditDocument no Dashboard restaura um rascunho via setDocumentType)
+  useEffect(() => {
+    if (documentType && documentType !== selectedDoc) {
+      setSelectedDoc(documentType);
+    }
+  }, [documentType, selectedDoc]);
+
   const bottomNavRef = useRef(null);
   const contentRef = useRef(null);
 

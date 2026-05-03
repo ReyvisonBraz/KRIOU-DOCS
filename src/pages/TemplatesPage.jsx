@@ -1055,6 +1055,90 @@ const TemplatesPage = () => {
           })}
         </div>
 
+          {/* ── Contrato Personalizado Card ── */}
+          <div style={{ marginBottom: 12 }}>
+            <a
+              href="https://wa.me/5591986450659?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20contrato%20personalizado."
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 18,
+                padding: "20px 22px",
+                borderRadius: 16,
+                background: "linear-gradient(135deg, rgba(37,211,102,0.08) 0%, rgba(37,211,102,0.02) 100%)",
+                border: "1.5px dashed rgba(37,211,102,0.25)",
+                textDecoration: "none",
+                transition: "all 0.25s ease",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(37,211,102,0.45)";
+                e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.12) 0%, rgba(37,211,102,0.04) 100%)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 8px 32px rgba(37,211,102,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(37,211,102,0.25)";
+                e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.08) 0%, rgba(37,211,102,0.02) 100%)";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: "rgba(37,211,102,0.12)",
+                border: "1.5px solid rgba(37,211,102,0.22)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <Icon name="WhatsApp" className="w-5 h-5" style={{ color: "#25D366" }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h4 style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                  margin: "0 0 3px",
+                }}>
+                  Contrato Personalizado
+                </h4>
+                <p style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 13,
+                  color: "var(--text-dim)",
+                  margin: 0,
+                  lineHeight: 1.45,
+                }}>
+                  Precisa de algo mais específico? Criamos o documento ideal para você. Fale conosco.
+                </p>
+              </div>
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                borderRadius: 10,
+                background: "#25D366",
+                color: "#fff",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontWeight: 700,
+                fontSize: 12,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}>
+                <Icon name="WhatsApp" className="w-3.5 h-3.5" />
+                Solicitar
+              </span>
+            </a>
+          </div>
+
         {/* Bottom info */}
         <div style={{
           marginTop: 40, padding: "18px 24px", borderRadius: 14,

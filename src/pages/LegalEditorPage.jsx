@@ -38,32 +38,36 @@ const STEPS = [
 const SectionProgressBar = ({ requiredFilled, requiredTotal, allDone }) => {
   const progressPct = requiredTotal > 0 ? Math.round((requiredFilled / requiredTotal) * 100) : 0;
 
-  const getProgressColor = () => {
-    if (allDone) return "var(--success)";
-    if (progressPct > 50) return "var(--teal)";
-    if (progressPct > 0) return "var(--gold)";
-    return "var(--coral)";
-  };
+  const trackColor = allDone ? "var(--success)" : requiredTotal === 0 ? "var(--text-faint)" : "var(--teal)";
+  const bgColor = allDone
+    ? "rgba(16,185,129,0.08)"
+    : requiredTotal === 0
+    ? "var(--surface)"
+    : "rgba(20,184,166,0.06)";
+  const borderColor = allDone ? "rgba(16,185,129,0.22)" : requiredTotal === 0 ? "var(--border)" : "rgba(20,184,166,0.16)";
 
   return (
-    <div style={{
-      marginTop: 16,
-      padding: "16px 20px",
-      borderRadius: 14,
-      background: allDone
-        ? "rgba(0,200,151,0.08)"
-        : "rgba(255,255,255,0.03)",
-      border: `1px solid ${allDone ? "rgba(0,200,151,0.25)" : "rgba(255,255,255,0.07)"}`,
-    }}>
+    <div
+      style={{
+        marginTop: 16,
+        padding: "16px 20px",
+        borderRadius: 14,
+        background: bgColor,
+        border: `1px solid ${borderColor}`,
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: allDone ? "var(--success)" : "var(--text-muted)",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: allDone ? "var(--success)" : "var(--text-muted)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontFamily: "var(--font-body)",
+          }}
+        >
           {allDone ? (
             <>
               <Icon name="Check" className="w-4 h-4" />
@@ -73,27 +77,34 @@ const SectionProgressBar = ({ requiredFilled, requiredTotal, allDone }) => {
             <>Campos obrigatórios — {requiredFilled} de {requiredTotal}</>
           )}
         </span>
-        <span style={{
-          fontSize: 13,
-          fontWeight: 800,
-          color: getProgressColor(),
-        }}>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 800,
+            color: trackColor,
+            fontFamily: "var(--font-display)",
+          }}
+        >
           {progressPct}%
         </span>
       </div>
-      <div style={{
-        height: 6,
-        borderRadius: 4,
-        background: "rgba(255,255,255,0.08)",
-        overflow: "hidden"
-      }}>
-        <div style={{
-          height: "100%",
-          width: `${progressPct}%`,
+      <div
+        style={{
+          height: 6,
           borderRadius: 4,
-          background: getProgressColor(),
-          transition: "width 0.4s ease, background 0.3s ease",
-        }} />
+          background: "var(--surface-2)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${progressPct}%`,
+            borderRadius: 4,
+            background: trackColor,
+            transition: "width 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease",
+          }}
+        />
       </div>
     </div>
   );
@@ -214,7 +225,7 @@ const LegalEditorPage = () => {
 
   const handleSaveLater = () => {
     if (!selectedDoc) {
-      navigate("dashboard");
+      navigate("dashboard", { replace: true });
       return;
     }
 
@@ -265,14 +276,14 @@ const LegalEditorPage = () => {
     setUserDocuments(updated);
     StorageService.saveDocuments(updated, userId);
     triggerLegalSave?.();
-    navigate("dashboard");
+    navigate("dashboard", { replace: true });
     showToast.success("Rascunho salvo! Continue de onde parou a qualquer momento.");
   };
 
   const handleGoHome = async () => {
     const hasDraft = Object.keys(legalFormData).length > 0 || currentStep > 0;
     if (!hasDraft) {
-      navigate("dashboard");
+      navigate("dashboard", { replace: true });
       return;
     }
     const confirmed = await requestConfirm({
@@ -308,54 +319,97 @@ const LegalEditorPage = () => {
     : "Documento Jurídico";
 
   const renderVariantSelection = () => (
-    <div className="animate-fadeIn">
+    <div style={{ animation: "fade-in 0.35s ease-out both" }}>
       <div style={{ marginBottom: 28 }}>
-        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
+        <h2
+          className="font-display"
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            marginBottom: 6,
+            color: "var(--text)",
+            letterSpacing: "-0.02em",
+          }}
+        >
           {selectedDoc?.name}
         </h2>
-        <p style={{ fontSize: 15, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 14, color: "var(--text-dim)", lineHeight: 1.6, fontFamily: "var(--font-body)" }}>
           Escolha a variação do documento. Cada opção adapta os campos automaticamente.
         </p>
+
         {selectedDoc?.legislation && (
-          <div style={{
-            marginTop: 14,
-            padding: "12px 16px",
-            background: "var(--surface-2)",
-            borderRadius: 10,
-            fontSize: 12,
-            color: "var(--text-muted)",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}>
-            <Icon name="Scale" className="w-4 h-4" style={{ color: "var(--teal)" }} />
+          <div
+            style={{
+              marginTop: 14,
+              padding: "12px 16px",
+              background: "var(--surface)",
+              borderRadius: 12,
+              fontSize: 12,
+              color: "var(--text-muted)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "var(--font-body)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <Icon name="Scale" className="w-4 h-4" style={{ color: "var(--teal)", flexShrink: 0 }} />
             {selectedDoc.legislation}
           </div>
         )}
 
-        <Button
-          variant="primary"
-          icon="ClipboardList"
+        <button
           onClick={() => setShowRequirements(true)}
-          style={{ marginTop: 16, padding: "14px 24px", fontSize: 14, fontWeight: 700 }}
+          aria-label="Ver requisitos do documento"
+          style={{
+            marginTop: 16,
+            padding: "14px 24px",
+            fontSize: 14,
+            fontWeight: 700,
+            fontFamily: "var(--font-body)",
+            borderRadius: 14,
+            background: "rgba(20,184,166,0.1)",
+            border: "1px solid rgba(20,184,166,0.25)",
+            color: "var(--teal)",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 10,
+            minHeight: 48,
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(20,184,166,0.16)";
+            e.currentTarget.style.borderColor = "rgba(20,184,166,0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(20,184,166,0.1)";
+            e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)";
+          }}
         >
+          <Icon name="ClipboardList" className="w-5 h-5" />
           Ver requisitos do documento
-        </Button>
+        </button>
       </div>
 
-      <div style={{
-        marginTop: 16,
-        padding: "16px 20px",
-        background: "linear-gradient(135deg, rgba(233,69,96,0.08) 0%, rgba(0,210,211,0.08) 100%)",
-        border: "1px solid rgba(233,69,96,0.15)",
-        borderRadius: 14,
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-      }}>
-        <Icon name="Info" className="w-5 h-5" style={{ color: "var(--coral)" }} />
-        <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>
-          <strong style={{ color: "var(--text)" }}>Não sabe o que precisa?</strong> Clique acima para ver os requisitos mínimos, essenciais e completos.
+      <div
+        style={{
+          marginTop: 8,
+          padding: "14px 18px",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <Icon name="Info" className="w-5 h-5" style={{ color: "var(--coral)", flexShrink: 0 }} />
+        <p style={{ fontSize: 13, color: "var(--text-dim)", margin: 0, fontFamily: "var(--font-body)", lineHeight: 1.5 }}>
+          <strong style={{ color: "var(--text)", fontWeight: 700 }}>
+            Não sabe o que precisa?
+          </strong>{" "}
+          Clique acima para ver os requisitos mínimos, essenciais e completos.
         </p>
       </div>
 
@@ -366,32 +420,60 @@ const LegalEditorPage = () => {
       />
 
       {currentVariantObj && currentSections.length > 0 && (
-        <div style={{
-          marginTop: 24,
-          padding: 20,
-          background: "var(--surface-2)",
-          borderRadius: 14,
-          border: "1px solid var(--border)",
-        }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 18 }}>{currentVariantObj.icon}</span>
+        <div
+          style={{
+            marginTop: 24,
+            padding: 20,
+            background: "var(--surface)",
+            borderRadius: 16,
+            border: "1px solid var(--border)",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              marginBottom: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "var(--font-display)",
+              color: "var(--text)",
+            }}
+          >
+            <span style={{ fontSize: 20 }}>{currentVariantObj.icon}</span>
             {currentVariantObj.name}
-            <Badge variant="teal" style={{ marginLeft: 8 }}>{currentSections.length} seções</Badge>
+            <Badge variant="teal" style={{ marginLeft: 8 }}>
+              {currentSections.length} seções
+            </Badge>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {currentSections.map((section, i) => (
-              <span key={section.id} style={{
-                fontSize: 12,
-                padding: "6px 14px",
-                background: "var(--surface-3)",
-                borderRadius: 8,
-                color: "var(--text)",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontWeight: 500,
-              }}>
-                <span style={{ color: "var(--teal)", fontWeight: 700 }}>{i + 1}</span>
+              <span
+                key={section.id}
+                style={{
+                  fontSize: 12,
+                  padding: "6px 14px",
+                  background: "var(--surface-2)",
+                  borderRadius: 10,
+                  color: "var(--text)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontWeight: 500,
+                  fontFamily: "var(--font-body)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <span
+                  style={{
+                    color: "var(--teal)",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-display)",
+                  }}
+                >
+                  {i + 1}
+                </span>
                 {section.title}
               </span>
             ))}
@@ -402,25 +484,38 @@ const LegalEditorPage = () => {
   );
 
   const renderFillForm = () => (
-    <div className="animate-fadeIn">
+    <div style={{ animation: "fade-in 0.35s ease-out both" }}>
       <div style={{ marginBottom: 24 }}>
-        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 6 }}>
+        <h2
+          className="font-display"
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            marginBottom: 4,
+            color: "var(--text)",
+            letterSpacing: "-0.02em",
+          }}
+        >
           Preencha os Dados
         </h2>
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>
           {selectedDoc?.name} — {currentVariantObj?.name}
         </p>
 
-        <div style={{
-          marginTop: 12,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          fontSize: 13,
-          color: "var(--text-muted)",
-        }}>
-          <Icon name="Info" className="w-4 h-4" style={{ color: "var(--teal)" }} />
-          Campos com <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios
+        <div
+          style={{
+            marginTop: 10,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 13,
+            color: "var(--text-muted)",
+            fontFamily: "var(--font-body)",
+          }}
+        >
+          <Icon name="Info" className="w-4 h-4" style={{ color: "var(--teal)", flexShrink: 0 }} />
+          Campos com{" "}
+          <span style={{ color: "var(--coral)", fontWeight: 700 }}>*</span> são obrigatórios
         </div>
 
         <SectionProgressBar
@@ -429,38 +524,87 @@ const LegalEditorPage = () => {
           allDone={allDone}
         />
 
-        <div style={{
-          marginTop: 16,
-          padding: "16px 20px",
-          background: "linear-gradient(135deg, rgba(0,210,211,0.06) 0%, rgba(108,99,255,0.06) 100%)",
-          border: "1.5px dashed var(--teal)",
-          borderRadius: 14,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
-        }}>
+        <div
+          style={{
+            marginTop: 16,
+            padding: "16px 20px",
+            background: "rgba(20,184,166,0.05)",
+            border: "1px solid rgba(20,184,166,0.18)",
+            borderRadius: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Icon name="Wand2" className="w-6 h-6" style={{ color: "var(--teal)" }} />
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: "rgba(20,184,166,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="Wand2" className="w-5 h-5" style={{ color: "var(--teal)" }} />
+            </div>
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: 0 }}>
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                  margin: 0,
+                  fontFamily: "var(--font-display)",
+                }}
+              >
                 Preencher com dados de demonstração
               </p>
-              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "2px 0 0" }}>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-muted)",
+                  margin: "2px 0 0",
+                  fontFamily: "var(--font-body)",
+                }}
+              >
                 Pré-visualize o documento com dados fictícios
               </p>
             </div>
           </div>
-          <Button
-            variant="secondary"
-            size="small"
-            icon="Wand2"
+          <button
             onClick={handleFillDemo}
-            style={{ background: "var(--teal)", color: "white", border: "none" }}
+            style={{
+              padding: "10px 20px",
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: "var(--font-body)",
+              borderRadius: 12,
+              background: "var(--teal)",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              minHeight: 44,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(20,184,166,0.85)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--teal)";
+            }}
           >
+            <Icon name="Wand2" className="w-4 h-4" />
             Preencher Demo
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -475,12 +619,14 @@ const LegalEditorPage = () => {
             number={sectionIndex + 1}
           />
 
-          <div style={{
-            padding: "0 4px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "0 20px",
-          }}>
+          <div
+            style={{
+              padding: "0 4px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "0 20px",
+            }}
+          >
             {section.fields.map((fieldDef) => (
               <div key={fieldDef.key} id={`field-${fieldDef.key}`}>
                 <LegalFieldRenderer
@@ -500,30 +646,66 @@ const LegalEditorPage = () => {
   );
 
   const renderReview = () => (
-    <div className="animate-fadeIn">
+    <div style={{ animation: "fade-in 0.35s ease-out both" }}>
       <div style={{ marginBottom: 24 }}>
-        <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
+        <h2
+          className="font-display"
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            marginBottom: 6,
+            color: "var(--text)",
+            letterSpacing: "-0.02em",
+          }}
+        >
           Revise os Dados
         </h2>
-        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)", lineHeight: 1.5 }}>
           Verifique se tudo está correto antes de gerar o documento
         </p>
       </div>
 
-      <Card style={{ padding: 20, marginBottom: 20 }}>
+      <Card
+        style={{
+          padding: 20,
+          marginBottom: 20,
+          border: "1px solid var(--border)",
+          borderRadius: 16,
+          background: "var(--surface)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 14,
-            background: "rgba(0,210,211,0.1)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: "rgba(20,184,166,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <Icon name={selectedDoc?.icon} className="w-6 h-6" style={{ color: "var(--teal)" }} />
           </div>
           <div>
-            <h3 style={{ fontWeight: 700, fontSize: 18 }}>{selectedDoc?.name}</h3>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Badge variant="teal">{currentVariantObj?.icon} {currentVariantObj?.name}</Badge>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            <h3
+              style={{
+                fontWeight: 700,
+                fontSize: 17,
+                fontFamily: "var(--font-display)",
+                color: "var(--text)",
+                margin: 0,
+              }}
+            >
+              {selectedDoc?.name}
+            </h3>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+              <Badge variant="teal">
+                {currentVariantObj?.icon} {currentVariantObj?.name}
+              </Badge>
+              <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>
                 {filledCount} campos preenchidos
               </span>
             </div>
@@ -538,29 +720,67 @@ const LegalEditorPage = () => {
         if (filledFields.length === 0) return null;
 
         return (
-          <Card key={section.id} style={{ padding: 20, marginBottom: 16 }}>
-            <h4 style={{
-              fontSize: 14, fontWeight: 700, color: "var(--teal)",
-              marginBottom: 14, paddingBottom: 10,
-              borderBottom: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}>
+          <Card
+            key={section.id}
+            style={{
+              padding: 20,
+              marginBottom: 16,
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              background: "var(--surface)",
+            }}
+          >
+            <h4
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--teal)",
+                marginBottom: 14,
+                paddingBottom: 10,
+                borderBottom: "1px solid var(--border)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontFamily: "var(--font-display)",
+                letterSpacing: "0.03em",
+                textTransform: "uppercase",
+              }}
+            >
               <Icon name="Folder" className="w-4 h-4" />
               {section.title}
             </h4>
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: 14,
-            }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 14,
+              }}
+            >
               {filledFields.map((f) => (
                 <div key={f.key}>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 3 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      marginBottom: 3,
+                      fontFamily: "var(--font-body)",
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
                     {f.label}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 500, wordBreak: "break-word" }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      wordBreak: "break-word",
+                      fontFamily: "var(--font-body)",
+                      color: "var(--text)",
+                      lineHeight: 1.4,
+                    }}
+                  >
                     {legalFormData[f.key]}
                   </div>
                 </div>
@@ -570,13 +790,27 @@ const LegalEditorPage = () => {
         );
       })}
 
-      <div style={{
-        marginTop: 16, padding: 14,
-        background: "rgba(0,200,151,0.1)", borderRadius: 10,
-        display: "flex", alignItems: "center", gap: 10,
-      }}>
-        <Icon name="CheckCircle" className="w-5 h-5" style={{ color: "var(--success)" }} />
-        <span style={{ fontSize: 14, color: "var(--success)", fontWeight: 600 }}>
+      <div
+        style={{
+          marginTop: 12,
+          padding: 14,
+          background: "rgba(16,185,129,0.08)",
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          border: "1px solid rgba(16,185,129,0.18)",
+        }}
+      >
+        <Icon name="CheckCircle" className="w-5 h-5" style={{ color: "var(--success)", flexShrink: 0 }} />
+        <span
+          style={{
+            fontSize: 14,
+            color: "var(--success)",
+            fontWeight: 600,
+            fontFamily: "var(--font-body)",
+          }}
+        >
           Todos os campos obrigatórios estão preenchidos
         </span>
       </div>
@@ -592,88 +826,105 @@ const LegalEditorPage = () => {
         case "title":
           return (
             <div key={i} style={{ textAlign: "center", marginBottom: 28, marginTop: 4 }}>
-              <h3 style={{
-                fontFamily: "Georgia, 'Times New Roman', serif",
-                fontSize: 19,
-                fontWeight: 700,
-                color: "#161d26",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                lineHeight: 1.35,
-                margin: 0,
-              }}>
+              <h3
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: 19,
+                  fontWeight: 700,
+                  color: "#161d26",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  lineHeight: 1.35,
+                  margin: 0,
+                }}
+              >
                 {block.text}
               </h3>
-              <div style={{
-                width: 50,
-                height: 1.5,
-                background: "var(--gold, #a58737)",
-                margin: "14px auto 0",
-                opacity: 0.7,
-              }} />
+              <div
+                style={{
+                  width: 50,
+                  height: 1.5,
+                  background: "var(--gold, #a58737)",
+                  margin: "14px auto 0",
+                  opacity: 0.7,
+                }}
+              />
             </div>
           );
         case "paragraph":
           return (
-            <p key={i} style={{
-              fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: 15,
-              color: "#3a4048",
-              lineHeight: 1.75,
-              textAlign: "justify",
-              textIndent: "1.5em",
-              margin: "0 0 18px 0",
-              wordBreak: "break-word",
-            }}>
+            <p
+              key={i}
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: 15,
+                color: "#3a4048",
+                lineHeight: 1.75,
+                textAlign: "justify",
+                textIndent: "1.5em",
+                margin: "0 0 18px 0",
+                wordBreak: "break-word",
+              }}
+            >
               {block.text}
             </p>
           );
         case "clause":
           return (
             <div key={i} style={{ marginBottom: 14 }}>
-              <div style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 8,
-                marginBottom: 6,
-              }}>
-                <span style={{
-                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "var(--gold, #a58737)",
-                  whiteSpace: "nowrap",
-                }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--gold, #a58737)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   CLÁUSULA {block.number}
                 </span>
-                <span style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "#161d26",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.03em",
-                }}>
+                <span
+                  style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "#161d26",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.03em",
+                  }}
+                >
                   {block.title}
                 </span>
               </div>
-              <div style={{
-                width: "40%",
-                height: 1,
-                background: "var(--border, #d8d6ce)",
-                marginBottom: 8,
-                opacity: 0.5,
-              }} />
+              <div
+                style={{
+                  width: "40%",
+                  height: 1,
+                  background: "var(--border, #d8d6ce)",
+                  marginBottom: 8,
+                  opacity: 0.5,
+                }}
+              />
               {block.text && (
-                <p style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: 14.5,
-                  color: "#3a4048",
-                  lineHeight: 1.7,
-                  textAlign: "justify",
-                  margin: "0 0 8px 0",
-                  wordBreak: "break-word",
-                }}>
+                <p
+                  style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: 14.5,
+                    color: "#3a4048",
+                    lineHeight: 1.7,
+                    textAlign: "justify",
+                    margin: "0 0 8px 0",
+                    wordBreak: "break-word",
+                  }}
+                >
                   {block.text}
                 </p>
               )}
@@ -682,16 +933,19 @@ const LegalEditorPage = () => {
                   {block.paragraphs.map((p, j) => {
                     const isSubItem = /^[§IVX]+/.test(p.trim());
                     return (
-                      <p key={j} style={{
-                        fontFamily: "Georgia, 'Times New Roman', serif",
-                        fontSize: 14,
-                        color: "#3a4048",
-                        lineHeight: 1.65,
-                        textAlign: "justify",
-                        marginBottom: 4,
-                        paddingLeft: isSubItem ? 12 : 0,
-                        wordBreak: "break-word",
-                      }}>
+                      <p
+                        key={j}
+                        style={{
+                          fontFamily: "Georgia, 'Times New Roman', serif",
+                          fontSize: 14,
+                          color: "#3a4048",
+                          lineHeight: 1.65,
+                          textAlign: "justify",
+                          marginBottom: 4,
+                          paddingLeft: isSubItem ? 12 : 0,
+                          wordBreak: "break-word",
+                        }}
+                      >
                         {p}
                       </p>
                     );
@@ -702,62 +956,77 @@ const LegalEditorPage = () => {
           );
         case "closing":
           return (
-            <p key={i} style={{
-              fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: 14.5,
-              color: "#767b84",
-              fontStyle: "italic",
-              lineHeight: 1.7,
-              textAlign: "justify",
-              margin: "28px 0 12px 0",
-              wordBreak: "break-word",
-            }}>
+            <p
+              key={i}
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: 14.5,
+                color: "#767b84",
+                fontStyle: "italic",
+                lineHeight: 1.7,
+                textAlign: "justify",
+                margin: "28px 0 12px 0",
+                wordBreak: "break-word",
+              }}
+            >
               {block.text}
             </p>
           );
         case "date":
           return (
-            <p key={i} style={{
-              fontFamily: "Georgia, 'Times New Roman', serif",
-              fontSize: 15,
-              color: "#3a4048",
-              textAlign: "center",
-              margin: "8px 0 36px 0",
-            }}>
+            <p
+              key={i}
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: 15,
+                color: "#3a4048",
+                textAlign: "center",
+                margin: "8px 0 36px 0",
+              }}
+            >
               {block.text}
             </p>
           );
         case "signatures":
           return (
-            <div key={i} style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`,
-              gap: 48,
-              marginTop: 44,
-              marginBottom: 20,
-            }}>
+            <div
+              key={i}
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`,
+                gap: 48,
+                marginTop: 44,
+                marginBottom: 20,
+              }}
+            >
               {block.parties.map((party, j) => (
                 <div key={j} style={{ textAlign: "center" }}>
-                  <div style={{
-                    borderBottom: "1.5px dashed #b0ada5",
-                    marginBottom: 8,
-                    minHeight: 44,
-                  }} />
-                  <p style={{
-                    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "var(--gold, #a58737)",
-                    margin: "0 0 2px 0",
-                  }}>
+                  <div
+                    style={{
+                      borderBottom: "1.5px dashed #b0ada5",
+                      marginBottom: 8,
+                      minHeight: 44,
+                    }}
+                  />
+                  <p
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "var(--gold, #a58737)",
+                      margin: "0 0 2px 0",
+                    }}
+                  >
                     {party.role}
                   </p>
-                  <p style={{
-                    fontFamily: "Georgia, 'Times New Roman', serif",
-                    fontSize: 13.5,
-                    color: "#3a4048",
-                    margin: 0,
-                  }}>
+                  <p
+                    style={{
+                      fontFamily: "Georgia, 'Times New Roman', serif",
+                      fontSize: 13.5,
+                      color: "#3a4048",
+                      margin: 0,
+                    }}
+                  >
                     {party.name}
                   </p>
                 </div>
@@ -767,56 +1036,68 @@ const LegalEditorPage = () => {
         case "witnesses":
           return (
             <div key={i} style={{ marginTop: 28 }}>
-              <p style={{
-                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#767b84",
-                margin: "0 0 16px 0",
-              }}>
+              <p
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#767b84",
+                  margin: "0 0 16px 0",
+                }}
+              >
                 TESTEMUNHAS
               </p>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 40,
-              }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 40,
+                }}
+              >
                 {Array.from({ length: block.count }).map((_, j) => (
                   <div key={j} style={{ position: "relative" }}>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 10,
-                    }}>
-                      <span style={{
-                        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: "var(--gold, #a58737)",
-                        background: "rgba(165, 135, 55, 0.1)",
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        marginTop: 2,
-                      }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 10,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "var(--gold, #a58737)",
+                          background: "rgba(165, 135, 55, 0.1)",
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          marginTop: 2,
+                        }}
+                      >
                         {j + 1}
                       </span>
                       <div style={{ flex: 1 }}>
-                        <div style={{
-                          borderBottom: "1px dashed #c5c2ba",
-                          marginBottom: 4,
-                          minHeight: 36,
-                        }} />
-                        <p style={{
-                          fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                          fontSize: 10.5,
-                          color: "#a0a5ae",
-                          margin: 0,
-                        }}>
+                        <div
+                          style={{
+                            borderBottom: "1px dashed #c5c2ba",
+                            marginBottom: 4,
+                            minHeight: 36,
+                          }}
+                        />
+                        <p
+                          style={{
+                            fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                            fontSize: 10.5,
+                            color: "#a0a5ae",
+                            margin: 0,
+                          }}
+                        >
                           Nome / CPF
                         </p>
                       </div>
@@ -833,52 +1114,63 @@ const LegalEditorPage = () => {
 
     const renderFallback = () => (
       <div style={{ padding: 32 }}>
-        <h3 style={{
-          fontFamily: "Georgia, 'Times New Roman', serif",
-          fontSize: 19,
-          fontWeight: 700,
-          color: "#161d26",
-          textAlign: "center",
-          textTransform: "uppercase",
-          marginBottom: 28,
-        }}>
+        <h3
+          style={{
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontSize: 19,
+            fontWeight: 700,
+            color: "#161d26",
+            textAlign: "center",
+            textTransform: "uppercase",
+            marginBottom: 28,
+          }}
+        >
           {selectedDoc?.name}
         </h3>
         {currentSections.map((s) => (
           <div key={s.id} style={{ marginBottom: 20 }}>
-            <h4 style={{
-              fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-              fontSize: 11,
-              fontWeight: 700,
-              color: "var(--gold, #a58737)",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              margin: "0 0 6px 0",
-            }}>
+            <h4
+              style={{
+                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                color: "var(--gold, #a58737)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                margin: "0 0 6px 0",
+              }}
+            >
               {s.title}
             </h4>
             {s.fields.map((f) => (
-              <div key={f.key} style={{
-                display: "flex",
-                gap: 12,
-                fontSize: 14,
-                marginBottom: 3,
-                padding: "4px 0",
-                borderBottom: "1px solid rgba(0,0,0,0.04)",
-              }}>
-                <span style={{
-                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                  fontWeight: 600,
-                  color: "#767b84",
-                  minWidth: 120,
-                  fontSize: 12.5,
-                }}>
+              <div
+                key={f.key}
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  fontSize: 14,
+                  marginBottom: 3,
+                  padding: "4px 0",
+                  borderBottom: "1px solid rgba(0,0,0,0.04)",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                    fontWeight: 600,
+                    color: "#767b84",
+                    minWidth: 120,
+                    fontSize: 12.5,
+                  }}
+                >
                   {f.label}:
                 </span>
-                <span style={{
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  color: "#3a4048",
-                }}>
+                <span
+                  style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    color: "#3a4048",
+                  }}
+                >
                   {legalFormData[f.key] || "\u2014"}
                 </span>
               </div>
@@ -889,83 +1181,129 @@ const LegalEditorPage = () => {
     );
 
     return (
-      <div className="animate-fadeIn">
+      <div style={{ animation: "fade-in 0.35s ease-out both" }}>
         <div style={{ marginBottom: 24 }}>
-          <h2 className="font-display" style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-            Visualizacao do Documento
+          <h2
+            className="font-display"
+            style={{
+              fontSize: 26,
+              fontWeight: 800,
+              marginBottom: 6,
+              color: "var(--text)",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Visualização do Documento
           </h2>
-          <p style={{ fontSize: 14, color: "var(--text-muted)" }}>
+          <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>
             Revise o documento final antes de gerar o PDF
           </p>
         </div>
 
-        <div style={{
-          background: "#fcfbf9",
-          borderRadius: 2,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)",
-          maxWidth: 780,
-          margin: "0 auto",
-          overflow: "hidden",
-        }}>
-
-          <div style={{
-            padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)",
-          }}>
+        <div
+          style={{
+            background: "#fcfbf9",
+            borderRadius: 2,
+            boxShadow:
+              "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)",
+            maxWidth: 780,
+            margin: "0 auto",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)",
+            }}
+          >
             {hasBody ? docBody.map((block, i) => renderBlock(block, i)) : renderFallback()}
 
             {selectedDoc?.legislation && (
-              <p style={{
-                marginTop: 36,
-                padding: "12px 0",
-                fontSize: 10.5,
-                color: "#767b84",
-                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                fontStyle: "italic",
-              }}>
-                <strong style={{
-                  color: "#161d26",
-                  fontWeight: 700,
-                  fontStyle: "normal",
-                }}>
+              <p
+                style={{
+                  marginTop: 36,
+                  padding: "12px 0",
+                  fontSize: 10.5,
+                  color: "#767b84",
+                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                  fontStyle: "italic",
+                }}
+              >
+                <strong
+                  style={{
+                    color: "#161d26",
+                    fontWeight: 700,
+                    fontStyle: "normal",
+                  }}
+                >
                   Base Legal:
                 </strong>{" "}
                 {selectedDoc.legislation}
               </p>
             )}
 
-            <div style={{
-              marginTop: 28,
-              paddingTop: 12,
-              borderTop: "1px solid #e8e6dc",
-              textAlign: "center",
-            }}>
-              <p style={{
-                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-                fontSize: 9.5,
-                color: "#bcb8ae",
-                letterSpacing: "0.06em",
-                margin: 0,
-              }}>
+            <div
+              style={{
+                marginTop: 28,
+                paddingTop: 12,
+                borderTop: "1px solid #e8e6dc",
+                textAlign: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                  fontSize: 9.5,
+                  color: "#bcb8ae",
+                  letterSpacing: "0.06em",
+                  margin: 0,
+                }}
+              >
                 DOCUMENTO GERADO POR KRIOU DOCS ·{" "}
-                {new Date().toLocaleDateString("pt-BR", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                }).toUpperCase()}
+                {new Date()
+                  .toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })
+                  .toUpperCase()}
               </p>
             </div>
           </div>
         </div>
 
         <div style={{ marginTop: 24, textAlign: "center" }}>
-          <Button
-            variant="primary"
-            icon="Download"
+          <button
             onClick={() => navigate("checkout")}
-            style={{ padding: "14px 32px", fontSize: 15 }}
+            style={{
+              padding: "16px 36px",
+              fontSize: 15,
+              fontWeight: 700,
+              fontFamily: "var(--font-body)",
+              borderRadius: 14,
+              background: "var(--coral)",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              minHeight: 52,
+              transition: "all 0.2s ease",
+              boxShadow: "0 2px 12px rgba(244,63,94,0.3)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--coral-hover)";
+              e.currentTarget.style.boxShadow = "0 4px 20px rgba(244,63,94,0.45)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--coral)";
+              e.currentTarget.style.boxShadow = "0 2px 12px rgba(244,63,94,0.3)";
+            }}
           >
+            <Icon name="Download" className="w-5 h-5" />
             Finalizar e Gerar PDF
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -973,23 +1311,55 @@ const LegalEditorPage = () => {
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 0: return renderVariantSelection();
-      case 1: return renderFillForm();
-      case 2: return renderReview();
-      case 3: return renderPreview();
-      default: return null;
+      case 0:
+        return renderVariantSelection();
+      case 1:
+        return renderFillForm();
+      case 2:
+        return renderReview();
+      case 3:
+        return renderPreview();
+      default:
+        return null;
     }
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--navy)",
+      }}
+    >
       <AppNavbar
         title={navTitle}
         leftAction={
           <button
-            onClick={() => isFirstStep ? navigate("templates") : handlePrevious()}
+            onClick={() => (isFirstStep ? navigate("templates", { replace: true }) : handlePrevious())}
             aria-label="Voltar"
-            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6 }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              padding: 6,
+              minWidth: 44,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 10,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--text)";
+              e.currentTarget.style.background = "var(--surface-2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-muted)";
+              e.currentTarget.style.background = "none";
+            }}
           >
             <Icon name="ChevronLeft" className="w-5 h-5" />
           </button>
@@ -1000,7 +1370,27 @@ const LegalEditorPage = () => {
               onClick={handleGoHome}
               aria-label="Ir para o início"
               title="Voltar ao dashboard"
-              style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                padding: 6,
+                minWidth: 44,
+                minHeight: 44,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 10,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--text)";
+                e.currentTarget.style.background = "var(--surface-2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--text-muted)";
+                e.currentTarget.style.background = "none";
+              }}
             >
               <Icon name="Home" className="w-5 h-5" />
             </button>
@@ -1016,7 +1406,16 @@ const LegalEditorPage = () => {
         />
       </AppNavbar>
 
-      <div ref={contentRef} className="page-container" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
+      <div
+        ref={contentRef}
+        style={{
+          flex: 1,
+          maxWidth: 920,
+          margin: "0 auto",
+          padding: "24px 24px 120px",
+          width: "100%",
+        }}
+      >
         {renderStepContent()}
       </div>
 
@@ -1030,8 +1429,19 @@ const LegalEditorPage = () => {
           onSaveLater={handleSaveLater}
           extraContent={
             currentStep === 1 && (
-              <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ color: "var(--teal)", fontWeight: 700 }}>{filledCount}</span>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontFamily: "var(--font-body)",
+                }}
+              >
+                <span style={{ color: "var(--teal)", fontWeight: 700, fontFamily: "var(--font-display)" }}>
+                  {filledCount}
+                </span>
                 campos preenchidos
               </div>
             )
@@ -1039,11 +1449,7 @@ const LegalEditorPage = () => {
         />
       </div>
 
-      <ConfirmDialog
-        {...confirmState}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />
+      <ConfirmDialog {...confirmState} onConfirm={handleConfirm} onCancel={handleCancel} />
 
       {showRequirements && (
         <RequirementsModal

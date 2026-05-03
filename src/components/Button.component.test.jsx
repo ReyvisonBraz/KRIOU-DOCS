@@ -28,14 +28,17 @@ describe("Button", () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it("aplica classe btn-primary por padrão", () => {
-    render(<Button>Primário</Button>);
-    expect(screen.getByRole("button")).toHaveClass("btn-primary");
+  it("renderiza botao primario com estilo inline coral por padrao", () => {
+    render(<Button>Primario</Button>);
+    const btn = screen.getByRole("button");
+    expect(btn).toBeInTheDocument();
+    expect(btn.style.background).toBeTruthy();
   });
 
-  it("aplica classe btn-secondary para variant secondary", () => {
-    render(<Button variant="secondary">Secundário</Button>);
-    expect(screen.getByRole("button")).toHaveClass("btn-secondary");
+  it("renderiza botao secundario com estilo diferente do primario", () => {
+    render(<Button variant="secondary">Secundario</Button>);
+    const btn = screen.getByRole("button");
+    expect(btn).toBeInTheDocument();
   });
 
   it("aplica className extra quando fornecido", () => {

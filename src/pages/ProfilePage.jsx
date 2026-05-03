@@ -2,8 +2,9 @@
  * ============================================
  * KRIOU DOCS - Profile Page Component
  * ============================================
- * User profile and settings management page.
- * Reads data from AppContext (session + formData).
+ * Design: Luxury Refined + Bold Editorial
+ * Colors: Navy (#090914), Coral (#F43F5E), Gold (#D4AF37), Teal (#14B8A6)
+ * Typography: Outfit (display), Plus Jakarta Sans (body)
  */
 
 import React, { useState } from "react";
@@ -12,9 +13,11 @@ import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import StorageService from "../utils/storage";
 
-/**
- * ProfilePage - User profile and settings
- */
+// ─── CSS Variables Reference ─────────────────────────────────────────────────
+// --navy, --surface, --surface-2, --surface-3, --coral, --gold, --teal,
+// --text, --text-dim, --text-muted, --text-faint, --border, --border-hover,
+// --success, --danger
+
 const ProfilePage = () => {
   const { navigate, logout, profile, email, userId, userDocuments } = useApp();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -23,9 +26,6 @@ const ProfilePage = () => {
   const displayEmail = email || null;
   const displayCity  = null;
 
-  /**
-   * Get user initials for avatar
-   */
   const getUserInitials = () =>
     displayName
       .split(" ")
@@ -34,16 +34,10 @@ const ProfilePage = () => {
       .toUpperCase()
       .slice(0, 2);
 
-  /**
-   * Handle logout
-   */
   const handleLogout = () => {
     logout();
   };
 
-  /**
-   * Handle full account/data deletion from localStorage
-   */
   const handleDeleteData = () => {
     if (userId) {
       StorageService.clearUserData(userId);
@@ -53,68 +47,183 @@ const ProfilePage = () => {
   };
 
   const docCount = userDocuments?.length ?? 0;
+  const finalizedCount = userDocuments?.filter(d => d.status === "finalizado").length ?? 0;
 
   return (
-    <div style={{ minHeight: "100vh" }}>
-      {/* ─── Navbar ─── */}
+    <div style={{ minHeight: "100vh", background: "var(--navy)" }}>
       <AppNavbar
         title="Perfil"
         leftAction={
           <button
-            onClick={() => navigate("dashboard")}
+            onClick={() => navigate("dashboard", { replace: true })}
             aria-label="Voltar ao Dashboard"
-            style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: 6 }}
+            style={{
+              minWidth: 44,
+              minHeight: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 12,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-muted)",
+              transition: "all 0.2s ease",
+            }}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
           >
             <Icon name="ChevronLeft" className="w-5 h-5" />
           </button>
         }
       />
 
-      {/* ─── Profile Content ─── */}
-      <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 24px" }}>
+      <div style={{ maxWidth: 600, margin: "32px auto", padding: "0 24px" }}>
 
-        {/* Avatar Section */}
-        <div className="animate-fadeUp" style={{ textAlign: "center", marginBottom: 32 }}>
+        {/* ─── Avatar Section ─── */}
+        <div className="animate-fadeUp" style={{ textAlign: "center", marginBottom: 28 }}>
           <div
             aria-hidden="true"
             style={{
-              width: 100, height: 100, borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--coral), var(--purple))",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 16px",
-              fontSize: 36, fontWeight: 900, color: "white",
+              width: 108,
+              height: 108,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #F43F5E 0%, #A855F7 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 18px",
+              fontSize: 40,
+              fontWeight: 900,
+              fontFamily: "'Outfit', sans-serif",
+              color: "#fff",
+              letterSpacing: "0.02em",
+              boxShadow: "0 8px 36px rgba(244,63,94,0.30), 0 2px 8px rgba(168,85,247,0.25)",
             }}
           >
             {getUserInitials()}
           </div>
-          <h1 className="font-display" style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
+          <h1
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: "-0.015em",
+              color: "var(--text)",
+              marginBottom: 4,
+            }}
+          >
             {displayName}
           </h1>
           {displayEmail && (
-            <p style={{ color: "var(--text-muted)", fontSize: 14 }}>{displayEmail}</p>
+            <p style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 14,
+              color: "var(--text-muted)",
+              letterSpacing: "-0.005em",
+            }}>
+              {displayEmail}
+            </p>
           )}
         </div>
 
-        {/* Stats */}
-        <Card className="animate-fadeUp" style={{ marginBottom: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
-            <div style={{ textAlign: "center", padding: "16px 0", borderRight: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 28, fontWeight: 900, color: "var(--coral)" }}>{docCount}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Documentos</div>
-            </div>
-            <div style={{ textAlign: "center", padding: "16px 0" }}>
-              <div style={{ fontSize: 28, fontWeight: 900, color: "var(--teal)" }}>
-                {userDocuments?.filter(d => d.status === "finalizado").length ?? 0}
+        {/* ─── Stats ─── */}
+        <Card
+          className="animate-fadeUp"
+          style={{
+            marginBottom: 16,
+            padding: 0,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+            }}
+          >
+            <div
+              style={{
+                textAlign: "center",
+                padding: "22px 16px",
+                borderRight: "1px solid var(--border)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: 34,
+                  fontWeight: 900,
+                  color: "var(--coral)",
+                  letterSpacing: "-0.025em",
+                  lineHeight: 1,
+                  marginBottom: 6,
+                }}
+              >
+                {docCount}
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Finalizados</div>
+              <div
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "var(--text-muted)",
+                  letterSpacing: "0.005em",
+                }}
+              >
+                Documentos
+              </div>
+            </div>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "22px 16px",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: 34,
+                  fontWeight: 900,
+                  color: "var(--teal)",
+                  letterSpacing: "-0.025em",
+                  lineHeight: 1,
+                  marginBottom: 6,
+                }}
+              >
+                {finalizedCount}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "var(--text-muted)",
+                  letterSpacing: "0.005em",
+                }}
+              >
+                Finalizados
+              </div>
             </div>
           </div>
         </Card>
 
-        {/* Account Info */}
-        <Card className="animate-fadeUp delay-1" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Informações da Conta</h3>
-
+        {/* ─── Account Info ─── */}
+        <Card
+          className="animate-fadeUp delay-1"
+          style={{ marginBottom: 16, padding: "20px 20px 4px" }}
+        >
+          <h3
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "var(--text)",
+              marginBottom: 8,
+            }}
+          >
+            Informações da Conta
+          </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <InfoRow icon="User" label="Nome" value={displayName} />
             {displayEmail && <InfoRow icon="Mail" label="E-mail" value={displayEmail} />}
@@ -125,66 +234,284 @@ const ProfilePage = () => {
           </div>
         </Card>
 
-        {/* Plan Info */}
-        <Card className="animate-fadeUp delay-2" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Plano Atual</h3>
+        {/* ─── Plan Info ─── */}
+        <Card
+          className="animate-fadeUp delay-2"
+          style={{ marginBottom: 16, padding: 20 }}
+        >
+          <h3
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "var(--text)",
+              marginBottom: 14,
+            }}
+          >
+            Plano Atual
+          </h3>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--coral)" }}>Plano Avulso</div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>R$ 9,90 por documento</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Plano Avulso
+                </span>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "3px 10px",
+                    borderRadius: 9999,
+                    background: "rgba(244,63,94,0.12)",
+                    color: "var(--coral)",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.01em",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Atual
+                </span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 13,
+                  color: "var(--text-muted)",
+                }}
+              >
+                R$ 9,90 por documento
+              </div>
             </div>
-            <Button variant="secondary" size="small">Atualizar Plano</Button>
+            <button
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                padding: "9px 18px",
+                borderRadius: 12,
+                border: "1.5px solid rgba(212,175,55,0.25)",
+                background: "rgba(212,175,55,0.06)",
+                color: "var(--gold)",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                whiteSpace: "nowrap",
+                letterSpacing: "-0.005em",
+              }}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(212,175,55,0.13)";
+                e.currentTarget.style.borderColor = "rgba(212,175,55,0.45)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(212,175,55,0.06)";
+                e.currentTarget.style.borderColor = "rgba(212,175,55,0.25)";
+              }}
+            >
+              Atualizar Plano
+            </button>
           </div>
         </Card>
 
-        {/* Settings */}
-        <Card className="animate-fadeUp delay-3" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Configurações</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* ─── Settings ─── */}
+        <Card
+          className="animate-fadeUp delay-3"
+          style={{ marginBottom: 16, padding: "20px 20px 4px" }}
+        >
+          <h3
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "var(--text)",
+              marginBottom: 8,
+            }}
+          >
+            Configurações
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <SettingsRow icon="Bell" label="Notificações" />
             <SettingsRow icon="Shield" label="Privacidade" />
             <SettingsRow icon="HelpCircle" label="Ajuda e Suporte" last />
           </div>
         </Card>
 
-        {/* Logout */}
-        <Button
-          variant="secondary"
-          style={{ width: "100%", marginTop: 8 }}
-          icon="LogOut"
+        {/* ─── Logout ─── */}
+        <button
           onClick={handleLogout}
+          style={{
+            width: "100%",
+            minHeight: 52,
+            padding: "14px 24px",
+            borderRadius: 14,
+            border: "1.5px solid rgba(255,255,255,0.10)",
+            background: "var(--surface-2)",
+            color: "var(--text-dim)",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 15,
+            fontWeight: 600,
+            letterSpacing: "-0.005em",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+            marginTop: 8,
+          }}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--surface-3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.16)";
+            e.currentTarget.style.color = "var(--text)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--surface-2)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)";
+            e.currentTarget.style.color = "var(--text-dim)";
+          }}
         >
+          <Icon name="LogOut" className="w-5 h-5" />
           Sair da Conta
-        </Button>
+        </button>
 
-        {/* Delete data */}
+        {/* ─── Delete Data ─── */}
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
             style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "var(--text-muted)", fontSize: 12, marginTop: 16,
-              display: "block", width: "100%", textAlign: "center",
+              minWidth: 44,
+              minHeight: 44,
+              padding: "12px 16px",
+              margin: "16px auto 0",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-muted)",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 12,
+              fontWeight: 500,
+              display: "block",
+              textAlign: "center",
               textDecoration: "underline",
+              textUnderlineOffset: 3,
+              transition: "color 0.2s ease",
             }}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)] rounded-xl"
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--danger)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
           >
             Apagar meus dados
           </button>
         ) : (
-          <Card style={{ marginTop: 16, border: "1px solid var(--coral)", padding: 16 }}>
-            <p style={{ fontSize: 13, marginBottom: 14, color: "var(--text)" }}>
-              Isso vai apagar <strong>todos os seus documentos e dados salvos</strong> localmente e desconectar sua conta. Esta ação não pode ser desfeita.
-            </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button variant="secondary" style={{ flex: 1 }} onClick={() => setShowDeleteConfirm(false)}>
+          <Card
+            style={{
+              marginTop: 16,
+              padding: 20,
+              border: "1.5px solid rgba(244,63,94,0.35)",
+              background: "rgba(244,63,94,0.04)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+              <div
+                style={{
+                  flexShrink: 0,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: "rgba(244,63,94,0.12)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--coral)",
+                }}
+              >
+                <Icon name="Shield" className="w-5 h-5" />
+              </div>
+              <p
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  color: "var(--text-dim)",
+                  letterSpacing: "-0.005em",
+                  margin: 0,
+                }}
+              >
+                Isso vai apagar <strong style={{ color: "var(--text)" }}>todos os seus documentos e dados salvos</strong> localmente e desconectar sua conta. Esta ação não pode ser desfeita.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  flex: 1,
+                  minHeight: 48,
+                  padding: "12px 20px",
+                  borderRadius: 13,
+                  border: "1.5px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text-dim)",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  letterSpacing: "-0.005em",
+                  transition: "all 0.2s ease",
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--surface-2)";
+                  e.currentTarget.style.color = "var(--text)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--text-dim)";
+                }}
+              >
                 Cancelar
-              </Button>
+              </button>
               <button
                 onClick={handleDeleteData}
                 style={{
-                  flex: 1, padding: "10px 16px", borderRadius: 10,
-                  background: "var(--coral)", color: "white",
-                  border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                  flex: 1,
+                  minHeight: 48,
+                  padding: "12px 20px",
+                  borderRadius: 13,
+                  border: "none",
+                  background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                  color: "#fff",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  letterSpacing: "-0.005em",
+                  boxShadow: "0 4px 18px rgba(244,63,94,0.30)",
+                  transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)";
+                  e.currentTarget.style.boxShadow = "0 8px 28px rgba(244,63,94,0.45)";
+                  e.currentTarget.style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)";
+                  e.currentTarget.style.boxShadow = "0 4px 18px rgba(244,63,94,0.30)";
+                  e.currentTarget.style.transform = "scale(1)";
                 }}
               >
                 Confirmar exclusão
@@ -193,7 +520,7 @@ const ProfilePage = () => {
           </Card>
         )}
 
-        <div style={{ height: 40 }} />
+        <div style={{ height: 48 }} />
       </div>
     </div>
   );
@@ -202,29 +529,109 @@ const ProfilePage = () => {
 // ─── Sub-components ───
 
 const InfoRow = ({ icon, label, value, last }) => (
-  <div style={{
-    display: "flex", alignItems: "center", gap: 12,
-    padding: "12px 0",
-    borderBottom: last ? "none" : "1px solid var(--border)",
-  }}>
-    <Icon name={icon} className="w-5 h-5" style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-    <div>
-      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 600 }}>{value}</div>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      padding: "14px 0",
+      borderBottom: last ? "none" : "1px solid var(--border)",
+    }}
+  >
+    <div
+      style={{
+        flexShrink: 0,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        background: "var(--surface-2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--text-muted)",
+      }}
+    >
+      <Icon name={icon} className="w-5 h-5" />
+    </div>
+    <div style={{ minWidth: 0 }}>
+      <div
+        style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--text-muted)",
+          letterSpacing: "0.01em",
+          marginBottom: 2,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "var(--text)",
+          letterSpacing: "-0.005em",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </div>
     </div>
   </div>
 );
 
 const SettingsRow = ({ icon, label, last }) => (
-  <button style={{
-    display: "flex", alignItems: "center", gap: 12,
-    padding: "12px 0", background: "none", border: "none",
-    borderBottom: last ? "none" : "1px solid var(--border)",
-    cursor: "pointer", width: "100%", textAlign: "left",
-  }}>
-    <Icon name={icon} className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
-    <span style={{ flex: 1, fontSize: 14 }}>{label}</span>
-    <Icon name="ChevronRight" className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+  <button
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      padding: "14px 0",
+      background: "none",
+      border: "none",
+      borderBottom: last ? "none" : "1px solid var(--border)",
+      cursor: "pointer",
+      width: "100%",
+      textAlign: "left",
+      minHeight: 52,
+      transition: "all 0.2s ease",
+    }}
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)] rounded-lg"
+    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+  >
+    <div
+      style={{
+        flexShrink: 0,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        background: "var(--surface-2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--text-muted)",
+      }}
+    >
+      <Icon name={icon} className="w-5 h-5" />
+    </div>
+    <span
+      style={{
+        flex: 1,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontSize: 14,
+        fontWeight: 500,
+        color: "var(--text)",
+        letterSpacing: "-0.005em",
+      }}
+    >
+      {label}
+    </span>
+    <Icon name="ChevronRight" className="w-4 h-4" style={{ color: "var(--text-faint)" }} />
   </button>
 );
 

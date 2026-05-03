@@ -67,34 +67,28 @@ const DashboardPage = () => {
       const rawQuery = searchQuery.trim();
       const queryLower = rawQuery.toLowerCase();
 
-      // Detecta o tipo de busca: codigo, CPF, RG ou texto livre
       const isSearchByCode = looksLikeCode(rawQuery);
       const isSearchByCPF = looksLikeCPF(rawQuery);
       const isSearchByRG = !isSearchByCPF && /^\d+$/.test(rawQuery.replace(/\D/g, "")) && rawQuery.replace(/\D/g, "").length >= 6;
 
       docs = docs.filter((doc) => {
-        // Busca por codigo do documento
         if (isSearchByCode) {
           if (doc.code?.toLowerCase().includes(queryLower)) return true;
         }
 
-        // Busca por CPF
         if (isSearchByCPF) {
           const person = extractPersonData(doc);
           if (person.cpf && normalizeCPF(person.cpf).includes(normalizeCPF(rawQuery))) return true;
         }
 
-        // Busca por RG
         if (isSearchByRG) {
           const person = extractPersonData(doc);
           if (person.rg && normalizeRG(person.rg).includes(normalizeRG(rawQuery))) return true;
         }
 
-        // Busca por nome da pessoa
         const person = extractPersonData(doc);
         if (person.nome && normalizeName(person.nome).includes(normalizeName(rawQuery))) return true;
 
-        // Busca por titulo, template e code (fallback)
         return (
           doc.title?.toLowerCase().includes(queryLower) ||
           doc.template?.toLowerCase().includes(queryLower) ||
@@ -103,7 +97,7 @@ const DashboardPage = () => {
       });
     }
     return docs;
-  }, [allDocs, activeTab, searchQuery]);
+  }, [allDocs, activeTab, searchQuery, TAB_FILTER_TYPE]);
 
   const handleEditDocument = (doc) => {
     if (doc.type === "resume") {
@@ -170,44 +164,175 @@ const DashboardPage = () => {
 
   const filteredDocs = getFilteredDocs();
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
+  const finishedCount = allDocs.filter(d => d.status === "finalizado").length;
+  const draftCount = allDocs.filter(d => d.status !== "finalizado").length;
+  const logoTitle = (
+    <span className="font-display text-2xl font-black tracking-tight">
+      <span className="text-coral">Kriou</span>{" "}
+      <span className="text-white">Docs</span>
+    </span>
+  );
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col">
+    <div style={{ minHeight: "100vh", background: "var(--navy)", display: "flex", flexDirection: "column" }}>
 
       <AppNavbar
-        title={<span className="font-display text-2xl font-black cursor-pointer tracking-tight" onClick={() => navigate("landing")}><span className="text-coral">Kriou</span> <span className="text-white">Docs</span></span>}
+        title={logoTitle}
         rightAction={
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate("profile")} aria-label="Perfil" className="p-2 rounded-xl text-text-muted hover:text-text hover:bg-surface-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy">
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <button
+              onClick={() => navigate("profile")}
+              aria-label="Perfil"
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 12,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                transition: "all 0.2s ease",
+              }}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--surface-2)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
+            >
               <Icon name="User" className="w-5 h-5" />
             </button>
-            <button onClick={logout} aria-label="Sair" className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-text-muted hover:text-coral transition-colors rounded-lg hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60">
-              <Icon name="LogOut" className="w-4 h-4" /> <span className="hidden sm:inline">Sair</span>
+            <button
+              onClick={logout}
+              aria-label="Sair"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                minWidth: 44,
+                minHeight: 44,
+                padding: "8px 14px",
+                borderRadius: 10,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontWeight: 600,
+                fontSize: "0.8125rem",
+                transition: "all 0.2s ease",
+              }}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--coral)"; e.currentTarget.style.background = "var(--surface-2)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
+            >
+              <Icon name="LogOut" className="w-4 h-4" />
+              <span style={{ display: "none" }} className="sm-dashboard-inline">Sair</span>
             </button>
           </div>
         }
       />
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-10">
+      {/* Global responsive style */}
+      <style>{`.sm-dashboard-inline{display:inline!important}@media(max-width:639px){.sm-dashboard-inline{display:none!important}}`}</style>
 
-        {/* ─── Welcome ─── */}
-        <section className="animate-fadeUp mb-10">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
+      <main style={{ flex: 1, width: "100%", maxWidth: 1024, margin: "0 auto", padding: "32px 20px 64px" }}>
+
+        {/* ─── Welcome Section ─── */}
+        <section style={{ marginBottom: 40 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
-              <p className="text-text-muted/80 text-sm font-medium tracking-wide uppercase mb-1">Painel</p>
-              <h1 className="font-display text-3xl md:text-4xl font-black text-white">
-                Olá, <span className="text-coral">{getUserName()}</span>
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                margin: "0 0 6px",
+              }}>
+                Painel
+              </p>
+              <h1 style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "clamp(1.625rem, 4vw, 2.25rem)",
+                fontWeight: 800,
+                color: "var(--text)",
+                margin: 0,
+                letterSpacing: "-0.025em",
+                lineHeight: 1.15,
+              }}>
+                Olá,{" "}
+                <span style={{ color: "var(--coral)" }}>
+                  {getUserName()}
+                </span>
               </h1>
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: "0.875rem",
+                color: "var(--text-dim)",
+                margin: "8px 0 0",
+                lineHeight: 1.5,
+              }}>
+                {allDocs.length === 0
+                  ? "Crie seu primeiro documento profissional."
+                  : `${allDocs.length} documento${allDocs.length !== 1 ? "s" : ""} no seu workspace`}
+              </p>
             </div>
+
             {allDocs.length > 0 && (
-              <div className="flex items-center gap-6 text-sm text-text-muted">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span>{allDocs.filter(d => d.status === "finalizado").length} finalizados</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 14px",
+                  borderRadius: 12,
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}>
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "var(--success)",
+                    boxShadow: "0 0 8px rgba(20,184,166,0.4)",
+                    flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "var(--text-dim)",
+                  }}>
+                    {finishedCount} finalizado{finishedCount !== 1 ? "s" : ""}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-gold" />
-                  <span>{allDocs.filter(d => d.status !== "finalizado").length} rascunhos</span>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 14px",
+                  borderRadius: 12,
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                }}>
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "var(--gold)",
+                    boxShadow: "0 0 8px rgba(212,175,55,0.3)",
+                    flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "var(--text-dim)",
+                  }}>
+                    {draftCount} rascunho{draftCount !== 1 ? "s" : ""}
+                  </span>
                 </div>
               </div>
             )}
@@ -215,95 +340,414 @@ const DashboardPage = () => {
         </section>
 
         {/* ─── Command Bar ─── */}
-        <section className="animate-fadeUp delay-1 mb-8">
-          <div className="flex flex-col md:flex-row gap-3 items-stretch">
-            <div className="relative flex-1 min-w-0">
-              <Icon name="Search" className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-text-muted/60" />
+        <section style={{ marginBottom: 32 }}>
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}>
+            {/* Search row */}
+            <div style={{
+              position: "relative",
+              width: "100%",
+            }}>
+              <Icon name="Search" style={{
+                position: "absolute",
+                left: 16,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 18,
+                height: 18,
+                color: "var(--text-muted)",
+                opacity: 0.6,
+                pointerEvents: "none",
+              }} />
               <input
                 type="text"
-                placeholder="Buscar por nome ou modelo..."
+                placeholder="Buscar por nome, CPF, RG ou código..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface border border-border rounded-2xl pl-11 pr-4 py-3.5 text-[15px] outline-none text-white placeholder-text-muted/50 transition-all duration-200 focus:border-coral/50 focus:ring-4 focus:ring-coral/10"
+                style={{
+                  width: "100%",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 16,
+                  padding: "14px 16px 14px 48px",
+                  fontSize: "0.9375rem",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 500,
+                  color: "var(--text)",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "all 0.25s ease",
+                }}
+                className="focus-visible:border-[var(--coral)]/50 focus-visible:ring-4 focus-visible:ring-[var(--coral)]/10"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(244,63,94,0.45)";
+                  e.currentTarget.style.boxShadow = "0 0 0 4px rgba(244,63,94,0.08)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               />
             </div>
-            <div className="flex gap-2.5 shrink-0">
-              <Button variant="primary" icon="Plus" onClick={handleCreateResume} className="px-5 py-3.5 whitespace-nowrap">
+
+            {/* Action buttons row */}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={handleCreateResume}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  minWidth: 44,
+                  minHeight: 48,
+                  padding: "13px 22px",
+                  borderRadius: 14,
+                  border: "none",
+                  cursor: "pointer",
+                  background: "var(--coral)",
+                  color: "#fff",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "0.875rem",
+                  letterSpacing: "-0.005em",
+                  transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: "0 4px 16px rgba(244,63,94,0.3)",
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e63950";
+                  e.currentTarget.style.boxShadow = "0 6px 24px rgba(244,63,94,0.4)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--coral)";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(244,63,94,0.3)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <Icon name="User" className="w-4 h-4" />
                 Novo Currículo
-              </Button>
-              <Button variant="secondary" icon="FileText" onClick={handleCreateLegalDocument} className="px-5 py-3.5 whitespace-nowrap">
+              </button>
+              <button
+                onClick={handleCreateLegalDocument}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  minWidth: 44,
+                  minHeight: 48,
+                  padding: "13px 22px",
+                  borderRadius: 14,
+                  border: "1.5px solid rgba(212,175,55,0.25)",
+                  cursor: "pointer",
+                  background: "transparent",
+                  color: "var(--gold)",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "0.875rem",
+                  letterSpacing: "-0.005em",
+                  transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(212,175,55,0.08)";
+                  e.currentTarget.style.borderColor = "rgba(212,175,55,0.5)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(212,175,55,0.12)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "rgba(212,175,55,0.25)";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <Icon name="FileText" className="w-4 h-4" />
                 Novo Documento
-              </Button>
+              </button>
             </div>
           </div>
         </section>
 
         {/* ─── Tabs ─── */}
         {allDocs.length > 0 && (
-          <section className="animate-fadeUp delay-2 mb-8">
-            <nav aria-label="Filtrar documentos" className="flex gap-1.5 flex-wrap">
-              {visibleTabs.map((tab) => {
-                const count = tab.id === "todos" ? allDocs.length :
-                  tab.filterType === "type" ? allDocs.filter(d => d.type === tab.id).length :
-                  tab.filterType === "documentType" ? allDocs.filter(d => d.documentType === tab.id).length :
-                  0;
-                if (count === 0 && tab.id !== "todos") return null;
-                const isActive = activeTab === tab.id;
+          <nav aria-label="Filtrar documentos" style={{ marginBottom: 28, display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {visibleTabs.map((tab) => {
+              const count = tab.id === "todos" ? allDocs.length :
+                tab.filterType === "type" ? allDocs.filter(d => d.type === tab.id).length :
+                tab.filterType === "documentType" ? allDocs.filter(d => d.documentType === tab.id).length :
+                0;
+              if (count === 0 && tab.id !== "todos") return null;
+              const isActive = activeTab === tab.id;
 
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60
-                      ${isActive
-                        ? 'bg-coral text-white shadow-lg shadow-coral/20'
-                        : 'bg-surface text-text-muted hover:text-text hover:bg-surface-2 border border-transparent hover:border-border'}`}
-                  >
-                    <Icon name={tab.icon} className="w-3.5 h-3.5" />
-                    {tab.label}
-                    <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-black tabular-nums ${isActive ? 'bg-white/20 text-white' : 'bg-surface-3 text-text-muted'}`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          </section>
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    minWidth: 44,
+                    minHeight: 44,
+                    padding: "10px 18px",
+                    borderRadius: 14,
+                    border: isActive ? "none" : "1px solid transparent",
+                    cursor: "pointer",
+                    background: isActive ? "var(--coral)" : "var(--surface)",
+                    color: isActive ? "#fff" : "var(--text-muted)",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: isActive ? 700 : 600,
+                    fontSize: "0.8125rem",
+                    letterSpacing: "-0.005em",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: isActive ? "0 4px 16px rgba(244,63,94,0.25)" : "none",
+                  }}
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = "var(--surface-2)";
+                      e.currentTarget.style.color = "var(--text)";
+                      e.currentTarget.style.borderColor = "var(--border)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = "var(--surface)";
+                      e.currentTarget.style.color = "var(--text-muted)";
+                      e.currentTarget.style.borderColor = "transparent";
+                    }
+                  }}
+                >
+                  <Icon name={tab.icon} className="w-3.5 h-3.5" />
+                  {tab.label}
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: 22,
+                    height: 22,
+                    padding: "0 6px",
+                    borderRadius: 8,
+                    background: isActive ? "rgba(255,255,255,0.2)" : "var(--surface-3)",
+                    color: isActive ? "#fff" : "var(--text-muted)",
+                    fontFamily: "'Outfit', sans-serif",
+                    fontWeight: 800,
+                    fontSize: "0.6875rem",
+                    lineHeight: 1,
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
         )}
 
         {/* ─── Content ─── */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : filteredDocs.length > 0 ? (
-          <section className="animate-fadeUp delay-3 columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {filteredDocs.map((doc, index) => (
-              <DocumentCard
-                key={doc.id}
-                doc={doc}
-                onClick={() => handleEditDocument(doc)}
-                onDelete={() => handleDeleteDocument(doc)}
-                animationDelay={index * 0.04}
-              />
-            ))}
-          </section>
-        ) : (
-          <section className="animate-fadeUp delay-2">
-            <EmptyState
-              icon={searchQuery.trim() ? "Search" : "FileText"}
-              title={searchQuery.trim() ? "Nenhum documento encontrado" : "Ainda não há documentos"}
-              description={searchQuery.trim()
-                ? `Nenhum resultado para "${searchQuery}" em ${activeTabLabel.toLowerCase()}.`
-                : "Crie seu primeiro currículo ou contrato jurídico agora mesmo."}
-              action={!searchQuery.trim() && (
-                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-                  <Button variant="primary" onClick={handleCreateResume} className="justify-center px-6">Criar Currículo</Button>
-                  <Button variant="secondary" onClick={handleCreateLegalDocument} className="justify-center px-6">Criar Documento Jurídico</Button>
+          <div style={{ columnCount: 1, columnGap: 16 }}>
+            <style>{`
+              @media (min-width: 640px) { .dash-cols { column-count: 2 !important; } }
+              @media (min-width: 1024px) { .dash-cols { column-count: 3 !important; } }
+            `}</style>
+            <div className="dash-cols" style={{ columnCount: 1, columnGap: 16 }}>
+              {filteredDocs.map((doc, index) => (
+                <div key={doc.id} style={{ breakInside: "avoid", marginBottom: 16 }}>
+                  <DocumentCard
+                    doc={doc}
+                    onClick={() => handleEditDocument(doc)}
+                    onDelete={() => handleDeleteDocument(doc)}
+                    animationDelay={index * 0.04}
+                  />
                 </div>
-              )}
-            />
-          </section>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            padding: "80px 20px",
+          }}>
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: 22,
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 28,
+            }}>
+              <Icon
+                name={searchQuery.trim() ? "Search" : "FileText"}
+                style={{ width: 34, height: 34, color: searchQuery.trim() ? "var(--text-muted)" : "var(--coral)" }}
+              />
+            </div>
+
+            <h2 style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "var(--text)",
+              margin: "0 0 10px",
+              letterSpacing: "-0.02em",
+            }}>
+              {searchQuery.trim()
+                ? "Nenhum documento encontrado"
+                : "Ainda não há documentos"}
+            </h2>
+
+            <p style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: "0.875rem",
+              lineHeight: 1.7,
+              color: "var(--text-muted)",
+              maxWidth: 420,
+              margin: "0 0 32px",
+            }}>
+              {searchQuery.trim()
+                ? `Nenhum resultado para "${searchQuery}" em ${activeTabLabel.toLowerCase()}. Tente outro termo de busca.`
+                : "Seu workspace está pronto. Crie seu primeiro currículo profissional ou documento jurídico agora mesmo."}
+            </p>
+
+            {!searchQuery.trim() && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 320 }}>
+                <button
+                  onClick={handleCreateResume}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                    minWidth: 44,
+                    minHeight: 48,
+                    padding: "14px 24px",
+                    borderRadius: 14,
+                    border: "none",
+                    cursor: "pointer",
+                    background: "var(--coral)",
+                    color: "#fff",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "0.9375rem",
+                    letterSpacing: "-0.005em",
+                    transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: "0 4px 16px rgba(244,63,94,0.3)",
+                  }}
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#e63950";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(244,63,94,0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--coral)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(244,63,94,0.3)";
+                  }}
+                >
+                  <Icon name="User" className="w-5 h-5" />
+                  Criar Currículo
+                </button>
+                <button
+                  onClick={handleCreateLegalDocument}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                    minWidth: 44,
+                    minHeight: 48,
+                    padding: "14px 24px",
+                    borderRadius: 14,
+                    border: "1.5px solid rgba(212,175,55,0.25)",
+                    cursor: "pointer",
+                    background: "transparent",
+                    color: "var(--gold)",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "0.9375rem",
+                    letterSpacing: "-0.005em",
+                    transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(212,175,55,0.08)";
+                    e.currentTarget.style.borderColor = "rgba(212,175,55,0.5)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(212,175,55,0.12)";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.borderColor = "rgba(212,175,55,0.25)";
+                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <Icon name="FileText" className="w-5 h-5" />
+                  Criar Documento Jurídico
+                </button>
+              </div>
+            )}
+
+            {searchQuery.trim() && (
+              <button
+                onClick={() => { setSearchQuery(""); setActiveTab("todos"); }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  minWidth: 44,
+                  minHeight: 44,
+                  padding: "11px 22px",
+                  borderRadius: 14,
+                  border: "1px solid var(--border)",
+                  cursor: "pointer",
+                  background: "var(--surface-2)",
+                  color: "var(--text-dim)",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  letterSpacing: "-0.005em",
+                  transition: "all 0.2s ease",
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--surface-3)";
+                  e.currentTarget.style.color = "var(--text)";
+                  e.currentTarget.style.borderColor = "var(--border-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--surface-2)";
+                  e.currentTarget.style.color = "var(--text-dim)";
+                  e.currentTarget.style.borderColor = "var(--border)";
+                }}
+              >
+                <Icon name="ChevronLeft" className="w-4 h-4" />
+                Limpar filtros
+              </button>
+            )}
+          </div>
         )}
       </main>
 

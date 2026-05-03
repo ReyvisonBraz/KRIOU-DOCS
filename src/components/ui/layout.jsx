@@ -1,8 +1,12 @@
 /**
  * ============================================
- * KRIOU DOCS - UI Layout Components
+ * KRIOU DOCS - Componentes de Layout
  * ============================================
- * Navbar, GlassPanel, AppNavbar, AppStepper, BottomNavigation
+ * Design System: Luxury Refined | Bold Editorial
+ * Cores: Navy (#090914), Coral (#F43F5E), Gold (#D4AF37), Teal (#14B8A6)
+ * Tipografia: Outfit (display) + Plus Jakarta Sans (body)
+ *
+ * Componentes: Navbar, GlassPanel, AppNavbar, AppStepper, BottomNavigation
  *
  * @module components/ui/layout
  */
@@ -10,151 +14,220 @@
 import React from "react";
 import { Icon } from "../Icons";
 
-/**
- * Navbar - Navigation bar component
- */
-export const Navbar = ({ children, className = "", style = {}, ...props }) => {
-  return (
-    <nav className={`sticky top-0 z-50 bg-navy/95 border-b border-white/[0.06] ${className}`} style={style} {...props}>
-      {children}
-    </nav>
-  );
-};
+/* ───────────────────────────────────────────
+   Navbar — Barra de navegação base
+   ─────────────────────────────────────────── */
+export const Navbar = ({ children, className = "", style = {}, ...props }) => (
+  <nav
+    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04] ${className}`}
+    style={style}
+    {...props}
+  >
+    {children}
+  </nav>
+);
 
-/**
- * GlassPanel - Transparent glass-effect container
- */
-export const GlassPanel = ({ children, className = "", style = {}, ...props }) => {
-  return (
-    <div className={`bg-surface border border-border rounded-2xl ${className}`} style={{ padding: 24, ...style }} {...props}>
-      {children}
-    </div>
-  );
-};
+/* ───────────────────────────────────────────
+   GlassPanel — Card premium (sem glass, mais sólido)
+   ─────────────────────────────────────────── */
+export const GlassPanel = ({ children, className = "", style = {}, ...props }) => (
+  <div
+    className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.18)] ${className}`}
+    style={{ padding: 24, ...style }}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
-/**
- * AppNavbar — Navbar glass reutilizável para todas as páginas.
- *
- * @param {string}    title        - Título centralizado
- * @param {ReactNode} leftAction   - Conteúdo à esquerda (ex: botão voltar)
- * @param {ReactNode} rightAction  - Conteúdo à direita (ex: botão salvar)
- * @param {ReactNode} children     - Conteúdo extra abaixo da linha principal (ex: stepper)
- * @param {object}    style        - Estilo extra no container
- */
+/* ───────────────────────────────────────────
+   AppNavbar — Navbar reutilizável das páginas
+   ───────────────────────────────────────────
+   @param {string}    title        - Título centralizado
+   @param {ReactNode} leftAction   - Ação à esquerda (ex: voltar)
+   @param {ReactNode} rightAction  - Ação à direita (ex: salvar)
+   @param {ReactNode} children     - Conteúdo extra abaixo (ex: stepper)
+   @param {object}    style        - Estilo inline extra no container
+   ─────────────────────────────────────────── */
 export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
   <div
-    className="sticky top-0 z-[100] bg-navy/95 border-b border-white/[0.06]"
+    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04]"
     style={style}
   >
+    {/* Linha principal: ação esquerda | título | ação direita */}
     <div
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "12px 16px",
+        padding: "10px 12px 10px 12px",
         maxWidth: 600,
         margin: "0 auto",
+        gap: 12,
+        minHeight: 52,
       }}
     >
-      <div style={{ minWidth: 80 }}>{leftAction || <span />}</div>
+      {/* Slot esquerdo — touch target >= 44px */}
+      <div
+        style={{
+          minWidth: 44,
+          minHeight: 44,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+        }}
+      >
+        {leftAction || <span />}
+      </div>
 
+      {/* Título — Outfit bold, tracking ajustado */}
       <span
         style={{
+          fontFamily: "'Outfit', sans-serif",
           fontWeight: 700,
-          fontSize: "0.95rem",
-          color: "var(--text-primary, #F0F0F5)",
+          fontSize: "0.9375rem",
+          letterSpacing: "-0.01em",
+          color: "var(--text)",
           textAlign: "center",
           flex: 1,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {title}
       </span>
 
-      <div style={{ minWidth: 80, display: "flex", justifyContent: "flex-end" }}>
+      {/* Slot direito — touch target >= 44px */}
+      <div
+        style={{
+          minWidth: 44,
+          minHeight: 44,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+        }}
+      >
         {rightAction || <span />}
       </div>
     </div>
 
-    {children && <div style={{ padding: "0 16px 10px" }}>{children}</div>}
+    {/* Conteúdo extra (ex: stepper de etapas) */}
+    {children && (
+      <div style={{ padding: "0 16px 10px", maxWidth: 600, margin: "0 auto" }}>
+        {children}
+      </div>
+    )}
   </div>
 );
 
-/**
- * AppStepper — Indicador de etapas para wizards.
- *
- * @param {Array}    steps          - Array de { label, icon, key }
- * @param {number}   currentStep    - Índice da etapa atual (0-based)
- * @param {Function} onStepClick    - Callback ao clicar numa etapa concluída
- * @param {Set}      completedSteps - Set de índices das etapas concluídas
- */
-export const AppStepper = ({ steps = [], currentStep = 0, onStepClick, completedSteps = new Set() }) => (
+/* ───────────────────────────────────────────
+   AppStepper — Indicador de etapas do wizard
+   ───────────────────────────────────────────
+   @param {Array}    steps          - Array de { label, key }
+   @param {number}   currentStep    - Índice da etapa atual (0‑based)
+   @param {Function} onStepClick    - Callback ao clicar em etapa concluída
+   @param {Set}      completedSteps - Set de índices das etapas concluídas
+   ─────────────────────────────────────────── */
+export const AppStepper = ({
+  steps = [],
+  currentStep = 0,
+  onStepClick,
+  completedSteps = new Set(),
+}) => (
   <nav
     aria-label={`Etapa ${currentStep + 1} de ${steps.length}: ${steps[currentStep]?.label || ""}`}
     style={{
       display: "flex",
       overflowX: "auto",
-      gap: 4,
-      padding: "4px 0",
+      gap: 1,
+      padding: "2px 0",
       scrollbarWidth: "none",
+      msOverflowStyle: "none",
     }}
   >
     {steps.map((step, index) => {
       const isActive = index === currentStep;
       const isCompleted = completedSteps.has(index);
       const isClickable = isCompleted && onStepClick;
+      const isReached = index <= currentStep || isCompleted;
 
       return (
         <button
           key={step.key || index}
           onClick={() => isClickable && onStepClick(index)}
+          type="button"
           aria-current={isActive ? "step" : undefined}
           style={{
             flex: "0 0 auto",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 4,
-            padding: "6px 10px",
-            borderRadius: 10,
+            gap: 5,
+            padding: "7px 12px",
+            borderRadius: 12,
             border: "none",
             cursor: isClickable ? "pointer" : "default",
-            background: isActive ? "rgba(233, 69, 96, 0.15)" : "transparent",
-            transition: "background 0.2s",
+            background: isActive
+              ? "rgba(244,63,94,0.10)"
+              : isReached
+                ? "rgba(255,255,255,0.02)"
+                : "transparent",
+            transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+            minWidth: 44,
+            minHeight: 44,
           }}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--navy)]"
         >
-          <div
+          {/* Círculo indicador */}
+          <span
+            aria-hidden="true"
             style={{
-              width: 28,
-              height: 28,
+              width: 30,
+              height: 30,
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
               fontWeight: 700,
+              fontFamily: "'Outfit', sans-serif",
               background: isActive
-                ? "var(--coral, #E94560)"
+                ? "var(--coral)"
                 : isCompleted
-                ? "var(--success, #00C897)"
-                : "rgba(255,255,255,0.08)",
-              color: isActive || isCompleted ? "#fff" : "var(--text-muted, #8888A8)",
-              transition: "background 0.2s",
+                  ? "var(--success)"
+                  : "rgba(255,255,255,0.06)",
+              color: isActive || isCompleted ? "#fff" : "var(--text-muted)",
+              boxShadow: isActive
+                ? "0 0 18px rgba(244,63,94,0.35)"
+                : isCompleted
+                  ? "0 0 8px rgba(16,185,129,0.25)"
+                  : "none",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            {isCompleted && !isActive ? "✓" : index + 1}
-          </div>
+            {isCompleted && !isActive ? (
+              <Icon name="Check" className="w-3.5 h-3.5" />
+            ) : (
+              index + 1
+            )}
+          </span>
 
+          {/* Label da etapa */}
           <span
             style={{
-              fontSize: "0.65rem",
-              fontWeight: isActive ? 700 : 500,
+              fontSize: "0.6875rem",
+              fontWeight: isActive ? 600 : 500,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              letterSpacing: "-0.005em",
               color: isActive
-                ? "var(--coral, #E94560)"
-                : isCompleted
-                ? "var(--success, #00C897)"
-                : "var(--text-muted, #8888A8)",
+                ? "var(--coral)"
+                : isReached
+                  ? "var(--text-dim)"
+                  : "var(--text-muted)",
               whiteSpace: "nowrap",
               transition: "color 0.2s",
+              lineHeight: 1.3,
             }}
           >
             {step.label}
@@ -166,14 +239,22 @@ export const AppStepper = ({ steps = [], currentStep = 0, onStepClick, completed
 );
 
 /**
- * BottomNavigation — Botões de navegação entre etapas do wizard.
+ * ============================================
+ * BottomNavigation — Navegação inferior do wizard
+ * ============================================
  *
- * @param {Function} onBack       - Callback para voltar
- * @param {Function} onNext       - Callback para avançar
- * @param {boolean}  isFirstStep  - Oculta botão voltar na primeira etapa
- * @param {boolean}  isLastStep   - Muda label do botão de avançar
- * @param {string}   nextLabel    - Label personalizado para botão de avançar
- * @param {ReactNode} extraContent - Conteúdo extra (ex: indicador de progresso)
+ * IMPORTANTE: O callback `onBack` é genérico —
+ * cada página injeta seu próprio handler.
+ * Este componente NÃO contém navegação fixa.
+ *
+ * @param {Function}  onBack        - Callback de voltar (handler da página)
+ * @param {Function}  onNext        - Callback de avançar
+ * @param {boolean}   isFirstStep   - Oculta botão "Voltar" se true
+ * @param {boolean}   isLastStep    - Altera label para "Finalizar"
+ * @param {string}    nextLabel     - Label customizado do botão avançar
+ * @param {ReactNode} extraContent  - Conteúdo auxiliar (ex: progresso)
+ * @param {Function}  onSaveLater   - Callback de salvar rascunho
+ * @param {object}    style         - Estilo inline extra no container
  */
 export const BottomNavigation = ({
   onBack,
@@ -185,7 +266,25 @@ export const BottomNavigation = ({
   onSaveLater,
   style,
 }) => {
-  const [hoveredButton, setHoveredButton] = React.useState(null);
+  const [hovered, setHovered] = React.useState(null);
+
+  const setFocus = (key) => setHovered(key);
+  const clearFocus = () => setHovered(null);
+
+  const btnBase = {
+    minWidth: 44,
+    minHeight: 44,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 14,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontWeight: 600,
+    fontSize: "0.8125rem",
+    letterSpacing: "-0.01em",
+    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+  };
 
   return (
     <div
@@ -195,110 +294,145 @@ export const BottomNavigation = ({
         left: 0,
         right: 0,
         zIndex: 50,
-        background: "rgba(15, 15, 30, 0.98)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-        padding: "14px 16px 20px",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        background: "rgba(9,9,20,0.94)",
+        borderTop: "1px solid rgba(212,175,55,0.08)",
+        boxShadow:
+          "0 -8px 40px rgba(0,0,0,0.5), 0 -1px 0 rgba(212,175,55,0.04)",
+        padding: "10px 16px calc(10px + env(safe-area-inset-bottom, 0px))",
         ...style,
       }}
     >
       <div
         style={{
           display: "flex",
-          gap: 10,
+          gap: 8,
           maxWidth: 600,
           margin: "0 auto",
+          alignItems: "center",
         }}
       >
+        {/* ─── Botão Voltar: transparente com borda ouro ─── */}
         {!isFirstStep && (
           <button
+            type="button"
             onClick={onBack}
-            onMouseEnter={() => setHoveredButton("back")}
-            onMouseLeave={() => setHoveredButton(null)}
+            onMouseEnter={() => setFocus("back")}
+            onMouseLeave={clearFocus}
+            onFocus={() => setFocus("back")}
+            onBlur={clearFocus}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+            aria-label="Voltar à etapa anterior"
             style={{
               flex: "0 0 auto",
-              padding: "14px 20px",
-              borderRadius: 14,
-              border: "2px solid rgba(255,255,255,0.15)",
-              background: hoveredButton === "back" ? "rgba(255,255,255,0.08)" : "transparent",
-              color: hoveredButton === "back" ? "#fff" : "var(--text-muted, #8888A8)",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              transition: "all 0.2s ease",
-              transform: hoveredButton === "back" ? "scale(1.02)" : "scale(1)",
+              ...btnBase,
+              padding: "11px 18px",
+              border: `1.5px solid ${
+                hovered === "back"
+                  ? "rgba(212,175,55,0.40)"
+                  : "rgba(255,255,255,0.10)"
+              }`,
+              background:
+                hovered === "back"
+                  ? "rgba(212,175,55,0.07)"
+                  : "transparent",
+              color:
+                hovered === "back"
+                  ? "var(--gold)"
+                  : "var(--text-dim)",
+              transform: hovered === "back" ? "translateX(-1px)" : "none",
             }}
           >
-            <Icon name="ChevronLeft" className="w-5 h-5" />
-            <span className="back-label">Voltar</span>
+            <Icon name="ChevronLeft" className="w-4 h-4" />
+            <span>Voltar</span>
           </button>
         )}
 
+        {/* ─── Botão Salvar: tom ouro-âmbar ─── */}
         {onSaveLater && !isFirstStep && (
           <button
+            type="button"
             onClick={onSaveLater}
-            onMouseEnter={() => setHoveredButton("save")}
-            onMouseLeave={() => setHoveredButton(null)}
-            title="Salvar rascunho e sair"
+            onMouseEnter={() => setFocus("save")}
+            onMouseLeave={clearFocus}
+            onFocus={() => setFocus("save")}
+            onBlur={clearFocus}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+            title="Salvar rascunho"
+            aria-label="Salvar rascunho"
             style={{
               flex: "0 0 auto",
-              padding: "14px 18px",
-              borderRadius: 14,
-              border: "2px solid rgba(249,168,37,0.4)",
-              background: hoveredButton === "save" ? "rgba(249,168,37,0.15)" : "rgba(249,168,37,0.05)",
-              color: hoveredButton === "save" ? "#f9a825" : "rgba(249,168,37,0.7)",
-              fontWeight: 700,
-              fontSize: "0.85rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
+              ...btnBase,
+              padding: "11px 16px",
+              gap: 6,
+              border: `1.5px solid ${
+                hovered === "save"
+                  ? "rgba(212,175,55,0.55)"
+                  : "rgba(212,175,55,0.18)"
+              }`,
+              background:
+                hovered === "save"
+                  ? "rgba(212,175,55,0.13)"
+                  : "rgba(212,175,55,0.04)",
+              color:
+                hovered === "save"
+                  ? "var(--gold)"
+                  : "rgba(212,175,55,0.62)",
               whiteSpace: "nowrap",
-              transition: "all 0.2s ease",
-              transform: hoveredButton === "save" ? "scale(1.02)" : "scale(1)",
             }}
           >
             <Icon name="Bookmark" className="w-4 h-4" />
-            <span className="save-later-label">Salvar</span>
+            <span>Salvar</span>
           </button>
         )}
 
+        {/* ─── Botão Avançar / Finalizar: gradiente coral ─── */}
         <button
+          type="button"
           onClick={onNext}
-          onMouseEnter={() => setHoveredButton("next")}
-          onMouseLeave={() => setHoveredButton(null)}
+          onMouseEnter={() => setFocus("next")}
+          onMouseLeave={clearFocus}
+          onFocus={() => setFocus("next")}
+          onBlur={clearFocus}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+          aria-label={
+            nextLabel ||
+            (isLastStep ? "Finalizar formulário" : "Avançar para próxima etapa")
+          }
           style={{
             flex: 1,
-            padding: "16px 24px",
-            borderRadius: 14,
-            border: "none",
-            background: hoveredButton === "next" 
-              ? "linear-gradient(135deg, #ff6b7a 0%, #E94560 100%)" 
-              : "var(--coral, #E94560)",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: "1rem",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
+            ...btnBase,
             justifyContent: "center",
+            padding: "14px 24px",
             gap: 10,
-            transition: "all 0.25s ease",
-            transform: hoveredButton === "next" ? "scale(1.02)" : "scale(1)",
-            boxShadow: hoveredButton === "next" 
-              ? "0 8px 30px rgba(233,69,96,0.4)" 
-              : "0 4px 15px rgba(233,69,96,0.25)",
+            border: "none",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 700,
+            fontSize: "0.9375rem",
+            letterSpacing: "-0.005em",
+            background:
+              hovered === "next"
+                ? "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)"
+                : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+            color: "#fff",
+            boxShadow:
+              hovered === "next"
+                ? "0 8px 32px rgba(244,63,94,0.45)"
+                : "0 4px 16px rgba(244,63,94,0.30)",
+            transform: hovered === "next" ? "scale(1.01)" : "scale(1)",
           }}
         >
-          {nextLabel || (isLastStep ? "✓ Finalizar" : "Avançar")}
-          {!isLastStep && <Icon name="ChevronRight" className="w-5 h-5" />}
+          {nextLabel || (isLastStep ? "Finalizar" : "Avançar")}
+          {!isLastStep && <Icon name="ChevronRight" className="w-4 h-4" />}
         </button>
       </div>
 
+      {/* Conteúdo extra (ex: barra de progresso) */}
       {extraContent && (
-        <div style={{ maxWidth: 600, margin: "10px auto 0" }}>{extraContent}</div>
+        <div style={{ maxWidth: 600, margin: "8px auto 0" }}>
+          {extraContent}
+        </div>
       )}
     </div>
   );

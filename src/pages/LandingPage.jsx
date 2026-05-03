@@ -1,208 +1,314 @@
 /**
  * ============================================
- * KRIOU DOCS - Landing Page Component
+ * KRIOU DOCS - Landing Page
  * ============================================
- * Main landing page with hero section,
- * features, pricing and document previews.
+ * Luxury Refined + Bold Editorial.
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button, Badge } from "../components/UI";
-import { DOC_TYPES, PRICING_PLANS } from "../data/constants";
+import { DOC_TYPES, PRICING_PLANS, RESUME_TEMPLATES } from "../data/constants";
+
+const TEMPLATE_PREVIEWS = RESUME_TEMPLATES.slice(0, 5);
 
 const LandingPage = () => {
-  const { navigate } = useApp();
+  const { navigate, userId } = useApp();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const features = [
-    { icon: "Layout", title: "Modelos Prontos", desc: "Templates profissionais com design moderno. Só preencher e baixar.", color: "text-coral" },
-    { icon: "Zap", title: "Preenchimento Guiado", desc: "Passo a passo inteligente. Sem curva de aprendizado.", color: "text-teal" },
-    { icon: "Save", title: "Salvamento Automático", desc: "Nunca perca seu progresso. Salva a cada alteração.", color: "text-gold" },
-    { icon: "MessageCircle", title: "Entrega via WhatsApp", desc: "Receba seu documento pronto direto no seu WhatsApp.", color: "text-success" },
-    { icon: "Shield", title: "Documentos Válidos", desc: "Estrutura jurídica validada para contratos e declarações.", color: "text-purple" },
-    { icon: "Edit", title: "Edite Depois", desc: "Atualize seus documentos quando quiser, sem refazer.", color: "text-blue" },
-  ];
-
-  const stats = [
-    { number: "12+", label: "Tipos de documentos" },
-    { number: "5", label: "Modelos de currículo" },
-    { number: "< 5min", label: "Tempo médio" },
-  ];
+  useEffect(() => {
+    if (userId) navigate("dashboard", { replace: true });
+  }, [userId, navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy relative overflow-hidden">
-      {/* Elementos de Brilho Fundo */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-coral/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-teal/10 blur-[100px] rounded-full pointer-events-none" />
+    <div className="min-h-screen flex flex-col bg-navy overflow-x-hidden">
 
       {/* ─── Navbar ─── */}
-      <nav className="glass sticky top-0 z-50 border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
-          <div className="font-display text-2xl md:text-3xl font-black tracking-tight cursor-pointer" onClick={() => navigate("landing")}>
-            <span className="text-coral">Kriou</span>
-            <span className="text-text ml-1">Docs</span>
-          </div>
-          <div className="flex gap-2 md:gap-3">
-            <Button variant="secondary" className="btn-small hidden sm:flex" onClick={() => navigate("login")}>
+      <header className="sticky top-0 z-50 bg-navy/95 border-b border-border">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8 h-[64px] flex items-center justify-between">
+          <button
+            onClick={() => navigate("landing")}
+            className="font-display text-2xl font-black tracking-tight text-text bg-transparent border-none cursor-pointer touch-target px-2"
+          >
+            <span className="text-coral">Kriou</span>Docs
+          </button>
+
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => navigate("login")}
+              className="btn-secondary btn-small touch-target"
+            >
               Entrar
-            </Button>
-            <Button variant="primary" className="btn-small" onClick={() => navigate("login")}>
-              Criar Grátis
-            </Button>
+            </button>
+            <button
+              onClick={() => navigate("login")}
+              className="btn-primary btn-small touch-target"
+            >
+              Criar Gr&aacute;tis
+            </button>
           </div>
+
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
+            aria-label="Menu"
+          >
+            <Icon
+              name={mobileOpen ? "ChevronLeft" : "ChevronRight"}
+              className="w-5 h-5 text-text-dim rotate-90"
+            />
+          </button>
         </div>
-      </nav>
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-6">
-        {/* ─── Hero Section ─── */}
-        <section className="relative py-16 md:py-24 text-center flex flex-col items-center">
-          <div className="animate-fadeUp bg-surface-2 border border-border rounded-full px-5 py-2 mb-6">
-            <span className="text-teal text-xs md:text-sm font-semibold tracking-wide flex items-center justify-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal"></span>
-              </span>
-              Novo — Crie seu currículo em 5 minutos
-            </span>
+        {mobileOpen && (
+          <div className="md:hidden border-t border-border bg-navy px-5 py-4 flex flex-col gap-3 animate-fade-up">
+            <button
+              onClick={() => { navigate("login"); setMobileOpen(false); }}
+              className="btn-primary w-full justify-center touch-target"
+            >
+              Criar Gr&aacute;tis
+            </button>
+            <button
+              onClick={() => { navigate("login"); setMobileOpen(false); }}
+              className="btn-secondary w-full justify-center touch-target"
+            >
+              Entrar
+            </button>
           </div>
+        )}
+      </header>
 
-          <h1 className="font-display animate-fadeUp delay-1 text-[clamp(2.25rem,6vw,4rem)] font-black leading-[1.05] mb-6 tracking-tight">
-            Documentos profissionais<br />
-            <span className="text-gradient drop-shadow-sm">sem complicação</span>
-          </h1>
+      <main className="flex-1">
 
-          <p className="animate-fadeUp delay-2 text-base md:text-lg text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed px-2">
-            Currículos, contratos e documentos jurídicos prontos em minutos. Modelos profissionais, preenchimento guiado e entrega direta no WhatsApp.
-          </p>
+        {/* ─── Hero ─── */}
+        <section className="relative max-w-[1200px] mx-auto px-5 md:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+          {/* Ambient glow — subtle, no glass */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-coral/6 blur-[140px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-[-10%] w-[400px] h-[400px] bg-teal/6 blur-[120px] rounded-full pointer-events-none" />
 
-          <div className="animate-fadeUp delay-3 flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto px-4">
-            <Button variant="primary" icon="ChevronRight" iconPosition="right" onClick={() => navigate("login")} className="w-full sm:w-auto justify-center text-lg px-8 py-4">
-              Começar Agora — É Grátis
-            </Button>
-            <Button variant="secondary" onClick={() => document.getElementById("docs-section")?.scrollIntoView({ behavior: "smooth" })} className="w-full sm:w-auto justify-center text-lg px-8 py-4">
-              Ver Documentos
-            </Button>
-          </div>
+          <div className="relative max-w-[720px] mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-4 py-1.5 mb-8 text-xs font-semibold tracking-wide text-teal uppercase">
+              <span className="w-2 h-2 rounded-full bg-teal animate-glow-pulse" />
+              Nova plataforma de documentos
+            </div>
 
-          <div className="animate-fadeUp delay-4 flex justify-center gap-8 md:gap-16 mt-16 flex-wrap">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="font-display text-4xl md:text-5xl font-black text-coral group-hover:-translate-y-1 transition-transform duration-300">
-                  {stat.number}
-                </div>
-                <div className="text-xs md:text-sm text-text-muted mt-2 font-medium tracking-wide uppercase">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+            <h1 className="font-display text-[clamp(2.5rem,5.5vw,4rem)] font-black leading-[1.08] text-text mb-6 tracking-tight">
+              Documentos que<br />
+              <span className="text-coral">impressionam</span> em minutos
+            </h1>
 
-        {/* ─── Features Section ─── */}
-        <section className="py-16 md:py-20">
-          <h2 className="font-display text-center text-3xl md:text-4xl font-extrabold mb-12 tracking-tight">
-            Por que o <span className="text-coral">Kriou Docs</span>?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <div key={index} className="glass-card p-6 md:p-8 animate-fadeUp group hover:border-coral/50" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="w-12 h-12 rounded-xl bg-surface-3 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                  <Icon name={feature.icon} className={`w-6 h-6 ${feature.color}`} />
-                </div>
-                <h3 className="text-xl font-bold mb-3 tracking-tight">{feature.title}</h3>
-                <p className="text-sm md:text-base text-text-muted leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+            <p className="text-base md:text-lg text-text-dim max-w-[560px] mx-auto mb-10 leading-relaxed">
+              Crie curr&iacute;culos profissionais, contratos e documentos jur&iacute;dicos com modelos inteligentes. Preencha, revise e receba em PDF &mdash; direto no WhatsApp.
+            </p>
 
-        {/* ─── Documents Section ─── */}
-        <section id="docs-section" className="py-16 md:py-20 relative">
-          <h2 className="font-display text-center text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">
-            Documentos Disponíveis
-          </h2>
-          <p className="text-center text-text-muted mb-12 text-lg">
-            Currículos profissionais agora. Contratos e documentos jurídicos em breve.
-          </p>
-
-          <div className="glass-card border-coral/30 p-6 md:p-10 mb-10 bg-gradient-premium group">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Badge variant="coral" className="bg-coral text-white font-bold px-3 py-1 text-xs rounded-lg uppercase shadow-lg shadow-coral/20">DISPONÍVEL</Badge>
-                  <Badge variant="teal" className="bg-teal text-navy font-bold px-3 py-1 text-xs rounded-lg uppercase">5 MODELOS</Badge>
-                </div>
-                <h3 className="font-display text-3xl md:text-4xl font-black mb-2 text-white">Currículos Profissionais</h3>
-                <p className="text-text-muted text-lg">Wizard guiado de 7 etapas com preview em tempo real</p>
-              </div>
-              <Button variant="primary" icon="ChevronRight" iconPosition="right" onClick={() => navigate("login")} className="w-full md:w-auto mt-4 md:mt-0 font-bold px-8 shadow-coral/30 shadow-xl group-hover:shadow-coral/50">
-                Criar Currículo
-              </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => navigate("login")}
+                className="btn-primary !px-10 !py-4 !text-base font-bold touch-target min-w-[220px]"
+              >
+                Criar Gr&aacute;tis
+                <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
+              </button>
+              <button
+                onClick={() => document.getElementById("resources")?.scrollIntoView({ behavior: "smooth" })}
+                className="btn-ghost !px-8 !py-4 !text-[15px] touch-target min-w-[220px]"
+              >
+                Ver recursos
+              </button>
             </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {DOC_TYPES.map((doc, index) => (
-              <div key={doc.id} className="bg-surface border border-border/50 rounded-2xl p-5 opacity-60 backdrop-blur-md flex flex-col items-center justify-center text-center animate-fadeUp transition-opacity hover:opacity-80" style={{ animationDelay: `${index * 0.05}s` }}>
-                <Icon name={doc.icon} className="w-6 h-6 text-text-muted mb-3" />
-                <div className="text-sm font-semibold text-text">{doc.name}</div>
-                <div className="text-xs text-text-muted mt-2 font-medium px-2 py-1 bg-surface-3 rounded-full">Em breve</div>
+        {/* ─── Features ─── */}
+        <section id="resources" className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
+          <div className="max-w-[640px] mx-auto text-center mb-14">
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
+              Tudo o que voc&ecirc; precisa
+            </h2>
+            <p className="text-text-dim text-lg leading-relaxed">
+              Do curr&iacute;culo ao contrato jur&iacute;dico, com preenchimento guiado e entrega instant&acirc;nea.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: "FileText", label: "Curr&iacute;culos", desc: "5 modelos profissionais com wizard de 7 etapas e preview em tempo real.", color: "var(--coral)" },
+              { icon: "Shield", label: "Documentos jur&iacute;dicos", desc: "Contratos, procura&ccedil;&otilde;es e declara&ccedil;&otilde;es com estrutura jur&iacute;dica validada.", color: "var(--teal)" },
+              { icon: "Zap", label: "Preenchimento guiado", desc: "Passo a passo inteligente que qualquer pessoa consegue usar.", color: "var(--gold)" },
+              { icon: "Download", label: "PDF instant&acirc;neo", desc: "Gera&ccedil;&atilde;o e download em segundos. Pronto para imprimir ou enviar.", color: "var(--coral)" },
+              { icon: "MessageCircle", label: "Entrega via WhatsApp", desc: "Receba o documento finalizado direto no seu WhatsApp sem complica&ccedil;&atilde;o.", color: "var(--success)" },
+              { icon: "Edit", label: "Edite depois", desc: "Atualize seus documentos a qualquer momento sem precisar refazer.", color: "var(--teal)" },
+            ].map((f, i) => (
+              <div
+                key={i}
+                className="surface-card p-6 md:p-7 surface-hover animate-fade-up"
+                style={{ animationDelay: `${i * 0.06}s` }}
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+                  style={{ backgroundColor: `${f.color}14` }}
+                >
+                  <Icon name={f.icon} className="w-5 h-5" style={{ color: f.color }} />
+                </div>
+                <h3 className="font-display text-lg font-bold text-text mb-2">{f.label}</h3>
+                <p className="text-sm text-text-muted leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ─── Pricing Section ─── */}
-        <section className="py-16 md:py-24">
-          <h2 className="font-display text-center text-3xl md:text-4xl font-extrabold mb-16 tracking-tight">Planos Simples</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto px-4">
-            {PRICING_PLANS.map((plan) => (
+        {/* ─── Template Previews ─── */}
+        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-4">
+            <div>
+              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-3 tracking-tight">
+                Modelos de curr&iacute;culo
+              </h2>
+              <p className="text-text-dim text-lg">
+                Escolha o estilo que combina com sua &aacute;rea.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("login")}
+              className="btn-primary btn-small touch-target self-start"
+            >
+              Ver todos os modelos
+              <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {TEMPLATE_PREVIEWS.map((tpl, i) => (
+              <div
+                key={tpl.id}
+                className="surface-card overflow-hidden surface-hover animate-fade-up cursor-pointer"
+                style={{ animationDelay: `${i * 0.08}s` }}
+                onClick={() => navigate("login")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("login"); } }}
+              >
+                <div className="h-[120px] flex items-center justify-center" style={{ backgroundColor: `${tpl.color}18` }}>
+                  <div className="text-center">
+                    <div
+                      className="w-16 h-1.5 rounded-full mx-auto mb-3"
+                      style={{ backgroundColor: tpl.accent }}
+                    />
+                    <div className="w-28 h-2 rounded-full mx-auto mb-2 opacity-60" style={{ backgroundColor: tpl.accent }} />
+                    <div className="w-20 h-1.5 rounded-full mx-auto opacity-40" style={{ backgroundColor: tpl.accent }} />
+                  </div>
+                </div>
+                <div className="px-5 py-4">
+                  <h4 className="font-display font-bold text-text text-[15px] mb-1">{tpl.name}</h4>
+                  <p className="text-xs text-text-muted">{tpl.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── Coming Soon Documents ─── */}
+        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
+          <div className="max-w-[640px] mx-auto text-center mb-12">
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
+              Documentos jur&iacute;dicos em breve
+            </h2>
+            <p className="text-text-dim text-lg leading-relaxed">
+              Contratos, declara&ccedil;&otilde;es e procura&ccedil;&otilde;es. Tudo com preenchimento guiado e estrutura validada.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {DOC_TYPES.map((doc, i) => (
+              <div
+                key={doc.id}
+                className="surface-card p-5 flex flex-col items-center text-center animate-fade-up opacity-70 hover:opacity-100 transition-opacity"
+                style={{ animationDelay: `${i * 0.05}s` }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-surface-3 flex items-center justify-center mb-3">
+                  <Icon name={doc.icon} className="w-5 h-5 text-text-muted" />
+                </div>
+                <p className="text-sm font-semibold text-text mb-2">{doc.name}</p>
+                <span className="text-[11px] font-medium text-text-faint bg-surface-2 px-2.5 py-0.5 rounded-full">
+                  Em breve
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── Pricing ─── */}
+        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
+          <div className="max-w-[640px] mx-auto text-center mb-14">
+            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
+              Precifica&ccedil;&atilde;o simples
+            </h2>
+            <p className="text-text-dim text-lg leading-relaxed">
+              Sem surpresas. Pague pelo que usar.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[960px] mx-auto">
+            {PRICING_PLANS.map((plan, i) => (
               <div
                 key={plan.id}
-                className={`flex flex-col text-center p-8 rounded-3xl relative transition-all duration-300 hover:-translate-y-2
-                  ${plan.highlight ? 'bg-gradient-premium border-2 border-coral shadow-[0_20px_50px_rgba(233,69,96,0.15)] z-10 scale-100 md:scale-105' : 'bg-surface border border-border shadow-lg'}`}
+                className={`flex flex-col p-8 rounded-2xl border animate-fade-up relative
+                  ${plan.highlight
+                    ? "bg-surface-2 border-coral shadow-[0_8px_40px_rgba(244,63,94,0.12)] md:scale-[1.03]"
+                    : "bg-surface border-border"
+                  }`}
+                style={{ animationDelay: `${i * 0.1}s` }}
               >
                 {plan.highlight && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-coral text-white px-5 py-1.5 rounded-full text-xs font-black tracking-widest shadow-lg shadow-coral/30">
-                    MAIS POPULAR
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-coral text-white px-4 py-1 rounded-full text-[11px] font-extrabold tracking-widest uppercase">
+                    Mais popular
                   </div>
                 )}
-                <h3 className="font-display text-2xl font-bold mb-2 text-white">{plan.name}</h3>
-                <div className="font-display text-5xl font-black text-coral mb-3">
-                  {plan.price}
+                <h3 className="font-display text-xl font-bold text-text mb-1">{plan.name}</h3>
+                <div className="flex items-baseline gap-0.5 mb-1">
+                  <span className="font-display text-[2.5rem] font-black text-coral leading-none">{plan.price}</span>
                 </div>
-                <div className="text-sm text-text-muted mb-8 font-medium">{plan.sub}</div>
-                
-                <div className="flex-1 space-y-4 mb-8">
-                  {plan.features.map((feature, fIndex) => (
-                    <div key={fIndex} className="flex items-center gap-3 justify-center text-sm text-text-muted">
-                      <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center shrink-0">
-                        <Icon name="Check" className="w-3 h-3 text-success font-bold" />
-                      </div>
-                      <span className="text-text/90 font-medium">{feature}</span>
-                    </div>
+                <p className="text-sm text-text-muted mb-7 font-medium">{plan.sub}</p>
+
+                <ul className="flex-1 space-y-3 mb-8">
+                  {plan.features.map((f, fi) => (
+                    <li key={fi} className="flex items-start gap-3 text-sm text-text-dim">
+                      <span className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center shrink-0 mt-0.5">
+                        <Icon name="Check" className="w-3 h-3 text-success" />
+                      </span>
+                      {f}
+                    </li>
                   ))}
-                </div>
-                
-                <Button variant={plan.highlight ? "primary" : "secondary"} className="w-full justify-center py-4 font-bold rounded-xl" onClick={() => navigate("login")}>
-                  {plan.highlight ? "Começar Agora" : "Escolher Plano"}
-                </Button>
+                </ul>
+
+                <button
+                  onClick={() => navigate("login")}
+                  className={plan.highlight
+                    ? "btn-primary w-full justify-center touch-target font-bold"
+                    : "btn-secondary w-full justify-center touch-target font-bold"
+                  }
+                >
+                  {plan.highlight ? "Come&ccedil;ar agora" : "Escolher plano"}
+                </button>
               </div>
             ))}
           </div>
         </section>
+
       </main>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-border mt-auto backdrop-blur-lg bg-navy/80">
-        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="font-display text-2xl font-black tracking-tight text-white flex items-center">
-            <span className="text-coral mr-1">Kriou</span> Docs
+      <footer className="border-t border-border bg-surface/50">
+        <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="font-display text-2xl font-black tracking-tight text-text">
+            <span className="text-coral">Kriou</span>Docs
           </div>
-          <p className="text-sm text-text-muted font-medium text-center md:text-right">
-            Documentos profissionais ao alcance de todos.<br className="md:hidden" /> &copy; {new Date().getFullYear()}
+          <p className="text-sm text-text-muted text-center">
+            Documentos profissionais ao alcance de todos. &copy; {new Date().getFullYear()} Kriou Docs.
           </p>
         </div>
       </footer>
+
     </div>
   );
 };

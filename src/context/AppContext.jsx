@@ -151,6 +151,17 @@ const NavigationProvider = ({ children }) => {
     }
   }, []);
 
+  // ─── goBack — Volta no historico real do navegador ────────────────────────
+  // Usado por botoes de "Voltar" para nao poluir o historico com entradas
+  // duplicadas. Se nao houver historico suficiente, navega para o fallback.
+  const goBack = useCallback((fallbackPage = "dashboard") => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate(fallbackPage);
+    }
+  }, [navigate]);
+
   // ─── popstate (botao voltar/avancar do navegador) ─────────────────────────
   useEffect(() => {
     const handlePopstate = (event) => {
@@ -166,7 +177,7 @@ const NavigationProvider = ({ children }) => {
   }, []);
 
   return (
-    <NavigationContext.Provider value={{ currentPage, navigate }}>
+    <NavigationContext.Provider value={{ currentPage, navigate, goBack }}>
       {children}
     </NavigationContext.Provider>
   );
@@ -352,6 +363,7 @@ export const useApp = () => {
   return {
     currentPage: nav.currentPage,
     navigate: nav.navigate,
+    goBack: nav.goBack,
 
     userId:          auth.userId,
     displayName:     auth.displayName,

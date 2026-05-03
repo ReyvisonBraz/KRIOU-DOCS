@@ -1,8 +1,12 @@
 /**
  * ============================================
- * KRIOU DOCS - UI Feedback Components
+ * KRIOU DOCS - Componentes de Feedback
  * ============================================
  * EmptyState, ErrorMessage, SaveIndicator, SkeletonCard, ConfirmDialog
+ *
+ * Design: Luxury Refined + Bold Editorial
+ * Fundo navy profundo (#090914 → #14142B),
+ * accent coral (#F43F5E), detalhes dourados (#D4AF37)
  *
  * @module components/ui/feedback
  */
@@ -10,46 +14,280 @@
 import React from "react";
 import { Icon } from "../Icons";
 
-export const EmptyState = ({ icon, title, description, action }) => {
+// -- Tokens de design tipográfico --
+const T = {
+  display: "'Outfit', system-ui, sans-serif",
+  body: "'Plus Jakarta Sans', system-ui, sans-serif",
+};
+
+// =============================================================================
+// CSS global injetado uma única vez para pseudo-classes e animações
+// =============================================================================
+const STYLE_ID = "kriou-feedback-global";
+
+const ensureGlobalStyles = () => {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(STYLE_ID)) return;
+  const el = document.createElement("style");
+  el.id = STYLE_ID;
+  el.textContent = `
+    /* -- Animações -- */
+    @keyframes kriou-sk-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+    @keyframes kriou-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes kriou-dialog-in {
+      from { opacity: 0; transform: scale(0.96) translateY(6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes kriou-sheet-up {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* -- Padrão de foco visível -- */
+    .kriou-focus-ring:focus-visible {
+      outline: 2px solid var(--coral);
+      outline-offset: 2px;
+    }
+
+    /* -- Botão de retry (ErrorMessage) -- */
+    .kriou-retry-btn {
+      min-height: 32px;
+      min-width: 44px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: ${T.body};
+      color: var(--coral);
+      background: transparent;
+      border: 1px solid var(--coral);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .kriou-retry-btn:hover {
+      background: var(--coral);
+      color: #fff;
+    }
+    .kriou-retry-btn:focus-visible {
+      outline: 2px solid var(--coral);
+      outline-offset: 2px;
+    }
+    .kriou-retry-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* -- Botões do ConfirmDialog -- */
+    .kriou-dialog-btn {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 11px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: ${T.body};
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+    .kriou-dialog-btn:focus-visible {
+      outline: 2px solid var(--coral);
+      outline-offset: 2px;
+    }
+    .kriou-dialog-btn:active {
+      transform: scale(0.97);
+    }
+    .kriou-dialog-btn-cancel {
+      background: var(--surface-2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .kriou-dialog-btn-cancel:hover {
+      background: var(--surface-3);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .kriou-dialog-btn-confirm {
+      background: var(--teal);
+      color: #090914;
+    }
+    .kriou-dialog-btn-confirm:hover {
+      filter: brightness(1.12);
+    }
+    .kriou-dialog-btn-danger {
+      background: var(--coral);
+      color: #fff;
+    }
+    .kriou-dialog-btn-danger:hover {
+      filter: brightness(1.12);
+    }
+
+    /* -- ConfirmDialog overlay & painel -- */
+    .kriou-dialog-overlay {
+      animation: kriou-dialog-in 0.2s ease-out;
+    }
+    .kriou-dialog-panel {
+      animation: kriou-dialog-in 0.22s ease-out;
+    }
+
+    /* -- ConfirmDialog mobile: bottom-sheet -- */
+    @media (max-width: 639px) {
+      .kriou-dialog-overlay {
+        align-items: flex-end !important;
+      }
+      .kriou-dialog-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        animation: kriou-sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        padding-bottom: calc(28px + env(safe-area-inset-bottom));
+      }
+    }
+  `;
+  document.head.appendChild(el);
+};
+
+/* ====================== EmptyState ====================== */
+export const EmptyState = ({ icon, title, description, action, className }) => (
+  <div
+    className={className}
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      padding: "64px 16px",
+      fontFamily: T.body,
+    }}
+  >
+    {icon && (
+      <div
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 20,
+          background: "var(--surface-2)",
+          border: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 24,
+          color: "var(--coral)",
+        }}
+      >
+        <Icon name={icon} style={{ width: 32, height: 32 }} />
+      </div>
+    )}
+
+    {title && (
+      <p
+        style={{
+          fontFamily: T.display,
+          fontSize: 20,
+          fontWeight: 700,
+          color: "var(--text)",
+          margin: "0 0 8px",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {title}
+      </p>
+    )}
+
+    {description && (
+      <p
+        style={{
+          fontSize: 14,
+          lineHeight: 1.6,
+          color: "var(--text-muted)",
+          maxWidth: 420,
+          margin: 0,
+        }}
+      >
+        {description}
+      </p>
+    )}
+
+    {action && <div style={{ marginTop: 28 }}>{action}</div>}
+  </div>
+);
+
+/* ====================== ErrorMessage ====================== */
+export const ErrorMessage = ({ message, onRetry, className, style }) => {
+  if (!message) return null;
+  ensureGlobalStyles();
+
   return (
-    <div className="flex flex-col items-center text-center py-16 px-4">
-      {icon && (
-        <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-5">
-          <Icon name={icon} className="w-7 h-7 text-coral" />
-        </div>
+    <div
+      role="alert"
+      className={className}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginTop: 6,
+        flexWrap: "wrap",
+        ...style,
+      }}
+    >
+      {/* Ícone de erro */}
+      <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+        <Icon name="AlertCircle" style={{ width: 14, height: 14, color: "var(--coral)" }} />
+      </span>
+
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: "var(--coral)",
+          fontFamily: T.body,
+          lineHeight: 1.4,
+        }}
+      >
+        {message}
+      </span>
+
+      {onRetry && (
+        <button onClick={onRetry} className="kriou-retry-btn">
+          Tentar novamente
+        </button>
       )}
-      {title && <p className="font-display text-lg font-bold text-white mb-2">{title}</p>}
-      {description && <p className="text-sm text-text-muted max-w-md leading-relaxed">{description}</p>}
-      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };
 
-export const ErrorMessage = ({ message, style }) => {
-  if (!message) return null;
-  return (
-    <p
-      role="alert"
-      className="flex items-center gap-1 text-[13px] text-coral mt-1.5 font-medium"
-      style={style}
-    >
-      {message}
-    </p>
-  );
-};
-
+/* ====================== SaveIndicator ====================== */
 export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
+  ensureGlobalStyles();
+
   const isSaving = status === "saving";
   const isError = status === "error";
+  const isIdle = status === "idle";
 
-  const color = isError ? "var(--coral)" : isSaving ? "var(--text-muted)" : "var(--success)";
+  const accentColor = isError
+    ? "var(--coral)"
+    : isSaving
+    ? "var(--text-muted)"
+    : isIdle
+    ? "var(--text-faint)"
+    : "var(--success)";
 
+  // Rótulo localizado em português
   const label = isError
     ? "Erro ao salvar"
     : isSaving
     ? "Salvando..."
+    : isIdle
+    ? "Pendente"
     : lastSaved
-    ? `Salvo às ${lastSaved.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+    ? `Salvo ${new Date(lastSaved).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`
     : "Salvo";
 
   return (
@@ -57,57 +295,134 @@ export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color, userSelect: "none" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        fontSize: 12,
+        fontWeight: 500,
+        color: accentColor,
+        fontFamily: T.body,
+        userSelect: "none",
+      }}
     >
       {isSaving ? (
         <span
           style={{
-            width: 12, height: 12, borderRadius: "50%",
-            border: `2px solid ${color}`,
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            border: `2px solid ${accentColor}`,
             borderTopColor: "transparent",
             display: "inline-block",
-            animation: "spin 0.8s linear infinite",
+            animation: "kriou-spin 0.7s linear infinite",
           }}
         />
       ) : (
-        <Icon name={isError ? "AlertCircle" : "Check"} className="w-3 h-3" />
+        <Icon
+          name={isError ? "AlertCircle" : "Check"}
+          style={{ width: 12, height: 12 }}
+        />
       )}
-      {label}
+      <span>{label}</span>
     </div>
   );
 };
 
-export const SkeletonCard = () => (
-  <div className="break-inside-avoid rounded-2xl border border-white/[0.06] bg-surface overflow-hidden">
-    <div className="absolute top-0 left-0 right-0 h-[3px] bg-surface-3" />
-    <div className="p-5">
-      <style>{`
-        @keyframes skeleton-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.35; }
-        }
-        .sk-line {
-          background: var(--surface-3);
-          border-radius: 6px;
-          animation: skeleton-pulse 1.4s ease-in-out infinite;
-        }
-      `}</style>
-      <div className="flex items-center gap-2.5 mb-3">
-        <div className="sk-line w-8 h-8 rounded-xl" />
-        <div className="sk-line w-20 h-4 rounded-md" />
-      </div>
-      <div className="sk-line w-full h-[18px] mb-1.5 rounded-md" style={{ animationDelay: "0.1s" }} />
-      <div className="sk-line w-3/5 h-[18px] mb-4 rounded-md" style={{ animationDelay: "0.15s" }} />
-      <div className="flex justify-between">
-        <div className="sk-line w-16 h-3 rounded-md" style={{ animationDelay: "0.25s" }} />
-        <div className="sk-line w-14 h-5 rounded-full" style={{ animationDelay: "0.3s" }} />
+/* ====================== SkeletonCard ====================== */
+export const SkeletonCard = ({ className }) => {
+  ensureGlobalStyles();
+
+  return (
+    <div
+      className={className}
+      style={{
+        breakInside: "avoid",
+        borderRadius: 16,
+        border: "1px solid var(--border)",
+        background: "var(--surface)",
+        overflow: "hidden",
+        fontFamily: T.body,
+      }}
+    >
+      {/* Barra decorativa superior */}
+      <div style={{ height: 3, background: "var(--surface-3)" }} />
+
+      <div style={{ padding: 20 }}>
+        {/* Ícone + título fantasma */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 12,
+              background: "var(--surface-3)",
+              animation: "kriou-sk-pulse 1.4s ease-in-out infinite",
+            }}
+          />
+          <div
+            style={{
+              width: 88,
+              height: 16,
+              borderRadius: 8,
+              background: "var(--surface-3)",
+              animation: "kriou-sk-pulse 1.4s ease-in-out infinite 0.1s",
+            }}
+          />
+        </div>
+
+        {/* Linhas de texto fantasma */}
+        <div
+          style={{
+            width: "100%",
+            height: 16,
+            borderRadius: 8,
+            background: "var(--surface-3)",
+            animation: "kriou-sk-pulse 1.4s ease-in-out infinite 0.05s",
+            marginBottom: 8,
+          }}
+        />
+        <div
+          style={{
+            width: "60%",
+            height: 16,
+            borderRadius: 8,
+            background: "var(--surface-3)",
+            animation: "kriou-sk-pulse 1.4s ease-in-out infinite 0.12s",
+            marginBottom: 22,
+          }}
+        />
+
+        {/* Rodapé fantasma */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              width: 60,
+              height: 12,
+              borderRadius: 6,
+              background: "var(--surface-3)",
+              animation: "kriou-sk-pulse 1.4s ease-in-out infinite 0.2s",
+            }}
+          />
+          <div
+            style={{
+              width: 52,
+              height: 22,
+              borderRadius: 11,
+              background: "var(--surface-3)",
+              animation: "kriou-sk-pulse 1.4s ease-in-out infinite 0.28s",
+            }}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
+/* ====================== ConfirmDialog ====================== */
 export const ConfirmDialog = ({
-  open = false,
+  visible,
+  open, // fallback legado para compatibilidade
   title = "Confirmar ação",
   message = "Tem certeza?",
   confirmLabel = "Confirmar",
@@ -116,45 +431,120 @@ export const ConfirmDialog = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!open) return null;
+  const isOpen = visible ?? open ?? false;
+  if (!isOpen) return null;
+
+  ensureGlobalStyles();
+
+  // Trava scroll do body enquanto o diálogo está aberto
+  React.useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-message"
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-6"
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onCancel?.(); }}
+      aria-labelledby="kriou-dialog-title"
+      aria-describedby="kriou-dialog-message"
+      className="kriou-dialog-overlay"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        background: "rgba(9,9,20,0.72)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel?.();
+      }}
     >
+      {/* Painel do diálogo */}
       <div
-        className="bg-surface border border-border rounded-2xl p-7 max-w-[420px] w-full shadow-2xl"
+        className="kriou-dialog-panel"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 20,
+          padding: 28,
+          maxWidth: 420,
+          width: "100%",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset",
+        }}
       >
+        {/* Ícone de alerta para variante danger */}
+        {danger && (
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              background: "rgba(244,63,94,0.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Icon
+              name="AlertTriangle"
+              style={{ width: 22, height: 22, color: "var(--coral)" }}
+            />
+          </div>
+        )}
+
+        {/* Título */}
         <h2
-          id="confirm-dialog-title"
-          className="font-display text-lg font-extrabold text-white mb-2.5"
+          id="kriou-dialog-title"
+          style={{
+            fontFamily: T.display,
+            fontSize: 18,
+            fontWeight: 700,
+            color: "var(--text)",
+            margin: "0 0 10px",
+            letterSpacing: "-0.01em",
+          }}
         >
           {title}
         </h2>
+
+        {/* Mensagem */}
         <p
-          id="confirm-dialog-message"
-          className="text-sm text-text-muted leading-relaxed mb-6"
+          id="kriou-dialog-message"
+          style={{
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: "var(--text-muted)",
+            margin: "0 0 28px",
+            fontFamily: T.body,
+          }}
         >
           {message}
         </p>
-        <div className="flex gap-3 justify-end">
+
+        {/* Botões de ação */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button
             onClick={onCancel}
-            className="px-5 py-2.5 rounded-xl bg-surface-2 text-text-muted border border-border font-semibold text-sm cursor-pointer transition-colors hover:bg-surface-3 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
+            className="kriou-dialog-btn kriou-dialog-btn-cancel"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
             autoFocus
-            className="px-5 py-2.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
-            style={{ background: danger ? "var(--coral)" : "var(--teal)", color: danger ? "#fff" : "var(--navy)" }}
+            className={`kriou-dialog-btn ${
+              danger ? "kriou-dialog-btn-danger" : "kriou-dialog-btn-confirm"
+            }`}
           >
             {confirmLabel}
           </button>

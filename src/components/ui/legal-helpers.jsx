@@ -5,14 +5,31 @@
  * VariantSelector, SectionHeader, LegalHelpButton,
  * OptionalFieldToggle, ClientNoteBanner, LegalFieldRenderer
  *
+ * Design: Luxury Refined + Bold Editorial
+ * Colors: --navy, --coral (#F43F5E), --gold (#D4AF37), --teal (#14B8A6)
+ * Typography: 'Outfit' display, 'Plus Jakarta Sans' body
+ *
  * @module components/ui/legal-helpers
  */
 
 import React from "react";
 
-/**
- * VariantSelector - Seletor de variante do documento
- */
+/* ───────────────────────────────────────────
+ * Shared style constants
+ * ─────────────────────────────────────────── */
+const fontDisplay = "var(--font-display)";
+const fontBody = "var(--font-body)";
+
+const focusRing = {
+  outline: "none",
+  boxShadow: "0 0 0 2px var(--coral), 0 0 0 4px rgba(244,63,94,0.2)",
+};
+
+const touchTarget = { minHeight: 44, minWidth: 44 };
+
+/* ───────────────────────────────────────────
+ * 1. VariantSelector
+ * ─────────────────────────────────────────── */
 export const VariantSelector = ({ variants, selected, onSelect }) => {
   return (
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -25,55 +42,94 @@ export const VariantSelector = ({ variants, selected, onSelect }) => {
             style={{
               flex: "1 1 200px",
               maxWidth: 280,
-              padding: "16px 20px",
-              borderRadius: 14,
-              border: isActive ? "2px solid var(--teal)" : "2px solid var(--border)",
-              background: isActive
-                ? "linear-gradient(135deg, rgba(0,210,211,0.12) 0%, rgba(0,210,211,0.04) 100%)"
-                : "var(--surface-2)",
+              padding: "18px 20px",
+              borderRadius: 12,
+              border: isActive
+                ? "2px solid var(--coral)"
+                : "1px solid var(--border)",
+              background: isActive ? "var(--surface-2)" : "var(--surface)",
               cursor: "pointer",
               textAlign: "left",
-              transition: "all 0.25s",
+              transition: "all 0.2s ease",
               position: "relative",
-              overflow: "hidden",
+              outline: "none",
+              ...touchTarget,
+            }}
+            onFocus={(e) => {
+              Object.assign(e.currentTarget.style, focusRing);
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
             }}
             onMouseEnter={(e) => {
               if (!isActive) {
-                e.currentTarget.style.borderColor = "var(--teal)";
-                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.borderColor = "var(--border-hover)";
+                e.currentTarget.style.background = "var(--surface-2)";
+                e.currentTarget.style.transform = "translateY(-1px)";
               }
             }}
             onMouseLeave={(e) => {
               if (!isActive) {
                 e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--surface)";
                 e.currentTarget.style.transform = "translateY(0)";
               }
             }}
           >
-            {isActive && (
-              <div style={{
+            {/* Radio indicator */}
+            <div
+              style={{
                 position: "absolute",
-                top: 12,
-                right: 12,
-                width: 22,
-                height: 22,
+                top: 16,
+                right: 16,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
-                background: "var(--teal)",
+                border: isActive
+                  ? "2px solid var(--coral)"
+                  : "2px solid var(--border)",
+                background: isActive ? "var(--coral)" : "transparent",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 13,
-                color: "var(--navy)",
-                fontWeight: 700,
-              }}>
-                ✓
-              </div>
-            )}
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{variant.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: isActive ? "var(--teal)" : "var(--text)", marginBottom: 4 }}>
+                transition: "all 0.2s ease",
+              }}
+            >
+              {isActive && (
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#fff",
+                  }}
+                />
+              )}
+            </div>
+
+            <div style={{ fontSize: 24, marginBottom: 10, lineHeight: 1 }}>
+              {variant.icon}
+            </div>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: fontDisplay,
+                color: isActive ? "var(--coral)" : "var(--text)",
+                marginBottom: 4,
+                transition: "color 0.2s ease",
+              }}
+            >
               {variant.name}
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontFamily: fontBody,
+                color: "var(--text-muted)",
+                lineHeight: 1.5,
+              }}
+            >
               {variant.description}
             </div>
           </button>
@@ -83,9 +139,9 @@ export const VariantSelector = ({ variants, selected, onSelect }) => {
   );
 };
 
-/**
- * SectionHeader - Cabeçalho de seção do formulário jurídico
- */
+/* ───────────────────────────────────────────
+ * 2. SectionHeader
+ * ─────────────────────────────────────────── */
 export const SectionHeader = ({ title, subtitle, icon, number }) => {
   const icons = {
     user: "👤",
@@ -99,386 +155,428 @@ export const SectionHeader = ({ title, subtitle, icon, number }) => {
   };
 
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 14,
-      padding: "18px 0 12px",
-      borderBottom: "2px solid var(--border)",
-      marginBottom: 20,
-      marginTop: number > 1 ? 32 : 0,
-    }}>
-      <div style={{
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        background: "linear-gradient(135deg, rgba(0,210,211,0.15) 0%, rgba(83,52,131,0.15) 100%)",
+    <div
+      style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        fontSize: 22,
-        flexShrink: 0,
-      }}>
+        gap: 14,
+        padding: "18px 0 14px",
+        borderBottom: "1px solid var(--border)",
+        marginBottom: 20,
+        marginTop: number > 1 ? 32 : 0,
+      }}
+    >
+      {/* Icon container */}
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          background: "var(--surface-2)",
+          border: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 22,
+          flexShrink: 0,
+        }}
+      >
         {icons[icon] || "📄"}
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           {number && (
-            <span style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "var(--teal)",
-              background: "rgba(0,210,211,0.1)",
-              padding: "2px 8px",
-              borderRadius: 6,
-            }}>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                fontFamily: fontDisplay,
+                color: "var(--gold)",
+                background: "rgba(212,175,55,0.1)",
+                padding: "3px 10px",
+                borderRadius: 6,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
               SEÇÃO {number}
             </span>
           )}
-          <h3 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>{title}</h3>
+          <h3
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              fontFamily: fontDisplay,
+              color: "var(--text)",
+              margin: 0,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {title}
+          </h3>
         </div>
         {subtitle && (
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>{subtitle}</p>
+          <p
+            style={{
+              fontSize: 13,
+              fontFamily: fontBody,
+              color: "var(--text-muted)",
+              margin: "5px 0 0",
+              lineHeight: 1.4,
+            }}
+          >
+            {subtitle}
+          </p>
         )}
       </div>
     </div>
   );
 };
 
-/**
- * HelpContent - Componente de conteúdo do tooltip de ajuda
- * Definido fora para evitar criação durante render
- */
-const HelpContent = ({ label, hint, example, whereFind, whyImportant, whatHappensIfEmpty, onClose }) => (
-  <>
-    {/* Header */}
-    <div style={{
-      display: "flex", alignItems: "center", gap: 8,
-      marginBottom: 14, paddingBottom: 10,
-      borderBottom: "1px solid var(--border)",
-    }}>
-      <span style={{ fontSize: 20 }}>💡</span>
-      <span style={{ fontSize: 14, fontWeight: 700, color: "var(--teal)", flex: 1 }}>
-        Ajuda: {label}
-      </span>
-      <button
-        onClick={onClose}
-        style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 18, padding: "2px 6px", borderRadius: 4, lineHeight: 1 }}
-      >
-        ✕
-      </button>
-    </div>
-
-    {/* 1. O que é isso? */}
-    {hint && (
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 13 }}>📖</span> O que é isso?
-        </div>
-        <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>{hint}</div>
-      </div>
-    )}
-
-    {/* 2. Exemplo */}
-    {example && (
-      <div style={{ padding: 12, background: "var(--surface-2)", borderRadius: 10, border: "1px dashed var(--border)", marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 13 }}>✏️</span> Exemplo de preenchimento
-        </div>
-        <div style={{ fontSize: 14, color: "var(--teal)", fontWeight: 600 }}>"{example}"</div>
-      </div>
-    )}
-
-    {/* 3. Por que é importante? */}
-    {whyImportant && (
-      <div style={{ padding: 10, background: "rgba(0,210,211,0.06)", borderRadius: 8, border: "1px solid rgba(0,210,211,0.15)", marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--teal)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 13 }}>🔒</span> Por que é importante?
-        </div>
-        <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whyImportant}</div>
-      </div>
-    )}
-
-    {/* 4. Se não preencher? */}
-    {whatHappensIfEmpty && (
-      <div style={{ padding: 10, background: "rgba(108,99,255,0.06)", borderRadius: 8, border: "1px solid rgba(108,99,255,0.15)", marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--purple, #6c63ff)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 13 }}>✅</span> Se não preencher?
-        </div>
-        <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.5 }}>{whatHappensIfEmpty}</div>
-      </div>
-    )}
-
-    {/* 5. Onde encontrar */}
-    {whereFind && (
-      <div style={{ padding: 10, background: "rgba(249,168,37,0.08)", borderRadius: 8, border: "1px solid rgba(249,168,37,0.2)" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 13 }}>📋</span> Onde encontrar
-        </div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{whereFind}</div>
-      </div>
-    )}
-  </>
-);
-
-/**
- * LegalHelpButton - Botão de ajuda detalhado para campos jurídicos.
- *
- * Exibe um tooltip com até 5 seções:
- * 1. O que é isso? (hint)
- * 2. Exemplo de preenchimento (example)
- * 3. Por que é importante? (whyImportant)
- * 4. O que acontece se não preencher? (whatHappensIfEmpty) — só para opcionais
- * 5. Onde encontrar (whereFind)
- */
-export const LegalHelpButton = ({ hint, example, whereFind, whyImportant, whatHappensIfEmpty, label }) => {
+/* ───────────────────────────────────────────
+ * 3. LegalHelpButton
+ * ─────────────────────────────────────────── */
+export const LegalHelpButton = ({ helpText, label }) => {
   const [open, setOpen] = React.useState(false);
-  const [tooltipPosition, setTooltipPosition] = React.useState({});
-  const buttonRef = React.useRef(null);
-  const tooltipRef = React.useRef(null);
+  const containerRef = React.useRef(null);
 
-  // Detecta mobile (≤ 640px) para usar modal fixo em vez de tooltip flutuante
-  const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 640;
-
-  // ─── Calcula posição do tooltip (apenas quando abre, no desktop) ───
-  React.useEffect(() => {
-    if (!open || isMobile() || !buttonRef.current) {
-      setTooltipPosition({});
-      return;
-    }
-    const buttonRect = buttonRef.current.getBoundingClientRect();
-    const tooltipWidth = 340;
-    const windowWidth = window.innerWidth;
-    if (buttonRect.right + tooltipWidth > windowWidth - 20) {
-      setTooltipPosition({ left: Math.max(10, (windowWidth - tooltipWidth) / 2), right: "auto" });
-    } else {
-      setTooltipPosition({ right: 0 });
-    }
-  }, [open]);
-
-  // ─── Fecha ao clicar fora ───
+  // Close on outside click
   React.useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e) => {
       if (
-        tooltipRef.current && !tooltipRef.current.contains(e.target) &&
-        buttonRef.current && !buttonRef.current.contains(e.target)
+        containerRef.current &&
+        !containerRef.current.contains(e.target)
       ) {
         setOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    // Bloqueia scroll do body no mobile
-    if (isMobile()) document.body.style.overflow = "hidden";
-    return () => {
+    return () =>
       document.removeEventListener("mousedown", handleClickOutside);
-      document.body.style.overflow = "";
-    };
   }, [open]);
 
-  const mobile = isMobile();
-
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div
+      ref={containerRef}
+      style={{ position: "relative", display: "inline-flex" }}
+    >
       <button
-        ref={buttonRef}
         onClick={() => setOpen(!open)}
-        title="Clique para ver ajuda sobre este campo"
+        aria-label={label ? `Ajuda: ${label}` : "Ver ajuda"}
+        aria-expanded={open}
         style={{
-          width: 32, height: 32, borderRadius: 10,
-          border: open ? "2px solid var(--teal)" : "2px solid rgba(0,210,211,0.5)",
-          background: open
-            ? "linear-gradient(135deg, var(--teal) 0%, #00a8a9 100%)"
-            : "linear-gradient(135deg, rgba(0,210,211,0.18) 0%, rgba(0,210,211,0.08) 100%)",
-          color: open ? "#fff" : "var(--teal)",
-          fontSize: 15, fontWeight: 900, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          transition: "all 0.2s", flexShrink: 0,
-          boxShadow: open ? "0 2px 8px rgba(0,210,211,0.4)" : "none",
-          letterSpacing: "-0.5px",
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          border: open
+            ? "2px solid var(--coral)"
+            : "1px solid var(--border)",
+          background: open ? "var(--coral)" : "var(--surface-2)",
+          color: open ? "#fff" : "var(--text-muted)",
+          fontSize: 16,
+          fontWeight: 700,
+          fontFamily: fontDisplay,
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s ease",
+          flexShrink: 0,
+          outline: "none",
         }}
-        onMouseEnter={(e) => { if (!open) { e.currentTarget.style.borderColor = "var(--teal)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,210,211,0.25)"; } }}
-        onMouseLeave={(e) => { if (!open) { e.currentTarget.style.borderColor = "rgba(0,210,211,0.5)"; e.currentTarget.style.boxShadow = "none"; } }}
+        onFocus={(e) => {
+          if (!open) {
+            Object.assign(e.currentTarget.style, focusRing);
+          }
+        }}
+        onBlur={(e) => {
+          if (!open) {
+            e.currentTarget.style.boxShadow = "none";
+          }
+        }}
+        onMouseEnter={(e) => {
+          if (!open) {
+            e.currentTarget.style.borderColor = "var(--coral)";
+            e.currentTarget.style.color = "var(--coral)";
+            e.currentTarget.style.background = "rgba(244,63,94,0.08)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!open) {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "var(--text-muted)";
+            e.currentTarget.style.background = "var(--surface-2)";
+          }
+        }}
       >
         ?
       </button>
 
       {open && (
-        <>
-          {/* Backdrop */}
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 0,
+            width: 320,
+            maxWidth: "calc(100vw - 48px)",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 16,
+            zIndex: 100,
+            boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            animation: "scale-in 0.2s ease-out both",
+          }}
+        >
+          {/* Header */}
           <div
-            onClick={() => setOpen(false)}
             style={{
-              position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 90,
-              background: mobile ? "rgba(0,0,0,0.6)" : "transparent",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 12,
+              paddingBottom: 10,
+              borderBottom: "1px solid var(--border)",
             }}
-          />
-
-          {mobile ? (
-            /* ── Mobile: bottom-sheet modal fixo ── */
-            <div
-              ref={tooltipRef}
+          >
+            <span style={{ fontSize: 16 }}>💡</span>
+            <span
               style={{
-                position: "fixed",
-                bottom: 0, left: 0, right: 0,
-                maxHeight: "75vh",
-                overflowY: "auto",
-                background: "var(--surface)",
-                borderTop: "2px solid var(--teal)",
-                borderRadius: "20px 20px 0 0",
-                padding: "20px 20px 32px",
-                zIndex: 100,
-                boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: fontDisplay,
+                color: "var(--coral)",
+                flex: 1,
               }}
             >
-              {/* Handle bar */}
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: "var(--border)", margin: "0 auto 16px" }} />
-              <HelpContent
-                label={label}
-                hint={hint}
-                example={example}
-                whereFind={whereFind}
-                whyImportant={whyImportant}
-                whatHappensIfEmpty={whatHappensIfEmpty}
-                onClose={() => setOpen(false)}
-              />
+              {label ? `Ajuda: ${label}` : "Ajuda"}
+            </span>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Fechar ajuda"
+              style={{
+                ...touchTarget,
+                background: "none",
+                border: "none",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                fontSize: 16,
+                padding: "4px 8px",
+                borderRadius: 6,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                lineHeight: 1,
+                outline: "none",
+                transition: "color 0.15s",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.color = "var(--coral)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.color = "var(--text-muted)";
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--coral)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--text-muted)";
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Help content */}
+          {helpText ? (
+            <div
+              style={{
+                fontSize: 13,
+                fontFamily: fontBody,
+                color: "var(--text-dim)",
+                lineHeight: 1.65,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {helpText}
             </div>
           ) : (
-            /* ── Desktop: tooltip flutuante ── */
             <div
-              ref={tooltipRef}
               style={{
-                position: "absolute",
-                top: "100%", marginTop: 8,
-                width: 340,
-                maxWidth: "calc(100vw - 48px)",
-                maxHeight: "70vh",
-                overflowY: "auto",
-                background: "var(--surface)",
-                border: "2px solid var(--teal)",
-                borderRadius: 14,
-                padding: 18,
-                zIndex: 100,
-                boxShadow: "0 12px 40px rgba(0,0,0,0.4)",
-                ...tooltipPosition,
+                fontSize: 13,
+                fontFamily: fontBody,
+                color: "var(--text-muted)",
+                fontStyle: "italic",
               }}
             >
-              <HelpContent
-                label={label}
-                hint={hint}
-                example={example}
-                whereFind={whereFind}
-                whyImportant={whyImportant}
-                whatHappensIfEmpty={whatHappensIfEmpty}
-                onClose={() => setOpen(false)}
-              />
+              Nenhuma dica disponível para este campo.
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
 };
 
-/**
- * OptionalFieldToggle - Toggle para desabilitar campo opcional
- */
-export const OptionalFieldToggle = ({ enabled, onToggle, label }) => {
+/* ───────────────────────────────────────────
+ * 4. OptionalFieldToggle
+ * ─────────────────────────────────────────── */
+export const OptionalFieldToggle = ({ label, checked, onChange, ...rest }) => {
   return (
     <button
-      onClick={onToggle}
+      onClick={onChange}
+      {...rest}
       style={{
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         gap: 8,
-        padding: "6px 12px",
-        borderRadius: 8,
+        padding: "6px 14px 6px 8px",
+        borderRadius: 10,
         border: "1px solid var(--border)",
-        background: enabled ? "var(--surface-2)" : "rgba(136,136,168,0.08)",
+        background: checked ? "var(--surface-2)" : "rgba(72,72,102,0.12)",
         cursor: "pointer",
         fontSize: 12,
-        color: "var(--text-muted)",
-        transition: "all 0.2s",
-        opacity: enabled ? 1 : 0.6,
+        fontFamily: fontBody,
+        color: checked ? "var(--text-dim)" : "var(--text-muted)",
+        transition: "all 0.2s ease",
+        outline: "none",
+        ...touchTarget,
+        minHeight: 36,
+      }}
+      onFocus={(e) => {
+        Object.assign(e.currentTarget.style, focusRing);
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.boxShadow = "none";
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-hover)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border)";
       }}
     >
-      <div style={{
-        width: 34,
-        height: 18,
-        borderRadius: 10,
-        background: enabled ? "var(--teal)" : "var(--surface-3)",
-        position: "relative",
-        transition: "all 0.2s",
-        border: "1px solid " + (enabled ? "var(--teal)" : "var(--border)"),
-        flexShrink: 0,
-      }}>
-        <div style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: "white",
-          position: "absolute",
-          top: 1,
-          left: enabled ? 17 : 1,
-          transition: "left 0.2s",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        }} />
+      {/* Toggle switch */}
+      <div
+        style={{
+          width: 36,
+          height: 20,
+          borderRadius: 12,
+          background: checked ? "var(--coral)" : "var(--surface-3)",
+          position: "relative",
+          transition: "background 0.2s ease",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: "50%",
+            background: "#fff",
+            position: "absolute",
+            top: 2,
+            left: checked ? 18 : 2,
+            transition: "left 0.2s ease",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+          }}
+        />
       </div>
-      <span>
-        {enabled ? label || "Preencher este campo" : "Campo desabilitado"}
-      </span>
+      <span>{checked ? label || "Preencher este campo" : "Campo desabilitado"}</span>
     </button>
   );
 };
 
-/**
- * ClientNoteBanner - Banner de observação para o cliente
- * Sempre visível — informações importantes não devem ficar escondidas atrás de um clique.
- */
+/* ───────────────────────────────────────────
+ * 5. ClientNoteBanner
+ * ─────────────────────────────────────────── */
 export const ClientNoteBanner = ({ notes }) => {
   if (!notes || notes.length === 0) return null;
 
   return (
-    <div style={{
-      background: "linear-gradient(135deg, rgba(249,168,37,0.1) 0%, rgba(249,168,37,0.04) 100%)",
-      border: "2px solid rgba(249,168,37,0.45)",
-      borderRadius: 14,
-      padding: "16px 20px",
-      marginBottom: 24,
-    }}>
-      {/* Cabeçalho sempre visível */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <div style={{
-          width: 34, height: 34, borderRadius: 10,
-          background: "rgba(249,168,37,0.2)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 18, flexShrink: 0,
-        }}>
+    <div
+      style={{
+        background: "rgba(212,175,55,0.06)",
+        border: "1px solid rgba(212,175,55,0.3)",
+        borderRadius: 14,
+        padding: "18px 22px",
+        marginBottom: 24,
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 14,
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: "rgba(212,175,55,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 17,
+            flexShrink: 0,
+          }}
+        >
           ⚠️
         </div>
-        <span style={{ fontSize: 14, fontWeight: 800, color: "#f9a825", letterSpacing: "0.01em" }}>
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            fontFamily: fontDisplay,
+            color: "var(--gold)",
+            letterSpacing: "0.01em",
+          }}
+        >
           Leia antes de preencher
         </span>
       </div>
 
-      {/* Notas sempre expandidas */}
+      {/* Notes */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {notes.map((note, i) => (
-          <div key={i} style={{
-            display: "flex",
-            gap: 10,
-            padding: "10px 14px",
-            background: "rgba(249,168,37,0.07)",
-            borderRadius: 9,
-            border: "1px solid rgba(249,168,37,0.2)",
-            fontSize: 13,
-            color: "var(--text)",
-            lineHeight: 1.6,
-          }}>
-            <span style={{
-              color: "#f9a825", fontWeight: 800, flexShrink: 0,
-              fontSize: 16, lineHeight: 1.4,
-            }}>
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              gap: 10,
+              padding: "10px 14px",
+              background: "rgba(212,175,55,0.05)",
+              borderRadius: 9,
+              border: "1px solid rgba(212,175,55,0.15)",
+              fontSize: 13,
+              fontFamily: fontBody,
+              color: "var(--text)",
+              lineHeight: 1.6,
+            }}
+          >
+            <span
+              style={{
+                color: "var(--gold)",
+                fontWeight: 700,
+                flexShrink: 0,
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}
+            >
               {i + 1}.
             </span>
             {note}
@@ -489,12 +587,83 @@ export const ClientNoteBanner = ({ notes }) => {
   );
 };
 
+/* ───────────────────────────────────────────
+ * 6. LegalFieldRenderer
+ * ─────────────────────────────────────────── */
+
 /**
- * LegalFieldRenderer - Renderiza um campo jurídico com ajuda, exemplo e toggle opcional.
- *
- * Suporta os campos extras: whyImportant, whatHappensIfEmpty, que são
- * passados ao LegalHelpButton para enriquecer o tooltip de ajuda.
+ * Composes a formatted help text from the field definition's rich help properties.
  */
+const composeHelpText = (fieldDef) => {
+  const sections = [];
+
+  if (fieldDef.hint) {
+    sections.push(`📖 O que é isso?\n${fieldDef.hint}`);
+  }
+  if (fieldDef.example) {
+    sections.push(`✏️ Exemplo de preenchimento\n"${fieldDef.example}"`);
+  }
+  if (fieldDef.whyImportant) {
+    sections.push(`🔒 Por que é importante?\n${fieldDef.whyImportant}`);
+  }
+  if (fieldDef.whatHappensIfEmpty) {
+    sections.push(`⚠️ Se não preencher?\n${fieldDef.whatHappensIfEmpty}`);
+  }
+  if (fieldDef.whereFind) {
+    sections.push(`📋 Onde encontrar\n${fieldDef.whereFind}`);
+  }
+
+  return sections.join("\n\n");
+};
+
+/**
+ * Formats a raw string as a Brazilian phone number: (XX) XXXXX-XXXX
+ */
+const formatPhone = (raw) => {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length === 0) return "";
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+/**
+ * Formats a raw string as a Brazilian CEP: XXXXX-XXX
+ */
+const formatCep = (raw) => {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
+/**
+ * Formats a raw string as a Brazilian CPF: XXX.XXX.XXX-XX
+ */
+const formatCpf = (raw) => {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6)
+    return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9)
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+/**
+ * Parses a raw numeric string as Brazilian currency (R$ X.XXX,XX).
+ */
+const formatMonetary = (raw) => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  const numeric = parseInt(digits, 10) / 100;
+  return numeric.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+};
+
 export const LegalFieldRenderer = ({
   fieldDef,
   value,
@@ -505,108 +674,156 @@ export const LegalFieldRenderer = ({
 }) => {
   const isOptional = fieldDef.disableable && !fieldDef.required;
   const isDisabled = disabled;
-  const hasHelp = fieldDef.hint || fieldDef.example || fieldDef.whereFind || fieldDef.whyImportant || fieldDef.whatHappensIfEmpty;
+  const hasHelp =
+    fieldDef.hint ||
+    fieldDef.example ||
+    fieldDef.whereFind ||
+    fieldDef.whyImportant ||
+    fieldDef.whatHappensIfEmpty;
+
+  const helpText = hasHelp ? composeHelpText(fieldDef) : "";
+
+  /* Build shared input style, merging error state */
+  const inputErrorStyle = error
+    ? {
+        borderColor: "var(--coral)",
+        boxShadow: "0 0 0 3px rgba(244,63,94,0.15)",
+      }
+    : {};
 
   return (
-    <div style={{
-      marginBottom: 18,
-      opacity: isDisabled ? 0.45 : 1,
-      transition: "opacity 0.2s",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <label style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.5px",
-          flex: 1,
-        }}>
+    <div
+      style={{
+        marginBottom: 18,
+        opacity: isDisabled ? 0.4 : 1,
+        transition: "opacity 0.2s ease",
+      }}
+    >
+      {/* Label row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 8,
+        }}
+      >
+        <label
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            fontFamily: fontBody,
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            flex: 1,
+          }}
+        >
           {fieldDef.label}
-          {fieldDef.required && <span style={{ color: "var(--coral)", marginLeft: 4 }}>*</span>}
+          {fieldDef.required && (
+            <span style={{ color: "var(--coral)", marginLeft: 3 }}>*</span>
+          )}
           {isOptional && !fieldDef.required && (
-            <span style={{
-              fontSize: 10,
-              color: "var(--text-muted)",
-              fontWeight: 400,
-              textTransform: "none",
-              marginLeft: 6,
-            }}>
+            <span
+              style={{
+                fontSize: 10,
+                color: "var(--text-muted)",
+                fontWeight: 400,
+                textTransform: "none",
+                marginLeft: 6,
+                letterSpacing: "0",
+              }}
+            >
               (opcional)
             </span>
           )}
         </label>
 
         {hasHelp && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: "var(--teal)", fontWeight: 600, letterSpacing: "0.02em" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                fontFamily: fontBody,
+                color: "var(--coral)",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+              }}
+            >
               ver dica
             </span>
-            <LegalHelpButton
-              hint={fieldDef.hint}
-              example={fieldDef.example}
-              whereFind={fieldDef.whereFind}
-              whyImportant={fieldDef.whyImportant}
-              whatHappensIfEmpty={fieldDef.whatHappensIfEmpty}
-              label={fieldDef.label}
-            />
+            <LegalHelpButton helpText={helpText} label={fieldDef.label} />
           </div>
         )}
       </div>
 
+      {/* Optional toggle */}
       {isOptional && (
         <div style={{ marginBottom: 8 }}>
           <OptionalFieldToggle
-            enabled={!isDisabled}
-            onToggle={onToggleDisabled}
+            checked={!isDisabled}
+            onChange={onToggleDisabled}
             label="Preencher este campo"
           />
         </div>
       )}
 
-      {/* Nota sobre impacto quando desabilitado */}
+      {/* Disabled notice */}
       {isDisabled && fieldDef.whatHappensIfEmpty && (
-        <div style={{
-          fontSize: 11,
-          color: "var(--text-muted)",
-          padding: "6px 10px",
-          background: "rgba(108,99,255,0.05)",
-          borderRadius: 6,
-          border: "1px solid rgba(108,99,255,0.1)",
-          lineHeight: 1.5,
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 6,
-        }}>
-          <span style={{ fontSize: 12, flexShrink: 0 }}>ℹ️</span>
+        <div
+          style={{
+            fontSize: 12,
+            fontFamily: fontBody,
+            color: "var(--text-muted)",
+            padding: "8px 12px",
+            background: "rgba(20,184,166,0.05)",
+            borderRadius: 8,
+            border: "1px solid rgba(20,184,166,0.12)",
+            lineHeight: 1.5,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 8,
+          }}
+        >
+          <span style={{ flexShrink: 0, fontSize: 13 }}>ℹ️</span>
           {fieldDef.whatHappensIfEmpty}
         </div>
       )}
 
+      {/* Input rendering */}
       {!isDisabled && (
         <>
           {fieldDef.type === "textarea" ? (
             <textarea
               className="input-field"
               rows={4}
-              placeholder={fieldDef.placeholder || `Digite ${fieldDef.label.toLowerCase()}`}
+              placeholder={
+                fieldDef.placeholder ||
+                `Digite ${fieldDef.label.toLowerCase()}`
+              }
               value={value || ""}
               onChange={(e) => onChange(fieldDef.key, e.target.value)}
-              style={{
-                resize: "vertical",
-                ...(error ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}),
-              }}
+              style={{ resize: "vertical", ...inputErrorStyle }}
             />
           ) : fieldDef.type === "select" ? (
             <select
               className="input-field"
               value={value || ""}
               onChange={(e) => onChange(fieldDef.key, e.target.value)}
-              style={error ? { borderColor: "var(--coral)" } : {}}
+              style={inputErrorStyle}
             >
               <option value="">Selecione...</option>
               {fieldDef.options?.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
               ))}
             </select>
           ) : fieldDef.type === "date" ? (
@@ -615,7 +832,38 @@ export const LegalFieldRenderer = ({
               type="date"
               value={value || ""}
               onChange={(e) => onChange(fieldDef.key, e.target.value)}
-              style={error ? { borderColor: "var(--coral)" } : {}}
+              style={inputErrorStyle}
+            />
+          ) : fieldDef.type === "email" ? (
+            <input
+              className="input-field"
+              type="email"
+              placeholder={fieldDef.placeholder || "email@exemplo.com"}
+              value={value || ""}
+              onChange={(e) => onChange(fieldDef.key, e.target.value)}
+              style={inputErrorStyle}
+            />
+          ) : fieldDef.type === "phone" ? (
+            <input
+              className="input-field"
+              type="tel"
+              placeholder={fieldDef.placeholder || "(XX) XXXXX-XXXX"}
+              value={value || ""}
+              onChange={(e) =>
+                onChange(fieldDef.key, formatPhone(e.target.value))
+              }
+              style={inputErrorStyle}
+            />
+          ) : fieldDef.type === "cep" ? (
+            <input
+              className="input-field"
+              type="text"
+              placeholder={fieldDef.placeholder || "00000-000"}
+              value={value || ""}
+              onChange={(e) =>
+                onChange(fieldDef.key, formatCep(e.target.value))
+              }
+              style={inputErrorStyle}
             />
           ) : fieldDef.type === "cpf" ? (
             <input
@@ -623,60 +871,76 @@ export const LegalFieldRenderer = ({
               type="text"
               placeholder={fieldDef.placeholder || "000.000.000-00"}
               value={value || ""}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/\D/g, "").slice(0, 11);
-                let formatted = raw;
-                if (raw.length > 9) {
-                  formatted = raw.slice(0, 3) + "." + raw.slice(3, 6) + "." + raw.slice(6, 9) + "-" + raw.slice(9);
-                } else if (raw.length > 6) {
-                  formatted = raw.slice(0, 3) + "." + raw.slice(3, 6) + "." + raw.slice(6);
-                } else if (raw.length > 3) {
-                  formatted = raw.slice(0, 3) + "." + raw.slice(3);
-                }
-                onChange(fieldDef.key, formatted);
-              }}
-              style={error ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+              onChange={(e) =>
+                onChange(fieldDef.key, formatCpf(e.target.value))
+              }
+              style={inputErrorStyle}
             />
-          ) : fieldDef.type === "money" ? (
+          ) : fieldDef.type === "monetary" || fieldDef.type === "money" ? (
             <input
               className="input-field"
               type="text"
               placeholder={fieldDef.placeholder || "R$ 0,00"}
               value={value || ""}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/\D/g, "");
-                const formatted = raw ? "R$ " + (parseInt(raw) / 100).toFixed(2).replace(".", ",") : "";
-                onChange(fieldDef.key, formatted);
-              }}
-              style={error ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+              onChange={(e) =>
+                onChange(fieldDef.key, formatMonetary(e.target.value))
+              }
+              style={inputErrorStyle}
             />
           ) : (
+            /* default: text */
             <input
               className="input-field"
               type="text"
-              placeholder={fieldDef.placeholder || `Digite ${fieldDef.label.toLowerCase()}`}
+              placeholder={
+                fieldDef.placeholder ||
+                `Digite ${fieldDef.label.toLowerCase()}`
+              }
               value={value || ""}
               onChange={(e) => onChange(fieldDef.key, e.target.value)}
-              style={error ? { borderColor: "var(--coral)", boxShadow: "0 0 0 3px rgba(233,69,96,0.15)" } : {}}
+              style={inputErrorStyle}
             />
           )}
 
-          {fieldDef.example && !error && value === "" && fieldDef.type !== "select" && fieldDef.type !== "date" && (
-            <div style={{
-              fontSize: 11,
-              color: "var(--text-muted)",
-              marginTop: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}>
-              <span style={{ color: "var(--teal)", fontWeight: 600 }}>Ex:</span>
-              {fieldDef.example}
-            </div>
-          )}
+          {/* Inline example hint */}
+          {fieldDef.example &&
+            !error &&
+            (value === "" || value === undefined) &&
+            fieldDef.type !== "select" &&
+            fieldDef.type !== "date" && (
+              <div
+                style={{
+                  fontSize: 11,
+                  fontFamily: fontBody,
+                  color: "var(--text-muted)",
+                  marginTop: 5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <span
+                  style={{
+                    color: "var(--teal)",
+                    fontWeight: 600,
+                  }}
+                >
+                  Ex:
+                </span>
+                {fieldDef.example}
+              </div>
+            )}
 
+          {/* Error message */}
           {error && (
-            <div style={{ fontSize: 11, color: "var(--coral)", marginTop: 4 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: fontBody,
+                color: "var(--coral)",
+                marginTop: 5,
+              }}
+            >
               {error}
             </div>
           )}

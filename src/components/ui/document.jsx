@@ -1,18 +1,28 @@
 /**
  * ============================================
- * KRIOU DOCS - Document Card Component
+ * KRIOU DOCS — Document Card Component
  * ============================================
  * DocumentCard — card reutilizável para currículos e docs jurídicos
- * com layout masonry/bento-grid, anti-identical-card-grid.
+ * com design editorial de luxo.
+ *
+ * Paleta: navy (#090914 → #14142B), coral (#F43F5E), gold (#D4AF37), teal (#14B8A6)
+ * Tipografia: Outfit (display) + Plus Jakarta Sans (body)
  *
  * @module components/ui/document
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "./primitives";
 import { Icon } from "../Icons";
 import { extractPersonData } from "../../utils/documentCode";
 
+// ── Design tokens ──
+const EASE = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
+const RAD_LG = "14px";
+const RAD_SM = "8px";
+const TOQUE = 44;
+
+// ── Ícones por tipo ──
 const ICONS = {
   resume: "User",
   curriculo: "User",
@@ -29,38 +39,24 @@ const ICONS = {
   default: "FileText",
 };
 
-const GRADIENTS = {
-  resume: "from-coral/15 to-coral/5",
-  curriculo: "from-coral/15 to-coral/5",
-  "compra-venda": "from-teal/15 to-teal/5",
-  locacao: "from-teal/15 to-teal/5",
-  procuracao: "from-purple/15 to-purple/5",
-  "prestacao-servicos": "from-teal/15 to-teal/5",
-  comodato: "from-gold/15 to-gold/5",
-  doacao: "from-coral/15 to-coral/5",
-  recibo: "from-teal/15 to-teal/5",
-  "uniao-estavel": "from-coral/15 to-coral/5",
-  "autorizacao-viagem": "from-teal/15 to-teal/5",
-  permuta: "from-gold/15 to-gold/5",
-  default: "from-surface-2 to-surface",
-};
-
+// ── Cor de destaque por tipo ──
 const ACCENTS = {
-  resume: "bg-coral",
-  curriculo: "bg-coral",
-  "compra-venda": "bg-teal",
-  locacao: "bg-teal",
-  procuracao: "bg-purple",
-  "prestacao-servicos": "bg-teal",
-  comodato: "bg-gold",
-  doacao: "bg-coral",
-  recibo: "bg-teal",
-  "uniao-estavel": "bg-coral",
-  "autorizacao-viagem": "bg-teal",
-  permuta: "bg-gold",
-  default: "bg-teal",
+  resume: "var(--coral)",
+  curriculo: "var(--coral)",
+  "compra-venda": "var(--teal)",
+  locacao: "var(--teal)",
+  procuracao: "var(--gold)",
+  "prestacao-servicos": "var(--teal)",
+  comodato: "var(--gold)",
+  doacao: "var(--coral)",
+  recibo: "var(--teal)",
+  "uniao-estavel": "var(--coral)",
+  "autorizacao-viagem": "var(--teal)",
+  permuta: "var(--gold)",
+  default: "var(--teal)",
 };
 
+// ── Rótulos ──
 const TYPE_LABELS = {
   resume: "Currículo",
   curriculo: "Currículo",
@@ -76,88 +72,254 @@ const TYPE_LABELS = {
   permuta: "Permuta",
 };
 
+/**
+ * Resolve qual cor de destaque usar para o documento.
+ * Prioriza doc.color / doc.templateColor; fallback coral p/ resume, teal p/ legal.
+ */
+function resolveAccent(doc) {
+  const own = doc?.color || doc?.templateColor;
+  if (own) return own;
+  const typeKey = doc?.type in ACCENTS ? doc.type : "default";
+  return ACCENTS[typeKey];
+}
+
 export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => {
-  const typeKey = doc.type in GRADIENTS ? doc.type : "default";
-  const iconName = ICONS[typeKey] || "FileText";
-  const gradient = GRADIENTS[typeKey] || GRADIENTS.default;
-  const accent = ACCENTS[typeKey] || ACCENTS.default;
+  const [hover, setHover] = useState(false);
+
+  if (!doc) return null;
+
+  const typeKey = doc.type in ICONS ? doc.type : "default";
+  const iconName = ICONS[typeKey];
+  const accent = resolveAccent(doc);
   const typeLabel = TYPE_LABELS[doc.type] || doc.type;
-  const statusVariant = doc.status === "finalizado" ? "success" : "warning";
-  const statusLabel = doc.status === "finalizado" ? "Finalizado" : "Rascunho";
+  const isFinalizado = doc.status === "finalizado";
+  const statusVariant = isFinalizado ? "teal" : "coral";
+  const statusLabel = isFinalizado ? "Finalizado" : "Rascunho";
   const person = extractPersonData(doc);
 
   return (
     <div
       role="button"
       tabIndex={0}
+      className="kf animate-fadeUp break-inside-avoid"
       onClick={onClick}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
-      className="animate-fadeUp break-inside-avoid group relative cursor-pointer rounded-2xl border border-white/[0.06] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.12] hover:shadow-xl hover:shadow-black/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
-      style={{ animationDelay: `${animationDelay}s` }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        position: "relative",
+        cursor: "pointer",
+        background: hover ? "#14142B" : "var(--surface)",
+        border: `1px solid ${hover ? "var(--border-hover)" : "var(--border)"}`,
+        borderRadius: RAD_LG,
+        overflow: "hidden",
+        transition: EASE,
+        boxShadow: hover
+          ? "0 8px 32px rgba(244,63,94,0.12), 0 2px 8px rgba(0,0,0,0.3)"
+          : "0 1px 3px rgba(0,0,0,0.2)",
+        transform: hover ? "translateY(-2px)" : "translateY(0)",
+        animationDelay: `${animationDelay}s`,
+        outline: "none",
+      }}
     >
-      {/* Background gradient layer */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} pointer-events-none`} />
-
-      {/* Accent stripe top (thin, not side-stripe border — that's banned) */}
-      <div className={`absolute top-0 left-0 right-0 h-[3px] ${accent} opacity-60 pointer-events-none`} />
-
-      <div className="relative p-5">
-        {/* Code + type row */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-surface-3 border border-white/[0.06]">
-              <Icon name={iconName} className="w-4 h-4 text-text-muted" />
-            </div>
-            {doc.code ? (
-              <span className="text-xs font-mono font-bold tracking-wider text-text/90 bg-surface-3 px-2 py-0.5 rounded-md border border-white/[0.06]">
-                {doc.code}
-              </span>
-            ) : (
-              <span className="text-xs font-bold tracking-wide uppercase text-text-muted/70">
-                {typeLabel}
-              </span>
-            )}
-          </div>
-          <button
-            aria-label={`Excluir ${doc.title}`}
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-lg text-text-muted/50 hover:text-coral hover:bg-coral/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
+      {/* ── Header: ícone + código ou tipo ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          padding: "18px 18px 0 18px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+          {/* Ícone do tipo */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 42,
+              height: 42,
+              borderRadius: RAD_SM,
+              background: `${accent}18`,
+              border: `1px solid ${accent}30`,
+              flexShrink: 0,
+              color: accent,
+            }}
           >
-            <Icon name="Trash2" className="w-3.5 h-3.5" />
-          </button>
+            <Icon name={iconName} className="w-5 h-5" />
+          </div>
+
+          {/* Código ou rótulo do tipo */}
+          {doc.code ? (
+            <span
+              style={{
+                fontFamily: "'Plus Jakarta Sans', monospace",
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: "0.06em",
+                color: "var(--text-dim)",
+                background: "var(--surface-2)",
+                padding: "4px 10px",
+                borderRadius: "100px",
+                border: "1px solid var(--border)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {doc.code}
+            </span>
+          ) : (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                color: "var(--text-faint)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {typeLabel}
+            </span>
+          )}
         </div>
 
-        {/* Person data (nome, CPF, RG) */}
-        {person.nome && (
-          <div className="mb-2">
-            <p className="font-display font-bold text-[15px] leading-snug text-white truncate">
+        {/* Botão de excluir */}
+        <button
+          aria-label={`Excluir ${doc.title}`}
+          className="kf"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: TOQUE,
+            height: TOQUE,
+            borderRadius: RAD_SM,
+            border: "none",
+            background: "transparent",
+            color: "var(--text-faint)",
+            cursor: "pointer",
+            opacity: hover ? 1 : 0,
+            transition: EASE,
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--danger)";
+            e.currentTarget.style.background = "rgba(244,63,94,0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-faint)";
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          <Icon name="Trash2" className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* ── Corpo: nome / título ── */}
+      <div style={{ padding: "12px 18px 18px 18px" }}>
+        {person.nome ? (
+          <>
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontWeight: 800,
+                fontSize: 16,
+                lineHeight: 1.35,
+                color: "var(--text)",
+                margin: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
               {person.nome}
             </p>
             {(person.cpf || person.rg) && (
-              <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-muted/60">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 6,
+                  fontSize: 11,
+                  color: "var(--text-muted)",
+                }}
+              >
                 {person.cpf && <span>CPF: {person.cpf}</span>}
                 {person.cpf && person.rg && (
-                  <span className="w-0.5 h-0.5 rounded-full bg-text-muted/30 inline-block" />
+                  <span
+                    style={{
+                      width: 3,
+                      height: 3,
+                      borderRadius: "50%",
+                      background: "var(--text-faint)",
+                      flexShrink: 0,
+                    }}
+                  />
                 )}
                 {person.rg && <span>RG: {person.rg}</span>}
               </div>
             )}
-          </div>
-        )}
-
-        {/* Title fallback when no person name */}
-        {!person.nome && (
-          <h3 className="font-display font-bold text-[15px] leading-snug text-white mb-3 line-clamp-2">
+          </>
+        ) : (
+          <h3
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontWeight: 800,
+              fontSize: 16,
+              lineHeight: 1.35,
+              color: "var(--text)",
+              margin: 0,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             {doc.title}
           </h3>
         )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-text-muted/60">
+        {/* ── Template ── */}
+        {doc.template && (
+          <p
+            style={{
+              fontSize: 12,
+              color: "var(--text-muted)",
+              margin: "6px 0 0 0",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {doc.template}
+          </p>
+        )}
+
+        {/* ── Footer: data + status ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 14,
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>
             {doc.date}
           </span>
-          <Badge variant={statusVariant} style={{ fontSize: 10, padding: "3px 8px" }}>
+          <Badge variant={statusVariant} style={{ fontSize: 10, padding: "4px 10px" }}>
             {statusLabel}
           </Badge>
         </div>

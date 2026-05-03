@@ -136,7 +136,7 @@ const DashboardPage = () => {
         setCurrentStep(0);
         navigate("editor");
       }
-    } else if (doc.type === "legal") {
+    } else if (doc.type === "legal" || (doc.draft && doc.documentType && doc.type !== "resume")) {
       if (doc.draft) {
         if (doc.draft.documentType) setDocumentType(doc.draft.documentType);
         if (doc.draft.selectedVariant) setSelectedVariant(doc.draft.selectedVariant);

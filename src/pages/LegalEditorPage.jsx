@@ -251,7 +251,7 @@ const LegalEditorPage = () => {
     const dateLabel = now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
 
     const existingDraftIdx = (userDocuments || []).findIndex(
-      (d) => d.status === "rascunho" && d.type === selectedDoc.id && d._draftOrigin === "legalEditor"
+      (d) => d.status === "rascunho" && d.type === "legal" && d.documentType === selectedDoc.id && d._draftOrigin === "legalEditor"
     );
 
     let updated;
@@ -266,7 +266,7 @@ const LegalEditorPage = () => {
       const newCard = {
         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
         title,
-        type: selectedDoc.id,
+        type: "legal",
         documentType: selectedDoc.id,
         template: variantObj?.name || selectedDoc.name,
         date: dateLabel,

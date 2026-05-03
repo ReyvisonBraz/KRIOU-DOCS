@@ -227,14 +227,14 @@ const TemplateSpecModal = ({ template, onClose, onSelect }) => {
               onClick={onClose}
               aria-label="Fechar"
               style={{
-                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 10,
-                background: "rgba(255,255,255,0.14)", border: "none",
+                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 12,
+                background: "rgba(255,255,255,0.22)", border: "1.5px solid rgba(255,255,255,0.3)",
                 cursor: "pointer", color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.15s ease",
+                transition: "all 0.15s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.25)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.35)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
             >
               <Icon name="X" className="w-5 h-5" />
             </button>
@@ -404,16 +404,16 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
               onClick={onClose}
               aria-label="Fechar"
               style={{
-                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 10,
-                background: "rgba(255,255,255,0.12)", border: "none",
+                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 12,
+                background: "rgba(255,255,255,0.22)", border: "1.5px solid rgba(255,255,255,0.3)",
                 cursor: "pointer", color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.15s ease",
+                transition: "all 0.15s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.35)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
             >
-              <Icon name="X" className="w-4 h-4" />
+              <Icon name="X" className="w-5 h-5" />
             </button>
           </div>
         </div>

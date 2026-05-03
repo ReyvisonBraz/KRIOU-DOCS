@@ -1,4 +1,4 @@
-import { field, pessoaFisicaFields } from "./_shared.js";
+import { field, pessoaFisicaFields, pessoaFisicaFieldsRepeated } from "./_shared.js";
 
 const compraVenda = {
   id: "compra-venda",
@@ -38,20 +38,22 @@ const compraVenda = {
     },
   ],
 
+  maxParties: { vendedor: 3, comprador: 3 },
+
   commonSections: [
     {
       id: "vendedor",
       title: "Dados do Vendedor",
       subtitle: "Quem está vendendo o bem",
       icon: "user",
-      fields: pessoaFisicaFields("vendedor", "Vendedor"),
+      fields: pessoaFisicaFieldsRepeated("vendedor", "Vendedor", 3),
     },
     {
       id: "comprador",
       title: "Dados do Comprador",
       subtitle: "Quem está comprando o bem",
       icon: "user",
-      fields: pessoaFisicaFields("comprador", "Comprador"),
+      fields: pessoaFisicaFieldsRepeated("comprador", "Comprador", 3),
     },
     {
       id: "pagamento",
@@ -381,7 +383,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(ES): {vendedor_0_nome}{?, , {vendedor_0_nacionalidade}}{?, , {vendedor_0_estado_civil}}{?, , de profissão {vendedor_0_profissao}}{?, , portador(a) do RG n.º {vendedor_0_rg} e }inscrito(a) no CPF sob n.º {vendedor_0_cpf}{?any, , residente e domiciliado(a) em {vendedor_0_endereco?}, {vendedor_0_cidade?}}{?any, \n\nE, como segundo(a) vendedor(a): {vendedor_1_nome}{?, , {vendedor_1_nacionalidade}}{?, , {vendedor_1_estado_civil}}{?, , de profissão {vendedor_1_profissao}}{?, portador(a) do RG n.º {vendedor_1_rg} e }inscrito(a) no CPF sob n.º {vendedor_1_cpf}{?any, , residente e domiciliado(a) em {vendedor_1_endereco?}, {vendedor_1_cidade?}}}{?any, \n\nE, como terceiro(a) vendedor(a): {vendedor_2_nome}{?, , {vendedor_2_nacionalidade}}{?, , {vendedor_2_estado_civil}}{?, , de profissão {vendedor_2_profissao}}{?, portador(a) do RG n.º {vendedor_2_rg} e }inscrito(a) no CPF sob n.º {vendedor_2_cpf}{?any, , residente e domiciliado(a) em {vendedor_2_endereco?}, {vendedor_2_cidade?}}}, e de outro lado, como COMPRADOR(ES): {comprador_0_nome}{?, , {comprador_0_nacionalidade}}{?, , {comprador_0_estado_civil}}{?, , de profissão {comprador_0_profissao}}{?, , portador(a) do RG n.º {comprador_0_rg} e }inscrito(a) no CPF sob n.º {comprador_0_cpf}{?any, , residente e domiciliado(a) em {comprador_0_endereco?}, {comprador_0_cidade?}}{?any, \n\nE, como segundo(a) comprador(a): {comprador_1_nome}{?, , {comprador_1_nacionalidade}}{?, , {comprador_1_estado_civil}}{?, , de profissão {comprador_1_profissao}}{?, portador(a) do RG n.º {comprador_1_rg} e }inscrito(a) no CPF sob n.º {comprador_1_cpf}{?any, , residente e domiciliado(a) em {comprador_1_endereco?}, {comprador_1_cidade?}}}{?any, \n\nE, como terceiro(a) comprador(a): {comprador_2_nome}{?, , {comprador_2_nacionalidade}}{?, , {comprador_2_estado_civil}}{?, , de profissão {comprador_2_profissao}}{?, portador(a) do RG n.º {comprador_2_rg} e }inscrito(a) no CPF sob n.º {comprador_2_cpf}{?any, , residente e domiciliado(a) em {comprador_2_endereco?}, {comprador_2_cidade?}}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -450,8 +452,12 @@ const compraVenda = {
       {
         type: "signatures",
         parties: [
-          { role: "VENDEDOR(A)", fieldKey: "vendedor_nome" },
-          { role: "COMPRADOR(A)", fieldKey: "comprador_nome" },
+          { role: "VENDEDOR(A)", fieldKey: "vendedor_0_nome" },
+          { role: "VENDEDOR(A) 2", fieldKey: "vendedor_1_nome", optional: true },
+          { role: "VENDEDOR(A) 3", fieldKey: "vendedor_2_nome", optional: true },
+          { role: "COMPRADOR(A)", fieldKey: "comprador_0_nome" },
+          { role: "COMPRADOR(A) 2", fieldKey: "comprador_1_nome", optional: true },
+          { role: "COMPRADOR(A) 3", fieldKey: "comprador_2_nome", optional: true },
         ],
       },
       {
@@ -467,7 +473,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(ES): {vendedor_0_nome}{?, , {vendedor_0_nacionalidade}}{?, , {vendedor_0_estado_civil}}{?, , de profissão {vendedor_0_profissao}}{?, , portador(a) do RG n.º {vendedor_0_rg} e }inscrito(a) no CPF sob n.º {vendedor_0_cpf}{?any, , residente e domiciliado(a) em {vendedor_0_endereco?}, {vendedor_0_cidade?}}{?any, \n\nE, como segundo(a) vendedor(a): {vendedor_1_nome}{?, , {vendedor_1_nacionalidade}}{?, , {vendedor_1_estado_civil}}{?, , de profissão {vendedor_1_profissao}}{?, portador(a) do RG n.º {vendedor_1_rg} e }inscrito(a) no CPF sob n.º {vendedor_1_cpf}{?any, , residente e domiciliado(a) em {vendedor_1_endereco?}, {vendedor_1_cidade?}}}{?any, \n\nE, como terceiro(a) vendedor(a): {vendedor_2_nome}{?, , {vendedor_2_nacionalidade}}{?, , {vendedor_2_estado_civil}}{?, , de profissão {vendedor_2_profissao}}{?, portador(a) do RG n.º {vendedor_2_rg} e }inscrito(a) no CPF sob n.º {vendedor_2_cpf}{?any, , residente e domiciliado(a) em {vendedor_2_endereco?}, {vendedor_2_cidade?}}}, e de outro lado, como COMPRADOR(ES): {comprador_0_nome}{?, , {comprador_0_nacionalidade}}{?, , {comprador_0_estado_civil}}{?, , de profissão {comprador_0_profissao}}{?, , portador(a) do RG n.º {comprador_0_rg} e }inscrito(a) no CPF sob n.º {comprador_0_cpf}{?any, , residente e domiciliado(a) em {comprador_0_endereco?}, {comprador_0_cidade?}}{?any, \n\nE, como segundo(a) comprador(a): {comprador_1_nome}{?, , {comprador_1_nacionalidade}}{?, , {comprador_1_estado_civil}}{?, , de profissão {comprador_1_profissao}}{?, portador(a) do RG n.º {comprador_1_rg} e }inscrito(a) no CPF sob n.º {comprador_1_cpf}{?any, , residente e domiciliado(a) em {comprador_1_endereco?}, {comprador_1_cidade?}}}{?any, \n\nE, como terceiro(a) comprador(a): {comprador_2_nome}{?, , {comprador_2_nacionalidade}}{?, , {comprador_2_estado_civil}}{?, , de profissão {comprador_2_profissao}}{?, portador(a) do RG n.º {comprador_2_rg} e }inscrito(a) no CPF sob n.º {comprador_2_cpf}{?any, , residente e domiciliado(a) em {comprador_2_endereco?}, {comprador_2_cidade?}}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -529,8 +535,12 @@ const compraVenda = {
       {
         type: "signatures",
         parties: [
-          { role: "VENDEDOR(A)", fieldKey: "vendedor_nome" },
-          { role: "COMPRADOR(A)", fieldKey: "comprador_nome" },
+          { role: "VENDEDOR(A)", fieldKey: "vendedor_0_nome" },
+          { role: "VENDEDOR(A) 2", fieldKey: "vendedor_1_nome", optional: true },
+          { role: "VENDEDOR(A) 3", fieldKey: "vendedor_2_nome", optional: true },
+          { role: "COMPRADOR(A)", fieldKey: "comprador_0_nome" },
+          { role: "COMPRADOR(A) 2", fieldKey: "comprador_1_nome", optional: true },
+          { role: "COMPRADOR(A) 3", fieldKey: "comprador_2_nome", optional: true },
         ],
       },
       {
@@ -546,7 +556,7 @@ const compraVenda = {
       },
       {
         type: "paragraph",
-        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(A): {vendedor_nome}{?, , {vendedor_nacionalidade}}{?, , {vendedor_estado_civil}}{?, , de profissão {vendedor_profissao}}{?, , portador(a) do RG n.º {vendedor_rg} e }inscrito(a) no CPF sob n.º {vendedor_cpf}{?any, , residente e domiciliado(a) em {vendedor_endereco?}, {vendedor_cidade?}}, e de outro lado, como COMPRADOR(A): {comprador_nome}{?, , {comprador_nacionalidade}}{?, , {comprador_estado_civil}}{?, , de profissão {comprador_profissao}}{?, , portador(a) do RG n.º {comprador_rg} e }inscrito(a) no CPF sob n.º {comprador_cpf}{?any, , residente e domiciliado(a) em {comprador_endereco?}, {comprador_cidade?}}, têm entre si, justo e acordado o que segue:",
+        text: "Pelo presente instrumento particular, de um lado, como VENDEDOR(ES): {vendedor_0_nome}{?, , {vendedor_0_nacionalidade}}{?, , {vendedor_0_estado_civil}}{?, , de profissão {vendedor_0_profissao}}{?, , portador(a) do RG n.º {vendedor_0_rg} e }inscrito(a) no CPF sob n.º {vendedor_0_cpf}{?any, , residente e domiciliado(a) em {vendedor_0_endereco?}, {vendedor_0_cidade?}}{?any, \n\nE, como segundo(a) vendedor(a): {vendedor_1_nome}{?, , {vendedor_1_nacionalidade}}{?, , {vendedor_1_estado_civil}}{?, , de profissão {vendedor_1_profissao}}{?, portador(a) do RG n.º {vendedor_1_rg} e }inscrito(a) no CPF sob n.º {vendedor_1_cpf}{?any, , residente e domiciliado(a) em {vendedor_1_endereco?}, {vendedor_1_cidade?}}}{?any, \n\nE, como terceiro(a) vendedor(a): {vendedor_2_nome}{?, , {vendedor_2_nacionalidade}}{?, , {vendedor_2_estado_civil}}{?, , de profissão {vendedor_2_profissao}}{?, portador(a) do RG n.º {vendedor_2_rg} e }inscrito(a) no CPF sob n.º {vendedor_2_cpf}{?any, , residente e domiciliado(a) em {vendedor_2_endereco?}, {vendedor_2_cidade?}}}, e de outro lado, como COMPRADOR(ES): {comprador_0_nome}{?, , {comprador_0_nacionalidade}}{?, , {comprador_0_estado_civil}}{?, , de profissão {comprador_0_profissao}}{?, , portador(a) do RG n.º {comprador_0_rg} e }inscrito(a) no CPF sob n.º {comprador_0_cpf}{?any, , residente e domiciliado(a) em {comprador_0_endereco?}, {comprador_0_cidade?}}{?any, \n\nE, como segundo(a) comprador(a): {comprador_1_nome}{?, , {comprador_1_nacionalidade}}{?, , {comprador_1_estado_civil}}{?, , de profissão {comprador_1_profissao}}{?, portador(a) do RG n.º {comprador_1_rg} e }inscrito(a) no CPF sob n.º {comprador_1_cpf}{?any, , residente e domiciliado(a) em {comprador_1_endereco?}, {comprador_1_cidade?}}}{?any, \n\nE, como terceiro(a) comprador(a): {comprador_2_nome}{?, , {comprador_2_nacionalidade}}{?, , {comprador_2_estado_civil}}{?, , de profissão {comprador_2_profissao}}{?, portador(a) do RG n.º {comprador_2_rg} e }inscrito(a) no CPF sob n.º {comprador_2_cpf}{?any, , residente e domiciliado(a) em {comprador_2_endereco?}, {comprador_2_cidade?}}}, têm entre si, justo e acordado o que segue:",
       },
       {
         type: "clause",
@@ -611,8 +621,12 @@ const compraVenda = {
       {
         type: "signatures",
         parties: [
-          { role: "VENDEDOR(A)", fieldKey: "vendedor_nome" },
-          { role: "COMPRADOR(A)", fieldKey: "comprador_nome" },
+          { role: "VENDEDOR(A)", fieldKey: "vendedor_0_nome" },
+          { role: "VENDEDOR(A) 2", fieldKey: "vendedor_1_nome", optional: true },
+          { role: "VENDEDOR(A) 3", fieldKey: "vendedor_2_nome", optional: true },
+          { role: "COMPRADOR(A)", fieldKey: "comprador_0_nome" },
+          { role: "COMPRADOR(A) 2", fieldKey: "comprador_1_nome", optional: true },
+          { role: "COMPRADOR(A) 3", fieldKey: "comprador_2_nome", optional: true },
         ],
       },
       {

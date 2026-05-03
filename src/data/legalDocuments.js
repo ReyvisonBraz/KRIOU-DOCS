@@ -176,72 +176,97 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
    * Opera em 6 passos para garantir ordem correta de substituição.
    */
   const interpolateAdaptive = (text) => {
+    // Helper: finds the matching closing brace for an opening brace at the given position.
+    // Supports arbitrary nesting (even inner {?any}/{?,} blocks inside outer ones).
+    const findMatchingBrace = (str, openPos) => {
+      let depth = 0;
+      for (let i = openPos; i < str.length; i++) {
+        if (str[i] === "{") depth++;
+        else if (str[i] === "}") {
+          depth--;
+          if (depth === 0) return i;
+        }
+      }
+      return -1;
+    };
+
     // ── Passo especial: placeholder de aviso de garantia ausente ──────────
-    // {caucao_ausente_aviso} → texto explicativo quando caução não está preenchida
     let result = text.replace(/\{caucao_ausente_aviso\}/g, () => {
       const caucaoPreenchida = !isAbsent("valor_caucao");
-      if (caucaoPreenchida) return ""; // já tem cláusula com valor — sem aviso
+      if (caucaoPreenchida) return "";
       return "As partes acordam, de forma expressa e consensual, que não será exigida qualquer modalidade de garantia locatícia (caução, fiança, seguro de fiança ou cessão fiduciária), ficando o contrato desprovido de garantia, nos termos do artigo 37 da Lei 8.245/91.";
     });
 
     // ── Passo 0: segmentos "qualquer campo" {?any, ...} ──────────────────
-    // Renderiza o segmento se PELO MENOS UM campo opcional ({field?}) tiver valor.
-    // Campos opcionais dentro: {field?} → valor ou \x00 se ausente.
-    // Útil para blocos com prefixo fixo (ex: "residente em {endereco?}, {cidade?}"):
-    // garante que o prefixo só apareça quando ao menos um dado estiver preenchido.
-    result = result.replace(
-      /\{\?any,\s*((?:[^{}]|\{[^}]*\})*)\}/g,
-      (_, segment) => {
-        // Coleta todas as chaves referenciadas (com ou sem ?)
-        const keys = [];
-        segment.replace(/\{(\w+)\??\}/g, (__, k) => keys.push(k));
+    // Uses balanced brace counting to support nested {?,} / {?any,} blocks.
+    let scanPos = 0;
+    while ((scanPos = result.indexOf("{?any,", scanPos)) !== -1) {
+      const openBrace = scanPos;
+      const closeBrace = findMatchingBrace(result, openBrace);
+      if (closeBrace === -1) { scanPos += 6; continue; }
 
-        // Remove o segmento inteiro se TODOS os campos estiverem ausentes
-        if (keys.length === 0 || keys.every(isAbsent)) return "";
+      const segmentStart = openBrace + 6; // after "{?any,"
+      const segment = result.substring(segmentStart, closeBrace);
 
-        // Pelo menos um campo presente: interpola opcionais ({field?} → valor ou \x00)
-        return segment.replace(/\{(\w+)\?\}/g, (__, k) =>
-          isAbsent(k) ? "\x00" : (formatFieldValue(k, formData[k]) || "")
-        );
-        // Nota: {field} sem ? dentro de {?any} serão tratados no Passo 3
+      const keys = [];
+      segment.replace(/\{(\w+)\??\}/g, (_, k) => keys.push(k));
+
+      if (keys.length === 0 || keys.every(isAbsent)) {
+        result = result.substring(0, openBrace) + result.substring(closeBrace + 1);
+        continue;
       }
-    );
 
-    // ── Passo 1: segmentos condicionais {?, ...{field1}... {field2}...} ─────
-    // Remove o segmento inteiro se QUALQUER campo dentro estiver ausente.
-    // Suporta múltiplos campos no mesmo segmento.
-    result = result.replace(
-      /\{\?,\s*((?:[^{}]|\{[^}]*\})*)\}/g,
-      (_, segment) => {
-        // Coleta todas as chaves de campo referenciadas dentro do segmento
-        const keys = [];
-        segment.replace(/\{(\w+)\}/g, (__, k) => keys.push(k));
+      const interpolated = segment.replace(/\{(\w+)\?\}/g, (_, k) =>
+        isAbsent(k) ? "\x00" : (formatFieldValue(k, formData[k]) || "")
+      );
 
-        // Remove o segmento se qualquer chave estiver ausente
-        if (keys.length === 0 || keys.some(isAbsent)) return "";
+      result = result.substring(0, openBrace) + interpolated + result.substring(closeBrace + 1);
+      scanPos = openBrace + interpolated.length;
+    }
 
-        // Interpola todos os campos dentro do segmento, com formatação
-        return segment.replace(/\{(\w+)\}/g, (__, k) =>
-          formatFieldValue(k, formData[k]) || ""
-        );
+    // ── Passo 1: segmentos condicionais {?, ...{field}...} ───────────────
+    scanPos = 0;
+    while ((scanPos = result.indexOf("{?,", scanPos)) !== -1) {
+      // Skip {?any (already handled in Passo 0)
+      if (result.substring(scanPos, scanPos + 5) === "{?any") { scanPos += 5; continue; }
+      // Must be followed by whitespace to be a conditional block
+      if (!/\s/.test(result[scanPos + 3] || "")) { scanPos += 3; continue; }
+
+      const openBrace = scanPos;
+      const closeBrace = findMatchingBrace(result, openBrace);
+      if (closeBrace === -1) { scanPos += 3; continue; }
+
+      const segmentStart = openBrace + 3; // after "{?,"
+      const segment = result.substring(segmentStart, closeBrace);
+
+      const keys = [];
+      segment.replace(/\{(\w+)\}/g, (_, k) => keys.push(k));
+
+      if (keys.length === 0 || keys.some(isAbsent)) {
+        result = result.substring(0, openBrace) + result.substring(closeBrace + 1);
+        continue;
       }
-    );
+
+      const interpolated = segment.replace(/\{(\w+)\}/g, (_, k) =>
+        formatFieldValue(k, formData[k]) || ""
+      );
+
+      result = result.substring(0, openBrace) + interpolated + result.substring(closeBrace + 1);
+      scanPos = openBrace + interpolated.length;
+    }
 
     // ── Passo 2: campos opcionais simples {fieldKey?} ─────────────────────
-    // Converte campos ausentes em marcador \x00 para limpeza posterior
     result = result.replace(/\{(\w+)\?\}/g, (_, key) => {
       if (isAbsent(key)) return "\x00";
       return formatFieldValue(key, formData[key]);
     });
 
     // ── Passo 3: campos obrigatórios {fieldKey} ───────────────────────────
-    // Mostra o valor ou [fieldKey] se ausente (indica que o campo é obrigatório)
     result = result.replace(/\{(\w+)\}/g, (_, key) =>
       formatFieldValue(key, formData[key]) || `[${key}]`
     );
 
     // ── Passo 4: limpeza gramatical ───────────────────────────────────────
-    // Remove palavras órfãs e artefatos deixados pelo marcador \x00
     result = applyPortugueseCleanup(result);
 
     return result;
@@ -284,10 +309,12 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
       case "signatures":
         return {
           ...block,
-          parties: block.parties.map((p) => ({
-            ...p,
-            name: formData[p.fieldKey] || "[Nome não informado]",
-          })),
+          parties: block.parties
+            .map((p) => ({
+              ...p,
+              name: formData[p.fieldKey] || (p.optional ? null : "[Nome não informado]"),
+            }))
+            .filter((p) => p.name !== null),
         };
 
       default:

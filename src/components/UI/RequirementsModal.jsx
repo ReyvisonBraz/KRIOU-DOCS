@@ -72,6 +72,7 @@ const CircleIcon = ({ color, size = 8 }) => (
 // ============================================================
 const RequirementItem = ({ label, color }) => (
   <div
+    className="print-item"
     style={{
       display: "flex",
       alignItems: "center",
@@ -161,9 +162,11 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
   const spec = doc.spec || {};
   const requirements = getRequirementsByLevel(doc, selectedLevel);
   const active = LEVELS[selectedLevel];
+  const today = new Date().toLocaleDateString("pt-BR");
 
   return (
     <div
+      className="print-overlay"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -180,6 +183,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
     >
       {/* ── Modal card ── */}
       <div
+        className="print-modal"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",
@@ -194,6 +198,19 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           boxShadow: "0 32px 80px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3)",
         }}
       >
+        {/* ── Print-only header ── */}
+        <div
+          className="print-only print-header"
+          style={{ display: "none" }}
+        >
+          <h1 className="print-header-title">
+            KRIOU DOCS - Requisitos do Documento
+          </h1>
+          <p className="print-header-subtitle">
+            {doc.name || doc.title}{variant ? ` \u2014 ${variant.name}` : ""}
+          </p>
+        </div>
+
         {/* ── Header ── */}
         <div
           style={{
@@ -205,7 +222,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           {/* Close button */}
           <button
             onClick={onClose}
-            className="kf"
+            className="kf print-hide"
             aria-label="Fechar"
             style={{
               position: "absolute",
@@ -238,6 +255,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           {/* Doc info */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, paddingRight: 52 }}>
             <div
+              className="print-doc-icon"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -255,6 +273,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
             </div>
             <div style={{ minWidth: 0 }}>
               <h2
+                className="print-doc-title"
                 style={{
                   fontFamily: "'Outfit', sans-serif",
                   fontWeight: 900,
@@ -269,6 +288,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 {doc.name || doc.title}
               </h2>
               <p
+                className="print-subtitle"
                 style={{
                   fontSize: 13,
                   color: "var(--text-muted)",
@@ -283,6 +303,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
           {/* ── Level tabs ── */}
           <div
+            className="print-hide"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(3, 1fr)",
@@ -359,9 +380,13 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
         </div>
 
         {/* ── Body scrollable ── */}
-        <div style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}>
+        <div
+          className="print-body"
+          style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}
+        >
           {/* Count bar */}
           <div
+            className="print-count-bar"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -397,6 +422,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               </span>
             </div>
             <span
+              className="print-level-badge"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -418,6 +444,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           {/* ── When to use (essencial only) ── */}
           {spec.whenUse && selectedLevel === "essencial" && (
             <div
+              className="print-when-use"
               style={{
                 padding: 16,
                 background: "rgba(20,184,166,0.06)",
@@ -455,8 +482,9 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
           {/* ── Obrigatórios ── */}
           {requirements.obrigatorios.length > 0 && (
-            <div style={{ marginBottom: 18 }}>
+            <div className="print-section" style={{ marginBottom: 18 }}>
               <div
+                className="print-section-header"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -468,6 +496,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 }}
               >
                 <span
+                  className="print-badge"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -498,8 +527,9 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
           {/* ── Opcionais ── */}
           {requirements.opcionais.length > 0 && selectedLevel !== "minimo" && (
-            <div style={{ marginBottom: 18 }}>
+            <div className="print-section" style={{ marginBottom: 18 }}>
               <div
+                className="print-section-header"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -511,6 +541,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 }}
               >
                 <span
+                  className="print-badge"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -543,8 +574,9 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
           {/* ── Extras ── */}
           {selectedLevel === "completo" && requirements.extras.length > 0 && (
-            <div style={{ marginBottom: 18 }}>
+            <div className="print-section" style={{ marginBottom: 18 }}>
               <div
+                className="print-section-header"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -556,6 +588,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 }}
               >
                 <span
+                  className="print-badge"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -587,6 +620,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           {/* ── Required docs ── */}
           {spec.requiredDocs && spec.requiredDocs.length > 0 && (
             <div
+              className="print-required"
               style={{
                 marginTop: 20,
                 padding: 18,
@@ -633,6 +667,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           {/* ── Tips ── */}
           {spec.tips && spec.tips.length > 0 && selectedLevel !== "minimo" && (
             <div
+              className="print-tips"
               style={{
                 marginTop: 18,
                 padding: 18,
@@ -683,6 +718,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
         {/* ── Footer ── */}
         <div
+          className="print-hide"
           style={{
             display: "flex",
             gap: 12,
@@ -769,11 +805,206 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
             Imprimir Checklist
           </button>
         </div>
+
+        {/* ── Print-only footer ── */}
+        <div
+          className="print-only print-footer"
+          style={{ display: "none" }}
+        >
+          <span>Data: {today}</span>
+          <span className="print-footer-page"></span>
+        </div>
       </div>
 
       <style>{`
         @media print {
-          body { background: white !important; }
+          @page {
+            size: A4;
+            margin: 15mm 12mm;
+          }
+
+          /* ── Overlay: remove backdrop, make static ── */
+          .print-overlay {
+            position: static !important;
+            background: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0 !important;
+            display: block !important;
+          }
+
+          /* ── Modal card: full page width, no constraints ── */
+          .print-modal {
+            max-width: none !important;
+            width: 100% !important;
+            max-height: none !important;
+            overflow: visible !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            background: #fff !important;
+            display: block !important;
+          }
+
+          /* ── Hide interactive UI chrome ── */
+          .print-hide {
+            display: none !important;
+          }
+
+          /* ── Show print-only elements ── */
+          .print-only {
+            display: block !important;
+          }
+
+          /* ── Body: allow full overflow ── */
+          .print-body {
+            overflow: visible !important;
+            flex: none !important;
+          }
+
+          /* ── Print header ── */
+          .print-header {
+            padding: 0 0 6mm 0;
+            margin: 0 0 8mm 0;
+            border-bottom: 2px solid #222;
+          }
+          .print-header-title {
+            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+            font-weight: 900;
+            font-size: 16pt;
+            color: #111 !important;
+            margin: 0 0 4pt 0;
+            line-height: 1.2;
+            letter-spacing: 0.01em;
+          }
+          .print-header-subtitle {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 11pt;
+            color: #333 !important;
+            margin: 0;
+            line-height: 1.3;
+          }
+
+          /* ── Print footer ── */
+          .print-footer {
+            position: fixed !important;
+            bottom: 0;
+            left: 12mm;
+            right: 12mm;
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3mm 0;
+            border-top: 1px solid #333;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 8pt;
+            color: #555 !important;
+            background: #fff !important;
+          }
+          .print-footer-page::after {
+            content: "P\u00E1gina " counter(page);
+          }
+
+          /* ── Document icon ── */
+          .print-doc-icon {
+            background: #f0f0f0 !important;
+            border: 1px solid #ccc !important;
+            color: #555 !important;
+          }
+
+          /* ── Document title ── */
+          .print-doc-title {
+            font-size: 14pt !important;
+            color: #111 !important;
+          }
+
+          /* ── Subtitle ── */
+          .print-subtitle {
+            font-size: 10pt !important;
+            color: #444 !important;
+          }
+
+          /* ── Count bar ── */
+          .print-count-bar {
+            background: #f7f7f7 !important;
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+          }
+
+          /* ── Level badge ── */
+          .print-level-badge {
+            background: #e8e8e8 !important;
+            border: 1px solid #bbb !important;
+            color: #444 !important;
+          }
+
+          /* ── When to use section ── */
+          .print-when-use {
+            background: #f7f7f7 !important;
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+          }
+          .print-when-use [style*="color"] {
+            color: #333 !important;
+          }
+
+          /* ── Sections ── */
+          .print-section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          /* ── Section headers ── */
+          .print-section-header {
+            background: #f3f3f3 !important;
+            break-inside: avoid;
+          }
+
+          /* ── Badges (OBRIGAT\u00D3RIO / OPCIONAL / EXTRAS) ── */
+          .print-badge {
+            background: #e0e0e0 !important;
+            border: 1px solid #aaa !important;
+          }
+
+          /* ── Requirement items ── */
+          .print-item {
+            background: #fff !important;
+            border: 1px solid #ddd !important;
+          }
+
+          /* ── Required docs section ── */
+          .print-required {
+            background: #f7f7f7 !important;
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+          }
+          .print-required [style*="background"] {
+            background: #e8e8e8 !important;
+          }
+          .print-required [style*="border"] {
+            border: 1px solid #ccc !important;
+          }
+
+          /* ── Tips section ── */
+          .print-tips {
+            background: #f7f7f7 !important;
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+          }
+          .print-tips [style*="color"] {
+            color: #333 !important;
+          }
+
+          /* ── Force black-on-white for all content ── */
+          .print-modal,
+          .print-modal div,
+          .print-modal span,
+          .print-modal p,
+          .print-modal h2 {
+            text-shadow: none !important;
+            background-image: none !important;
+          }
         }
       `}</style>
     </div>

@@ -34,7 +34,7 @@ function mapDocumentRow(row) {
     formData:         row.form_data,
     legalData:        row.legal_data,
     documentType:     row.document_type,
-    documentTypeName: row.document_type_name,
+    documentTypeName: row.document_type_name || row.template_name || null,
     variantId:        row.variant_id,
     variantName:      row.variant_name,
     variant:         row.variant,

@@ -19,6 +19,8 @@
 
 import { jsPDF } from "jspdf";
 import { getDocumentBody } from "../data/legalDocuments";
+import { generateDocumentCode, shortDocumentCode, getValidationURL } from "./documentHash";
+import { drawQRCode } from "./qrHelper";
 
 // ─── Layout (compact A4 — tudo em 1 folha) ─────────────────────────────────────
 const PAGE_W = 210;
@@ -32,7 +34,7 @@ const CW = PAGE_W - ML - MR;
 // ─── Typography (compact) ─────────────────────────────────────────────────────
 const FONT_BODY   = "times";
 const FONT_LABEL  = "helvetica";
-const SIZE_TITLE  = 12;
+const SIZE_TITLE  = 14;
 const SIZE_BODY   = 9;
 const SIZE_SMALL  = 7.5;
 const SIZE_CAPTION = 6.5;
@@ -47,10 +49,10 @@ const GAP_PARA    = 1;
 const GAP_TITLE   = 6;
 
 // ─── Colors (warm-tinted neutrals) ────────────────────────────────────────────
-const C_INK       = [22, 29, 38];
-const C_TEXT      = [52, 58, 66];
-const C_SUBTLE    = [115, 120, 130];
-const C_MUTED     = [165, 170, 178];
+const C_INK       = [0, 0, 0];
+const C_TEXT      = [15, 15, 15];
+const C_SUBTLE    = [80, 80, 85];
+const C_MUTED     = [140, 140, 145];
 const C_DIVIDER   = [228, 226, 220];
 const C_GOLD      = [165, 135, 55];
 const C_CREAM     = [253, 251, 246];
@@ -90,48 +92,72 @@ const wouldOrphan = (startY, headerLines) => {
 /**
  * Draws the editorial header on the first page.
  */
-const drawHeader = (doc, title, legislation) => {
+const drawHeader = (doc, title, legislation, documentCode) => {
+  // Top decorative rule
   doc.setDrawColor(...C_GOLD);
-  doc.setLineWidth(0.5);
-  doc.line(PAGE_W / 2 - 35, MT + 3, PAGE_W / 2 + 35, MT + 3);
+  doc.setLineWidth(0.6);
+  const topRuleW = Math.min(CW * 0.6, 90);
+  doc.line(PAGE_W / 2 - topRuleW / 2, MT + 3, PAGE_W / 2 + topRuleW / 2, MT + 3);
 
-  pageY = MT + 12;
+  pageY = MT + 13;
 
+  // Title — bold, uppercase, centered
   doc.setFont(FONT_BODY, "bold");
   doc.setFontSize(SIZE_TITLE);
   doc.setTextColor(...C_INK);
   const titleLines = doc.splitTextToSize(title.toUpperCase(), CW - 16);
   titleLines.forEach((line) => {
     doc.text(line, PAGE_W / 2, pageY, { align: "center" });
-    pageY += 6.5;
+    pageY += 7;
   });
 
-  pageY += 2;
+  // Bottom decorative rule (shorter)
+  pageY += 1;
   doc.setDrawColor(...C_GOLD);
   doc.setLineWidth(0.4);
-  const ruleW = Math.min(CW * 0.35, 55);
+  const ruleW = Math.min(CW * 0.3, 50);
   doc.line(PAGE_W / 2 - ruleW / 2, pageY, PAGE_W / 2 + ruleW / 2, pageY);
 
+  // Kriou Docs label
   pageY += 6;
   doc.setFont(FONT_LABEL, "normal");
-  doc.setFontSize(SIZE_CAPTION);
-  doc.setTextColor(...C_SUBTLE);
+  doc.setFontSize(7);
+  doc.setTextColor(...C_MUTED);
   doc.text("Documento gerado por Kriou Docs", PAGE_W / 2, pageY, { align: "center" });
 
+  // Legislation (fundamento legal)
   if (legislation) {
-    pageY += 4;
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C_MUTED);
-    doc.text(legislation, PAGE_W / 2, pageY, { align: "center", maxWidth: CW * 0.8 });
+    pageY += 5;
+    doc.setFont(FONT_LABEL, "normal");
+    doc.setFontSize(8);
+
+    // "Fundamento Legal:" in gold
+    doc.setTextColor(...C_GOLD);
+    doc.text("Fundamento Legal: ", ML, pageY);
+
+    // Law text in dark
+    const lawX = ML + doc.getTextWidth("Fundamento Legal: ") + 1;
+    doc.setTextColor(...C_SUBTLE);
+    doc.text(legislation, lawX, pageY, { maxWidth: PAGE_W - MR - lawX - 2 });
+    pageY += 5;
   }
 
-  pageY += 10;
+  // Document code
+  if (documentCode) {
+    pageY += 3;
+    doc.setFont(FONT_LABEL, "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C_MUTED);
+    doc.text(`Codigo: ${documentCode}`, PAGE_W - MR, pageY, { align: "right" });
+  }
+
+  pageY += 8;
   doc.setTextColor(...C_TEXT);
 };
 
 // ─── Footer (compact) ─────────────────────────────────────────────────────────
 
-const drawFooter = (doc) => {
+const drawFooter = (doc, shortCode) => {
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -154,7 +180,12 @@ const drawFooter = (doc) => {
     doc.setFontSize(6.5);
     doc.text(dateStr, PAGE_W - MR, fy + 1, { align: "right" });
 
-    doc.text("krioudocs.com.br", ML, fy + 1);
+    // Left side: short code or domain
+    if (shortCode) {
+      doc.text(shortCode, ML, fy + 1);
+    } else {
+      doc.text("krioudocs.com.br", ML, fy + 1);
+    }
   }
 };
 
@@ -646,7 +677,12 @@ export const generateLegalPDF = (formData, docType, disabledFields = {}, variant
 
   pageY = MT;
 
-  drawHeader(doc, docType?.name || "Documento Jur\u00EDdico", docType?.legislation);
+  // Generate unique document code
+  const documentCode = generateDocumentCode(docType, variantId);
+  const shortCode = shortDocumentCode(documentCode);
+  const validationURL = getValidationURL(documentCode);
+
+  drawHeader(doc, docType?.name || "Documento Jur\u00EDdico", docType?.legislation, documentCode);
 
   const vId = variantId || docType?.defaultVariant;
   const body = vId
@@ -661,10 +697,20 @@ export const generateLegalPDF = (formData, docType, disabledFields = {}, variant
     generateFallback(doc, docType, formData, disabledFields);
   }
 
-  // Notary stamp section — sempre na mesma página, após assinaturas
+  // Notary stamp section — sempre na mesma pagina, apos assinaturas
   renderNotaryStampSection(doc);
 
-  drawFooter(doc);
+  // QR Code — bottom of the last page, relative to content flow
+  pageY += 6;
+  ensureSpace(doc, 30);
+  const qrSize = 18;
+  drawQRCode(doc, validationURL, ML, pageY, qrSize, {
+    label: "Escanear para validar",
+    labelSize: 5,
+  });
+  pageY += qrSize + 8;
+
+  drawFooter(doc, shortCode);
 
   return doc;
 };

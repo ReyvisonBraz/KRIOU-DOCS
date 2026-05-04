@@ -20,31 +20,31 @@
 import { jsPDF } from "jspdf";
 import { getDocumentBody } from "../data/legalDocuments";
 
-// ─── Layout (compact) ─────────────────────────────────────────────────────────
+// ─── Layout (compact A4 — tudo em 1 folha) ─────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
-const ML = 20;
-const MR = 18;
-const MT = 14;
-const MB = 14;
+const ML = 18;
+const MR = 16;
+const MT = 12;
+const MB = 12;
 const CW = PAGE_W - ML - MR;
 
 // ─── Typography (compact) ─────────────────────────────────────────────────────
 const FONT_BODY   = "times";
 const FONT_LABEL  = "helvetica";
-const SIZE_TITLE  = 13;
-const SIZE_BODY   = 10;
-const SIZE_SMALL  = 8;
-const SIZE_CAPTION = 7;
-const LEAD_BODY   = 5.0;
-const LEAD_TIGHT  = 4.5;
-const LEAD_CLAUSE = 9;
+const SIZE_TITLE  = 12;
+const SIZE_BODY   = 9;
+const SIZE_SMALL  = 7.5;
+const SIZE_CAPTION = 6.5;
+const LEAD_BODY   = 4.2;
+const LEAD_TIGHT  = 3.8;
+const LEAD_CLAUSE = 7;
 
 // ─── Spacing (compact) ────────────────────────────────────────────────────────
-const GAP_SECTION = 7;
-const GAP_CLAUSE  = 4;
-const GAP_PARA    = 2;
-const GAP_TITLE   = 10;
+const GAP_SECTION = 4;
+const GAP_CLAUSE  = 2;
+const GAP_PARA    = 1;
+const GAP_TITLE   = 6;
 
 // ─── Colors (warm-tinted neutrals) ────────────────────────────────────────────
 const C_INK       = [22, 29, 38];
@@ -342,7 +342,7 @@ const renderSignatures = (doc, parties) => {
     doc.text(party.role, centerX, pageY + 9.5, { align: "center" });
   });
 
-  pageY += 20;
+  pageY += 12;
   doc.setTextColor(...C_TEXT);
 };
 
@@ -392,7 +392,7 @@ const renderWitnesses = (doc, count = 2) => {
     doc.line(lineStartX + 21, pageY + 5, lineStartX + lineW, pageY + 5);
     doc.line(lineStartX + 17, pageY + 9.5, lineStartX + lineW * 0.7, pageY + 9.5);
   }
-  pageY += 20;
+  pageY += 12;
   doc.setTextColor(...C_TEXT);
 };
 
@@ -401,7 +401,7 @@ const renderWitnesses = (doc, count = 2) => {
 /**
  * Draw a single notary stamp box with dashed gold border.
  */
-const drawStampBox = (doc, title, subtitle, lines, boxW = 80, boxH = 40) => {
+const drawStampBox = (doc, title, subtitle, lines, boxW = 68, boxH = 34) => {
   const boxX = PAGE_W / 2 - boxW / 2;
   const boxY = pageY;
 
@@ -481,38 +481,34 @@ const pointOnRect = (x, y, w, h, d) => {
 };
 
 /**
- * Render the notary stamp section on the last page.
+ * Render the notary stamp section inline (after signatures, same page).
  */
 const renderNotaryStampSection = (doc) => {
-  ensureSpace(doc, 110);
-
-  // Section title
-  pageY += 4;
-  doc.setFont(FONT_LABEL, "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...C_GOLD);
-  doc.text("ESPA\u00C7O PARA SELOS E RECONHECIMENTO DE FIRMA", PAGE_W / 2, pageY, { align: "center" });
+  ensureSpace(doc, 80);
 
   pageY += 2;
+  doc.setFont(FONT_LABEL, "bold");
+  doc.setFontSize(6.5);
+  doc.setTextColor(...C_GOLD);
+  doc.text("SELOS E RECONHECIMENTO DE FIRMA", PAGE_W / 2, pageY, { align: "center" });
+
+  pageY += 1;
   doc.setDrawColor(...C_DIVIDER);
-  doc.setLineWidth(0.2);
-  doc.line(ML + 10, pageY, PAGE_W - MR - 10, pageY);
+  doc.setLineWidth(0.15);
+  doc.line(ML + 20, pageY, PAGE_W - MR - 20, pageY);
 
-  pageY += 6;
+  pageY += 4;
 
-  // First stamp box: Selo do Cartório / Reconhecimento de Firma
   drawStampBox(doc, "Selo do Cart\u00F3rio", "Reconhecimento de Firma", [
     "Data:",
     "Livro:",
     "Folha:",
-  ]);
+  ], 64, 30);
 
-  // Second stamp box: Autenticação / Apostila
-  drawStampBox(doc, "ESPA\u00C7O PARA AUTENTICA\u00C7\u00C3O", "Apostila / Carimbo", [
+  drawStampBox(doc, "Autentica\u00E7\u00E3o / Apostila", "Carimbo", [
     "Data:",
     "C\u00F3digo:",
-    "Respons\u00E1vel:",
-  ]);
+  ], 64, 24);
 };
 
 // ─── Document Body Rendering ─────────────────────────────────────────────────
@@ -665,12 +661,7 @@ export const generateLegalPDF = (formData, docType, disabledFields = {}, variant
     generateFallback(doc, docType, formData, disabledFields);
   }
 
-  // Notary stamp section — always on last content page
-  if (!hasStructuredBody || doc.getNumberOfPages() === 1) {
-    ensureSpace(doc, 110);
-  } else {
-    newPage(doc);
-  }
+  // Notary stamp section — sempre na mesma página, após assinaturas
   renderNotaryStampSection(doc);
 
   drawFooter(doc);

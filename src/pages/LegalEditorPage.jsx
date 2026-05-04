@@ -287,7 +287,7 @@ const LegalEditorPage = () => {
     : `Próximo: ${steps[currentStep + 1]?.label || ""}`;
 
   const renderStepIndicator = () => (
-    <div style={{
+    <div className="le-step-indicator" style={{
       padding: "12px 16px",
       background: "var(--surface)",
       borderBottom: "1px solid var(--border)",
@@ -345,11 +345,11 @@ const LegalEditorPage = () => {
             <span style={{ fontSize: 16, lineHeight: 1 }}>
               {isCompleted ? "✓" : step.icon ? "●" : `${idx + 1}`}
             </span>
-            <span style={{ maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span className="le-step-label" style={{ maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis" }}>
               {step.label}
             </span>
             {fillCount && (
-              <span style={{
+              <span className="le-step-count" style={{
                 fontSize: 10, fontWeight: 700,
                 padding: "2px 6px", borderRadius: 8,
                 background: "var(--surface-2)", color: "var(--text-muted)",
@@ -360,16 +360,47 @@ const LegalEditorPage = () => {
           </button>
         );
       })}
+      {currentSections.length > 0 && !isReviewStep && !isPreviewStep && (
+        <button
+          onClick={handleFillDemo}
+          title="Preencher com dados de demonstração"
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            minWidth: 36,
+            minHeight: 34,
+            padding: "4px 12px",
+            borderRadius: 100,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "transparent",
+            color: "var(--text-faint)",
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            fontFamily: "var(--font-body)",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20,184,166,0.12)"; e.currentTarget.style.color = "var(--teal)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+        >
+          <Icon name="Wand2" className="w-3.5 h-3.5" />
+          <span className="le-step-label">Demo</span>
+        </button>
+      )}
     </div>
   );
 
   const renderVariantSelection = () => (
     <div style={{ animation: "fade-in 0.35s ease-out both" }}>
       <div style={{ marginBottom: 28 }}>
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, color: "var(--text)", letterSpacing: "-0.02em" }}>
+        <h2 className="font-display le-title-mobile" style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, color: "var(--text)", letterSpacing: "-0.02em" }}>
           {selectedDoc?.name}
         </h2>
-        <p style={{ fontSize: 14, color: "var(--text-dim)", lineHeight: 1.6, fontFamily: "var(--font-body)" }}>
+        <p className="le-desc-mobile" style={{ fontSize: 14, color: "var(--text-dim)", lineHeight: 1.6, fontFamily: "var(--font-body)" }}>
           Escolha a variação do documento. Cada opção adapta os campos automaticamente.
         </p>
         {selectedDoc?.legislation && (
@@ -378,7 +409,7 @@ const LegalEditorPage = () => {
             {selectedDoc.legislation}
           </div>
         )}
-        <button onClick={() => setShowRequirements(true)} aria-label="Ver requisitos do documento"
+        <button onClick={() => setShowRequirements(true)} aria-label="Ver requisitos do documento" className="le-req-btn"
           style={{ marginTop: 16, padding: "14px 24px", fontSize: 14, fontWeight: 700, fontFamily: "var(--font-body)", borderRadius: 14, background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)", color: "var(--teal)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10, minHeight: 48, transition: "all 0.2s ease" }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20,184,166,0.16)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.4)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20,184,166,0.1)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
@@ -460,7 +491,7 @@ const LegalEditorPage = () => {
           }
 
           return (
-            <div key={instIdx} style={{ marginBottom: 20 }}>
+            <div key={instIdx} className="le-party-card" style={{ marginBottom: 20 }}>
               <div style={{
                 padding: 20, borderRadius: 16, background: "var(--surface)",
                 border: `1.5px solid ${stepColor.border}`, position: "relative",
@@ -487,7 +518,7 @@ const LegalEditorPage = () => {
                     </button>
                   )}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0 20px" }}>
+                <div className="le-field-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0 20px" }}>
                   {instance.fields.map((fieldDef) => (
                     <div key={fieldDef.key} id={`field-${fieldDef.key}`}>
                       <LegalFieldRenderer
@@ -549,11 +580,11 @@ const LegalEditorPage = () => {
 
         <ClientNoteBanner notes={selectedDoc?.clientNotes} />
 
-        <div style={{
+        <div className="le-section-card" style={{
           padding: 20, borderRadius: 16, background: "var(--surface)",
           border: `1.5px solid ${stepColor.border}`,
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0 20px" }}>
+          <div className="le-field-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0 20px" }}>
             {section.fields.map((fieldDef) => (
               <div key={fieldDef.key} id={`field-${fieldDef.key}`}>
                 <LegalFieldRenderer
@@ -614,7 +645,7 @@ const LegalEditorPage = () => {
             <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--teal)", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-display)", letterSpacing: "0.03em", textTransform: "uppercase" }}>
               <Icon name="Folder" className="w-4 h-4" /> {section.title}
             </h4>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+            <div className="le-review-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
               {filledFields.map((f) => (
                 <div key={f.key}>
                   <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 3, fontFamily: "var(--font-body)", fontWeight: 600, letterSpacing: "0.04em" }}>{f.label}</div>
@@ -727,7 +758,7 @@ const LegalEditorPage = () => {
           <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>Revise o documento final antes de gerar o PDF</p>
         </div>
         <div style={{ background: "#fcfbf9", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)", maxWidth: 780, margin: "0 auto", overflow: "hidden" }}>
-          <div style={{ padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)" }}>
+          <div className="le-preview-pad" style={{ padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)" }}>
             {hasBody ? docBody.map((block, i) => renderBlock(block, i)) : renderFallback()}
             {selectedDoc?.legislation && (
               <p style={{ marginTop: 36, padding: "12px 0", fontSize: 10.5, color: "#767b84", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontStyle: "italic" }}>
@@ -764,6 +795,24 @@ const LegalEditorPage = () => {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--navy)" }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .le-step-label { display: none !important; }
+          .le-step-count { display: none !important; }
+          .le-step-indicator { padding: 8px 10px !important; gap: 4px !important; }
+          .le-step-indicator button { padding: 4px 10px !important; min-width: 36px !important; min-height: 32px !important; font-size: 10px !important; }
+          .le-content-pad { padding: 16px 12px 100px !important; }
+          .le-section-card { padding: 14px !important; }
+          .le-title-mobile { font-size: 20px !important; }
+          .le-desc-mobile { font-size: 12px !important; }
+          .le-req-btn { font-size: 12px !important; padding: 10px 16px !important; min-height: 40px !important; }
+          .le-party-card { padding: 12px !important; }
+          .le-field-grid { grid-template-columns: 1fr !important; }
+          .le-review-grid { grid-template-columns: 1fr !important; }
+          .le-preview-pad { padding: 24px 16px !important; }
+          .le-bottombar-text { font-size: 10px !important; }
+        }
+      `}</style>
       <AppNavbar
         title={navTitle}
         leftAction={
@@ -791,7 +840,7 @@ const LegalEditorPage = () => {
 
       {!isPreviewStep && currentSections.length > 0 && renderStepIndicator()}
 
-      <div ref={contentRef} style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
+      <div ref={contentRef} className="le-content-pad" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
         {renderStepContent()}
       </div>
 

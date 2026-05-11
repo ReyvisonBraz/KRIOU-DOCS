@@ -419,6 +419,67 @@ export const SkeletonCard = ({ className }) => {
   );
 };
 
+/* ====================== Skeleton Primitive ====================== */
+export const Skeleton = ({ width = "100%", height = 16, borderRadius = 8, delay = 0, style, className }) => (
+  <div
+    className={className}
+    style={{
+      width,
+      height,
+      borderRadius,
+      background: "var(--surface-3)",
+      animation: "kriou-sk-pulse 1.4s ease-in-out infinite",
+      animationDelay: `${delay}s`,
+      ...style,
+    }}
+  />
+);
+
+/* ====================== SkeletonForm (editor loading) ====================== */
+export const SkeletonForm = ({ rows = 6 }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 20 }}>
+    {Array.from({ length: rows }).map((_, i) => (
+      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <Skeleton width="120px" height={14} delay={i * 0.04} />
+        <Skeleton height={44} borderRadius={12} delay={i * 0.04 + 0.05} />
+      </div>
+    ))}
+  </div>
+);
+
+/* ====================== SkeletonStep (step indicator) ====================== */
+export const SkeletonStep = () => (
+  <div style={{
+    display: "flex", gap: 8, padding: "12px 16px",
+    borderBottom: "1px solid var(--border)",
+    background: "var(--surface)",
+  }}>
+    {Array.from({ length: 4 }).map((_, i) => (
+      <Skeleton key={i} width={80} height={32} borderRadius={100} delay={i * 0.06} />
+    ))}
+  </div>
+);
+
+/* ====================== SkeletonPage (full page) ====================== */
+export const SkeletonPage = () => (
+  <div style={{ minHeight: "100vh", background: "var(--navy)" }}>
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10,
+      padding: "14px 20px", borderBottom: "1px solid var(--border)",
+      background: "var(--surface)",
+    }}>
+      <Skeleton width={36} height={36} borderRadius={10} />
+      <Skeleton width={200} height={20} />
+    </div>
+    <SkeletonStep />
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px" }}>
+      <Skeleton width={180} height={28} borderRadius={10} delay={0.1} />
+      <Skeleton width={300} height={16} delay={0.15} style={{ marginTop: 8 }} />
+      <SkeletonForm rows={5} />
+    </div>
+  </div>
+);
+
 /* ====================== ConfirmDialog ====================== */
 export const ConfirmDialog = ({
   visible,

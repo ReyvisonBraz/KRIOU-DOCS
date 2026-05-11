@@ -21,6 +21,8 @@ import {
 import showToast from "../utils/toast";
 import StorageService from "../utils/storage";
 import { generateMockFormData } from "../utils/mockData";
+import { usePDF } from "../hooks/usePDF";
+import { sanitizeFormData } from "../utils/sanitization";
 import {
   getSectionsForVariant,
   validateFields,
@@ -86,6 +88,10 @@ const LegalEditorPage = () => {
     userDocuments,
     setUserDocuments,
     userId,
+    editingDocId,
+    setEditingDocId,
+    saveDocument,
+    updateDocument,
   } = useApp();
 
   const [selectedDoc, setSelectedDoc] = useState(documentType || null);
@@ -93,6 +99,8 @@ const LegalEditorPage = () => {
   const [showErrors, setShowErrors] = useState(false);
   const [showRequirements, setShowRequirements] = useState(false);
   const [expandedParties, setExpandedParties] = useState({});
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const { generatePDF } = usePDF();
 
   const bottomNavRef = useRef(null);
   const contentRef = useRef(null);
@@ -176,6 +184,32 @@ const LegalEditorPage = () => {
     setStepErrors({});
     setShowErrors(false);
     showToast.success("Dados de demonstração preenchidos! Avance para visualizar o documento.");
+  };
+
+  const handleFinalize = async () => {
+    setIsFinalizing(true);
+    try {
+      const docData = sanitizeFormData(legalFormData);
+      if (editingDocId) {
+        await updateDocument(editingDocId, docData);
+        setEditingDocId(null);
+      } else {
+        await saveDocument(docData);
+      }
+      await generatePDF({
+        type: "GENERATE_LEGAL",
+        formData: legalFormData,
+        docType: selectedDoc,
+        disabledFields: disabledFields || {},
+        variantId: selectedVariant || null,
+      });
+      showToast.success("Documento salvo e PDF gerado!");
+    } catch (err) {
+      console.error("[LegalEditor][ERRO] Finalizar:", err);
+      showToast.error("Erro ao finalizar documento. Tente novamente.");
+    } finally {
+      setIsFinalizing(false);
+    }
   };
 
   const handleNext = () => {
@@ -774,12 +808,17 @@ const LegalEditorPage = () => {
         </div>
         <div style={{ marginTop: 24, textAlign: "center" }}>
           <button
-            onClick={() => navigate("checkout")}
-            style={{ padding: "16px 36px", fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", borderRadius: 14, background: "var(--coral)", border: "none", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10, minHeight: 52, transition: "all 0.2s ease", boxShadow: "0 2px 12px rgba(244,63,94,0.3)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--coral-hover)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(244,63,94,0.45)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--coral)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(244,63,94,0.3)"; }}
+            onClick={handleFinalize}
+            disabled={isFinalizing}
+            style={{ padding: "16px 36px", fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", borderRadius: 14, background: "var(--coral)", border: "none", color: "#fff", cursor: isFinalizing ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 10, minHeight: 52, transition: "all 0.2s ease", boxShadow: "0 2px 12px rgba(244,63,94,0.3)", opacity: isFinalizing ? 0.7 : 1 }}
+            onMouseEnter={(e) => { if (!isFinalizing) { e.currentTarget.style.background = "var(--coral-hover)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(244,63,94,0.45)"; }}}
+            onMouseLeave={(e) => { if (!isFinalizing) { e.currentTarget.style.background = "var(--coral)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(244,63,94,0.3)"; }}}
           >
-            <Icon name="Download" className="w-5 h-5" /> Finalizar e Gerar PDF
+            {isFinalizing ? (
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Gerando...</>
+            ) : (
+              <><Icon name="Download" className="w-5 h-5" /> Salvar e Baixar PDF</>
+            )}
           </button>
         </div>
       </div>
@@ -847,7 +886,7 @@ const LegalEditorPage = () => {
       <div ref={bottomNavRef}>
         <BottomNavigation
           onBack={handlePrevious}
-          onNext={isLastStep ? () => navigate("checkout") : handleNext}
+          onNext={isLastStep ? handleFinalize : handleNext}
           isFirstStep={isFirstStep}
           isLastStep={isLastStep}
           nextLabel={nextLabel}

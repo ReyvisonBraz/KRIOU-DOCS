@@ -3,8 +3,8 @@
  * KRIOU DOCS - Complete Profile Page
  * ============================================
  * Exibida após o primeiro login com Google.
- * Coleta nome, sobrenome e CPF obrigatoriamente
- * para registro interno antes de acessar o app.
+ * Coleta nome e sobrenome (obrigatórios) e
+ * CPF (opcional) para registro interno.
  */
 
 import React, { useState, useEffect } from "react";
@@ -49,8 +49,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
     const errs = {};
     if (!nome.trim())      errs.nome      = "Nome é obrigatório";
     if (!sobrenome.trim()) errs.sobrenome = "Sobrenome é obrigatório";
-    if (!cpf.trim())       errs.cpf       = "CPF é obrigatório";
-    else if (!validateCpf(cpf.replace(/\D/g, ""))) errs.cpf = "CPF inválido";
+    if (cpf.trim() && !validateCpf(cpf.replace(/\D/g, ""))) errs.cpf = "CPF inválido";
     return errs;
   };
 
@@ -64,7 +63,6 @@ const CompleteProfilePage = ({ onNavigate }) => {
 
     setIsSaving(true);
     try {
-      // Preparar googleData com dados do Google
       const rawMeta = user?.raw_user_meta_data || {};
       const meta = user?.user_metadata || rawMeta;
       const googleData = {
@@ -76,7 +74,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
       await DocumentService.updateProfile({
         nome:      nome.trim(),
         sobrenome: sobrenome.trim(),
-        cpf:       cpf.replace(/\D/g, ""),
+        cpf:       cpf.replace(/\D/g, "") || null,
         googleData,
       });
       showToast.success("Cadastro concluído! Bem-vindo ao Kriou Docs.");
@@ -87,6 +85,22 @@ const CompleteProfilePage = ({ onNavigate }) => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSkip = async () => {
+    try {
+      await DocumentService.updateProfile({
+        nome:      nome.trim() || "Usuário",
+        sobrenome: sobrenome.trim() || "Kriou",
+        cpf:       cpf.replace(/\D/g, "") || null,
+        googleData: {
+          email: user?.email || null,
+          avatar_url: user?.raw_user_meta_data?.avatar_url || null,
+          google_id: user?.raw_user_meta_data?.sub || null,
+        },
+      });
+    } catch {} // não bloqueia se falhar
+    onNavigate("dashboard", { replace: true });
   };
 
   return (
@@ -153,7 +167,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
 
           {/* CPF */}
           <div>
-            <label className={labelClass}>CPF *</label>
+            <label className={labelClass}>CPF <span className="text-text-faint font-normal normal-case tracking-normal">(opcional)</span></label>
             <input
               type="text"
               placeholder="000.000.000-00"
@@ -169,7 +183,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
           <div className="flex items-start gap-2.5 p-3.5 bg-blue/10 border border-blue/20 rounded-xl">
             <Icon name="Shield" className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
             <p className="text-[12px] text-text-muted leading-relaxed">
-              Seus dados são armazenados com segurança e usados apenas para identificação interna. Não aparecem nos documentos gerados.
+              Dados usados apenas para identificação interna. Não aparecem nos documentos. Você pode completar o CPF depois no seu perfil.
             </p>
           </div>
 
@@ -190,6 +204,16 @@ const CompleteProfilePage = ({ onNavigate }) => {
                 Concluir cadastro
               </>
             )}
+          </button>
+
+          {/* Pular */}
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={isSaving}
+            className="w-full py-3 bg-transparent hover:bg-white/5 text-text-muted hover:text-white font-semibold text-[14px] rounded-2xl transition-all border-none cursor-pointer flex items-center justify-center gap-2"
+          >
+            Pular, vou preencher depois
           </button>
         </form>
       </div>

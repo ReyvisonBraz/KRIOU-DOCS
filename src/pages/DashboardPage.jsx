@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, ConfirmDialog } from "../components/UI";
+import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
@@ -644,10 +644,27 @@ const DashboardPage = () => {
 
         {/* ─── Content ─── */}
         {isLoading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
+          <div>
+            <section style={{ marginBottom: 32 }}>
+              <Skeleton width={80} height={12} borderRadius={6} />
+              <Skeleton width={200} height={32} borderRadius={10} delay={0.05} style={{ marginTop: 8 }} />
+              <Skeleton width={160} height={14} delay={0.1} style={{ marginTop: 6 }} />
+            </section>
+            <section style={{ marginBottom: 28 }}>
+              <Skeleton height={52} borderRadius={16} delay={0.12} />
+            </section>
+            <section style={{ marginBottom: 28 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} width={100} height={36} borderRadius={100} delay={i * 0.04} />
+                ))}
+              </div>
+            </section>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
           </div>
         ) : filteredDocs.length > 0 ? (
           <div style={{ columnCount: 1, columnGap: 16 }}>

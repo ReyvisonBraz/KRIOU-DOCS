@@ -2,17 +2,17 @@
  * ============================================
  * KRIOU DOCS — Legal PDF Generator
  * ============================================
- * Generates legal documents in PDF with refined editorial design.
+ * Gera documentos jurídicos em PDF com
+ * padrão Visual Law: destaque cromático,
+ * hierarquia visual clara, box para base
+ * legal, cláusulas numeradas com barras
+ * laterais, e espaçamento profissional.
  *
- * Design principles:
- * - Serif body (Times) for authentic legal document feel
- * - Sans-serif (Helvetica) for labels and metadata
- * - Never pure black (#000) or pure white (#FFF)
- * - Compact layout optimized for 2 A4 pages
- * - Notary stamp space on last page
- * - Variable rhythm spacing between sections
- * - Clauses grouped — never orphaned
- * - Intelligent page breaks
+ * Cores:
+ *   Ouro (#a58737) — base legal, cláusulas, destaques
+ *   Tinto (#8B3A3A) — títulos de seção
+ *   Grafite (#2C2C34) — corpo do texto
+ *   Cream (#FCFAF5) — fundo de boxes
  *
  * @module utils/legalPdfGenerator
  */
@@ -22,64 +22,58 @@ import { getDocumentBody } from "../data/legalDocuments";
 import { generateDocumentCode, shortDocumentCode, getValidationURL } from "./documentHash";
 import { drawQRCode } from "./qrHelper";
 
-// ─── Layout (compact A4 — tudo em 1 folha) ─────────────────────────────────────
+// ─── Layout A4 ────────────────────────────────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
-const ML = 18;
-const MR = 16;
-const MT = 12;
-const MB = 12;
+const ML = 20;
+const MR = 18;
+const MT = 14;
+const MB = 14;
 const CW = PAGE_W - ML - MR;
 
-// ─── Typography (compact) ─────────────────────────────────────────────────────
+// ─── Tipografia ───────────────────────────────────────────────────────────────
 const FONT_BODY   = "times";
 const FONT_LABEL  = "helvetica";
-const SIZE_TITLE  = 14;
-const SIZE_BODY   = 9;
-const SIZE_SMALL  = 7.5;
+const SIZE_TITLE  = 13;
+const SIZE_BODY   = 9.5;
+const SIZE_SMALL  = 8;
 const SIZE_CAPTION = 6.5;
-const LEAD_BODY   = 4.2;
-const LEAD_TIGHT  = 3.8;
-const LEAD_CLAUSE = 7;
+const LEAD_BODY   = 4.5;
+const LEAD_TIGHT  = 4;
+const LEAD_CLAUSE = 7.5;
 
-// ─── Spacing (compact) ────────────────────────────────────────────────────────
-const GAP_SECTION = 4;
-const GAP_CLAUSE  = 2;
-const GAP_PARA    = 1;
-const GAP_TITLE   = 6;
+// ─── Espaçamentos ─────────────────────────────────────────────────────────────
+const GAP_SECTION = 5;
+const GAP_CLAUSE  = 3;
+const GAP_PARA    = 1.5;
+const GAP_TITLE   = 7;
 
-// ─── Colors (warm-tinted neutrals) ────────────────────────────────────────────
-const C_INK       = [0, 0, 0];
-const C_TEXT      = [15, 15, 15];
-const C_SUBTLE    = [80, 80, 85];
-const C_MUTED     = [140, 140, 145];
-const C_DIVIDER   = [228, 226, 220];
-const C_GOLD      = [165, 135, 55];
-const C_CREAM     = [253, 251, 246];
-const C_STAMP_BG  = [252, 250, 244];
+// ─── Cores Visual Law ─────────────────────────────────────────────────────────
+const C_INK       = [10, 10, 15];       // grafite escuro (corpo)
+const C_TEXT      = [44, 44, 52];       // grafite médio
+const C_SUBTLE    = [108, 104, 112];    // cinza elegante (textos secundários)
+const C_MUTED     = [160, 156, 162];    // cinza claro (numeração, rodapé)
+const C_DIVIDER   = [224, 222, 216];    // bege claro (linhas)
+const C_GOLD      = [165, 135, 55];     // ouro (destaques, cláusulas)
+const C_GOLD_LIGHT = [235, 225, 200];   // ouro claro (bordas)
+const C_BURGUNDY  = [139, 58, 58];      // tinto (títulos de seção)
+const C_CREAM     = [252, 250, 245];    // creme (fundo de boxes)
+const C_CREAM_DARK = [245, 242, 235];   // creme escuro (fundo alternativo)
 
-// ─── Page state ──────────────────────────────────────────────────────────────
+// ─── Estado da página ─────────────────────────────────────────────────────────
 let pageY = 0;
+let docCodeVertical = "";
 
 const newPage = (doc) => {
   doc.addPage();
   pageY = MT;
 };
 
-/**
- * Ensures content fits on current page. Advances if needed.
- */
 const ensureSpace = (doc, needed = 12) => {
-  if (pageY + needed > PAGE_H - MB) {
-    newPage(doc);
-  }
+  if (pageY + needed > PAGE_H - MB) newPage(doc);
   return pageY;
 };
 
-/**
- * Check if a set of lines would cross a page boundary.
- * Returns true if the block should start on a new page.
- */
 const wouldOrphan = (startY, headerLines) => {
   const headerHeight = headerLines * LEAD_BODY;
   const minBodyHeight = 2 * LEAD_BODY;
@@ -87,77 +81,121 @@ const wouldOrphan = (startY, headerLines) => {
   return available < headerHeight + minBodyHeight;
 };
 
-// ─── Editorial Header ────────────────────────────────────────────────────────
+// ─── Side Stamp — código vertical em TODAS as páginas (frente e verso) ────────
 
-/**
- * Draws the editorial header on the first page.
- */
-const drawHeader = (doc, title, legislation, documentCode) => {
-  // Top decorative rule
+const drawSideStamp = (doc) => {
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+
+    // Fundo da faixa lateral
+    doc.setFillColor(248, 247, 244);
+    doc.setDrawColor(220, 218, 212);
+    doc.rect(ML - 6, MT - 2, 6, PAGE_H - MT - MB + 4, "FD");
+
+    // Código vertical (rotacionado)
+    if (docCodeVertical) {
+      doc.saveGraphicsState();
+      doc.translate(ML - 3, PAGE_H - MB - 10);
+      doc.rotate(-90);
+      doc.setFont(FONT_LABEL, "bold");
+      doc.setFontSize(6);
+      doc.setTextColor(...C_MUTED);
+      doc.text(docCodeVertical, 0, 0);
+      doc.restoreGraphicsState();
+    }
+  }
+};
+
+// ─── Header — título centralizado com filetes dourados ──────────────────────
+
+const drawHeader = (doc, title) => {
+  // Filete superior dourado
   doc.setDrawColor(...C_GOLD);
   doc.setLineWidth(0.6);
-  const topRuleW = Math.min(CW * 0.6, 90);
+  const topRuleW = Math.min(CW * 0.5, 80);
   doc.line(PAGE_W / 2 - topRuleW / 2, MT + 3, PAGE_W / 2 + topRuleW / 2, MT + 3);
 
   pageY = MT + 13;
 
-  // Title — bold, uppercase, centered
+  // Título em tinto (burgundy) — destaque, sem cinza
   doc.setFont(FONT_BODY, "bold");
   doc.setFontSize(SIZE_TITLE);
-  doc.setTextColor(...C_INK);
-  const titleLines = doc.splitTextToSize(title.toUpperCase(), CW - 16);
+  doc.setTextColor(...C_BURGUNDY);
+  const titleLines = doc.splitTextToSize(title.toUpperCase(), CW - 20);
   titleLines.forEach((line) => {
     doc.text(line, PAGE_W / 2, pageY, { align: "center" });
     pageY += 7;
   });
 
-  // Bottom decorative rule (shorter)
+  // Filete inferior dourado (mais curto)
   pageY += 1;
   doc.setDrawColor(...C_GOLD);
-  doc.setLineWidth(0.4);
+  doc.setLineWidth(0.35);
   const ruleW = Math.min(CW * 0.3, 50);
   doc.line(PAGE_W / 2 - ruleW / 2, pageY, PAGE_W / 2 + ruleW / 2, pageY);
 
-  // Kriou Docs label
-  pageY += 6;
+  // Marca d'água "Kriou Docs" em dourado claro
+  pageY += 5;
   doc.setFont(FONT_LABEL, "normal");
-  doc.setFontSize(7);
+  doc.setFontSize(6.5);
   doc.setTextColor(...C_MUTED);
   doc.text("Documento gerado por Kriou Docs", PAGE_W / 2, pageY, { align: "center" });
 
-  // Legislation (fundamento legal)
-  if (legislation) {
-    pageY += 5;
-    doc.setFont(FONT_LABEL, "normal");
-    doc.setFontSize(8);
-
-    // "Fundamento Legal:" in gold
-    doc.setTextColor(...C_GOLD);
-    doc.text("Fundamento Legal: ", ML, pageY);
-
-    // Law text in dark
-    const lawX = ML + doc.getTextWidth("Fundamento Legal: ") + 1;
-    doc.setTextColor(...C_SUBTLE);
-    doc.text(legislation, lawX, pageY, { maxWidth: PAGE_W - MR - lawX - 2 });
-    pageY += 5;
-  }
-
-  // Document code
-  if (documentCode) {
-    pageY += 3;
-    doc.setFont(FONT_LABEL, "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C_MUTED);
-    doc.text(`Codigo: ${documentCode}`, PAGE_W - MR, pageY, { align: "right" });
-  }
-
-  pageY += 8;
+  pageY += 6;
   doc.setTextColor(...C_TEXT);
 };
 
-// ─── Footer (compact) ─────────────────────────────────────────────────────────
+// ─── Legal Basis — box destacado Visual Law ─────────────────────────────────
 
-const drawFooter = (doc, shortCode) => {
+const renderLegalBasis = (doc, legislation) => {
+  if (!legislation || legislation.trim() === "") return;
+  ensureSpace(doc, 22);
+
+  pageY += 2;
+
+  const boxX = ML;
+  const boxW = CW;
+  const boxH = 16;
+  const boxY = pageY;
+
+  // Fundo suave creme
+  doc.setFillColor(...C_CREAM);
+  doc.setDrawColor(...C_CREAM_DARK);
+  doc.rect(boxX, boxY, boxW, boxH, "FD");
+
+  // Barra lateral esquerda dourada (Visual Law)
+  doc.setFillColor(...C_GOLD);
+  doc.rect(boxX, boxY, 3, boxH, "F");
+
+  // Ícone estilizado "Lex" (⚖) como marcador visual
+  doc.setFont(FONT_LABEL, "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...C_GOLD);
+  doc.text("\u2696", boxX + 7, boxY + 6);
+
+  // Rótulo "Fundamento Legal"
+  doc.setFont(FONT_LABEL, "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C_GOLD);
+  doc.text("FUNDAMENTO LEGAL", boxX + 16, boxY + 6);
+
+  // Texto da lei — em grafite escuro (nada cinza)
+  doc.setFont(FONT_BODY, "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C_INK);
+  const lawLines = doc.splitTextToSize(legislation, boxW - 24);
+  lawLines.forEach((line, i) => {
+    doc.text(line, boxX + 16, boxY + 11 + i * 4.5);
+  });
+
+  pageY += boxH + 6;
+  doc.setTextColor(...C_TEXT);
+};
+
+// ─── Footer com código e QR ───────────────────────────────────────────────────
+
+const drawFooter = (doc) => {
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -173,115 +211,82 @@ const drawFooter = (doc, shortCode) => {
     doc.text(`${i} / ${totalPages}`, PAGE_W / 2, fy + 1, { align: "center" });
 
     const dateStr = new Date().toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
+      day: "2-digit", month: "long", year: "numeric",
     });
-    doc.setFontSize(6.5);
     doc.text(dateStr, PAGE_W - MR, fy + 1, { align: "right" });
-
-    // Left side: short code or domain
-    if (shortCode) {
-      doc.text(shortCode, ML, fy + 1);
-    } else {
-      doc.text("krioudocs.com.br", ML, fy + 1);
-    }
+    doc.text("krioudocs.com.br", ML, fy + 1);
   }
 };
 
 // ─── Block Renderers ─────────────────────────────────────────────────────────
 
-/**
- * Render a paragraph with optional first-line indent.
- */
 const renderParagraph = (doc, text, { indent = 8, font = FONT_BODY, size = SIZE_BODY, color = C_TEXT, leading = LEAD_BODY } = {}) => {
   if (!text || text.trim() === "") return pageY;
-
   doc.setFont(font, "normal");
   doc.setFontSize(size);
   doc.setTextColor(...color);
-
   const lines = doc.splitTextToSize(text, CW - indent);
   lines.forEach((line, li) => {
     ensureSpace(doc, leading);
-    const xOff = li === 0 ? indent : 0;
-    doc.text(line, ML + xOff, pageY, { maxWidth: CW - xOff });
+    doc.text(line, ML + (li === 0 ? indent : 0), pageY, { maxWidth: CW - (li === 0 ? indent : 0) });
     pageY += leading;
   });
   return pageY;
 };
 
-/**
- * Render a clause header with gold number and title.
- */
 const renderClauseHeader = (doc, number, title) => {
-  ensureSpace(doc, 14);
-
+  ensureSpace(doc, 16);
   const hasTitle = title && title.trim() !== "";
+
+  // Barra lateral dourada (Visual Law)
+  doc.setFillColor(...C_GOLD);
+  doc.rect(ML, pageY - 1, 2.5, hasTitle ? 11 : 8, "F");
 
   doc.setFont(FONT_LABEL, "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(...C_GOLD);
-  doc.text(`CL\u00C1USULA ${number}`, ML, pageY - 0.5);
+  doc.text(`CL\u00C1USULA ${number}`, ML + 6, pageY + 0.5);
   pageY += LEAD_BODY;
 
   if (hasTitle) {
     doc.setFont(FONT_BODY, "bold");
     doc.setFontSize(SIZE_BODY);
-    doc.setTextColor(...C_INK);
-    doc.text(title, ML, pageY);
+    doc.setTextColor(...C_BURGUNDY);
+    doc.text(title, ML + 6, pageY + 0.5);
     pageY += LEAD_BODY + 0.5;
   }
 
-  doc.setDrawColor(...C_DIVIDER);
-  doc.setLineWidth(0.2);
-  doc.line(ML, pageY - 1.5, ML + CW * 0.5, pageY - 1.5);
+  // Filete fino abaixo
+  doc.setDrawColor(...C_GOLD_LIGHT);
+  doc.setLineWidth(0.12);
+  doc.line(ML + 6, pageY - 0.5, ML + CW * 0.45, pageY - 0.5);
   pageY += 1;
-
   doc.setTextColor(...C_TEXT);
 };
 
-/**
- * Render a complete clause: header + text + paragraphs.
- */
 const renderClause = (doc, clause) => {
-  const textLines = clause.text
-    ? doc.splitTextToSize(clause.text, CW).length
-    : 0;
-  const paraLines = clause.paragraphs
-    ? clause.paragraphs.reduce((acc, p) => acc + doc.splitTextToSize(p, CW).length, 0)
-    : 0;
+  const textLines = clause.text ? doc.splitTextToSize(clause.text, CW).length : 0;
+  const paraLines = clause.paragraphs ? clause.paragraphs.reduce((acc, p) => acc + doc.splitTextToSize(p, CW).length, 0) : 0;
   const totalLines = textLines + paraLines;
   const estimatedHeight = LEAD_CLAUSE + totalLines * LEAD_BODY + GAP_CLAUSE;
-
   const headerLines = clause.title ? 2 : 1;
 
-  if (wouldOrphan(pageY, headerLines)) {
-    newPage(doc);
-  }
+  if (wouldOrphan(pageY, headerLines)) newPage(doc);
 
-  if (totalLines > 4) {
-    ensureSpace(doc, LEAD_CLAUSE + 2 * LEAD_BODY);
-  } else {
-    ensureSpace(doc, estimatedHeight);
-  }
+  if (totalLines > 4) ensureSpace(doc, LEAD_CLAUSE + 2 * LEAD_BODY);
+  else ensureSpace(doc, estimatedHeight);
 
   renderClauseHeader(doc, clause.number, clause.title);
 
-  if (clause.text) {
-    renderParagraph(doc, clause.text, { indent: 0 });
-  }
+  if (clause.text) renderParagraph(doc, clause.text, { indent: 0 });
 
   if (clause.paragraphs?.length) {
     clause.paragraphs.forEach((p) => {
       ensureSpace(doc, LEAD_BODY + 1);
-      const isSubItem = /^[§IVX]+/.test(p.trim());
-      const indent = isSubItem ? 10 : 5;
-
+      const indent = /^[§IVX]+/.test(p.trim()) ? 10 : 5;
       doc.setFont(FONT_BODY, "normal");
       doc.setFontSize(SIZE_BODY);
       doc.setTextColor(...C_TEXT);
-
       const pLines = doc.splitTextToSize(p, CW - indent);
       pLines.forEach((line) => {
         ensureSpace(doc, LEAD_TIGHT);
@@ -296,18 +301,13 @@ const renderClause = (doc, clause) => {
   return pageY;
 };
 
-/**
- * Render the closing statement.
- */
 const renderClosing = (doc, text) => {
   if (!text || text.trim() === "") return pageY;
   ensureSpace(doc, 14);
   pageY += 3;
-
   doc.setFont(FONT_BODY, "italic");
   doc.setFontSize(SIZE_BODY);
   doc.setTextColor(...C_SUBTLE);
-
   const lines = doc.splitTextToSize(text, CW);
   lines.forEach((line) => {
     ensureSpace(doc, LEAD_BODY);
@@ -319,14 +319,10 @@ const renderClosing = (doc, text) => {
   doc.setFont(FONT_BODY, "normal");
 };
 
-/**
- * Render date and location.
- */
 const renderDate = (doc, text) => {
   if (!text || text.trim() === "") return pageY;
   ensureSpace(doc, 10);
   pageY += 3;
-
   doc.setFont(FONT_BODY, "normal");
   doc.setFontSize(SIZE_BODY);
   doc.setTextColor(...C_TEXT);
@@ -334,121 +330,156 @@ const renderDate = (doc, text) => {
   pageY += 12;
 };
 
-/**
- * Render signature block with dotted lines.
- */
+// ─── Assinaturas — linhas longas com espaço extra ────────────────────────────
+
 const renderSignatures = (doc, parties) => {
   if (!parties?.length) return pageY;
-  ensureSpace(doc, 45);
+  ensureSpace(doc, 55);
 
-  pageY += 8;
+  pageY += 10;
   const colW = CW / parties.length;
 
   parties.forEach((party, i) => {
     const centerX = ML + i * colW + colW / 2;
-    const lineW = colW * 0.7;
+    const lineW = colW * 0.82;
     const lineStartX = centerX - lineW / 2;
 
+    // Linha tracejada para assinatura — 50% mais larga
     doc.setDrawColor(...C_TEXT);
-    doc.setLineWidth(0.25);
-    const dash = 1.8;
-    const gap = 1.2;
+    doc.setLineWidth(0.3);
+    const dash = 2.5;
+    const gap = 1.5;
     let dx = lineStartX;
     while (dx < lineStartX + lineW) {
       doc.line(dx, pageY, Math.min(dx + dash, lineStartX + lineW), pageY);
       dx += dash + gap;
     }
 
+    // Nome da parte
     doc.setFont(FONT_BODY, "normal");
-    doc.setFontSize(8.5);
+    doc.setFontSize(9);
     doc.setTextColor(...C_TEXT);
-    doc.text(party.name || "", centerX, pageY + 5, {
-      align: "center",
-      maxWidth: lineW,
-    });
+    doc.text(party.name || "", centerX, pageY + 5.5, { align: "center", maxWidth: lineW });
 
+    // Função (ex: Vendedor, Comprador)
     doc.setFont(FONT_LABEL, "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(7.5);
     doc.setTextColor(...C_GOLD);
-    doc.text(party.role, centerX, pageY + 9.5, { align: "center" });
+    doc.text(party.role, centerX, pageY + 10.5, { align: "center" });
   });
 
-  pageY += 12;
+  pageY += 20;
   doc.setTextColor(...C_TEXT);
 };
 
-/**
- * Render witness block with signature lines and fields.
- */
+// ─── Testemunhas — mais espaço para assinar ─────────────────────────────────
+
 const renderWitnesses = (doc, count = 2) => {
-  ensureSpace(doc, 42);
-  pageY += 3;
+  ensureSpace(doc, 50);
+  pageY += 4;
 
   doc.setFont(FONT_LABEL, "bold");
-  doc.setFontSize(7.5);
+  doc.setFontSize(8);
   doc.setTextColor(...C_SUBTLE);
   doc.text("TESTEMUNHAS", ML, pageY);
-  pageY += 10;
+  pageY += 12;
 
   const colW = CW / count;
   for (let i = 0; i < count; i++) {
     const centerX = ML + i * colW + colW / 2;
-    const lineW = colW * 0.76;
+    const lineW = colW * 0.8;
     const lineStartX = centerX - lineW / 2;
 
+    // Círculo numerado
     doc.setFillColor(...C_GOLD);
     doc.setDrawColor(...C_GOLD);
-    doc.circle(lineStartX + 4, pageY - 1, 3.5, "FD");
+    doc.circle(lineStartX + 4, pageY - 1, 4, "FD");
     doc.setFont(FONT_LABEL, "bold");
-    doc.setFontSize(6.5);
+    doc.setFontSize(7);
     doc.setTextColor(255, 255, 255);
     doc.text(`${i + 1}`, lineStartX + 4, pageY, { align: "center" });
 
+    // Linha de assinatura
     doc.setDrawColor(...C_MUTED);
-    doc.setLineWidth(0.2);
-    let dx = lineStartX + 9;
+    doc.setLineWidth(0.25);
+    let dx = lineStartX + 11;
     while (dx < lineStartX + lineW) {
-      doc.line(dx, pageY, Math.min(dx + 1.5, lineStartX + lineW), pageY);
-      dx += 2.5;
+      doc.line(dx, pageY, Math.min(dx + 2, lineStartX + lineW), pageY);
+      dx += 3;
     }
 
+    // Labels Nome / CPF
     doc.setFont(FONT_LABEL, "normal");
-    doc.setFontSize(6.5);
+    doc.setFontSize(7);
     doc.setTextColor(...C_MUTED);
-    doc.text("Nome:", lineStartX + 9, pageY + 4.5);
-    doc.text("CPF:", lineStartX + 9, pageY + 9);
+    doc.text("Nome:", lineStartX + 11, pageY + 5);
+    doc.text("CPF:", lineStartX + 11, pageY + 10.5);
 
+    // Linhas guia para Nome/CPF
     doc.setDrawColor(...C_DIVIDER);
     doc.setLineWidth(0.15);
-    doc.line(lineStartX + 21, pageY + 5, lineStartX + lineW, pageY + 5);
-    doc.line(lineStartX + 17, pageY + 9.5, lineStartX + lineW * 0.7, pageY + 9.5);
+    doc.line(lineStartX + 23, pageY + 5.5, lineStartX + lineW, pageY + 5.5);
+    doc.line(lineStartX + 19, pageY + 11, lineStartX + lineW * 0.7, pageY + 11);
   }
+  pageY += 18;
+  doc.setTextColor(...C_TEXT);
+};
+
+// ─── Seção de Assinatura (Visual Law divider) ──────────────────────────────
+
+const renderSectionDivider = (doc, label) => {
+  ensureSpace(doc, 14);
+  pageY += 4;
+
+  // Barra lateral dupla (ouro + tinto)
+  doc.setFillColor(...C_GOLD);
+  doc.rect(ML, pageY, 2.5, 10, "F");
+  doc.setFillColor(...C_BURGUNDY);
+  doc.rect(ML + 3, pageY, 1, 10, "F");
+
+  doc.setFont(FONT_LABEL, "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...C_BURGUNDY);
+  doc.text(label.toUpperCase(), ML + 8, pageY + 4);
+
+  doc.setDrawColor(...C_GOLD_LIGHT);
+  doc.setLineWidth(0.12);
+  doc.line(ML + 8, pageY + 7, ML + CW * 0.35, pageY + 7);
+
   pageY += 12;
   doc.setTextColor(...C_TEXT);
 };
 
-// ─── Notary Stamp Section ─────────────────────────────────────────────────────
+// ─── Selos do Cartório — espaço vazio, sem campos fixos ─────────────────────
 
-/**
- * Draw a single notary stamp box with dashed gold border.
- */
-const drawStampBox = (doc, title, subtitle, lines, boxW = 68, boxH = 34) => {
+const renderStampSpace = (doc) => {
+  ensureSpace(doc, 70);
+
+  pageY += 3;
+  doc.setFont(FONT_LABEL, "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...C_GOLD);
+  doc.text("ESPA\u00C7O PARA SELOS E RECONHECIMENTO DE FIRMA", PAGE_W / 2, pageY, { align: "center" });
+
+  pageY += 2;
+  doc.setDrawColor(...C_GOLD_LIGHT);
+  doc.setLineWidth(0.15);
+  doc.line(PAGE_W / 2 - 50, pageY, PAGE_W / 2 + 50, pageY);
+
+  pageY += 5;
+
+  const boxW = 70;
+  const boxH = 32;
   const boxX = PAGE_W / 2 - boxW / 2;
   const boxY = pageY;
 
-  // Background tint
-  doc.setFillColor(...C_STAMP_BG);
-  doc.setDrawColor(...C_STAMP_BG);
-  doc.rect(boxX, boxY, boxW, boxH, "FD");
-
-  // Dashed gold border
+  doc.setFillColor(...C_CREAM);
   doc.setDrawColor(...C_GOLD);
   doc.setLineWidth(0.3);
-  const dashLen = 2.5;
-  const gapLen = 1.8;
-  let pos = 0;
+  const dashLen = 3;
+  const gapLen = 2;
   const perim = 2 * (boxW + boxH);
-
+  let pos = 0;
   while (pos < perim) {
     const segLen = Math.min(dashLen, perim - pos);
     const [x1, y1] = pointOnRect(boxX, boxY, boxW, boxH, pos);
@@ -457,140 +488,60 @@ const drawStampBox = (doc, title, subtitle, lines, boxW = 68, boxH = 34) => {
     pos += dashLen + gapLen;
   }
 
-  // Title inside box
-  doc.setFont(FONT_LABEL, "bold");
-  doc.setFontSize(SIZE_CAPTION);
-  doc.setTextColor(...C_GOLD);
-  doc.text(title, PAGE_W / 2, boxY + 6, { align: "center" });
-
-  // Subtitle
-  doc.setFont(FONT_LABEL, "normal");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C_SUBTLE);
-  doc.text(subtitle, PAGE_W / 2, boxY + 11.5, { align: "center" });
-
-  // Dotted fill lines
-  const lineStartY = boxY + 18;
-  const lineGap = 6.5;
-  const lineInsetL = boxX + 22;
-  const lineInsetR = boxX + boxW - 14;
-
-  lines.forEach((label, idx) => {
-    const ly = lineStartY + idx * lineGap;
-    doc.setFont(FONT_LABEL, "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C_MUTED);
-    doc.text(label, boxX + 8, ly, { baseline: "middle" });
-
-    doc.setDrawColor(...C_DIVIDER);
-    doc.setLineWidth(0.15);
-    const dotDash = 1.2;
-    const dotGap = 1.0;
-    let dx = lineInsetL;
-    while (dx < lineInsetR) {
-      doc.line(dx, ly, Math.min(dx + dotDash, lineInsetR), ly);
-      dx += dotDash + dotGap;
-    }
-  });
-
-  pageY += boxH + 8;
+  pageY += boxH + 10;
 };
 
-/**
- * Find a point on a rectangle perimeter at a given distance along the edge.
- */
 const pointOnRect = (x, y, w, h, d) => {
   const top = d;
   const right = d - w;
   const bottom = d - w - h;
   const left = d - 2 * w - h;
-
   if (top <= w) return [x + top, y];
   if (right <= h) return [x + w, y + right];
   if (bottom <= w) return [x + w - bottom, y + h];
   return [x, y + h - (left >= 0 ? left : 0)];
 };
 
-/**
- * Render the notary stamp section inline (after signatures, same page).
- */
-const renderNotaryStampSection = (doc) => {
-  ensureSpace(doc, 80);
-
-  pageY += 2;
-  doc.setFont(FONT_LABEL, "bold");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C_GOLD);
-  doc.text("SELOS E RECONHECIMENTO DE FIRMA", PAGE_W / 2, pageY, { align: "center" });
-
-  pageY += 1;
-  doc.setDrawColor(...C_DIVIDER);
-  doc.setLineWidth(0.15);
-  doc.line(ML + 20, pageY, PAGE_W - MR - 20, pageY);
-
-  pageY += 4;
-
-  drawStampBox(doc, "Selo do Cart\u00F3rio", "Reconhecimento de Firma", [
-    "Data:",
-    "Livro:",
-    "Folha:",
-  ], 64, 30);
-
-  drawStampBox(doc, "Autentica\u00E7\u00E3o / Apostila", "Carimbo", [
-    "Data:",
-    "C\u00F3digo:",
-  ], 64, 24);
-};
-
-// ─── Document Body Rendering ─────────────────────────────────────────────────
+// ─── Document Body ───────────────────────────────────────────────────────────
 
 const renderBody = (doc, body) => {
   body.forEach((block) => {
     if (!block) return;
-
     switch (block.type) {
-      case "title":
-        break;
-
+      case "title": break;
       case "paragraph":
         renderParagraph(doc, block.text, { indent: 8 });
         pageY += GAP_SECTION - 2;
         break;
-
       case "clause":
         renderClause(doc, block);
         break;
-
       case "closing":
         renderClosing(doc, block.text);
         break;
-
       case "date":
         renderDate(doc, block.text);
         break;
-
       case "signatures":
+        renderSectionDivider(doc, "Assinaturas");
         renderSignatures(doc, block.parties);
         break;
-
       case "witnesses":
+        renderSectionDivider(doc, "Testemunhas");
         renderWitnesses(doc, block.count || 2);
         break;
-
-      default:
-        break;
+      default: break;
     }
   });
 };
 
-// ─── Fallback (documents without documentBody template) ───────────────────────
+// ─── Fallback ────────────────────────────────────────────────────────────────
 
 const generateFallback = (doc, docType, formData, disabledFields) => {
   doc.setFont(FONT_BODY, "bold");
   doc.setFontSize(SIZE_TITLE);
   doc.setTextColor(...C_INK);
   doc.text((docType?.name || "DOCUMENTO").toUpperCase(), PAGE_W / 2, pageY, { align: "center" });
-
   pageY += GAP_TITLE;
 
   doc.setDrawColor(...C_GOLD);
@@ -598,139 +549,99 @@ const generateFallback = (doc, docType, formData, disabledFields) => {
   doc.line(PAGE_W / 2 - 30, pageY, PAGE_W / 2 + 30, pageY);
   pageY += 12;
 
-  const fields = docType?.fields || [];
-  if (fields.length === 0) {
-    const sections = docType?.commonSections || [];
-    sections.forEach((section) => {
-      ensureSpace(doc, 16);
+  const sections = docType?.commonSections || [];
+  sections.forEach((section) => {
+    ensureSpace(doc, 16);
+    doc.setFont(FONT_LABEL, "bold");
+    doc.setFontSize(SIZE_SMALL);
+    doc.setTextColor(...C_GOLD);
+    doc.text(section.title.toUpperCase(), ML, pageY);
+    pageY += 5;
 
-      doc.setFont(FONT_LABEL, "bold");
-      doc.setFontSize(SIZE_SMALL);
-      doc.setTextColor(...C_GOLD);
-      doc.text(section.title.toUpperCase(), ML, pageY);
-      pageY += 5;
+    doc.setDrawColor(...C_DIVIDER);
+    doc.setLineWidth(0.15);
+    doc.line(ML, pageY - 2, ML + CW * 0.4, pageY - 2);
+    pageY += 1;
 
-      doc.setDrawColor(...C_DIVIDER);
-      doc.setLineWidth(0.15);
-      doc.line(ML, pageY - 2, ML + CW * 0.4, pageY - 2);
-      pageY += 1;
-
-      section.fields?.forEach((f) => {
-        if (disabledFields[f.key]) return;
-        const value = formData[f.key] || "";
-        if (!value || value.trim() === "") return;
-
-        ensureSpace(doc, 9);
-
-        doc.setFont(FONT_LABEL, "bold");
-        doc.setFontSize(7);
-        doc.setTextColor(...C_SUBTLE);
-        doc.text(f.label, ML, pageY);
-
-        doc.setFont(FONT_BODY, "normal");
-        doc.setFontSize(SIZE_BODY);
-        doc.setTextColor(...C_TEXT);
-        const vLines = doc.splitTextToSize(value, CW - 3);
-        vLines.forEach((l) => {
-          doc.text(l, ML + 3, pageY + 4.5);
-          pageY += 5;
-        });
-        pageY += 2;
-      });
-
-      pageY += 3;
-    });
-  } else {
-    fields.forEach((f) => {
+    section.fields?.forEach((f) => {
       if (disabledFields[f.key]) return;
-      const value = formData[f.key] || "\u2014";
-      ensureSpace(doc, 14);
-
+      const value = formData[f.key] || "";
+      if (!value || value.trim() === "") return;
+      ensureSpace(doc, 9);
       doc.setFont(FONT_LABEL, "bold");
-      doc.setFontSize(7.5);
+      doc.setFontSize(7);
       doc.setTextColor(...C_SUBTLE);
-      doc.text(f.label.toUpperCase(), ML, pageY);
-
+      doc.text(f.label, ML, pageY);
       doc.setFont(FONT_BODY, "normal");
       doc.setFontSize(SIZE_BODY);
       doc.setTextColor(...C_TEXT);
-      const lines = doc.splitTextToSize(value, CW);
-      doc.text(lines, ML, pageY + 4.5);
-      pageY += 9 + (lines.length - 1) * 5;
+      const vLines = doc.splitTextToSize(value, CW - 3);
+      vLines.forEach((l) => {
+        doc.text(l, ML + 3, pageY + 4.5);
+        pageY += 5;
+      });
+      pageY += 2;
     });
-  }
+    pageY += 3;
+  });
 };
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 /**
- * Generate a legal document PDF with professional editorial design.
- *
- * @param {Object} formData       - Filled form data
- * @param {Object} docType        - Document type definition (from legalDocuments)
- * @param {Object} disabledFields - Fields marked as "do not fill"
- * @param {string} variantId      - Selected variant ID
- * @returns {jsPDF} Generated PDF instance
+ * Gera PDF do documento jurídico com padrão Visual Law.
  */
 export const generateLegalPDF = (formData, docType, disabledFields = {}, variantId = null) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   pageY = MT;
 
-  // Generate unique document code
+  // Código único do documento
   const documentCode = generateDocumentCode(docType, variantId);
-  const shortCode = shortDocumentCode(documentCode);
+  docCodeVertical = shortDocumentCode(documentCode);
   const validationURL = getValidationURL(documentCode);
 
-  drawHeader(doc, docType?.name || "Documento Jur\u00EDdico", docType?.legislation, documentCode);
+  drawHeader(doc, docType?.name || "Documento Jur\u00EDdico");
 
+  // Box Visual Law: Fundamento Legal (com destaque, nada cinza)
+  renderLegalBasis(doc, docType?.legislation);
+
+  // Corpo do documento
   const vId = variantId || docType?.defaultVariant;
-  const body = vId
-    ? getDocumentBody(docType?.id, vId, formData, disabledFields)
-    : null;
-
+  const body = vId ? getDocumentBody(docType?.id, vId, formData, disabledFields) : null;
   const hasStructuredBody = body && body.length > 0;
 
-  if (hasStructuredBody) {
-    renderBody(doc, body);
-  } else {
-    generateFallback(doc, docType, formData, disabledFields);
-  }
+  if (hasStructuredBody) renderBody(doc, body);
+  else generateFallback(doc, docType, formData, disabledFields);
 
-  // Notary stamp section — sempre na mesma pagina, apos assinaturas
-  renderNotaryStampSection(doc);
-
-  // QR Code — bottom of the last page, relative to content flow
-  pageY += 6;
+  // QR Code — lado direito
+  pageY += 4;
   ensureSpace(doc, 30);
-  const qrSize = 18;
-  drawQRCode(doc, validationURL, ML, pageY, qrSize, {
+  const qrSize = 20;
+  const qrX = PAGE_W - MR - qrSize;
+  drawQRCode(doc, validationURL, qrX, pageY, qrSize, {
     label: "Escanear para validar",
     labelSize: 5,
   });
-  pageY += qrSize + 8;
+  pageY += qrSize + 6;
 
-  drawFooter(doc, shortCode);
+  // Espaço para selos do cartório — sem campos fixos
+  renderStampSpace(doc);
+
+  // Side stamp em todas as páginas
+  drawSideStamp(doc);
+
+  drawFooter(doc);
 
   return doc;
 };
 
-/**
- * Download the generated PDF.
- */
 export const downloadLegalPDF = (doc, filename = "documento.pdf") => {
   doc.save(filename);
 };
 
-/**
- * Legacy helper for generation by document type ID.
- */
 export const generatePDFByType = (docTypeId, formData) => {
   return generateLegalPDF(formData, { id: docTypeId, name: "Documento", fields: [] });
 };
 
-export default {
-  generateLegalPDF,
-  generatePDFByType,
-  downloadLegalPDF,
-};
+export default { generateLegalPDF, generatePDFByType, downloadLegalPDF };

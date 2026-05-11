@@ -200,6 +200,7 @@
 /* Scroll horizontal suave sem scrollbar visível */
 .scroll-x-hidden {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -218,6 +219,17 @@
   padding-bottom: 120px;
 }
 
+/* Corrige 100vh no iOS Safari (inclui URL bar) */
+.min-h-screen-safe {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+/* Tailwind min-h-screen com fallback dinâmico */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* Previne zoom em inputs no iOS (font-size >= 16px) */
 @media (max-width: 768px) {
   input[type="text"],
@@ -226,7 +238,8 @@
   input[type="number"],
   input[type="search"],
   textarea,
-  select {
+  select,
+  .kriou-input-el {
     font-size: 16px !important;
   }
 }
@@ -236,6 +249,7 @@
   display: flex;
   gap: 6px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 4px;

@@ -644,39 +644,46 @@ const TemplatesPage = () => {
     <div style={{
       flex: 1, display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      padding: "40px 24px", position: "relative",
+      padding: "32px 20px", position: "relative",
     }}>
-      {/* Ambient light accents */}
       <div style={{ position: "absolute", top: "10%", left: "15%", width: 520, height: 520, background: "radial-gradient(circle, rgba(244,63,94,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 440, height: 440, background: "radial-gradient(circle, rgba(20,184,166,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       {/* Heading */}
-      <div style={{ textAlign: "center", marginBottom: 64, position: "relative", zIndex: 1 }}>
+      <div style={{ textAlign: "center", marginBottom: 40, position: "relative", zIndex: 1 }}>
         <span style={{
           display: "inline-block", padding: "6px 18px", borderRadius: 100,
           background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.18)",
-          fontSize: 12, fontWeight: 700, color: "var(--coral)",
-          letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 24,
+          fontSize: 11, fontWeight: 700, color: "var(--coral)",
+          letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 18,
         }}>
           Criar novo documento
         </span>
         <h1 className="font-display" style={{
-          fontSize: 44, fontWeight: 900, marginBottom: 16, letterSpacing: "-1.5px",
+          fontSize: "clamp(1.75rem, 6vw, 2.75rem)", fontWeight: 900, marginBottom: 12, letterSpacing: "-1px",
           color: "var(--text)", lineHeight: 1.1,
         }}>
           O que deseja criar?
         </h1>
         <p style={{
-          color: "var(--text-muted)", fontSize: 16, maxWidth: 480, margin: "0 auto",
-          lineHeight: 1.65, fontWeight: 400,
+          color: "var(--text-muted)", fontSize: 15, maxWidth: 400, margin: "0 auto",
+          lineHeight: 1.6, fontWeight: 400,
         }}>
-          Currículos profissionais ou documentos jurídicos — escolha e comece agora
+          Currículos profissionais ou documentos jurídicos
         </p>
       </div>
 
+      <style>{`
+        @media (max-width: 560px) {
+          .tpl-cat-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .tpl-cat-card-inner { padding: 22px 20px !important; }
+          .tpl-cat-icon { width: 44px !important; height: 44px !important; margin-bottom: 14px !important; }
+          .tpl-cat-title { font-size: 20px !important; }
+        }
+      `}</style>
       {/* Category cards */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28,
+      <div className="tpl-cat-grid" style={{
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24,
         maxWidth: 800, width: "100%", position: "relative", zIndex: 1,
       }}>
         {/* Resume card */}
@@ -696,17 +703,16 @@ const TemplatesPage = () => {
           onFocus={(e) => { e.currentTarget.style.boxShadow = "0 0 0 3px var(--coral), 0 20px 40px rgba(244,63,94,0.15)"; }}
           onBlur={(e) => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.16)"; }}
         >
-          {/* Left accent bar */}
           <div style={{ width: "100%", height: 5, background: "var(--coral)", flexShrink: 0 }} />
-          <div style={{ padding: "34px 30px", flex: 1, display: "flex", flexDirection: "column" }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 14, marginBottom: 22,
+          <div className="tpl-cat-card-inner" style={{ padding: "28px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
+            <div className="tpl-cat-icon" style={{
+              width: 56, height: 56, borderRadius: 14, marginBottom: 18,
               background: "rgba(244,63,94,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Icon name="User" className="w-7 h-7" style={{ color: "var(--coral)" }} />
+              <Icon name="User" className="w-6 h-6" style={{ color: "var(--coral)" }} />
             </div>
-            <h3 style={{ fontWeight: 800, fontSize: 24, color: "var(--text)", marginBottom: 10, letterSpacing: "-0.4px" }}>
+            <h3 className="tpl-cat-title" style={{ fontWeight: 800, fontSize: 22, color: "var(--text)", marginBottom: 8, letterSpacing: "-0.4px" }}>
               Currículos
             </h3>
             <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.55, marginBottom: 22, flex: 1 }}>
@@ -747,15 +753,15 @@ const TemplatesPage = () => {
           onBlur={(e) => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.16)"; }}
         >
           <div style={{ width: "100%", height: 5, background: "var(--teal)", flexShrink: 0 }} />
-          <div style={{ padding: "34px 30px", flex: 1, display: "flex", flexDirection: "column" }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 14, marginBottom: 22,
+          <div className="tpl-cat-card-inner" style={{ padding: "28px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
+            <div className="tpl-cat-icon" style={{
+              width: 56, height: 56, borderRadius: 14, marginBottom: 18,
               background: "rgba(20,184,166,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Icon name="FileText" className="w-7 h-7" style={{ color: "var(--teal)" }} />
+              <Icon name="FileText" className="w-6 h-6" style={{ color: "var(--teal)" }} />
             </div>
-            <h3 style={{ fontWeight: 800, fontSize: 24, color: "var(--text)", marginBottom: 10, letterSpacing: "-0.4px" }}>
+            <h3 className="tpl-cat-title" style={{ fontWeight: 800, fontSize: 22, color: "var(--text)", marginBottom: 8, letterSpacing: "-0.4px" }}>
               Documentos Jurídicos
             </h3>
             <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.55, marginBottom: 22, flex: 1 }}>
@@ -783,32 +789,41 @@ const TemplatesPage = () => {
 
   // ── Resume Templates ─────────────────────────────────────────────────────
   const renderResumeTemplates = () => (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 24px" }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .tpl-resume-header { flex-direction: column !important; align-items: flex-start !important; }
+          .tpl-resume-pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+          .tpl-resume-pills::-webkit-scrollbar { display: none; }
+          .tpl-resume-grid { grid-template-columns: 1fr !important; }
+          .tpl-resume-grid > div { grid-column: span 1 !important; }
+        }
+        @media (min-width: 480px) and (max-width: 768px) {
+          .tpl-resume-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
       {/* Header */}
-      <div style={{ marginBottom: 36 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+      <div style={{ marginBottom: 24 }}>
+        <div className="tpl-resume-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
+                width: 32, height: 32, borderRadius: 10,
                 background: "rgba(244,63,94,0.12)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Icon name="User" className="w-5 h-5" style={{ color: "var(--coral)" }} />
+                <Icon name="User" className="w-4 h-4" style={{ color: "var(--coral)" }} />
               </div>
-              <span style={{
-                fontSize: 11, fontWeight: 800, color: "var(--coral)",
-                textTransform: "uppercase", letterSpacing: "0.08em",
-              }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: "var(--coral)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                 Currículos
               </span>
             </div>
-            <h1 className="font-display" style={{ fontSize: 28, fontWeight: 900, color: "var(--text)", marginBottom: 6, letterSpacing: "-0.6px" }}>
+            <h1 className="font-display" style={{ fontSize: "clamp(1.4rem, 4vw, 1.75rem)", fontWeight: 900, color: "var(--text)", marginBottom: 4, letterSpacing: "-0.5px" }}>
               Modelos de Currículo
             </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: 15 }}>Escolha o estilo que combina com você e sua área</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Escolha o estilo que combina com você</p>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="tpl-resume-pills" style={{ display: "flex", gap: 8 }}>
             {TEMPLATE_CATEGORIES.map((cat) => (
               <CategoryPill
                 key={cat.id}
@@ -822,11 +837,11 @@ const TemplatesPage = () => {
         </div>
       </div>
 
-      {/* Asymmetric grid */}
-      <div style={{
+      {/* Templates grid — responsive */}
+      <div className="tpl-resume-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(12, 1fr)",
-        gap: 20,
+        gap: 16,
       }}>
         {filteredTemplates.map((t, i) => {
           const spans = i % 5 === 0 ? 5 : i % 5 === 3 ? 5 : 4;
@@ -878,7 +893,14 @@ const TemplatesPage = () => {
   const renderLegalTemplates = () => {
     const categories = LEGAL_CATEGORIES;
     return (
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px" }}>
+        <style>{`
+          @media (max-width: 640px) {
+            .legal-card-actions { flex-direction: row !important; }
+            .legal-card-content { flex-wrap: wrap !important; }
+            .legal-card-main { gap: 12px !important; padding: 14px 16px !important; }
+          }
+        `}</style>
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
@@ -956,7 +978,7 @@ const TemplatesPage = () => {
                     }} />
 
                     {/* Content */}
-                    <div style={{ flex: 1, padding: "18px 22px", display: "flex", alignItems: "center", gap: 18 }}>
+                    <div className="legal-card-main" style={{ flex: 1, padding: "16px 18px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                       {/* Icon */}
                       <div style={{
                         width: 48, height: 48, borderRadius: 12,
@@ -1007,7 +1029,7 @@ const TemplatesPage = () => {
                       </div>
 
                       {/* Actions */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                      <div className="legal-card-actions" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, width: "100%", justifyContent: "flex-end" }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); setSpecLegalDoc(doc); }}
                           style={{

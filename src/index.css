@@ -195,3 +195,50 @@
 .touch-target {
   @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
 }
+
+/* ─── Mobile utilities ─── */
+/* Scroll horizontal suave sem scrollbar visível */
+.scroll-x-hidden {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x-hidden::-webkit-scrollbar { display: none; }
+
+/* Safe area insets (iOS notch / home indicator) */
+.safe-bottom {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.safe-bottom-lg {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Container com espaço extra para BottomNavigation fixo */
+.pb-bottom-nav {
+  padding-bottom: 120px;
+}
+
+/* Previne zoom em inputs no iOS (font-size >= 16px) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Pills/tabs horizontais em mobile */
+.tab-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.tab-scroll::-webkit-scrollbar { display: none; }
+.tab-scroll > * { flex-shrink: 0; }

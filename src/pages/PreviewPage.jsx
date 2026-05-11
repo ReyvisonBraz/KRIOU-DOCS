@@ -118,36 +118,46 @@ const PreviewPage = () => {
           </button>
         }
         rightAction={
-          <div style={{ display: "flex", gap: 8 }}>
-            <Button
-              variant="secondary"
-              size="small"
-              icon="Edit"
-              onClick={() => navigate(editTarget, { replace: true })}
-            >
-              Editar
+          <div style={{ display: "flex", gap: 6 }}>
+            <Button variant="secondary" size="small" icon="Edit"
+              className="preview-navbar-btn"
+              onClick={() => navigate(editTarget, { replace: true })}>
+              <span>Editar</span>
             </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              icon="Download"
-              onClick={handleDownloadPDF}
-              disabled={isGenerating}
-            >
-              {isGenerating ? "Gerando..." : "PDF"}
+            <Button variant="secondary" size="small" icon="Download"
+              className="preview-navbar-btn"
+              onClick={handleDownloadPDF} disabled={isGenerating}>
+              <span>{isGenerating ? "Gerando..." : "PDF"}</span>
             </Button>
-            <Button
-              variant="primary"
-              size="small"
-              icon="CreditCard"
-              onClick={handleFinalize}
-            >
-              Finalizar
+            <Button variant="primary" size="small" icon="CreditCard"
+              className="preview-navbar-btn"
+              onClick={handleFinalize}>
+              <span>Finalizar</span>
             </Button>
           </div>
         }
       />
 
+      {/* Mobile responsive styles */}
+      <style>{`
+        @media (max-width: 680px) {
+          .preview-card-inner { flex-direction: column !important; }
+          .preview-sidebar {
+            width: 100% !important; min-width: unset !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: 24px 20px !important;
+            flex-direction: row !important;
+            flex-wrap: wrap;
+            gap: 20px;
+          }
+          .preview-sidebar > * { min-width: 140px; flex: 1; }
+          .preview-main { padding: 24px 20px !important; }
+          .preview-bottom-actions { flex-direction: column !important; }
+          .preview-bottom-actions > * { width: 100% !important; justify-content: center; }
+          .preview-navbar-btn span { display: none !important; }
+        }
+      `}</style>
       {isLegalDocument ? (
         /* ── Legal document preview ────────────────────────────────── */
         <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 24px" }}>
@@ -219,12 +229,12 @@ const PreviewPage = () => {
         </div>
       ) : (
         /* ── Resume preview — two-column professional layout ────────── */
-        <div style={{ maxWidth: 900, margin: "40px auto", padding: "0 24px 80px" }}>
+        <div style={{ maxWidth: 900, margin: "24px auto", padding: "0 16px 80px" }}>
           <Card style={{ padding: 0, overflow: "hidden" }}>
-            <div style={{ display: "flex", minHeight: 600 }}>
+            <div className="preview-card-inner" style={{ display: "flex", minHeight: 600 }}>
 
               {/* ── Left Sidebar ──────────────────────────────── */}
-              <div style={{
+              <div className="preview-sidebar" style={{
                 width: 220,
                 minWidth: 220,
                 background: "var(--surface-2)",
@@ -405,9 +415,7 @@ const PreviewPage = () => {
               </div>
 
               {/* ── Main Content ─────────────────────────────── */}
-              <div style={{
-                flex: 1, padding: "36px 44px", background: "var(--surface)",
-              }}>
+              <div className="preview-main" style={{ flex: 1, padding: "36px 32px", background: "var(--surface" }}>
                 {/* Objective */}
                 {formData.objetivo && (
                   <div style={{ marginBottom: 32 }}>
@@ -568,8 +576,8 @@ const PreviewPage = () => {
             </div>
           </Card>
 
-          <div style={{
-            display: "flex", justifyContent: "center", gap: 12, marginTop: 28,
+          <div className="preview-bottom-actions" style={{
+            display: "flex", justifyContent: "center", gap: 12, marginTop: 20,
           }}>
             <Button variant="secondary" icon="Edit" onClick={() => navigate("editor", { replace: true })}>
               Voltar e Editar

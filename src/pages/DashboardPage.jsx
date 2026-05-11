@@ -261,7 +261,7 @@ const DashboardPage = () => {
       {/* Global responsive style */}
       <style>{`.sm-dashboard-inline{display:inline!important}@media(max-width:639px){.sm-dashboard-inline{display:none!important}}`}</style>
 
-      <main style={{ flex: 1, width: "100%", maxWidth: 1024, margin: "0 auto", padding: "32px 20px 64px" }}>
+      <main style={{ flex: 1, width: "100%", maxWidth: 1024, margin: "0 auto", padding: "24px 16px calc(32px + env(safe-area-inset-bottom, 0px))" }}>
 
         {/* ─── Welcome Section ─── */}
         <section style={{ marginBottom: 40 }}>
@@ -365,87 +365,68 @@ const DashboardPage = () => {
         </section>
 
         {/* ─── Contrato Personalizado CTA ─── */}
-        <section style={{ marginBottom: 32 }}>
+        <section style={{ marginBottom: 24 }}>
+          <style>{`
+            .wa-cta {
+              display: flex; align-items: center; gap: 16;
+              padding: 16px 18px; border-radius: 16px;
+              background: linear-gradient(135deg, rgba(37,211,102,0.10) 0%, rgba(37,211,102,0.03) 100%);
+              border: 1.5px solid rgba(37,211,102,0.20);
+              text-decoration: none; transition: all 0.25s ease; cursor: pointer;
+            }
+            .wa-cta:active { transform: scale(0.99); }
+            @media (max-width: 480px) {
+              .wa-cta { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+              .wa-cta-btn { width: 100% !important; justify-content: center !important; }
+            }
+          `}</style>
           <a
             href="https://wa.me/5591986450659?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20contrato%20personalizado."
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              padding: "20px 24px",
-              borderRadius: 16,
-              background: "linear-gradient(135deg, rgba(37,211,102,0.10) 0%, rgba(37,211,102,0.03) 100%)",
-              border: "1.5px solid rgba(37,211,102,0.20)",
-              textDecoration: "none",
-              transition: "all 0.25s ease",
-              cursor: "pointer",
-            }}
+            className="wa-cta"
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "rgba(37,211,102,0.40)";
-              e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.14) 0%, rgba(37,211,102,0.05) 100%)";
-              e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow = "0 8px 32px rgba(37,211,102,0.10)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "rgba(37,211,102,0.20)";
-              e.currentTarget.style.background = "linear-gradient(135deg, rgba(37,211,102,0.10) 0%, rgba(37,211,102,0.03) 100%)";
-              e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";
             }}
           >
             <div style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
-              background: "rgba(37,211,102,0.15)",
-              border: "1.5px solid rgba(37,211,102,0.25)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0,
             }}>
-              <Icon name="WhatsApp" className="w-6 h-6" style={{ color: "#25D366" }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h3 style={{
-                fontFamily: "'Outfit', sans-serif",
-                fontSize: 16,
-                fontWeight: 700,
-                color: "var(--text)",
-                margin: "0 0 3px",
-                letterSpacing: "-0.02em",
+              <div style={{
+                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                background: "rgba(37,211,102,0.15)", border: "1.5px solid rgba(37,211,102,0.25)",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                Precisa de um contrato mais personalizado?
-              </h3>
-              <p style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 13,
-                color: "var(--text-dim)",
-                margin: 0,
-                lineHeight: 1.5,
-              }}>
-                Fale conosco pelo WhatsApp e receba um documento sob medida para sua necessidade.
-              </p>
+                <Icon name="WhatsApp" className="w-5 h-5" style={{ color: "#25D366" }} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <h3 style={{
+                  fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700,
+                  color: "var(--text)", margin: "0 0 3px", letterSpacing: "-0.02em",
+                }}>
+                  Precisa de um contrato personalizado?
+                </h3>
+                <p style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12,
+                  color: "var(--text-dim)", margin: 0, lineHeight: 1.5,
+                }}>
+                  Receba um documento sob medida via WhatsApp.
+                </p>
+              </div>
             </div>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "10px 18px",
-              borderRadius: 12,
-              background: "#25D366",
-              color: "#fff",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 700,
-              fontSize: 13,
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              border: "none",
+            <div className="wa-cta-btn" style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "10px 16px",
+              borderRadius: 12, background: "#25D366", color: "#fff",
+              fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700,
+              fontSize: 13, whiteSpace: "nowrap", flexShrink: 0, border: "none",
             }}>
               <Icon name="WhatsApp" className="w-4 h-4" />
-              Chamar no WhatsApp
+              Falar no WhatsApp
             </div>
           </a>
         </section>
@@ -484,7 +465,7 @@ const DashboardPage = () => {
                   border: "1px solid var(--border)",
                   borderRadius: 16,
                   padding: "14px 16px 14px 48px",
-                  fontSize: "0.9375rem",
+                  fontSize: "1rem", /* 16px previne zoom no iOS */
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontWeight: 500,
                   color: "var(--text)",
@@ -492,7 +473,6 @@ const DashboardPage = () => {
                   boxSizing: "border-box",
                   transition: "all 0.25s ease",
                 }}
-                className="focus-visible:border-[var(--coral)]/50 focus-visible:ring-4 focus-visible:ring-[var(--coral)]/10"
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "rgba(244,63,94,0.45)";
                   e.currentTarget.style.boxShadow = "0 0 0 4px rgba(244,63,94,0.08)";
@@ -589,7 +569,7 @@ const DashboardPage = () => {
 
         {/* ─── Tabs ─── */}
         {allDocs.length > 0 && (
-          <nav aria-label="Filtrar documentos" style={{ marginBottom: 28, display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <nav aria-label="Filtrar documentos" className="tab-scroll" style={{ marginBottom: 24 }}>
             {visibleTabs.map((tab) => {
               const count = tab.id === "todos" ? allDocs.length :
                 tab.filterType === "type" ? allDocs.filter(d => d.type === tab.id).length :

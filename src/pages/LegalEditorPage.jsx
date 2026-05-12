@@ -833,7 +833,7 @@ const LegalEditorPage = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--navy)" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--navy)", overflow: "hidden" }}>
       <style>{`
         @media (max-width: 640px) {
           .le-step-label { display: none !important; }
@@ -879,7 +879,7 @@ const LegalEditorPage = () => {
 
       {!isPreviewStep && currentSections.length > 0 && renderStepIndicator()}
 
-      <div ref={contentRef} className="le-content-pad" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%" }}>
+      <div ref={contentRef} className="le-content-pad" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%", overflowY: "auto" }}>
         {renderStepContent()}
       </div>
 

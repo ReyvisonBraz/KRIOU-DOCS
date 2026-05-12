@@ -93,16 +93,16 @@ const drawSideStamp = (doc) => {
     doc.setDrawColor(220, 218, 212);
     doc.rect(ML - 6, MT - 2, 6, PAGE_H - MT - MB + 4, "FD");
 
-    // Código vertical (rotacionado)
+    // Código vertical — caractere por caractere (sem translate/rotate)
     if (docCodeVertical) {
-      doc.saveGraphicsState();
-      doc.translate(ML - 3, PAGE_H - MB - 10);
-      doc.rotate(-90);
       doc.setFont(FONT_LABEL, "bold");
       doc.setFontSize(6);
       doc.setTextColor(...C_MUTED);
-      doc.text(docCodeVertical, 0, 0);
-      doc.restoreGraphicsState();
+      const chars = docCodeVertical.split("");
+      const startY = PAGE_H - MB - 8;
+      chars.forEach((char, i) => {
+        doc.text(char, ML - 3, startY - i * 3.5, { baseline: "middle" });
+      });
     }
   }
 };

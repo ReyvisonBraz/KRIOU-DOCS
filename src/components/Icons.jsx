@@ -866,6 +866,40 @@ const icons = {
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   ),
+
+  // ─── Archive Icon — Arquivar documentos ───
+  Archive: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="3" width="20" height="5" rx="1" />
+      <path d="M4 8v11a2 2 0 002 2h12a2 2 0 002-2V8" />
+      <path d="M10 12h4" />
+    </svg>
+  ),
+
+  // ─── Printer Icon — Imprimir ───
+  Printer: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9V2h12v7" />
+      <rect x="4" y="11" width="16" height="10" rx="1" />
+      <path d="M18 16h0" />
+    </svg>
+  ),
 };
 
 // ─── Componente Auxiliar de Ícones ───

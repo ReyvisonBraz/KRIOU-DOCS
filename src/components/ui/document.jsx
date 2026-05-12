@@ -83,7 +83,7 @@ function resolveAccent(doc) {
   return ACCENTS[typeKey];
 }
 
-export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => {
+export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, onPrint, animationDelay = 0 }) => {
   const [hover, setHover] = useState(false);
 
   if (!doc) return null;
@@ -323,7 +323,70 @@ export const DocumentCard = ({ doc, onClick, onDelete, animationDelay = 0 }) => 
             {statusLabel}
           </Badge>
         </div>
+
+        {/* ── Ações rápidas ── */}
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            marginTop: 12,
+            paddingTop: 10,
+            borderTop: "1px solid var(--border)",
+            opacity: hover ? 1 : 0,
+            transition: EASE,
+          }}
+        >
+          {onDownload && (
+            <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
+          )}
+          {onPrint && (
+            <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />
+          )}
+          {onArchive && (
+            <ActionBtn
+              icon={doc.archived ? "RefreshCw" : "Archive"}
+              label={doc.archived ? "Restaurar" : "Arquivar"}
+              onClick={(e) => { e.stopPropagation(); onArchive(doc); }}
+              accent={accent}
+            />
+          )}
+          <ActionBtn
+            icon="WhatsApp"
+            label="WhatsApp"
+            onClick={(e) => {
+              e.stopPropagation();
+              const text = encodeURIComponent(`*${doc.title || "Documento"}* - Kriou Docs\nCódigo: ${doc.code || ""}`);
+              window.open(`https://wa.me/?text=${text}`, "_blank");
+            }}
+            accent="#25D366"
+          />
+        </div>
       </div>
     </div>
   );
 };
+
+const ActionBtn = ({ icon, label, onClick, accent }) => (
+  <button
+    onClick={onClick}
+    title={label}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 36,
+      height: 36,
+      borderRadius: 8,
+      border: "none",
+      background: "transparent",
+      color: "var(--text-faint)",
+      cursor: "pointer",
+      transition: EASE,
+      flexShrink: 0,
+    }}
+    onMouseEnter={(e) => { e.currentTarget.style.color = accent; e.currentTarget.style.background = `${accent}15`; }}
+    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.background = "transparent"; }}
+  >
+    <Icon name={icon} className="w-4 h-4" />
+  </button>
+);

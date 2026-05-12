@@ -19,6 +19,7 @@ const DashboardPage = () => {
   } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
+  const [showArchived, setShowArchived] = useState(false);
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const handleCreateResume = () => {
@@ -67,6 +68,11 @@ const DashboardPage = () => {
   const getFilteredDocs = useCallback(() => {
     const filterType = TAB_FILTER_TYPE[activeTab] || "all";
     let docs = allDocs;
+
+    // Filtro de arquivados
+    if (!showArchived) {
+      docs = docs.filter((doc) => !doc.archived);
+    }
 
     if (filterType === "type") {
       docs = docs.filter((doc) => doc.type === activeTab);
@@ -180,6 +186,15 @@ const DashboardPage = () => {
       console.error("[DashboardPage][ERRO] saveDocuments falhou apos delecao:", err.message);
       showToast.error("Documento removido da lista, mas pode não ter sido salvo no servidor.");
     }
+  };
+
+  const handleArchiveDocument = (doc) => {
+    const updated = (userDocuments || []).map((d) =>
+      d.id === doc.id ? { ...d, archived: !d.archived } : d
+    );
+    setUserDocuments(updated);
+    StorageService.saveDocuments(updated, userId);
+    showToast.success(doc.archived ? "Documento restaurado." : "Documento arquivado.");
   };
 
   const getUserName = () => {
@@ -565,6 +580,44 @@ const DashboardPage = () => {
               </button>
             </div>
           </div>
+
+          {/* Archive toggle */}
+          {allDocs.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+              <button
+                onClick={() => setShowArchived((prev) => !prev)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 14px",
+                  borderRadius: 100,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  border: showArchived ? "1.5px solid var(--gold)" : "1px solid var(--border)",
+                  background: showArchived ? "rgba(212,175,55,0.08)" : "transparent",
+                  color: showArchived ? "var(--gold)" : "var(--text-muted)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  minHeight: 36,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; e.currentTarget.style.color = "var(--gold)"; }}
+                onMouseLeave={(e) => { if (!showArchived) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}}
+              >
+                <Icon name="Archive" className="w-3.5 h-3.5" />
+                {showArchived ? "Esconder arquivados" : "Mostrar arquivados"}
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  padding: "1px 6px", borderRadius: 6,
+                  background: showArchived ? "rgba(212,175,55,0.18)" : "var(--surface-3)",
+                  color: showArchived ? "var(--gold)" : "var(--text-faint)",
+                }}>
+                  {allDocs.filter(d => d.archived).length}
+                </span>
+              </button>
+            </div>
+          )}
         </section>
 
         {/* ─── Tabs ─── */}
@@ -679,6 +732,7 @@ const DashboardPage = () => {
                     doc={doc}
                     onClick={() => handleEditDocument(doc)}
                     onDelete={() => handleDeleteDocument(doc)}
+                    onArchive={handleArchiveDocument}
                     animationDelay={index * 0.04}
                   />
                 </div>

@@ -52,7 +52,7 @@ const MainSectionHeader = ({ title }) => (
 );
 
 const PreviewPage = () => {
-  const { navigate, selectedTemplate, formData, documentType, legalFormData } = useApp();
+  const { navigate, selectedTemplate, formData, documentType, legalFormData, disabledFields, selectedVariant } = useApp();
   const { generatePDF, isGenerating } = usePDF();
 
   const isLegalDocument = !!documentType;
@@ -73,7 +73,7 @@ const PreviewPage = () => {
   const handleDownloadPDF = async () => {
     try {
       if (isLegalDocument) {
-        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType });
+        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType, disabledFields: disabledFields || {}, variantId: selectedVariant || null });
       } else {
         await generatePDF({ type: "GENERATE_RESUME", formData, template: selectedTemplate });
       }

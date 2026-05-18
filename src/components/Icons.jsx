@@ -900,6 +900,143 @@ const icons = {
       <path d="M18 16h0" />
     </svg>
   ),
+
+  // ─── ClipboardList Icon — Lista de etapas ───
+  ClipboardList: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <line x1="9" y1="9" x2="15" y2="9" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+      <line x1="9" y1="17" x2="13" y2="17" />
+    </svg>
+  ),
+
+  // ─── Grid Icon — Grade/Layout ───
+  Grid: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </svg>
+  ),
+
+  // ─── Sparkles Icon — Destaque/Novo ───
+  Sparkles: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3l1.31 3.43a1 1 0 00.79.63l3.58.52a1 1 0 01.55 1.7l-2.59 2.53a1 1 0 00-.29.88l.61 3.57a1 1 0 01-1.45 1.05L12 16.12l-3.2 1.68a1 1 0 01-1.45-1.05l.61-3.57a1 1 0 00-.29-.88L5.08 9.28a1 1 0 01.55-1.7l3.58-.52a1 1 0 00.79-.63L12 3z" />
+    </svg>
+  ),
+
+  // ─── Palette Icon — Cores/Design ───
+  Palette: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="13.5" cy="6.5" r="5" />
+      <circle cx="13.5" cy="6.5" r="1" fill="currentColor" />
+      <path d="M5.5 17.5l5-5" />
+      <path d="M8.5 20.5l7-7" />
+      <circle cx="18" cy="12" r="2" />
+      <circle cx="12" cy="18" r="2" />
+      <circle cx="6" cy="14" r="2" />
+    </svg>
+  ),
+
+  // ─── AlertTriangle Icon — Aviso/Erro ───
+  AlertTriangle: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+
+  // ─── AlertCircle Icon — Erro/Campo inválido ───
+  AlertCircle: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  ),
+
+  // ─── ChevronDown Icon — Expandir/Selecionar ───
+  ChevronDown: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  ),
+
+  // ─── Link Icon — URL/LinkedIn ───
+  Link: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+    </svg>
+  ),
 };
 
 // ─── Componente Auxiliar de Ícones ───

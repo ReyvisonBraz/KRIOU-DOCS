@@ -26,6 +26,7 @@ const DashboardPage = () => {
     setEditingDocId(null);
     setFormData(INITIAL_FORM_DATA);
     setSelectedTemplate(null);
+    setDocumentType(null);
     setCurrentStep(0);
     StorageService.clearDraft(userId, "resume");
     sessionStorage.setItem("kriou_template_category", "resume");

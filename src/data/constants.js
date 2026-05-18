@@ -34,7 +34,7 @@ export const RESUME_TEMPLATES = [
       target: "Profissionais criativos e designers",
       bestFor: ["Agência de publicidade", "Design", "Marketing criativo"],
       sections: ["Objetivo", "Portfólio", "Experiência", "Formação", "Habilidades"],
-      tips: ["社会实践 experiência criativa", "Inclua links de portfólio", "Seja visual"],
+      tips: ["Use sua experiência criativa", "Inclua links de portfólio", "Seja visual"],
       colorMeaning: "Roxo com ciano transmite inovação e criatividade",
     },
   },
@@ -139,7 +139,7 @@ export const RESUME_TEMPLATES = [
       target: "Posições de prestígio e requinte",
       bestFor: ["Alta gestão", "Fashion", "Luxo", "Eventos"],
       sections: ["Objetivo", "Experiência", "Formação", "Idiomas", "Extras"],
-      tips: ["Minimalismo elegante", "QUALIDADE above quantidade", "Detalles importam"],
+      tips: ["Minimalismo elegante", "Qualidade acima da quantidade", "Detalhes importam"],
       colorMeaning: "Dourado sobre preto = sofisticação máxima",
     },
   },
@@ -196,12 +196,20 @@ export const STEP_DESCRIPTIONS = {
 
 // ─── Pre-defined Skills Options ───
 export const SKILLS_OPTIONS = [
-  // Technical
+  // Habilidades Básicas / Escritório
+  "Pacote Office (Word, Excel, PowerPoint)", "Digitação", "Atendimento ao Cliente",
+  "Organização de Arquivos", "Rotinas Administrativas", "Recepcionista",
+  "Telemarketing", "Vendas", "Caixa", "Estoque",
+  // Técnicas
   "JavaScript", "TypeScript", "React", "Node.js", "Python", "SQL", "Git",
   "Figma", "Tailwind CSS", "Docker", "AWS", "MongoDB", "GraphQL", "Next.js",
-  // Soft Skills
+  "Excel Avançado", "Power BI",
+  // Comportamentais
   "Comunicação", "Liderança", "Trabalho em Equipe", "Resolução de Problemas",
-  "Gestão de Projetos", "Inglês Técnico", "Scrum", "Design Thinking",
+  "Gestão de Projetos", "Pró-atividade", "Pontualidade", "Responsabilidade",
+  "Facilidade de Aprendizado", "Trabalho sob Pressão",
+  // Idiomas / Gestão
+  "Inglês", "Espanhol", "Scrum", "Design Thinking",
 ];
 
 // ─── Language Levels ───
@@ -278,7 +286,7 @@ export const FIELD_HINTS = {
   // ETAPA 3: Experiência
   experiencia_empresa: {
     placeholder: "Nome da empresa ou 'Freelancer'",
-    hint: "Onde você trabajó. Se nunca trabajó formalmente, pode usar trabalho informal.",
+    hint: "Onde você trabalhou. Se nunca trabalhou formalmente, pode usar trabalho informal.",
     examples: [
       "Empresa XYZ (trabalho formal)",
       "Freelancer (trabalhos por conta própria)",
@@ -306,7 +314,7 @@ export const FIELD_HINTS = {
     placeholder: "Jan 2022 - Atual",
     hint: "Quando você trabalhou lá (mês/ano início - fim)",
     example: "Mar 2023 - Dez 2023",
-    whereFind: "Na carteira de trabalho ou contracts",
+    whereFind: "Na carteira de trabalho ou contratos",
     optional: true,
     skipLabel: "Não lembro as datas",
   },
@@ -363,7 +371,7 @@ export const FIELD_HINTS = {
       fluente: "Fluente - Falo perfeitamente",
       nativo: "Nativo - Minha língua mater",
     },
-    tip: "Sea honesto ao avaliar seu nível. Empresas podem testar.",
+    tip: "Seja honesto ao avaliar seu nível. Empresas podem testar.",
   },
 
   // ETAPA 7: Extras
@@ -372,7 +380,12 @@ export const FIELD_HINTS = {
     hint: "O que mais agrega ao seu currículo?",
     examples: [
       "Curso de Excel Avançado - 40h (2024)",
+      "Curso de Informática Básica (Windows, Word, Excel)",
+      "Curso de Atendimento ao Cliente - 20h",
+      "Curso de Administração e Rotinas de Escritório",
       "Certificação Google Analytics",
+      "Curso de Vendas e Negociação",
+      "Curso de Auxiliar Administrativo",
       "Projeto pessoal: App de tarefas (GitHub)",
       "Trabalho voluntário - ONG local",
       "Palestra sobre tecnologia (2023)",

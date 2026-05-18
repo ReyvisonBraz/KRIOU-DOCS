@@ -302,7 +302,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
               textOverflow: "ellipsis",
             }}
           >
-            {doc.template}
+            {doc.templateName || (typeof doc.template === 'string' ? doc.template : doc.template?.name || '')}
           </p>
         )}
 

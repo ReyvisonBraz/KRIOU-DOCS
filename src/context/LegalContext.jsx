@@ -26,6 +26,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { LEGAL_DOCUMENT_TYPES } from "../data/constants";
+import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import { sanitizeFormData } from "../utils/sanitization";
 import { useAutoSave } from "../hooks/useAutoSave";
@@ -46,11 +47,13 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     if (!isLoading) isReadyRef.current = true;
   }, [isLoading]);
 
-  // Funcao de auto-save — so persiste quando pronto e com dados
+  // Funcao de auto-save — persiste localmente e sincroniza com nuvem
   const saveFn = useCallback((data) => {
     if (!isReadyRef.current || Object.keys(data).length === 0) return;
-    StorageService.saveDraft(sanitizeFormData(data), userId, "legal");
-  }, [userId]);
+    const sanitized = sanitizeFormData(data);
+    StorageService.saveDraft(sanitized, userId, "legal");
+    DocumentService.saveDraft(userId, "legal", sanitized, legalStep).catch(() => {});
+  }, [userId, legalStep]);
 
   const { saveStatus, triggerSave } = useAutoSave(legalFormData, saveFn);
 

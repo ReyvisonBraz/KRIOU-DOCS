@@ -3,8 +3,10 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
+import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
+import { usePDF } from "../hooks/usePDF";
 import { extractPersonData, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
 
@@ -21,6 +23,7 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState("todos");
   const [showArchived, setShowArchived] = useState(false);
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
+  const { generatePDF, isGenerating } = usePDF();
 
   const handleCreateResume = () => {
     setEditingDocId(null);
@@ -189,13 +192,81 @@ const DashboardPage = () => {
     }
   };
 
-  const handleArchiveDocument = (doc) => {
+  const handleDownloadPDF = useCallback(async (doc) => {
+    try {
+      if (doc.type === "resume") {
+        const template = doc.templateId
+          ? { id: doc.templateId, name: doc.templateName || "Modelo", color: doc.template?.color, accent: doc.template?.accent }
+          : null;
+        await generatePDF({ type: "GENERATE_RESUME", formData: doc.formData, template });
+      } else {
+        const docType = { id: doc.documentType, name: doc.documentTypeName };
+        await generatePDF({
+          type: "GENERATE_LEGAL",
+          formData: doc.legalData,
+          docType,
+          disabledFields: {},
+          variantId: doc.variantId,
+        });
+      }
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] handleDownloadPDF:", err.message);
+      showToast.error("Erro ao gerar PDF. Tente novamente.");
+    }
+  }, [generatePDF]);
+
+  const handlePrintPDF = useCallback(async (doc) => {
+    try {
+      let arrayBuffer;
+      let filename;
+
+      if (doc.type === "resume") {
+        const template = doc.templateId
+          ? { id: doc.templateId, name: doc.templateName || "Modelo", color: doc.template?.color, accent: doc.template?.accent }
+          : null;
+        const { generateResumePDF } = await import("../utils/pdfGenerator");
+        const pdf = generateResumePDF(doc.formData, template);
+        arrayBuffer = pdf.output("arraybuffer");
+        filename = `curriculo-${(doc.formData?.nome || "documento").toLowerCase().replace(/\s+/g, "-")}.pdf`;
+      } else {
+        const { generateLegalPDF } = await import("../utils/legalPdfGenerator");
+        const docType = { id: doc.documentType, name: doc.documentTypeName };
+        const pdf = generateLegalPDF(doc.legalData, docType, {}, doc.variantId);
+        arrayBuffer = pdf.output("arraybuffer");
+        filename = `${doc.documentType || "documento"}-kriou-docs.pdf`;
+      }
+
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const printWindow = window.open(url, "_blank");
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+          URL.revokeObjectURL(url);
+        };
+      } else {
+        showToast.error("Popup bloqueado. Permita popups para imprimir.");
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] handlePrintPDF:", err.message);
+      showToast.error("Erro ao gerar PDF para impressão.");
+    }
+  }, []);
+
+  const handleArchiveDocument = async (doc) => {
+    const newArchived = !doc.archived;
     const updated = (userDocuments || []).map((d) =>
-      d.id === doc.id ? { ...d, archived: !d.archived } : d
+      d.id === doc.id ? { ...d, archived: newArchived } : d
     );
     setUserDocuments(updated);
     StorageService.saveDocuments(updated, userId);
-    showToast.success(doc.archived ? "Documento restaurado." : "Documento arquivado.");
+    try {
+      await DocumentService.setArchived(doc.id, userId, newArchived);
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] Falha ao sincronizar archive:", err.message);
+    }
+    showToast.success(newArchived ? "Documento arquivado." : "Documento restaurado.");
   };
 
   const getUserName = () => {
@@ -733,6 +804,8 @@ const DashboardPage = () => {
                     doc={doc}
                     onClick={() => handleEditDocument(doc)}
                     onDelete={() => handleDeleteDocument(doc)}
+                    onDownload={handleDownloadPDF}
+                    onPrint={handlePrintPDF}
                     onArchive={handleArchiveDocument}
                     animationDelay={index * 0.04}
                   />

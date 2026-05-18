@@ -38,6 +38,7 @@ function mapDocumentRow(row) {
     variantId:        row.variant_id,
     variantName:      row.variant_name,
     variant:         row.variant,
+    archived:         row.archived || false,
     date:             new Date(row.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
     createdAt:        row.created_at,
     userId:           row.user_id,
@@ -202,6 +203,34 @@ export const DocumentService = {
   },
 
   /**
+   * Alterna o status de arquivamento de um documento.
+   *
+   * @param {string} documentId — UUID do documento
+   * @param {string} userId — ID do usuario dono do documento
+   * @param {boolean} archived — true para arquivar, false para restaurar
+   * @returns {Promise<boolean>} true se atualizado com sucesso
+   */
+  async setArchived(documentId, userId, archived) {
+    if (!documentId || !userId) {
+      const err = new Error("[DocumentService][ERRO] setArchived: documentId e userId sao obrigatorios");
+      console.error(err.message);
+      throw err;
+    }
+
+    const { error } = await supabase
+      .from("documents")
+      .update({ archived })
+      .eq("id", documentId)
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("[DocumentService][ERRO] setArchived:", error.message, { documentId, userId });
+      throw error;
+    }
+    return true;
+  },
+
+  /**
    * Busca o perfil do usuario autenticado.
    *
    * @returns {Promise<Object|null>} Perfil do usuario ou null se nao existir
@@ -289,6 +318,86 @@ export const DocumentService = {
    */
   isOnboardingDone(profile) {
     return !!profile?.onboarding_done;
+  },
+
+  /**
+   * Salva ou atualiza um rascunho no Supabase (nuvem).
+   * Usa upsert com unique(user_id, type) para criar ou atualizar.
+   *
+   * @param {string} userId — ID do usuario
+   * @param {string} draftType — 'resume' ou 'legal'
+   * @param {Object} draftData — Dados do rascunho
+   * @param {number} currentStep — Etapa atual do wizard
+   * @returns {Promise<boolean>}
+   */
+  async saveDraft(userId, draftType, draftData, currentStep = 0) {
+    if (!userId || !draftType) {
+      console.warn("[DocumentService][AVISO] saveDraft: userId e draftType obrigatorios");
+      return false;
+    }
+
+    const { error } = await supabase
+      .from("document_drafts")
+      .upsert({
+        user_id: userId,
+        type: draftType,
+        data: draftData,
+        current_step: currentStep,
+      }, { onConflict: "user_id,type" });
+
+    if (error) {
+      console.warn("[DocumentService][AVISO] saveDraft (nuvem):", error.message);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Carrega um rascunho do Supabase (nuvem).
+   *
+   * @param {string} userId — ID do usuario
+   * @param {string} draftType — 'resume' ou 'legal'
+   * @returns {Promise<{data: Object, currentStep: number}|null>}
+   */
+  async loadDraft(userId, draftType) {
+    if (!userId || !draftType) return null;
+
+    const { data, error } = await supabase
+      .from("document_drafts")
+      .select("data, current_step")
+      .eq("user_id", userId)
+      .eq("type", draftType)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      data: data.data,
+      currentStep: data.current_step || 0,
+    };
+  },
+
+  /**
+   * Remove um rascunho do Supabase.
+   *
+   * @param {string} userId — ID do usuario
+   * @param {string} draftType — 'resume' ou 'legal'
+   * @returns {Promise<boolean>}
+   */
+  async clearDraft(userId, draftType) {
+    if (!userId || !draftType) return false;
+
+    const { error } = await supabase
+      .from("document_drafts")
+      .delete()
+      .eq("user_id", userId)
+      .eq("type", draftType);
+
+    if (error) {
+      console.warn("[DocumentService][AVISO] clearDraft (nuvem):", error.message);
+      return false;
+    }
+    return true;
   },
 
   /**

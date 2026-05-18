@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
 import { sanitizeFormData } from "../utils/sanitization";
+import { DocumentService } from "../services/DocumentService";
 import showToast from "../utils/toast";
+
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || null;
 
 /* ───────────────────────────────────────────
    Design Tokens (referenced from :root)
@@ -410,6 +413,7 @@ const CheckoutPage = () => {
 
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
   const { generatePDF } = usePDF();
 
   const isLegalDocument = !!documentType;
@@ -423,21 +427,122 @@ const CheckoutPage = () => {
   const getDocumentTypeLabel = () =>
     isLegalDocument ? "Documento Jurídico" : "Currículo";
 
-  const handlePayment = async () => {
+  // ── Check for Mercado Pago return callback ──
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id");
+    const status = params.get("status");
+
+    if (paymentId && status === "approved") {
+      handlePaymentSuccess(paymentId);
+    } else if (paymentId && status === "failure") {
+      setPaymentError("Pagamento não aprovado. Tente novamente.");
+    }
+  }, []);
+
+  const sendConfirmationEmail = useCallback(async (doc) => {
+    try {
+      const title = isLegalDocument ? (documentType?.name || "Documento Jurídico") : (formData.nome || "Currículo");
+      await callEdgeFunction("send-email", {
+        to: email,
+        subject: `Seu documento está pronto — ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color: #F43F5E;">Kriou Docs</h2>
+            <p>Olá!</p>
+            <p>Seu documento <strong>${title}</strong> foi gerado com sucesso e já está disponível no seu painel.</p>
+            <p>Código do documento: <strong>${doc?.code || "—"}</strong></p>
+            <p style="margin-top: 24px;">
+              <a href="${window.location.origin}/dashboard"
+                 style="background: #F43F5E; color: #fff; padding: 12px 24px; border-radius: 8px;
+                        text-decoration: none; font-weight: 600; display: inline-block;">
+                Acessar Dashboard
+              </a>
+            </p>
+            <p style="margin-top: 24px; font-size: 12px; color: #888;">
+              Equipe Kriou Docs &bull; Documentos que impressionam
+            </p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      console.warn("[CheckoutPage] Falha ao enviar e-mail de confirmação:", err.message);
+    }
+  }, [email, callEdgeFunction, isLegalDocument, documentType, formData]);
+
+  const handlePaymentSuccess = async (paymentId) => {
     setIsProcessing(true);
     try {
       const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
+      let savedDoc;
       if (editingDocId) {
         await updateDocument(editingDocId, docData);
         setEditingDocId(null);
+        savedDoc = { id: editingDocId };
       } else {
-        await saveDocument(docData);
+        savedDoc = await saveDocument(docData);
       }
       setCheckoutComplete(true);
       showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
+      window.history.replaceState({}, "", window.location.pathname);
+      sendConfirmationEmail(savedDoc);
     } catch (err) {
-      console.error("[CheckoutPage][ERRO] Falha ao salvar documento:", err);
-      showToast.error("Erro ao salvar documento. Tente novamente.");
+      console.error("[CheckoutPage][ERRO] handlePaymentSuccess:", err);
+      showToast.error("Erro ao finalizar documento. Tente novamente.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const callEdgeFunction = useCallback(async (functionName, body) => {
+    const { supabase } = await import("../lib/supabase");
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body,
+    });
+    if (error) throw error;
+    return data;
+  }, []);
+
+  const handlePayment = async () => {
+    setPaymentError(null);
+    setIsProcessing(true);
+    try {
+      const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
+      let savedDoc;
+      if (editingDocId) {
+        await updateDocument(editingDocId, docData);
+        setEditingDocId(null);
+        savedDoc = { id: editingDocId };
+      } else {
+        savedDoc = await saveDocument(docData);
+      }
+
+      // Try Mercado Pago if public key is configured
+      if (MP_PUBLIC_KEY) {
+        try {
+          const preference = await callEdgeFunction("create-preference", {
+            title: getDocumentTitle(),
+            price: "9.90",
+            userId: savedDoc?.userId || "unknown",
+            documentId: savedDoc?.id || "unknown",
+            email: email || "",
+          });
+
+          if (preference?.init_point) {
+            window.location.href = preference.init_point;
+            return;
+          }
+        } catch (mpErr) {
+          console.warn("[CheckoutPage] MP fallback, erro:", mpErr.message);
+        }
+      }
+
+      // Fallback: save directly without payment
+      setCheckoutComplete(true);
+      showToast.success("Documento salvo com sucesso!");
+    } catch (err) {
+      console.error("[CheckoutPage][ERRO] handlePayment:", err);
+      showToast.error("Erro ao processar pagamento. Tente novamente.");
     } finally {
       setIsProcessing(false);
     }

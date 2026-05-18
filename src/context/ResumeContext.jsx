@@ -54,11 +54,13 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     if (!isLoading) isReadyRef.current = true;
   }, [isLoading]);
 
-  // Funcao de auto-save — so persiste quando o provider esta pronto
+  // Funcao de auto-save — persiste localmente e sincroniza com nuvem
   const saveFn = useCallback((data) => {
     if (!isReadyRef.current) return;
-    StorageService.saveDraft(sanitizeFormData(data), userId, "resume");
-  }, [userId]);
+    const sanitized = sanitizeFormData(data);
+    StorageService.saveDraft(sanitized, userId, "resume");
+    DocumentService.saveDraft(userId, "resume", sanitized, currentStep).catch(() => {});
+  }, [userId, currentStep]);
 
   const { saveStatus, lastSaved, triggerSave } = useAutoSave(formData, saveFn);
 

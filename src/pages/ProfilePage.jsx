@@ -11,7 +11,10 @@ import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
+import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
+import showToast from "../utils/toast";
+import { validateCpf } from "../utils/validation";
 
 // ─── CSS Variables Reference ─────────────────────────────────────────────────
 // --navy, --surface, --surface-2, --surface-3, --coral, --gold, --teal,
@@ -19,12 +22,64 @@ import StorageService from "../utils/storage";
 // --success, --danger
 
 const ProfilePage = () => {
-  const { navigate, logout, profile, email, userId, userDocuments } = useApp();
+  const { navigate, logout, profile, setProfile, email, userId, userDocuments } = useApp();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nome: profile?.nome || "",
+    sobrenome: profile?.sobrenome || "",
+    cpf: profile?.cpf || "",
+  });
 
   const displayName  = profile?.nome ? `${profile.nome} ${profile.sobrenome || ""}`.trim() : "Usuário";
   const displayEmail = email || null;
   const displayCity  = null;
+
+  const handleStartEdit = () => {
+    setEditForm({
+      nome: profile?.nome || "",
+      sobrenome: profile?.sobrenome || "",
+      cpf: profile?.cpf || "",
+    });
+    setEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.nome.trim() || !editForm.sobrenome.trim()) {
+      showToast.error("Nome e sobrenome são obrigatórios.");
+      return;
+    }
+    if (editForm.cpf.trim() && !validateCpf(editForm.cpf)) {
+      showToast.error("CPF inválido. Verifique o número.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await DocumentService.updateProfile({
+        nome: editForm.nome.trim(),
+        sobrenome: editForm.sobrenome.trim(),
+        cpf: editForm.cpf.trim(),
+      });
+      setProfile((prev) => ({
+        ...prev,
+        nome: editForm.nome.trim(),
+        sobrenome: editForm.sobrenome.trim(),
+        cpf: editForm.cpf.trim(),
+      }));
+      setEditMode(false);
+      showToast.success("Perfil atualizado com sucesso.");
+    } catch (err) {
+      console.error("[ProfilePage][ERRO] handleSaveProfile:", err.message);
+      showToast.error("Erro ao salvar perfil. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const getUserInitials = () =>
     displayName
@@ -102,18 +157,45 @@ const ProfilePage = () => {
           >
             {getUserInitials()}
           </div>
-          <h1
-            style={{
-              fontFamily: "'Outfit', sans-serif",
-              fontSize: 24,
-              fontWeight: 800,
-              letterSpacing: "-0.015em",
-              color: "var(--text)",
-              marginBottom: 4,
-            }}
-          >
-            {displayName}
-          </h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 4 }}>
+            <h1
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 24,
+                fontWeight: 800,
+                letterSpacing: "-0.015em",
+                color: "var(--text)",
+                margin: 0,
+              }}
+            >
+              {displayName}
+            </h1>
+            {!editMode && (
+              <button
+                onClick={handleStartEdit}
+                aria-label="Editar perfil"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  border: "1.5px solid var(--border)",
+                  background: "var(--surface-2)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--text-muted)",
+                  transition: "all 0.2s ease",
+                  flexShrink: 0,
+                }}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--coral)"; e.currentTarget.style.color = "var(--coral)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
+              >
+                <Icon name="Edit" className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           {displayEmail && (
             <p style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -225,11 +307,86 @@ const ProfilePage = () => {
             Informações da Conta
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <InfoRow icon="User" label="Nome" value={displayName} />
-            {displayEmail && <InfoRow icon="Mail" label="E-mail" value={displayEmail} />}
-            {displayCity && <InfoRow icon="Globe" label="Cidade" value={displayCity} last />}
-            {!displayEmail && !displayCity && (
-              <InfoRow icon="Globe" label="Cidade" value="—" last />
+            {editMode ? (
+              <>
+                <EditField
+                  icon="User"
+                  label="Nome"
+                  value={editForm.nome}
+                  onChange={(v) => setEditForm((f) => ({ ...f, nome: v }))}
+                  placeholder="Seu nome"
+                />
+                <EditField
+                  icon="User"
+                  label="Sobrenome"
+                  value={editForm.sobrenome}
+                  onChange={(v) => setEditForm((f) => ({ ...f, sobrenome: v }))}
+                  placeholder="Seu sobrenome"
+                />
+                <EditField
+                  icon="Shield"
+                  label="CPF"
+                  value={editForm.cpf}
+                  onChange={(v) => setEditForm((f) => ({ ...f, cpf: v }))}
+                  placeholder="000.000.000-00"
+                  mask="cpf"
+                  last
+                />
+                <div style={{ display: "flex", gap: 10, paddingTop: 16, paddingBottom: 8 }}>
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={saving}
+                    style={{
+                      flex: 1,
+                      minHeight: 48,
+                      borderRadius: 13,
+                      border: "1.5px solid var(--border)",
+                      background: "transparent",
+                      color: "var(--text-dim)",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      letterSpacing: "-0.005em",
+                      transition: "all 0.2s ease",
+                    }}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50"
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--text)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-dim)"; }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    style={{
+                      flex: 1,
+                      minHeight: 48,
+                      borderRadius: 13,
+                      border: "none",
+                      background: saving ? "var(--text-muted)" : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                      color: "#fff",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      cursor: saving ? "not-allowed" : "pointer",
+                      letterSpacing: "-0.005em",
+                      boxShadow: saving ? "none" : "0 4px 18px rgba(244,63,94,0.30)",
+                      transition: "all 0.22s ease",
+                    }}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
+                  >
+                    {saving ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <InfoRow icon="User" label="Nome" value={displayName} />
+                {displayEmail && <InfoRow icon="Mail" label="E-mail" value={displayEmail} />}
+                <InfoRow icon="Shield" label="CPF" value={profile?.cpf || "—"} last={!displayEmail && !displayCity} />
+                {!displayEmail && <InfoRow icon="Globe" label="Cidade" value="—" last />}
+              </>
             )}
           </div>
         </Card>
@@ -580,6 +737,79 @@ const InfoRow = ({ icon, label, value, last }) => (
       >
         {value}
       </div>
+    </div>
+  </div>
+);
+
+const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      padding: "10px 0",
+      borderBottom: last ? "none" : "1px solid var(--border)",
+    }}
+  >
+    <div
+      style={{
+        flexShrink: 0,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        background: "var(--surface-2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--text-muted)",
+      }}
+    >
+      <Icon name={icon} className="w-5 h-5" />
+    </div>
+    <div style={{ minWidth: 0, flex: 1 }}>
+      <div
+        style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--text-muted)",
+          letterSpacing: "0.01em",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => {
+          let val = e.target.value;
+          if (mask === "cpf") {
+            val = val.replace(/\D/g, "").slice(0, 11);
+            val = val.replace(/(\d{3})(\d)/, "$1.$2");
+            val = val.replace(/(\d{3})(\d)/, "$1.$2");
+            val = val.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+          }
+          onChange(val);
+        }}
+        placeholder={placeholder}
+        style={{
+          width: "100%",
+          padding: "10px 14px",
+          borderRadius: 10,
+          border: "1.5px solid var(--border)",
+          background: "var(--surface)",
+          color: "var(--text)",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 14,
+          fontWeight: 600,
+          outline: "none",
+          letterSpacing: "-0.005em",
+          boxSizing: "border-box",
+          transition: "border-color 0.2s ease",
+        }}
+        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50"
+      />
     </div>
   </div>
 );

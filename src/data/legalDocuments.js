@@ -15,6 +15,7 @@
  *   src/data/documents/uniao-estavel.js
  *   src/data/documents/autorizacao-viagem.js
  *   src/data/documents/permuta.js
+ *   src/data/documents/prestacao-servicos.js
  *
  * Campos e helpers compartilhados estão em:
  *   src/data/documents/_shared.js
@@ -32,6 +33,7 @@ import uniaoEstavel from "./documents/uniao-estavel.js";
 import autorizacaoViagem from "./documents/autorizacao-viagem.js";
 import comodato from "./documents/comodato.js";
 import permuta from "./documents/permuta.js";
+import prestacaoServicos from "./documents/prestacao-servicos.js";
 import { applyPortugueseCleanup } from "../utils/textCleanup.js";
 
 // ─── Lista completa de documentos ───────────────────────────────────────────
@@ -45,6 +47,7 @@ export const LEGAL_DOCUMENTS = [
   autorizacaoViagem,
   comodato,
   permuta,
+  prestacaoServicos,
 ];
 
 // ─── Helpers para acesso fácil ──────────────────────────────────────────────
@@ -88,7 +91,9 @@ export const getSectionsForVariant = (docId, variantId) => {
       s.id.includes("acompanhante") ||
       s.id.includes("comodante") ||
       s.id.includes("comodatario") ||
-      s.id.includes("permutante")
+      s.id.includes("permutante") ||
+      s.id.includes("contratante") ||
+      s.id.includes("contratado")
   );
   const otherSections = commonSections.filter((s) => !partySections.includes(s));
 

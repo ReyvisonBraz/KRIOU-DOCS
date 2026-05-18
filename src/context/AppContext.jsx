@@ -90,6 +90,7 @@ const PAGE_TO_PATH = {
   checkout:        "/checkout",
   profile:         "/profile",
   legalEditor:     "/legal-editor",
+  admin:           "/admin",
 };
 
 const PATH_TO_PAGE = Object.fromEntries(
@@ -305,12 +306,21 @@ const AppBootstrap = ({ children }) => {
       }
 
       try {
+        const cloudResume = await DocumentService.loadDraft(userId, "resume");
+        const localResume = StorageService.loadDraft(userId, "resume");
+        const resumeData = cloudResume?.data || localResume;
+        if (resumeData) setFormData(resumeData);
+
+        const cloudLegal = await DocumentService.loadDraft(userId, "legal");
+        const localLegal = StorageService.loadDraft(userId, "legal");
+        const legalData = cloudLegal?.data || localLegal;
+        if (legalData) setLegalFormData(legalData);
+      } catch (err) {
+        console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
         const resumeDraft = StorageService.loadDraft(userId, "resume");
         if (resumeDraft) setFormData(resumeDraft);
         const legalDraft = StorageService.loadDraft(userId, "legal");
         if (legalDraft) setLegalFormData(legalDraft);
-      } catch (err) {
-        console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
       }
 
       // ─── Redirecionamento pos-login ──────────────────────────────────────

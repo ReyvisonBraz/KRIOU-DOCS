@@ -45,6 +45,7 @@ const PreviewPage         = lazy(() => import("./pages/PreviewPage"));
 const CheckoutPage        = lazy(() => import("./pages/CheckoutPage"));
 const ProfilePage         = lazy(() => import("./pages/ProfilePage"));
 const LegalEditorPage     = lazy(() => import("./pages/LegalEditorPage"));
+const AdminPage           = lazy(() => import("./pages/AdminPage"));
 const AuthCallbackPage    = lazy(() => import("./pages/AuthCallbackPage"));
 const CompleteProfilePage = lazy(() => import("./pages/CompleteProfilePage"));
 const WelcomePage         = lazy(() => import("./pages/WelcomePage"));
@@ -76,6 +77,7 @@ const routes = {
   checkout:        CheckoutPage,
   profile:         ProfilePage,
   legalEditor:     LegalEditorPage,
+  admin:           AdminPage,
 };
 
 // ─── PageFallback — tela de loading enquanto a pagina lazy carrega ──────────

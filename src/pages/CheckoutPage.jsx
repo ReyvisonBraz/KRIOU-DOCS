@@ -28,7 +28,7 @@ const S = {
   container: {
     maxWidth: 560,
     margin: "0 auto",
-    padding: "0 24px 80px",
+    padding: "0 24px calc(80px + env(safe-area-inset-bottom, 0px))",
   },
 
   /* Cards */
@@ -577,22 +577,41 @@ const CheckoutPage = () => {
   };
 
   /* ─── PaymentOption Sub-Component ─── */
-  const PaymentOption = ({ method }) => {
+  const PaymentOption = ({ method, index = 0, total = 1 }) => {
     const isSelected = selectedPayment === method.id;
     const [hover, setHover] = useState(false);
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setSelectedPayment(method.id);
+        return;
+      }
+      if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
+        e.preventDefault();
+        const next = (index + 1) % total;
+        const nextEl = document.querySelector(`[data-payment-index="${next}"]`);
+        nextEl?.focus();
+        if (nextEl) setSelectedPayment(PAYMENT_METHODS[next].id);
+        return;
+      }
+      if (e.key === "ArrowUp" || (e.key === "Tab" && e.shiftKey)) {
+        e.preventDefault();
+        const prev = (index - 1 + total) % total;
+        const prevEl = document.querySelector(`[data-payment-index="${prev}"]`);
+        prevEl?.focus();
+        if (prevEl) setSelectedPayment(PAYMENT_METHODS[prev].id);
+      }
+    };
 
     return (
       <div
         role="radio"
         aria-checked={isSelected}
         tabIndex={0}
+        data-payment-index={index}
         onClick={() => setSelectedPayment(method.id)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setSelectedPayment(method.id);
-          }
-        }}
+        onKeyDown={handleKeyDown}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         style={{
@@ -905,9 +924,9 @@ const CheckoutPage = () => {
         <div style={S.paymentCard}>
           <div style={S.sectionLabel}>Forma de Pagamento</div>
 
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {PAYMENT_METHODS.map((method) => (
-              <PaymentOption key={method.id} method={method} />
+          <div role="radiogroup" aria-label="Forma de pagamento" aria-orientation="vertical" style={{ display: "flex", flexDirection: "column" }}>
+            {PAYMENT_METHODS.map((method, idx) => (
+              <PaymentOption key={method.id} method={method} index={idx} total={PAYMENT_METHODS.length} />
             ))}
           </div>
         </div>

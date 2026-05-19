@@ -329,7 +329,7 @@ const DashboardPage = () => {
                 border: "none",
                 cursor: "pointer",
                 color: "var(--text-muted)",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 fontWeight: 600,
                 fontSize: "0.8125rem",
                 transition: "all 0.2s ease",
@@ -355,7 +355,7 @@ const DashboardPage = () => {
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
               <p style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 fontSize: "0.6875rem",
                 fontWeight: 600,
                 letterSpacing: "0.1em",
@@ -366,7 +366,7 @@ const DashboardPage = () => {
                 Painel
               </p>
               <h1 style={{
-                fontFamily: "'Outfit', sans-serif",
+                fontFamily: "var(--font-display)",
                 fontSize: "clamp(1.625rem, 4vw, 2.25rem)",
                 fontWeight: 800,
                 color: "var(--text)",
@@ -380,7 +380,7 @@ const DashboardPage = () => {
                 </span>
               </h1>
               <p style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 fontSize: "0.875rem",
                 color: "var(--text-dim)",
                 margin: "8px 0 0",
@@ -412,7 +412,7 @@ const DashboardPage = () => {
                     flexShrink: 0,
                   }} />
                   <span style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: "0.75rem",
                     fontWeight: 600,
                     color: "var(--text-dim)",
@@ -438,7 +438,7 @@ const DashboardPage = () => {
                     flexShrink: 0,
                   }} />
                   <span style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: "0.75rem",
                     fontWeight: 600,
                     color: "var(--text-dim)",
@@ -493,13 +493,13 @@ const DashboardPage = () => {
               </div>
               <div style={{ minWidth: 0 }}>
                 <h3 style={{
-                  fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700,
+                  fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700,
                   color: "var(--text)", margin: "0 0 3px", letterSpacing: "-0.02em",
                 }}>
                   Precisa de um contrato personalizado?
                 </h3>
                 <p style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12,
+                  fontFamily: "var(--font-body)", fontSize: 12,
                   color: "var(--text-dim)", margin: 0, lineHeight: 1.5,
                 }}>
                   Receba um documento sob medida via WhatsApp.
@@ -509,7 +509,7 @@ const DashboardPage = () => {
             <div className="wa-cta-btn" style={{
               display: "flex", alignItems: "center", gap: 6, padding: "10px 16px",
               borderRadius: 12, background: "#25D366", color: "#fff",
-              fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700,
+              fontFamily: "var(--font-body)", fontWeight: 700,
               fontSize: 13, whiteSpace: "nowrap", flexShrink: 0, border: "none",
             }}>
               <Icon name="WhatsApp" className="w-4 h-4" />
@@ -553,7 +553,7 @@ const DashboardPage = () => {
                   borderRadius: 16,
                   padding: "14px 16px 14px 48px",
                   fontSize: "1rem", /* 16px previne zoom no iOS */
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 500,
                   color: "var(--text)",
                   outline: "none",
@@ -589,7 +589,7 @@ const DashboardPage = () => {
                   cursor: "pointer",
                   background: "var(--coral)",
                   color: "#fff",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 700,
                   fontSize: "0.875rem",
                   letterSpacing: "-0.005em",
@@ -627,7 +627,7 @@ const DashboardPage = () => {
                   cursor: "pointer",
                   background: "transparent",
                   color: "var(--gold)",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 700,
                   fontSize: "0.875rem",
                   letterSpacing: "-0.005em",
@@ -666,7 +666,7 @@ const DashboardPage = () => {
                   borderRadius: 100,
                   fontSize: 12,
                   fontWeight: 600,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   border: showArchived ? "1.5px solid var(--gold)" : "1px solid var(--border)",
                   background: showArchived ? "rgba(212,175,55,0.08)" : "transparent",
                   color: showArchived ? "var(--gold)" : "var(--text-muted)",
@@ -719,7 +719,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                     background: isActive ? "var(--coral)" : "var(--surface)",
                     color: isActive ? "#fff" : "var(--text-muted)",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontWeight: isActive ? 700 : 600,
                     fontSize: "0.8125rem",
                     letterSpacing: "-0.005em",
@@ -754,7 +754,7 @@ const DashboardPage = () => {
                     borderRadius: 8,
                     background: isActive ? "rgba(255,255,255,0.2)" : "var(--surface-3)",
                     color: isActive ? "#fff" : "var(--text-muted)",
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                     fontWeight: 800,
                     fontSize: "0.6875rem",
                     lineHeight: 1,
@@ -839,7 +839,7 @@ const DashboardPage = () => {
             </div>
 
             <h2 style={{
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: "1.25rem",
               fontWeight: 700,
               color: "var(--text)",
@@ -852,7 +852,7 @@ const DashboardPage = () => {
             </h2>
 
             <p style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontSize: "0.875rem",
               lineHeight: 1.7,
               color: "var(--text-muted)",
@@ -882,7 +882,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                     background: "var(--coral)",
                     color: "#fff",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontWeight: 700,
                     fontSize: "0.9375rem",
                     letterSpacing: "-0.005em",
@@ -920,7 +920,7 @@ const DashboardPage = () => {
                     cursor: "pointer",
                     background: "transparent",
                     color: "var(--gold)",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontWeight: 700,
                     fontSize: "0.9375rem",
                     letterSpacing: "-0.005em",
@@ -961,7 +961,7 @@ const DashboardPage = () => {
                   cursor: "pointer",
                   background: "var(--surface-2)",
                   color: "var(--text-dim)",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 600,
                   fontSize: "0.875rem",
                   letterSpacing: "-0.005em",

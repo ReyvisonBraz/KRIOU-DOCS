@@ -499,7 +499,7 @@ const EditorPage = () => {
         <AppStepper steps={STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
       </AppNavbar>
 
-      <div className="flex-1 w-full max-w-4xl mx-auto px-4 md:px-6 py-5 md:py-8" style={{ paddingBottom: "130px" }}>
+      <div className="flex-1 w-full max-w-4xl mx-auto px-4 md:px-6 py-5 md:py-8" style={{ paddingBottom: "calc(130px + env(safe-area-inset-bottom, 0px))" }}>
         <div className="animate-slide-right mb-8 md:mb-10 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
             <span className="text-coral text-sm font-bold font-display tracking-wider uppercase bg-coral/10 px-3 py-1 rounded-lg">

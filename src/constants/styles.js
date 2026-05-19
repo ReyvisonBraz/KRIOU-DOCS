@@ -22,7 +22,7 @@ export const LABEL_STYLE = {
 
 /** Error message style for validation feedback */
 export const ERROR_STYLE = {
-  color: "#ef4444",
+  color: "var(--danger, #EF4444)",
   fontSize: "0.78rem",
   marginTop: "5px",
   display: "flex",
@@ -34,10 +34,10 @@ export const ERROR_STYLE = {
 export const SECTION_TITLE_STYLE = {
   fontSize: "1rem",
   fontWeight: "700",
-  color: "var(--text-primary)",
+  color: "var(--text, #E8E8F0)",
   marginBottom: "16px",
   paddingBottom: "8px",
-  borderBottom: "2px solid var(--border-color, #2A2A4A)",
+  borderBottom: "2px solid var(--border, #2A2A4D)",
 };
 
 /** Base input style */
@@ -45,9 +45,9 @@ export const INPUT_BASE_STYLE = {
   width: "100%",
   padding: "10px 14px",
   borderRadius: "10px",
-  border: "1.5px solid var(--border-color, #2A2A4A)",
-  background: "var(--bg-secondary, #1E1E36)",
-  color: "var(--text-primary, #F0F0F5)",
+  border: "1.5px solid var(--border, #2A2A4D)",
+  background: "var(--surface-2, #212145)",
+  color: "var(--text, #E8E8F0)",
   fontSize: "0.95rem",
   transition: "border-color 0.2s",
   outline: "none",
@@ -56,31 +56,23 @@ export const INPUT_BASE_STYLE = {
 
 /** Card container style */
 export const CARD_STYLE = {
-  background: "var(--bg-secondary, #1E1E36)",
+  background: "var(--surface-2, #212145)",
   borderRadius: "16px",
-  border: "1px solid var(--border-color, #2A2A4A)",
+  border: "1px solid var(--border, #2A2A4D)",
   padding: "16px",
-};
-
-/** Glass card style (used in navbars and overlays) */
-export const GLASS_STYLE = {
-  background: "rgba(15, 15, 30, 0.85)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  borderBottom: "1px solid rgba(255,255,255,0.06)",
 };
 
 /** Page container style */
 export const PAGE_CONTAINER_STYLE = {
-  minHeight: "100vh",
-  background: "var(--bg-primary, #0F0F1E)",
-  color: "var(--text-primary, #F0F0F5)",
-  fontFamily: "var(--font-body, 'Plus Jakarta Sans', sans-serif)",
+  minHeight: "100dvh",
+  background: "var(--navy, #090914)",
+  color: "var(--text, #E8E8F0)",
+  fontFamily: "var(--font-body, var(--font-body))",
 };
 
 /** Hint text below a field */
 export const HINT_STYLE = {
   fontSize: "0.75rem",
-  color: "var(--text-muted, #8888A8)",
+  color: "var(--text-muted, #6B6B88)",
   marginTop: "4px",
 };

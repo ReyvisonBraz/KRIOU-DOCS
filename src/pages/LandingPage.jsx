@@ -130,28 +130,60 @@ const LandingPage = () => {
             </p>
           </div>
 
+          <style>{`
+            .feat-wide { grid-column: span 2; }
+            .feat-wide .feat-inner { flex-direction: row !important; align-items: center !important; gap: 20px !important; }
+            .feat-wide .feat-icon { margin-bottom: 0 !important; flex-shrink: 0; }
+            .feat-compact { align-items: center !important; gap: 16px !important; flex-direction: row !important; }
+            .feat-compact .feat-icon { margin-bottom: 0 !important; flex-shrink: 0; width: 40px !important; height: 40px !important; }
+            .feat-compact h3 { margin-bottom: 0 !important; }
+            .feat-compact p { display: none; }
+            @media (max-width: 640px) {
+              .feat-wide { grid-column: span 1 !important; }
+              .feat-wide .feat-inner { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+            }
+          `}</style>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
-              { icon: "FileText", label: "Curr&iacute;culos", desc: "5 modelos profissionais com wizard de 7 etapas e preview em tempo real.", color: "var(--coral)" },
-              { icon: "Shield", label: "Documentos jur&iacute;dicos", desc: "Contratos, procura&ccedil;&otilde;es e declara&ccedil;&otilde;es com estrutura jur&iacute;dica validada.", color: "var(--teal)" },
-              { icon: "Zap", label: "Preenchimento guiado", desc: "Passo a passo inteligente que qualquer pessoa consegue usar.", color: "var(--gold)" },
-              { icon: "Download", label: "PDF instant&acirc;neo", desc: "Gera&ccedil;&atilde;o e download em segundos. Pronto para imprimir ou enviar.", color: "var(--coral)" },
-              { icon: "MessageCircle", label: "Entrega via WhatsApp", desc: "Receba o documento finalizado direto no seu WhatsApp sem complica&ccedil;&atilde;o.", color: "var(--success)" },
+              { icon: "FileText", label: "Currículos", desc: "5 modelos profissionais com wizard de 7 etapas e preview em tempo real.", color: "var(--coral)", wide: true },
+              { icon: "Shield", label: "Documentos jurídicos", desc: "Contratos, procurações e declarações com estrutura jurídica validada.", color: "var(--teal)" },
+              { icon: "Zap", label: "Preenchimento guiado", desc: "Passo a passo inteligente que qualquer pessoa consegue usar.", color: "var(--gold)", compact: true },
+              { icon: "Download", label: "PDF instantâneo", desc: "Geração e download em segundos. Pronto para imprimir ou enviar.", color: "var(--coral)" },
+              { icon: "MessageCircle", label: "Entrega via WhatsApp", desc: "Receba o documento finalizado direto no seu WhatsApp sem complicação.", color: "var(--success)", compact: true },
               { icon: "Edit", label: "Edite depois", desc: "Atualize seus documentos a qualquer momento sem precisar refazer.", color: "var(--teal)" },
             ].map((f, i) => (
               <div
                 key={i}
-                className="surface-card p-6 md:p-7 surface-hover animate-fade-up"
-                style={{ animationDelay: `${i * 0.06}s` }}
+                className={`surface-card surface-hover animate-fade-up ${f.wide ? "feat-wide" : ""}`}
+                style={{ padding: f.compact ? "14px 18px" : "24px 22px", animationDelay: `${i * 0.06}s` }}
               >
-                <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
-                  style={{ backgroundColor: `${f.color}14` }}
-                >
-                  <Icon name={f.icon} className="w-5 h-5" style={{ color: f.color }} />
+                <div className={`feat-inner ${f.compact ? "feat-compact" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
+                  {!f.compact && (
+                    <div className="feat-icon" style={{
+                      width: f.wide ? 48 : 44, height: f.wide ? 48 : 44,
+                      borderRadius: f.wide ? 14 : 12, marginBottom: f.wide ? 0 : 16, marginRight: f.wide ? 16 : 0,
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      backgroundColor: `${f.color}14`,
+                    }}>
+                      <Icon name={f.icon} className="w-5 h-5" style={{ color: f.color }} />
+                    </div>
+                  )}
+                  {f.compact && (
+                    <div className="feat-icon" style={{
+                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      backgroundColor: `${f.color}14`,
+                    }}>
+                      <Icon name={f.icon} className="w-4 h-4" style={{ color: f.color }} />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-display font-bold text-text" style={{ fontSize: f.wide ? 17 : 15, marginBottom: f.compact ? 0 : 6 }}>
+                      {f.label}
+                    </h3>
+                    <p className="text-sm text-text-muted leading-relaxed" style={{ margin: 0 }}>{f.desc}</p>
+                  </div>
                 </div>
-                <h3 className="font-display text-lg font-bold text-text mb-2">{f.label}</h3>
-                <p className="text-sm text-text-muted leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>

@@ -14,7 +14,7 @@ const SidebarSection = ({ title, children }) => (
       letterSpacing: "1.6px",
       color: "var(--text-muted)",
       marginBottom: 8,
-      fontFamily: "'Outfit', sans-serif",
+      fontFamily: "var(--font-display)",
     }}>
       {title}
     </div>
@@ -38,7 +38,7 @@ const MainSectionHeader = ({ title }) => (
       letterSpacing: "1.8px",
       color: "var(--coral)",
       marginBottom: 6,
-      fontFamily: "'Outfit', sans-serif",
+      fontFamily: "var(--font-display)",
     }}>
       {title}
     </div>
@@ -138,7 +138,37 @@ const PreviewPage = () => {
         }
       />
 
+      {/* PDF generating overlay */}
+      {isGenerating && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(9,9,20,0.6)",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          gap: 16,
+          animation: "modalFadeIn 0.15s ease",
+        }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: "50%",
+            border: "3px solid var(--surface-3)",
+            borderTopColor: "var(--coral)",
+            animation: "spin 0.8s linear infinite",
+          }} />
+          <p style={{
+            color: "var(--text)", fontSize: 15, fontWeight: 600,
+            fontFamily: "var(--font-body)",
+          }}>
+            Gerando PDF...
+          </p>
+        </div>
+      )}
+
       {/* Mobile responsive styles */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <style>{`
         @media (max-width: 680px) {
           .preview-card-inner { flex-direction: column !important; }
@@ -180,7 +210,7 @@ const PreviewPage = () => {
               fontWeight: 800,
               color: "var(--text)",
               margin: "0 0 10px 0",
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               letterSpacing: "-0.02em",
             }}>
               {documentType?.name || "Documento Jurídico"}
@@ -191,7 +221,7 @@ const PreviewPage = () => {
               color: "var(--text-dim)",
               lineHeight: 1.8,
               margin: "0 auto",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               maxWidth: 420,
             }}>
               Seu documento jurídico será gerado em formato profissional com estrutura editorial completa,
@@ -210,7 +240,7 @@ const PreviewPage = () => {
                 color: "var(--teal)",
                 margin: 0,
                 fontWeight: 600,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 letterSpacing: "-0.005em",
               }}>
                 Clique em "PDF" para baixar uma prévia ou "Finalizar" para concluir.
@@ -260,7 +290,7 @@ const PreviewPage = () => {
                     color: "#fff",
                     fontSize: 22,
                     fontWeight: 700,
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                   }}>
                     {getInitials(formData.nome)}
                   </span>
@@ -273,7 +303,7 @@ const PreviewPage = () => {
                     fontWeight: 800,
                     color: "var(--text)",
                     margin: "0 0 6px 0",
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                     letterSpacing: "-0.015em",
                     lineHeight: 1.3,
                   }}>
@@ -285,7 +315,7 @@ const PreviewPage = () => {
                     margin: 0,
                     textTransform: "uppercase",
                     letterSpacing: "1.2px",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontWeight: 600,
                   }}>
                     Currículo Profissional
@@ -311,7 +341,7 @@ const PreviewPage = () => {
                         color: "var(--coral)", marginTop: 2, flexShrink: 0, opacity: 0.7,
                       }} />
                       <span style={{
-                        wordBreak: "break-all", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        wordBreak: "break-all", fontFamily: "var(--font-body)",
                       }}>
                         {formData.email}
                       </span>
@@ -325,7 +355,7 @@ const PreviewPage = () => {
                       <Icon name="Phone" className="w-3.5 h-3.5" style={{
                         color: "var(--coral)", marginTop: 2, flexShrink: 0, opacity: 0.7,
                       }} />
-                      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span style={{ fontFamily: "var(--font-body)" }}>
                         {formData.telefone}
                       </span>
                     </div>
@@ -338,7 +368,7 @@ const PreviewPage = () => {
                       <Icon name="MapPin" className="w-3.5 h-3.5" style={{
                         color: "var(--coral)", marginTop: 2, flexShrink: 0, opacity: 0.7,
                       }} />
-                      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span style={{ fontFamily: "var(--font-body)" }}>
                         {formData.cidade}
                       </span>
                     </div>
@@ -352,7 +382,7 @@ const PreviewPage = () => {
                         color: "var(--coral)", marginTop: 2, flexShrink: 0, opacity: 0.7,
                       }} />
                       <span style={{
-                        wordBreak: "break-all", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        wordBreak: "break-all", fontFamily: "var(--font-body)",
                       }}>
                         {formData.linkedin}
                       </span>
@@ -367,7 +397,7 @@ const PreviewPage = () => {
                       {formData.habilidades.slice(0, 8).map((skill) => (
                         <div key={skill} style={{
                           fontSize: 12, color: "var(--text-dim)", paddingLeft: 10,
-                          position: "relative", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          position: "relative", fontFamily: "var(--font-body)",
                         }}>
                           <span style={{
                             position: "absolute",
@@ -385,7 +415,7 @@ const PreviewPage = () => {
                       {formData.habilidades.length > 8 && (
                         <span style={{
                           fontSize: 11, color: "var(--text-muted)", marginTop: 2,
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontFamily: "var(--font-body)",
                         }}>
                           +{formData.habilidades.length - 8} mais
                         </span>
@@ -401,7 +431,7 @@ const PreviewPage = () => {
                       {formData.idiomas.filter((i) => i.idioma).map((idioma, idx) => (
                         <div key={idx} style={{
                           fontSize: 12, color: "var(--text-dim)",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontFamily: "var(--font-body)",
                         }}>
                           <strong style={{ color: "var(--text)" }}>{idioma.idioma}</strong>
                           <span style={{ color: "var(--text-muted)", fontSize: 11 }}>
@@ -422,7 +452,7 @@ const PreviewPage = () => {
                     <MainSectionHeader title="Resumo Profissional" />
                     <p style={{
                       fontSize: 14, lineHeight: 1.8, color: "var(--text-dim)",
-                      margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      margin: 0, fontFamily: "var(--font-body)",
                     }}>
                       {formData.objetivo}
                     </p>
@@ -442,27 +472,27 @@ const PreviewPage = () => {
                           }}>
                             <strong style={{
                               fontSize: 14, color: "var(--text)",
-                              fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                              fontFamily: "var(--font-display)", fontWeight: 700,
                             }}>
                               {exp.cargo || "Cargo"}
                             </strong>
                             <span style={{
                               fontSize: 11, color: "var(--text-muted)", fontWeight: 500,
-                              fontFamily: "'Plus Jakarta Sans', sans-serif",
+                              fontFamily: "var(--font-body)",
                             }}>
                               {exp.periodo}
                             </span>
                           </div>
                           <div style={{
                             fontSize: 13, color: "var(--teal)", fontWeight: 600,
-                            marginBottom: 4, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            marginBottom: 4, fontFamily: "var(--font-body)",
                           }}>
                             {exp.empresa}
                           </div>
                           {exp.descricao && (
                             <p style={{
                               fontSize: 13, color: "var(--text-dim)", lineHeight: 1.7,
-                              margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                              margin: 0, fontFamily: "var(--font-body)",
                             }}>
                               {exp.descricao}
                             </p>
@@ -476,7 +506,7 @@ const PreviewPage = () => {
                     <MainSectionHeader title="Experiência Profissional" />
                     <p style={{
                       fontSize: 13, color: "var(--text-faint)", fontStyle: "italic",
-                      margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      margin: 0, fontFamily: "var(--font-body)",
                     }}>
                       Nenhuma experiência profissional adicionada
                     </p>
@@ -496,20 +526,20 @@ const PreviewPage = () => {
                           }}>
                             <strong style={{
                               fontSize: 14, color: "var(--text)",
-                              fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                              fontFamily: "var(--font-display)", fontWeight: 700,
                             }}>
                               {edu.curso || "Curso"}
                             </strong>
                             <span style={{
                               fontSize: 11, color: "var(--text-muted)", fontWeight: 500,
-                              fontFamily: "'Plus Jakarta Sans', sans-serif",
+                              fontFamily: "var(--font-body)",
                             }}>
                               {edu.periodo}
                             </span>
                           </div>
                           <p style={{
                             fontSize: 13, color: "var(--text-dim)", margin: 0,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontFamily: "var(--font-body)",
                           }}>
                             {edu.instituicao}{edu.status ? ` — ${edu.status}` : ""}
                           </p>
@@ -522,7 +552,7 @@ const PreviewPage = () => {
                     <MainSectionHeader title="Formação Acadêmica" />
                     <p style={{
                       fontSize: 13, color: "var(--text-faint)", fontStyle: "italic",
-                      margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      margin: 0, fontFamily: "var(--font-body)",
                     }}>
                       Nenhuma formação acadêmica adicionada
                     </p>
@@ -545,7 +575,7 @@ const PreviewPage = () => {
                           }} />
                           <span style={{
                             fontSize: 13, color: "var(--text-dim)", lineHeight: 1.7,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontFamily: "var(--font-body)",
                           }}>
                             {item.trim()}
                           </span>
@@ -569,7 +599,7 @@ const PreviewPage = () => {
                 color: "var(--text-muted)",
                 fontWeight: 600,
                 letterSpacing: "0.1em",
-                fontFamily: "'Outfit', sans-serif",
+                fontFamily: "var(--font-display)",
               }}>
                 KRIOU DOCS
               </span>

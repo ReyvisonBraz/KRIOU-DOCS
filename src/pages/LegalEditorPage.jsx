@@ -38,12 +38,12 @@ const PARTY_KEYWORDS = [
 const SECTION_COLORS = [
   { bg: "rgba(244,63,94,0.10)", border: "rgba(244,63,94,0.25)", accent: "var(--coral)", iconBg: "rgba(244,63,94,0.12)" },
   { bg: "rgba(20,184,166,0.10)", border: "rgba(20,184,166,0.25)", accent: "var(--teal)", iconBg: "rgba(20,184,166,0.12)" },
-  { bg: "rgba(59,130,246,0.10)", border: "rgba(59,130,246,0.25)", accent: "#3B82F6", iconBg: "rgba(59,130,246,0.12)" },
-  { bg: "rgba(168,85,247,0.10)", border: "rgba(168,85,247,0.25)", accent: "#A855F7", iconBg: "rgba(168,85,247,0.12)" },
-  { bg: "rgba(245,158,11,0.10)", border: "rgba(245,158,11,0.25)", accent: "#F59E0B", iconBg: "rgba(245,158,11,0.12)" },
-  { bg: "rgba(34,197,94,0.10)", border: "rgba(34,197,94,0.25)", accent: "#22C55E", iconBg: "rgba(34,197,94,0.12)" },
-  { bg: "rgba(236,72,153,0.10)", border: "rgba(236,72,153,0.25)", accent: "#EC4899", iconBg: "rgba(236,72,153,0.12)" },
-  { bg: "rgba(14,165,233,0.10)", border: "rgba(14,165,233,0.25)", accent: "#0EA5E9", iconBg: "rgba(14,165,233,0.12)" },
+  { bg: "rgba(244,63,94,0.10)", border: "rgba(244,63,94,0.25)", accent: "var(--coral)", iconBg: "rgba(244,63,94,0.12)" },
+  { bg: "rgba(244,63,94,0.10)", border: "rgba(244,63,94,0.25)", accent: "var(--coral)", iconBg: "rgba(244,63,94,0.12)" },
+  { bg: "rgba(212,175,55,0.10)", border: "rgba(212,175,55,0.25)", accent: "var(--gold)", iconBg: "rgba(212,175,55,0.12)" },
+  { bg: "rgba(212,175,55,0.10)", border: "rgba(212,175,55,0.25)", accent: "var(--gold)", iconBg: "rgba(212,175,55,0.12)" },
+  { bg: "rgba(20,184,166,0.10)", border: "rgba(20,184,166,0.25)", accent: "var(--teal)", iconBg: "rgba(20,184,166,0.12)" },
+  { bg: "rgba(20,184,166,0.10)", border: "rgba(20,184,166,0.25)", accent: "var(--teal)", iconBg: "rgba(20,184,166,0.12)" },
 ];
 
 const isPartySection = (id) => PARTY_KEYWORDS.some((kw) => id.includes(kw));
@@ -833,14 +833,14 @@ const LegalEditorPage = () => {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--navy)", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--navy)" }}>
       <style>{`
         @media (max-width: 640px) {
           .le-step-label { display: none !important; }
           .le-step-count { display: none !important; }
           .le-step-indicator { padding: 8px 10px !important; gap: 4px !important; }
           .le-step-indicator button { padding: 4px 10px !important; min-width: 36px !important; min-height: 32px !important; font-size: 10px !important; }
-          .le-content-pad { padding: 16px 12px 100px !important; }
+          .le-content-pad { padding: 16px 12px calc(100px + env(safe-area-inset-bottom, 0px)) !important; }
           .le-section-card { padding: 14px !important; }
           .le-title-mobile { font-size: 20px !important; }
           .le-desc-mobile { font-size: 12px !important; }
@@ -879,7 +879,7 @@ const LegalEditorPage = () => {
 
       {!isPreviewStep && currentSections.length > 0 && renderStepIndicator()}
 
-      <div ref={contentRef} className="le-content-pad" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px 120px", width: "100%", overflowY: "auto" }}>
+      <div ref={contentRef} className="le-content-pad" style={{ flex: 1, maxWidth: 920, margin: "0 auto", padding: "24px 24px calc(120px + env(safe-area-inset-bottom, 0px))", width: "100%", overflowY: "auto" }}>
         {renderStepContent()}
       </div>
 

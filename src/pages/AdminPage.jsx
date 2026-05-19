@@ -62,11 +62,11 @@ const AdminPage = () => {
   };
 
   const s = {
-    page: { minHeight: "100vh", background: "var(--navy)", color: "var(--text)", fontFamily: "'Plus Jakarta Sans', sans-serif" },
+    page: { minHeight: "100vh", background: "var(--navy)", color: "var(--text)", fontFamily: "var(--font-body)" },
     container: { maxWidth: 900, margin: "0 auto", padding: "24px 20px" },
     card: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 20, marginBottom: 16 },
     statCard: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px 20px", textAlign: "center" },
-    statValue: { fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 900, color: "var(--coral)", lineHeight: 1 },
+    statValue: { fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 900, color: "var(--coral)", lineHeight: 1 },
     statLabel: { fontSize: 12, color: "var(--text-muted)", marginTop: 8 },
     table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
     th: { textAlign: "left", padding: "10px 12px", color: "var(--text-muted)", fontWeight: 600, borderBottom: "1px solid var(--border)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" },
@@ -74,7 +74,7 @@ const AdminPage = () => {
     pill: { display: "inline-flex", padding: "2px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600 },
     tabBtn: (active) => ({
       padding: "8px 18px", borderRadius: 10, border: "none", cursor: "pointer",
-      fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 600,
+      fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600,
       background: active ? "var(--coral)" : "var(--surface-2)",
       color: active ? "#fff" : "var(--text-muted)",
       transition: "all 0.2s ease",
@@ -115,7 +115,7 @@ const AdminPage = () => {
               <Icon name="Shield" className="w-5 h-5" style={{ color: "var(--coral)" }} />
             </div>
             <div>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, margin: 0 }}>Painel Administrativo</h1>
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 800, margin: 0 }}>Painel Administrativo</h1>
               <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Bem-vindo, {profile?.nome || "Admin"}</p>
             </div>
           </div>
@@ -130,24 +130,21 @@ const AdminPage = () => {
 
           {tab === "overview" && stats && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
-                <div style={s.statCard}>
-                  <div style={s.statValue}>{stats.totalUsers}</div>
-                  <div style={s.statLabel}>Usuários</div>
-                </div>
-                <div style={s.statCard}>
-                  <div style={{ ...s.statValue, color: "var(--teal)" }}>{stats.totalDocs}</div>
-                  <div style={s.statLabel}>Documentos</div>
-                </div>
-                <div style={s.statCard}>
-                  <div style={{ ...s.statValue, color: "var(--gold)" }}>{stats.finalizedDocs}</div>
-                  <div style={s.statLabel}>Finalizados</div>
-                </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
+                  <strong style={{ color: "var(--coral)" }}>{stats.totalUsers}</strong> usuário{stats.totalUsers !== 1 ? "s" : ""}
+                </span>
+                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
+                  <strong style={{ color: "var(--teal)" }}>{stats.totalDocs}</strong> documento{stats.totalDocs !== 1 ? "s" : ""}
+                </span>
+                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
+                  <strong style={{ color: "var(--gold)" }}>{stats.finalizedDocs}</strong> finalizado{stats.finalizedDocs !== 1 ? "s" : ""}
+                </span>
               </div>
 
               {stats.docsByType && Object.keys(stats.docsByType).length > 0 && (
                 <div style={s.card}>
-                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>Documentos por Tipo</h3>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>Documentos por Tipo</h3>
                   {Object.entries(stats.docsByType).map(([type, count]) => (
                     <div key={type} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
                       <span style={{ color: "var(--text-dim)" }}>{type}</span>
@@ -161,7 +158,7 @@ const AdminPage = () => {
 
           {tab === "users" && (
             <div style={s.card}>
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, margin: "0 0 16px" }}>
+              <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 16px" }}>
                 Usuários ({users.length})
               </h3>
               {users.length === 0 ? (
@@ -218,7 +215,7 @@ const AdminPage = () => {
               {selectedUser && (
                 <div style={{ marginTop: 24, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, margin: 0 }}>
+                    <h4 style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 700, margin: 0 }}>
                       Documentos do Usuário ({userDocs.length})
                     </h4>
                     <button onClick={() => { setSelectedUser(null); setUserDocs([]); }}

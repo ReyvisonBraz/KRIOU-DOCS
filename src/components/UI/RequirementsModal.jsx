@@ -89,7 +89,7 @@ const RequirementItem = ({ label, color }) => (
       style={{
         fontSize: 13,
         color: "var(--text)",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontFamily: "var(--font-body)",
         fontWeight: 500,
         lineHeight: 1.4,
       }}
@@ -189,7 +189,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
       >
         {/* Print header */}
         <div style={{ textAlign: "center", marginBottom: "6mm", paddingBottom: "4mm", borderBottom: "2px solid #1a1a1a" }}>
-          <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "18pt", color: "#1a1a1a", letterSpacing: "0.06em", marginBottom: "1mm" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: "18pt", color: "#1a1a1a", letterSpacing: "0.06em", marginBottom: "1mm" }}>
             KRIOU DOCS
           </div>
           <div style={{ fontSize: "10pt", fontWeight: 600, color: "#555" }}>
@@ -649,7 +649,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               <h2
                 className="print-doc-title"
                 style={{
-                  fontFamily: "'Outfit', sans-serif",
+                  fontFamily: "var(--font-display)",
                   fontWeight: 900,
                   fontSize: 20,
                   color: "var(--text)",
@@ -667,7 +667,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                   fontSize: 13,
                   color: "var(--text-muted)",
                   margin: 0,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                 }}
               >
                 {variant ? `${variant.icon || ""} ${variant.name}` : "Verifique os requisitos"}
@@ -728,7 +728,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     </div>
                     <span
                       style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontFamily: "var(--font-body)",
                         fontWeight: 800,
                         fontSize: 13,
                         color: isActive ? "var(--text)" : "var(--text-dim)",
@@ -741,7 +741,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     style={{
                       fontSize: 11,
                       color: isActive ? "var(--text-muted)" : "var(--text-faint)",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "var(--font-body)",
                       lineHeight: 1.3,
                     }}
                   >
@@ -786,7 +786,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               )}
               <span
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 700,
                   fontSize: 13,
                   color: "var(--text)",
@@ -804,7 +804,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 fontWeight: 800,
                 padding: "4px 10px",
                 borderRadius: "100px",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 letterSpacing: "0.04em",
                 textTransform: "uppercase",
                 background: `${active.color}20`,
@@ -831,7 +831,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 <Icon name="Wand2" className="w-5 h-5" style={{ color: "var(--teal)" }} />
                 <span
                   style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontWeight: 700,
                     fontSize: 13,
                     color: "var(--teal)",
@@ -846,7 +846,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                   color: "var(--text)",
                   lineHeight: 1.6,
                   margin: 0,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                 }}
               >
                 {spec.whenUse}
@@ -878,7 +878,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontWeight: 800,
                     padding: "3px 8px",
                     borderRadius: "100px",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
                     background: "rgba(244,63,94,0.18)",
@@ -887,7 +887,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 >
                   OBRIGATÓRIO
                 </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>
                   Não funciona sem estes
                 </span>
               </div>
@@ -923,7 +923,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontWeight: 800,
                     padding: "3px 8px",
                     borderRadius: "100px",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
                     background: "rgba(20,184,166,0.16)",
@@ -932,7 +932,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 >
                   OPCIONAL
                 </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>
                   {selectedLevel === "completo"
                     ? "Recomendado para máxima segurança"
                     : "Importantes para proteção completa"}
@@ -970,7 +970,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontWeight: 800,
                     padding: "3px 8px",
                     borderRadius: "100px",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
                     background: "rgba(212,175,55,0.16)",
@@ -979,7 +979,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 >
                   EXTRAS
                 </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>
                   Detalhes para documentos premium
                 </span>
               </div>
@@ -1007,7 +1007,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 <Icon name="FileText" className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
                 <span
                   style={{
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                     fontWeight: 700,
                     fontSize: 14,
                     color: "var(--text)",
@@ -1027,7 +1027,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                       fontSize: 12,
                       fontWeight: 500,
                       color: "var(--text-dim)",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "var(--font-body)",
                       border: "1px solid var(--border)",
                     }}
                   >
@@ -1054,7 +1054,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 <Icon name="Wand2" className="w-5 h-5" style={{ color: "var(--success)" }} />
                 <span
                   style={{
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                     fontWeight: 700,
                     fontSize: 14,
                     color: "var(--success)",
@@ -1073,7 +1073,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                       gap: 10,
                       fontSize: 13,
                       color: "var(--text)",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "var(--font-body)",
                       lineHeight: 1.5,
                     }}
                   >
@@ -1113,7 +1113,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               padding: "14px 20px",
               borderRadius: RAD,
               cursor: "pointer",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontWeight: 600,
               fontSize: 14,
               letterSpacing: "0.01em",
@@ -1147,7 +1147,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               padding: "14px 20px",
               borderRadius: RAD,
               cursor: "pointer",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontWeight: 700,
               fontSize: 14,
               letterSpacing: "0.01em",

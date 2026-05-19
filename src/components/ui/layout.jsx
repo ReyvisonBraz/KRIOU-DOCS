@@ -83,7 +83,7 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
       {/* Título — Outfit bold, tracking ajustado */}
       <span
         style={{
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: "var(--font-display)",
           fontWeight: 700,
           fontSize: "0.9375rem",
           letterSpacing: "-0.01em",
@@ -191,7 +191,7 @@ export const AppStepper = ({
               justifyContent: "center",
               fontSize: "0.75rem",
               fontWeight: 700,
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               background: isActive
                 ? "var(--coral)"
                 : isCompleted
@@ -218,7 +218,7 @@ export const AppStepper = ({
             style={{
               fontSize: "0.6875rem",
               fontWeight: isActive ? 600 : 500,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               letterSpacing: "-0.005em",
               color: isActive
                 ? "var(--coral)"
@@ -279,7 +279,7 @@ export const BottomNavigation = ({
     alignItems: "center",
     gap: 8,
     borderRadius: 14,
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: "var(--font-body)",
     fontWeight: 600,
     fontSize: "0.8125rem",
     letterSpacing: "-0.01em",
@@ -407,7 +407,7 @@ export const BottomNavigation = ({
             padding: "14px 24px",
             gap: 10,
             border: "none",
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: "var(--font-body)",
             fontWeight: 700,
             fontSize: "0.9375rem",
             letterSpacing: "-0.005em",

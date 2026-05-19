@@ -132,7 +132,7 @@ const ProfilePage = () => {
         }
       />
 
-      <div style={{ maxWidth: 600, margin: "32px auto", padding: "0 24px" }}>
+      <div style={{ maxWidth: 600, margin: "32px auto", padding: "0 24px calc(32px + env(safe-area-inset-bottom, 0px))" }}>
 
         {/* ─── Avatar Section ─── */}
         <div className="animate-fadeUp" style={{ textAlign: "center", marginBottom: 28 }}>
@@ -149,7 +149,7 @@ const ProfilePage = () => {
               margin: "0 auto 18px",
               fontSize: 40,
               fontWeight: 900,
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               color: "#fff",
               letterSpacing: "0.02em",
               boxShadow: "0 8px 36px rgba(244,63,94,0.30), 0 2px 8px rgba(168,85,247,0.25)",
@@ -160,7 +160,7 @@ const ProfilePage = () => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 4 }}>
             <h1
               style={{
-                fontFamily: "'Outfit', sans-serif",
+                fontFamily: "var(--font-display)",
                 fontSize: 24,
                 fontWeight: 800,
                 letterSpacing: "-0.015em",
@@ -198,7 +198,7 @@ const ProfilePage = () => {
           </div>
           {displayEmail && (
             <p style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontSize: 14,
               color: "var(--text-muted)",
               letterSpacing: "-0.005em",
@@ -208,85 +208,24 @@ const ProfilePage = () => {
           )}
         </div>
 
-        {/* ─── Stats ─── */}
+        {/* ─── Stats (editorial) ─── */}
         <Card
           className="animate-fadeUp"
-          style={{
-            marginBottom: 16,
-            padding: 0,
-            overflow: "hidden",
-          }}
+          style={{ marginBottom: 16, padding: "18px 20px" }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-            }}
-          >
-            <div
-              style={{
-                textAlign: "center",
-                padding: "22px 16px",
-                borderRight: "1px solid var(--border)",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontSize: 34,
-                  fontWeight: 900,
-                  color: "var(--coral)",
-                  letterSpacing: "-0.025em",
-                  lineHeight: 1,
-                  marginBottom: 6,
-                }}
-              >
-                {docCount}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.005em",
-                }}
-              >
-                Documentos
-              </div>
-            </div>
-            <div
-              style={{
-                textAlign: "center",
-                padding: "22px 16px",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontSize: 34,
-                  fontWeight: 900,
-                  color: "var(--teal)",
-                  letterSpacing: "-0.025em",
-                  lineHeight: 1,
-                  marginBottom: 6,
-                }}
-              >
-                {finalizedCount}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.005em",
-                }}
-              >
-                Finalizados
-              </div>
-            </div>
-          </div>
+          <p style={{
+            fontFamily: "var(--font-body)",
+            fontSize: 14, color: "var(--text-dim)", lineHeight: 1.6, margin: 0,
+          }}>
+            Você criou{" "}
+            <strong style={{ color: "var(--text)" }}>{docCount} documento{docCount !== 1 ? "s" : ""}</strong>
+            {finalizedCount > 0 && (
+              <>, dos quais <strong style={{ color: "var(--teal)" }}>{finalizedCount} estão finalizado{finalizedCount !== 1 ? "s" : ""}</strong></>
+            )}
+            {docCount > 0 && finalizedCount < docCount && (
+              <> e <strong style={{ color: "var(--coral)" }}>{docCount - finalizedCount} em rascunho</strong></>
+            )}.
+          </p>
         </Card>
 
         {/* ─── Account Info ─── */}
@@ -296,7 +235,7 @@ const ProfilePage = () => {
         >
           <h3
             style={{
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: 15,
               fontWeight: 700,
               letterSpacing: "-0.01em",
@@ -343,7 +282,7 @@ const ProfilePage = () => {
                       border: "1.5px solid var(--border)",
                       background: "transparent",
                       color: "var(--text-dim)",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "var(--font-body)",
                       fontSize: 14,
                       fontWeight: 600,
                       cursor: "pointer",
@@ -366,7 +305,7 @@ const ProfilePage = () => {
                       border: "none",
                       background: saving ? "var(--text-muted)" : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
                       color: "#fff",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "var(--font-body)",
                       fontSize: 14,
                       fontWeight: 700,
                       cursor: saving ? "not-allowed" : "pointer",
@@ -398,7 +337,7 @@ const ProfilePage = () => {
         >
           <h3
             style={{
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: 15,
               fontWeight: 700,
               letterSpacing: "-0.01em",
@@ -413,7 +352,7 @@ const ProfilePage = () => {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 <span
                   style={{
-                    fontFamily: "'Outfit', sans-serif",
+                    fontFamily: "var(--font-display)",
                     fontSize: 18,
                     fontWeight: 700,
                     color: "var(--text)",
@@ -430,7 +369,7 @@ const ProfilePage = () => {
                     borderRadius: 9999,
                     background: "rgba(244,63,94,0.12)",
                     color: "var(--coral)",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: 11,
                     fontWeight: 600,
                     letterSpacing: "0.01em",
@@ -442,7 +381,7 @@ const ProfilePage = () => {
               </div>
               <div
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: 13,
                   color: "var(--text-muted)",
                 }}
@@ -459,7 +398,7 @@ const ProfilePage = () => {
                 border: "1.5px solid rgba(212,175,55,0.25)",
                 background: "rgba(212,175,55,0.06)",
                 color: "var(--gold)",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-body)",
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
@@ -489,7 +428,7 @@ const ProfilePage = () => {
         >
           <h3
             style={{
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: 15,
               fontWeight: 700,
               letterSpacing: "-0.01em",
@@ -517,7 +456,7 @@ const ProfilePage = () => {
             border: "1.5px solid rgba(255,255,255,0.10)",
             background: "var(--surface-2)",
             color: "var(--text-dim)",
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: "var(--font-body)",
             fontSize: 15,
             fontWeight: 600,
             letterSpacing: "-0.005em",
@@ -558,7 +497,7 @@ const ProfilePage = () => {
               border: "none",
               cursor: "pointer",
               color: "var(--text-muted)",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontSize: 12,
               fontWeight: 500,
               display: "block",
@@ -600,7 +539,7 @@ const ProfilePage = () => {
               </div>
               <p
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: 13,
                   lineHeight: 1.6,
                   color: "var(--text-dim)",
@@ -622,7 +561,7 @@ const ProfilePage = () => {
                   border: "1.5px solid var(--border)",
                   background: "transparent",
                   color: "var(--text-dim)",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
@@ -651,7 +590,7 @@ const ProfilePage = () => {
                   border: "none",
                   background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
                   color: "#fff",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: 14,
                   fontWeight: 700,
                   cursor: "pointer",
@@ -713,7 +652,7 @@ const InfoRow = ({ icon, label, value, last }) => (
     <div style={{ minWidth: 0 }}>
       <div
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: 11,
           fontWeight: 500,
           color: "var(--text-muted)",
@@ -725,7 +664,7 @@ const InfoRow = ({ icon, label, value, last }) => (
       </div>
       <div
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: 14,
           fontWeight: 600,
           color: "var(--text)",
@@ -769,7 +708,7 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
     <div style={{ minWidth: 0, flex: 1 }}>
       <div
         style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: 11,
           fontWeight: 500,
           color: "var(--text-muted)",
@@ -800,7 +739,7 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
           border: "1.5px solid var(--border)",
           background: "var(--surface)",
           color: "var(--text)",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: 14,
           fontWeight: 600,
           outline: "none",
@@ -852,7 +791,7 @@ const SettingsRow = ({ icon, label, last }) => (
     <span
       style={{
         flex: 1,
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontFamily: "var(--font-body)",
         fontSize: 14,
         fontWeight: 500,
         color: "var(--text)",

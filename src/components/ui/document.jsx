@@ -231,7 +231,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
           <>
             <p
               style={{
-                fontFamily: "'Outfit', sans-serif",
+                fontFamily: "var(--font-display)",
                 fontWeight: 800,
                 fontSize: 16,
                 lineHeight: 1.35,
@@ -274,7 +274,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
         ) : (
           <h3
             style={{
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 16,
               lineHeight: 1.35,

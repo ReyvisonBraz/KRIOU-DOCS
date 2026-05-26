@@ -34,6 +34,7 @@ const FONT_SERIF = "times";
 const FONT_SANS  = "helvetica";
 const LEAD       = 4.2;
 const LEAD_TIGHT = 3.8;
+const SIGNATURE_SLOT_H = 27;
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
 const C_INK       = [10, 10, 15];
@@ -134,24 +135,20 @@ const drawHeader = (doc, title) => {
   doc.line(PAGE_W / 2 - ruleW2 / 2, pageY, PAGE_W / 2 + ruleW2 / 2, pageY);
   pageY += 9;
 
-  // Kriou docs discreet label
-  doc.setFont(FONT_SANS, "normal");
-  doc.setFontSize(5.5);
-  doc.setTextColor(...C_MUTED);
-  doc.text("krioudocs.com.br", PAGE_W / 2, pageY, { align: "center" });
-  pageY += 5;
-
   doc.setTextColor(...C_TEXT);
 };
 
 const renderLegalBasis = (doc, legislation) => {
   if (!legislation || !legislation.trim()) return;
-  ensureSpace(doc, 22);
+  doc.setFont(FONT_SERIF, "normal");
+  doc.setFontSize(8);
+  const lawLines = doc.splitTextToSize(legislation, CW - 22);
+  const boxH = Math.max(16, 11 + lawLines.length * 4.2);
+  ensureSpace(doc, boxH + 8);
 
   pageY += 2;
   const boxX = ML;
   const boxW = CW;
-  const boxH = 15;
   const boxY = pageY;
 
   doc.setFillColor(...C_CREAM);
@@ -169,7 +166,6 @@ const renderLegalBasis = (doc, legislation) => {
   doc.setFont(FONT_SERIF, "normal");
   doc.setFontSize(8);
   doc.setTextColor(...C_INK);
-  const lawLines = doc.splitTextToSize(legislation, boxW - 22);
   lawLines.forEach((line, i) => {
     doc.text(line, boxX + 14, boxY + 10 + i * 4.2);
   });
@@ -304,36 +300,52 @@ const renderSignaturesHeader = (doc) => {
 
 const renderSignatures = (doc, parties) => {
   if (!parties || !parties.length) return;
-  ensureSpace(doc, 55);
+  const cols = parties.length <= 2 ? parties.length : parties.length <= 4 ? 2 : 2;
+  const rows = Math.ceil(parties.length / cols);
+  const requiredH = rows * SIGNATURE_SLOT_H + 8;
+  ensureSpace(doc, requiredH);
 
   pageY += 6;
-  const colW = CW / parties.length;
+  const startY = pageY;
+  const colW = CW / cols;
 
   parties.forEach((party, i) => {
-    const cx = ML + i * colW + colW / 2;
-    const lineW = colW * 0.82;
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const slotY = startY + row * SIGNATURE_SLOT_H;
+    const cx = ML + col * colW + colW / 2;
+    const lineW = Math.min(colW * 0.72, 62);
     const lx = cx - lineW / 2;
 
     doc.setDrawColor(...C_TEXT);
-    doc.setLineWidth(0.25);
+    doc.setLineWidth(0.22);
     let dx = lx;
     while (dx < lx + lineW) {
-      doc.line(dx, pageY, Math.min(dx + 2.5, lx + lineW), pageY);
+      doc.line(dx, slotY, Math.min(dx + 2.5, lx + lineW), slotY);
       dx += 4;
     }
 
     doc.setFont(FONT_SERIF, "normal");
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(...C_TEXT);
-    doc.text(party.name || "", cx, pageY + 5, { align: "center", maxWidth: lineW });
+    const rawName = party.name || "";
+    const nameLines = doc.splitTextToSize(rawName, lineW).slice(0, 2);
+    const visibleNameLines = nameLines.length ? nameLines : [" "];
+    visibleNameLines.forEach((line, lineIdx) => {
+      doc.text(line, cx, slotY + 5.5 + lineIdx * 3.7, { align: "center", maxWidth: lineW });
+    });
 
     doc.setFont(FONT_SANS, "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
     doc.setTextColor(...C_GOLD);
-    doc.text(party.role, cx, pageY + 9.5, { align: "center" });
+    const roleLines = doc.splitTextToSize(String(party.role || "").toUpperCase(), lineW).slice(0, 2);
+    const roleY = slotY + 7 + visibleNameLines.length * 3.7;
+    roleLines.forEach((line, lineIdx) => {
+      doc.text(line, cx, roleY + lineIdx * 3.3, { align: "center", maxWidth: lineW });
+    });
   });
 
-  pageY += 18;
+  pageY = startY + rows * SIGNATURE_SLOT_H + 2;
   doc.setTextColor(...C_TEXT);
 };
 
@@ -528,6 +540,12 @@ const renderBody = (doc, bodyBlocks) => {
         renderDate(doc, block.text);
         break;
       case "signatures":
+        {
+          const partyCount = block.parties?.length || 0;
+          const cols = partyCount <= 2 ? Math.max(partyCount, 1) : 2;
+          const rows = Math.ceil(partyCount / cols);
+          ensureSpace(doc, 20 + rows * SIGNATURE_SLOT_H);
+        }
         renderSignaturesHeader(doc);
         renderSignatures(doc, block.parties);
         break;

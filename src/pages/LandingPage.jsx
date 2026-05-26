@@ -2,15 +2,44 @@
  * ============================================
  * KRIOU DOCS - Landing Page
  * ============================================
- * Luxury Refined + Bold Editorial.
+ * Homepage visual com foco em documentos, automacao
+ * e conversao para o fluxo de login.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { DOC_TYPES, PRICING_PLANS, RESUME_TEMPLATES } from "../data/constants";
 
-const TEMPLATE_PREVIEWS = RESUME_TEMPLATES.slice(0, 5);
+const TEMPLATE_PREVIEWS = RESUME_TEMPLATES.slice(0, 4);
+
+const FEATURE_CARDS = [
+  {
+    icon: "FileText",
+    title: "Documentos prontos para assinar",
+    text: "Contratos, declaracoes e curriculos com estrutura limpa, campos guiados e PDF final profissional.",
+    accent: "var(--teal)",
+  },
+  {
+    icon: "Search",
+    title: "Organizacao do cliente",
+    text: "Busca por nome, CPF, codigo, tipo de documento, status e arquivos arquivados.",
+    accent: "var(--gold)",
+  },
+  {
+    icon: "Edit",
+    title: "Edicao sem retrabalho",
+    text: "Renomeie, duplique, imprima, baixe, arquive e retome rascunhos direto do painel.",
+    accent: "var(--coral)",
+  },
+];
+
+const LEGAL_FLOW = [
+  "Escolha o modelo",
+  "Preencha os dados",
+  "Revise o layout",
+  "Gere o PDF",
+];
 
 const LandingPage = () => {
   const { navigate, userId } = useApp();
@@ -21,370 +50,462 @@ const LandingPage = () => {
   }, [userId, navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "var(--navy)" }}>
+      <style>{`
+        .landing-shell {
+          position: relative;
+          isolation: isolate;
+        }
+        .landing-shell::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          z-index: -2;
+          background:
+            linear-gradient(120deg, rgba(244,63,94,0.10), transparent 32%),
+            linear-gradient(235deg, rgba(20,184,166,0.12), transparent 38%),
+            radial-gradient(circle at 50% 0%, rgba(212,175,55,0.08), transparent 30%),
+            var(--navy);
+        }
+        .landing-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+          gap: 54px;
+          align-items: center;
+        }
+        .hero-preview {
+          position: relative;
+          min-height: 560px;
+          perspective: 1400px;
+        }
+        .doc-stack {
+          position: absolute;
+          inset: 16px 0 0 34px;
+          transform: rotateX(7deg) rotateY(-12deg) rotateZ(1deg);
+          transform-origin: center;
+        }
+        .doc-sheet {
+          position: absolute;
+          width: min(410px, 78vw);
+          min-height: 520px;
+          border-radius: 8px;
+          background: #fbfaf6;
+          color: #15151f;
+          border: 1px solid rgba(255,255,255,0.24);
+          box-shadow: 0 30px 90px rgba(0,0,0,0.42);
+          overflow: hidden;
+        }
+        .doc-sheet.back {
+          top: 34px;
+          left: 84px;
+          transform: rotate(4deg) scale(0.92);
+          opacity: 0.42;
+        }
+        .doc-sheet.front {
+          top: 0;
+          left: 0;
+        }
+        .document-toolbar {
+          position: absolute;
+          right: 0;
+          bottom: 42px;
+          width: min(340px, calc(100vw - 40px));
+          border: 1px solid rgba(255,255,255,0.11);
+          background: rgba(26,26,54,0.92);
+          backdrop-filter: blur(18px);
+          border-radius: 18px;
+          box-shadow: 0 26px 70px rgba(0,0,0,0.32);
+          padding: 16px;
+        }
+        .doc-action-pill {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 38px;
+          padding: 0 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.055);
+          color: var(--text-dim);
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+        .workflow-row {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+        }
+        @media (max-width: 1024px) {
+          .landing-grid {
+            grid-template-columns: 1fr;
+            gap: 34px;
+          }
+          .hero-preview {
+            min-height: 500px;
+          }
+          .doc-stack {
+            left: 50%;
+            transform: translateX(-50%) rotateX(5deg) rotateY(-7deg);
+          }
+          .document-toolbar {
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            bottom: 8px;
+          }
+        }
+        @media (max-width: 700px) {
+          .hero-preview {
+            min-height: 390px;
+            margin-top: 10px;
+          }
+          .doc-sheet {
+            width: min(315px, 82vw);
+            min-height: 405px;
+          }
+          .doc-sheet.back {
+            left: 44px;
+          }
+          .document-toolbar {
+            width: calc(100vw - 32px);
+          }
+          .workflow-row {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+      `}</style>
 
-      {/* ─── Navbar ─── */}
-      <header className="sticky top-0 z-50 bg-navy/95 border-b border-border">
-        <div className="max-w-[1200px] mx-auto px-5 md:px-8 h-[64px] flex items-center justify-between">
-          <button
-            onClick={() => navigate("landing")}
-            className="font-display text-2xl font-black tracking-tight text-text bg-transparent border-none cursor-pointer touch-target px-2"
-          >
-            <span className="text-coral">Kriou</span>Docs
-          </button>
-
-          <div className="hidden md:flex items-center gap-3">
+      <div className="landing-shell">
+        <header className="sticky top-0 z-50 border-b border-border" style={{ background: "rgba(9,9,20,0.88)", backdropFilter: "blur(16px)" }}>
+          <div className="max-w-[1220px] mx-auto px-5 md:px-8 h-[68px] flex items-center justify-between">
             <button
-              onClick={() => navigate("login")}
-              className="btn-secondary btn-small touch-target"
+              onClick={() => navigate("landing")}
+              className="font-display text-2xl font-black tracking-tight text-text bg-transparent border-none cursor-pointer touch-target px-2"
             >
-              Entrar
+              <span className="text-coral">Kriou</span>Docs
             </button>
-            <button
-              onClick={() => navigate("login")}
-              className="btn-primary btn-small touch-target"
-            >
-              Criar Gr&aacute;tis
-            </button>
-          </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
-            aria-label="Menu"
-          >
-            <Icon
-              name={mobileOpen ? "ChevronLeft" : "ChevronRight"}
-              className="w-5 h-5 text-text-dim rotate-90"
-            />
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-navy px-5 py-4 flex flex-col gap-3 animate-fade-up">
-            <button
-              onClick={() => { navigate("login"); setMobileOpen(false); }}
-              className="btn-primary w-full justify-center touch-target"
-            >
-              Criar Gr&aacute;tis
-            </button>
-            <button
-              onClick={() => { navigate("login"); setMobileOpen(false); }}
-              className="btn-secondary w-full justify-center touch-target"
-            >
-              Entrar
-            </button>
-          </div>
-        )}
-      </header>
-
-      <main className="flex-1">
-
-        {/* ─── Hero ─── */}
-        <section className="relative max-w-[1200px] mx-auto px-5 md:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
-          {/* Ambient glow — subtle, no glass */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-coral/6 blur-[140px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 left-[-10%] w-[400px] h-[400px] bg-teal/6 blur-[120px] rounded-full pointer-events-none" />
-
-          <div className="relative max-w-[720px] mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-4 py-1.5 mb-8 text-xs font-semibold tracking-wide text-teal uppercase">
-              <span className="w-2 h-2 rounded-full bg-teal animate-glow-pulse" />
-              Nova plataforma de documentos
-            </div>
-
-            <h1 className="font-display text-[clamp(2.5rem,5.5vw,4rem)] font-black leading-[1.08] text-text mb-6 tracking-tight">
-              Documentos que<br />
-              <span className="text-coral">impressionam</span> em minutos
-            </h1>
-
-            <p className="text-base md:text-lg text-text-dim max-w-[560px] mx-auto mb-10 leading-relaxed">
-              Crie curr&iacute;culos profissionais, contratos e documentos jur&iacute;dicos com modelos inteligentes. Preencha, revise e receba em PDF &mdash; direto no WhatsApp.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => navigate("login")}
-                className="btn-primary !px-10 !py-4 !text-base font-bold touch-target min-w-[220px]"
-              >
-                Criar Gr&aacute;tis
-                <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
+            <nav className="hidden md:flex items-center gap-2 text-sm font-semibold text-text-dim">
+              <button onClick={() => document.getElementById("modelos")?.scrollIntoView({ behavior: "smooth" })} className="btn-ghost">
+                Modelos
               </button>
-              <button
-                onClick={() => document.getElementById("resources")?.scrollIntoView({ behavior: "smooth" })}
-                className="btn-ghost !px-8 !py-4 !text-[15px] touch-target min-w-[220px]"
-              >
-                Ver recursos
+              <button onClick={() => document.getElementById("recursos")?.scrollIntoView({ behavior: "smooth" })} className="btn-ghost">
+                Recursos
+              </button>
+              <button onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })} className="btn-ghost">
+                Planos
+              </button>
+            </nav>
+
+            <div className="hidden md:flex items-center gap-3">
+              <button onClick={() => navigate("login")} className="btn-secondary btn-small touch-target">
+                Entrar
+              </button>
+              <button onClick={() => navigate("login")} className="btn-primary btn-small touch-target">
+                Começar agora
               </button>
             </div>
-          </div>
-        </section>
 
-        {/* ─── Features ─── */}
-        <section id="resources" className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
-          <div className="max-w-[640px] mx-auto text-center mb-14">
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
-              Tudo o que voc&ecirc; precisa
-            </h2>
-            <p className="text-text-dim text-lg leading-relaxed">
-              Do curr&iacute;culo ao contrato jur&iacute;dico, com preenchimento guiado e entrega instant&acirc;nea.
-            </p>
-          </div>
-
-          <style>{`
-            .feat-wide { grid-column: span 2; }
-            .feat-wide .feat-inner { flex-direction: row !important; align-items: center !important; gap: 20px !important; }
-            .feat-wide .feat-icon { margin-bottom: 0 !important; flex-shrink: 0; }
-            .feat-compact { align-items: center !important; gap: 16px !important; flex-direction: row !important; }
-            .feat-compact .feat-icon { margin-bottom: 0 !important; flex-shrink: 0; width: 40px !important; height: 40px !important; }
-            .feat-compact h3 { margin-bottom: 0 !important; }
-            .feat-compact p { display: none; }
-            @media (max-width: 640px) {
-              .feat-wide { grid-column: span 1 !important; }
-              .feat-wide .feat-inner { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
-            }
-          `}</style>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: "FileText", label: "Currículos", desc: "5 modelos profissionais com wizard de 7 etapas e preview em tempo real.", color: "var(--coral)", wide: true },
-              { icon: "Shield", label: "Documentos jurídicos", desc: "Contratos, procurações e declarações com estrutura jurídica validada.", color: "var(--teal)" },
-              { icon: "Zap", label: "Preenchimento guiado", desc: "Passo a passo inteligente que qualquer pessoa consegue usar.", color: "var(--gold)", compact: true },
-              { icon: "Download", label: "PDF instantâneo", desc: "Geração e download em segundos. Pronto para imprimir ou enviar.", color: "var(--coral)" },
-              { icon: "MessageCircle", label: "Entrega via WhatsApp", desc: "Receba o documento finalizado direto no seu WhatsApp sem complicação.", color: "var(--success)", compact: true },
-              { icon: "Edit", label: "Edite depois", desc: "Atualize seus documentos a qualquer momento sem precisar refazer.", color: "var(--teal)" },
-            ].map((f, i) => (
-              <div
-                key={i}
-                className={`surface-card surface-hover animate-fade-up ${f.wide ? "feat-wide" : ""}`}
-                style={{ padding: f.compact ? "14px 18px" : "24px 22px", animationDelay: `${i * 0.06}s` }}
-              >
-                <div className={`feat-inner ${f.compact ? "feat-compact" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
-                  {!f.compact && (
-                    <div className="feat-icon" style={{
-                      width: f.wide ? 48 : 44, height: f.wide ? 48 : 44,
-                      borderRadius: f.wide ? 14 : 12, marginBottom: f.wide ? 0 : 16, marginRight: f.wide ? 16 : 0,
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      backgroundColor: `${f.color}14`,
-                    }}>
-                      <Icon name={f.icon} className="w-5 h-5" style={{ color: f.color }} />
-                    </div>
-                  )}
-                  {f.compact && (
-                    <div className="feat-icon" style={{
-                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      backgroundColor: `${f.color}14`,
-                    }}>
-                      <Icon name={f.icon} className="w-4 h-4" style={{ color: f.color }} />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-display font-bold text-text" style={{ fontSize: f.wide ? 17 : 15, marginBottom: f.compact ? 0 : 6 }}>
-                      {f.label}
-                    </h3>
-                    <p className="text-sm text-text-muted leading-relaxed" style={{ margin: 0 }}>{f.desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── Template Previews ─── */}
-        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-4">
-            <div>
-              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-3 tracking-tight">
-                Modelos de curr&iacute;culo
-              </h2>
-              <p className="text-text-dim text-lg">
-                Escolha o estilo que combina com sua &aacute;rea.
-              </p>
-            </div>
             <button
-              onClick={() => navigate("login")}
-              className="btn-primary btn-small touch-target self-start"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="md:hidden bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
+              aria-label="Menu"
             >
-              Ver todos os modelos
-              <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
+              <Icon name={mobileOpen ? "X" : "Grid"} className="w-5 h-5 text-text-dim" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {TEMPLATE_PREVIEWS.map((tpl, i) => (
-              <div
-                key={tpl.id}
-                className="surface-card overflow-hidden surface-hover animate-fade-up cursor-pointer"
-                style={{ animationDelay: `${i * 0.08}s` }}
-                onClick={() => navigate("login")}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("login"); } }}
-              >
-                <div className="h-[120px] flex items-center justify-center" style={{ backgroundColor: `${tpl.color}18` }}>
-                  <div className="text-center">
-                    <div
-                      className="w-16 h-1.5 rounded-full mx-auto mb-3"
-                      style={{ backgroundColor: tpl.accent }}
-                    />
-                    <div className="w-28 h-2 rounded-full mx-auto mb-2 opacity-60" style={{ backgroundColor: tpl.accent }} />
-                    <div className="w-20 h-1.5 rounded-full mx-auto opacity-40" style={{ backgroundColor: tpl.accent }} />
-                  </div>
+          {mobileOpen && (
+            <div className="md:hidden border-t border-border bg-navy px-5 py-4 flex flex-col gap-3 animate-fade-up">
+              <button onClick={() => { navigate("login"); setMobileOpen(false); }} className="btn-primary w-full justify-center touch-target">
+                Começar agora
+              </button>
+              <button onClick={() => { navigate("login"); setMobileOpen(false); }} className="btn-secondary w-full justify-center touch-target">
+                Entrar
+              </button>
+            </div>
+          )}
+        </header>
+
+        <main>
+          <section className="max-w-[1220px] mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-16 md:pb-24">
+            <div className="landing-grid">
+              <div className="max-w-[640px]">
+                <div className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-4 py-2 mb-7 text-xs font-bold tracking-wide text-teal uppercase">
+                  <Icon name="Sparkles" className="w-4 h-4" />
+                  Documentos inteligentes em PDF
                 </div>
-                <div className="px-5 py-4">
-                  <h4 className="font-display font-bold text-text text-[15px] mb-1">{tpl.name}</h4>
-                  <p className="text-xs text-text-muted">{tpl.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
-        {/* ─── Coming Soon Documents ─── */}
-        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
-          <div className="max-w-[640px] mx-auto text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
-              Documentos jur&iacute;dicos em breve
-            </h2>
-            <p className="text-text-dim text-lg leading-relaxed">
-              Contratos, declara&ccedil;&otilde;es e procura&ccedil;&otilde;es. Tudo com preenchimento guiado e estrutura validada.
-            </p>
-          </div>
+                <h1 className="font-display text-[clamp(2.6rem,6vw,5.4rem)] font-black leading-[0.98] text-text mb-7">
+                  Crie documentos bonitos, organizados e prontos para assinar.
+                </h1>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {DOC_TYPES.map((doc, i) => (
-              <div
-                key={doc.id}
-                className="surface-card p-5 flex flex-col items-center text-center animate-fade-up opacity-70 hover:opacity-100 transition-opacity"
-                style={{ animationDelay: `${i * 0.05}s` }}
-              >
-                <div className="w-10 h-10 rounded-xl bg-surface-3 flex items-center justify-center mb-3">
-                  <Icon name={doc.icon} className="w-5 h-5 text-text-muted" />
-                </div>
-                <p className="text-sm font-semibold text-text mb-2">{doc.name}</p>
-                <span className="text-[11px] font-medium text-text-faint bg-surface-2 px-2.5 py-0.5 rounded-full">
-                  Em breve
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
+                <p className="text-base md:text-lg text-text-dim max-w-[580px] mb-9 leading-relaxed">
+                  Preencha contratos, currículos e documentos jurídicos com fluxo guiado, biblioteca do cliente e PDFs que se adaptam ao conteúdo sem sobrepor textos ou assinaturas.
+                </p>
 
-        {/* ─── Pricing ─── */}
-        <section className="max-w-[1200px] mx-auto px-5 md:px-8 py-20 md:py-28 border-t border-border">
-          <div className="max-w-[640px] mx-auto text-center mb-14">
-            <h2 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4 tracking-tight">
-              Precifica&ccedil;&atilde;o simples
-            </h2>
-            <p className="text-text-dim text-lg leading-relaxed">
-              Sem surpresas. Pague pelo que usar.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-[1200px] mx-auto">
-            {PRICING_PLANS.map((plan, i) => (
-              <div
-                key={plan.id}
-                className={`flex flex-col p-8 rounded-2xl border animate-fade-up relative
-                  ${plan.highlight
-                    ? "bg-surface-2 border-coral shadow-[0_8px_40px_rgba(244,63,94,0.12)] md:scale-[1.03]"
-                    : "bg-surface border-border"
-                  }`}
-                style={{ animationDelay: `${i * 0.1}s` }}
-              >
-                {plan.highlight && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-coral text-white px-4 py-1 rounded-full text-[11px] font-extrabold tracking-widest uppercase">
-                    Mais popular
-                  </div>
-                )}
-                <h3 className="font-display text-xl font-bold text-text mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-0.5 mb-1">
-                  <span className="font-display text-[2.5rem] font-black text-coral leading-none">{plan.price}</span>
-                </div>
-                <p className="text-sm text-text-muted mb-7 font-medium">{plan.sub}</p>
-
-                <ul className="flex-1 space-y-3 mb-8">
-                  {plan.features.map((f, fi) => (
-                    <li key={fi} className="flex items-start gap-3 text-sm text-text-dim">
-                      <span className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <Icon name="Check" className="w-3 h-3 text-success" />
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
+                <div className="flex flex-col sm:flex-row gap-3 mb-9">
+                  <button onClick={() => navigate("login")} className="btn-primary !px-8 !py-4 !text-base font-bold touch-target">
+                    Criar documento
+                    <Icon name="ArrowRight" className="w-4 h-4" />
+                  </button>
                 <button
-                  onClick={() => navigate("login")}
-                  className={plan.highlight
-                    ? "btn-primary w-full justify-center touch-target font-bold"
-                    : "btn-secondary w-full justify-center touch-target font-bold"
-                  }
+                  onClick={() => document.getElementById("recursos")?.scrollIntoView({ behavior: "smooth" })}
+                  className="btn-secondary !px-8 !py-4 !text-base touch-target !text-text"
                 >
-                  {plan.highlight ? "Come&ccedil;ar agora" : "Escolher plano"}
+                  Ver recursos
                 </button>
-              </div>
-            ))}
-              <div
-                className="flex flex-col p-8 rounded-2xl border animate-fade-up relative bg-surface border-[rgba(37,211,102,0.25)]"
-                style={{ animationDelay: "0.4s", background: "linear-gradient(155deg, var(--surface) 0%, rgba(37,211,102,0.04) 100%)" }}
-              >
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-white px-4 py-1 rounded-full text-[11px] font-extrabold tracking-widest uppercase" style={{ background: "#25D366" }}>
-                  Sob medida
                 </div>
-                <h3 className="font-display text-xl font-bold text-text mb-1">Personalizado</h3>
-                <p className="text-sm text-text-muted mb-4 font-medium">Sob consulta</p>
 
-                <ul className="flex-1 space-y-3 mb-8">
+                <div className="grid grid-cols-3 gap-3 max-w-[520px]">
                   {[
-                    "Contrato feito para você",
-                    "Consultoria jurídica inclusa",
-                    "Revisão ilimitada",
-                    "Atendimento via WhatsApp",
-                  ].map((f, fi) => (
-                    <li key={fi} className="flex items-start gap-3 text-sm text-text-dim">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(37,211,102,0.15)" }}>
-                        <Icon name="Check" className="w-3 h-3" style={{ color: "#25D366" }} />
-                      </span>
-                      {f}
-                    </li>
+                    ["12+", "modelos"],
+                    ["PDF", "adaptável"],
+                    ["Web", "e mobile"],
+                  ].map(([value, label]) => (
+                    <div key={label} className="surface-card" style={{ padding: "14px 16px", borderRadius: 14 }}>
+                      <strong className="font-display text-xl text-text block">{value}</strong>
+                      <span className="text-xs text-text-muted font-semibold uppercase tracking-wide">{label}</span>
+                    </div>
                   ))}
-                </ul>
-
-                <a
-                  href="https://wa.me/5591986450659?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20contrato%20personalizado."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full justify-center touch-target font-bold flex items-center gap-2 py-3.5 rounded-xl text-white cursor-pointer text-[15px]"
-                  style={{
-                    background: "#25D366",
-                    border: "none",
-                    textDecoration: "none",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(37,211,102,0.35)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; e.currentTarget.style.boxShadow = "none"; }}
-                >
-                  <span style={{ fontSize: 18 }}>💬</span>
-                  Falar no WhatsApp
-                </a>
+                </div>
               </div>
+
+              <div className="hero-preview" aria-hidden="true">
+                <div className="doc-stack">
+                  <div className="doc-sheet back" />
+                  <div className="doc-sheet front">
+                    <div style={{ padding: "42px 42px 22px", textAlign: "center" }}>
+                      <div style={{ height: 2, width: 132, margin: "0 auto 20px", background: "#b59b49" }} />
+                      <h2 style={{ fontFamily: "Times New Roman, serif", fontSize: 24, color: "#8b3a3a", margin: 0, letterSpacing: 0 }}>
+                        COMPRA E VENDA
+                      </h2>
+                      <div style={{ height: 1, width: 84, margin: "22px auto 0", background: "#d4af37" }} />
+                    </div>
+
+                    <div style={{ margin: "0 34px", padding: "13px 16px", borderLeft: "4px solid #a58737", background: "#faf7ee", border: "1px solid #e8e1cf" }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "#a58737", marginBottom: 6 }}>FUNDAMENTO LEGAL</div>
+                      <div style={{ height: 7, width: "84%", background: "#1f2937", opacity: 0.18, borderRadius: 10 }} />
+                    </div>
+
+                    <div style={{ padding: "24px 34px 0", display: "grid", gap: 9 }}>
+                      {[92, 100, 96, 72, 88, 98, 58].map((w, index) => (
+                        <div key={index} style={{ height: 7, width: `${w}%`, background: "#252936", opacity: 0.16, borderRadius: 10 }} />
+                      ))}
+                    </div>
+
+                    <div style={{ padding: "28px 34px 0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+                        <div style={{ width: 4, height: 34, background: "#a58737" }} />
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: "#8b3a3a" }}>ASSINATURAS</div>
+                          <div style={{ width: 110, height: 1, background: "#eadfbd", marginTop: 7 }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "22px 28px" }}>
+                        {["VENDEDOR(A)", "COMPRADOR(A)", "TESTEMUNHA 1", "TESTEMUNHA 2"].map((label) => (
+                          <div key={label}>
+                            <div style={{ borderTop: "1px dashed #2b2c35", height: 12 }} />
+                            <div style={{ height: 6, width: "72%", margin: "0 auto 5px", background: "#252936", opacity: 0.14, borderRadius: 10 }} />
+                            <div style={{ fontSize: 8, fontWeight: 800, color: "#a58737", textAlign: "center" }}>{label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="document-toolbar">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-text-muted m-0">Biblioteca do cliente</p>
+                      <h3 className="font-display text-lg font-extrabold text-text m-0">Ações rápidas</h3>
+                    </div>
+                    <span className="w-10 h-10 rounded-xl bg-coral/15 text-coral flex items-center justify-center">
+                      <Icon name="FileText" className="w-5 h-5" />
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      ["Copy", "Copiar"],
+                      ["Edit", "Renomear"],
+                      ["Archive", "Arquivar"],
+                      ["Search", "Filtrar"],
+                    ].map(([icon, label]) => (
+                      <div key={label} className="doc-action-pill">
+                        <Icon name={icon} className="w-4 h-4" />
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="recursos" className="max-w-[1220px] mx-auto px-5 md:px-8 py-16 md:py-22 border-t border-border">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {FEATURE_CARDS.map((feature, index) => (
+                <article
+                  key={feature.title}
+                  className="surface-card surface-hover animate-fade-up"
+                  style={{
+                    padding: "24px",
+                    borderRadius: 16,
+                    animationDelay: `${index * 0.06}s`,
+                    background: `linear-gradient(180deg, ${feature.accent}10, transparent 48%), var(--surface)`,
+                  }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ background: `${feature.accent}18`, color: feature.accent }}>
+                    <Icon name={feature.icon} className="w-6 h-6" />
+                  </div>
+                  <h2 className="font-display text-xl font-extrabold text-text mb-3">{feature.title}</h2>
+                  <p className="text-sm text-text-dim leading-relaxed m-0">{feature.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section id="modelos" className="max-w-[1220px] mx-auto px-5 md:px-8 py-16 md:py-22 border-t border-border">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-9">
+              <div>
+                <p className="text-xs text-gold font-extrabold uppercase tracking-[0.16em] mb-3">Modelos</p>
+                <h2 className="font-display text-3xl md:text-4xl font-black text-text mb-3">
+                  Currículos e documentos jurídicos no mesmo painel.
+                </h2>
+                <p className="text-text-dim text-base md:text-lg max-w-[650px]">
+                  Comece por um modelo, salve rascunhos e gere uma versão final com paginação automática.
+                </p>
+              </div>
+              <button onClick={() => navigate("login")} className="btn-primary btn-small touch-target self-start">
+                Acessar modelos
+                <Icon name="ArrowRight" className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {TEMPLATE_PREVIEWS.map((tpl, index) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => navigate("login")}
+                    className="surface-card surface-hover text-left overflow-hidden animate-fade-up"
+                    style={{ borderRadius: 16, animationDelay: `${index * 0.05}s` }}
+                  >
+                    <div style={{ height: 116, background: `linear-gradient(135deg, ${tpl.color}, ${tpl.accent})`, padding: 18 }}>
+                      <div style={{ width: 92, height: 66, borderRadius: 6, background: "rgba(9,9,20,0.76)", padding: 10 }}>
+                        <div style={{ height: 4, width: "70%", borderRadius: 6, background: tpl.accent, marginBottom: 8 }} />
+                        <div style={{ height: 3, width: "100%", borderRadius: 6, background: "rgba(255,255,255,0.16)", marginBottom: 5 }} />
+                        <div style={{ height: 3, width: "78%", borderRadius: 6, background: "rgba(255,255,255,0.12)" }} />
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-display font-extrabold text-text text-base mb-1">{tpl.name}</h3>
+                      <p className="text-sm text-text-muted leading-relaxed m-0">{tpl.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="surface-card" style={{ padding: 24, borderRadius: 16 }}>
+                <div className="flex items-center justify-between gap-3 mb-6">
+                  <div>
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-wide mb-1">Documentos jurídicos</p>
+                    <h3 className="font-display text-2xl font-black text-text m-0">Tipos disponíveis</h3>
+                  </div>
+                  <Icon name="Shield" className="w-7 h-7 text-teal" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {DOC_TYPES.slice(0, 8).map((doc) => (
+                    <button
+                      key={doc.id}
+                      onClick={() => navigate("login")}
+                      className="flex items-center gap-3 text-left bg-surface-2 border border-border rounded-xl p-3 transition-all hover:bg-surface-3 hover:border-border-hover"
+                    >
+                      <span className="w-10 h-10 rounded-lg bg-navy-light flex items-center justify-center text-teal shrink-0">
+                        <Icon name={doc.icon} className="w-5 h-5" />
+                      </span>
+                      <span className="text-sm font-bold text-text leading-tight">{doc.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="max-w-[1220px] mx-auto px-5 md:px-8 py-16 md:py-22 border-t border-border">
+            <div className="workflow-row">
+              {LEGAL_FLOW.map((item, index) => (
+                <div key={item} className="surface-card" style={{ padding: 18, borderRadius: 16 }}>
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-coral text-white flex items-center justify-center font-display font-black">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm font-extrabold text-text">{item}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="planos" className="max-w-[1220px] mx-auto px-5 md:px-8 py-16 md:py-24 border-t border-border">
+            <div className="max-w-[680px] mb-10">
+              <p className="text-xs text-gold font-extrabold uppercase tracking-[0.16em] mb-3">Planos</p>
+              <h2 className="font-display text-3xl md:text-4xl font-black text-text mb-3">Pague pelo documento que precisar.</h2>
+              <p className="text-text-dim text-lg">Sem painel confuso, sem etapas desnecessárias e com opção personalizada quando o caso exigir.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              {PRICING_PLANS.map((plan, index) => (
+                <article
+                  key={plan.id}
+                  className="surface-card surface-hover relative"
+                  style={{
+                    padding: 24,
+                    borderRadius: 16,
+                    borderColor: plan.highlight ? "var(--coral)" : "var(--border)",
+                    background: plan.highlight ? "linear-gradient(180deg, rgba(244,63,94,0.13), var(--surface) 48%)" : "var(--surface)",
+                    transform: plan.highlight ? "translateY(-4px)" : "none",
+                    animationDelay: `${index * 0.05}s`,
+                  }}
+                >
+                  {plan.highlight && (
+                    <span className="absolute top-4 right-4 text-[10px] uppercase tracking-wide font-black text-white bg-coral px-2 py-1 rounded-md">
+                      Popular
+                    </span>
+                  )}
+                  <h3 className="font-display text-xl font-black text-text mb-1">{plan.name}</h3>
+                  <div className="font-display text-4xl font-black text-coral mb-1">{plan.price}</div>
+                  <p className="text-sm text-text-muted mb-6">{plan.sub}</p>
+                  <ul className="space-y-3 mb-7">
+                    {plan.features.slice(0, 4).map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-text-dim">
+                        <Icon name="Check" className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button onClick={() => navigate("login")} className={plan.highlight ? "btn-primary w-full" : "btn-secondary w-full"}>
+                    Escolher
+                  </button>
+                </article>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        <footer className="border-t border-border bg-surface/50">
+          <div className="max-w-[1220px] mx-auto px-5 md:px-8 py-9 flex flex-col md:flex-row items-center justify-between gap-5">
+            <div className="font-display text-2xl font-black tracking-tight text-text">
+              <span className="text-coral">Kriou</span>Docs
+            </div>
+            <p className="text-sm text-text-muted text-center m-0">
+              Documentos profissionais, organizados e prontos para PDF. &copy; {new Date().getFullYear()} Kriou Docs.
+            </p>
           </div>
-        </section>
-
-      </main>
-
-      {/* ─── Footer ─── */}
-      <footer className="border-t border-border bg-surface/50">
-        <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="font-display text-2xl font-black tracking-tight text-text">
-            <span className="text-coral">Kriou</span>Docs
-          </div>
-          <p className="text-sm text-text-muted text-center">
-            Documentos profissionais ao alcance de todos. &copy; {new Date().getFullYear()} Kriou Docs.
-          </p>
-        </div>
-      </footer>
-
+        </footer>
+      </div>
     </div>
   );
 };

@@ -231,6 +231,34 @@ export const DocumentService = {
   },
 
   /**
+   * Renomeia um documento do usuario.
+   *
+   * @param {string} documentId — UUID do documento
+   * @param {string} userId — ID do usuario dono do documento
+   * @param {string} title — Novo titulo
+   * @returns {Promise<boolean>} true se atualizado com sucesso
+   */
+  async rename(documentId, userId, title) {
+    if (!documentId || !userId || !title?.trim()) {
+      const err = new Error("[DocumentService][ERRO] rename: documentId, userId e title sao obrigatorios");
+      console.error(err.message);
+      throw err;
+    }
+
+    const { error } = await supabase
+      .from("documents")
+      .update({ title: title.trim() })
+      .eq("id", documentId)
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("[DocumentService][ERRO] rename:", error.message, { documentId, userId });
+      throw error;
+    }
+    return true;
+  },
+
+  /**
    * Busca o perfil do usuario autenticado.
    *
    * @returns {Promise<Object|null>} Perfil do usuario ou null se nao existir

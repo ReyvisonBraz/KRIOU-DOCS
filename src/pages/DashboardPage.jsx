@@ -7,7 +7,7 @@ import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 import { usePDF } from "../hooks/usePDF";
-import { extractPersonData, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
+import { extractPersonData, generateDocumentCode, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
 
 const DashboardPage = () => {
@@ -21,7 +21,11 @@ const DashboardPage = () => {
   } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
-  const [showArchived, setShowArchived] = useState(false);
+  const [archiveFilter, setArchiveFilter] = useState("ativos");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [sortBy, setSortBy] = useState("recentes");
+  const [renameDoc, setRenameDoc] = useState(null);
+  const [renameTitle, setRenameTitle] = useState("");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
   const { generatePDF, isGenerating } = usePDF();
 
@@ -65,17 +69,31 @@ const DashboardPage = () => {
     { id: "prestacao-servicos", label: "Prest. Serviços", icon: "Wrench", filterType: "documentType" },
   ];
 
-  const visibleTabs = tabs.slice(0, 6);
+  const visibleTabs = tabs;
 
   const TAB_FILTER_TYPE = Object.fromEntries(tabs.map(t => [t.id, t.filterType]));
 
+  const getDocTime = (doc) => {
+    const value = doc?.updatedAt || doc?.createdAt;
+    const time = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+  };
+
   const getFilteredDocs = useCallback(() => {
     const filterType = TAB_FILTER_TYPE[activeTab] || "all";
-    let docs = allDocs;
+    let docs = [...allDocs];
 
-    // Filtro de arquivados
-    if (!showArchived) {
+    if (archiveFilter === "ativos") {
       docs = docs.filter((doc) => !doc.archived);
+    } else if (archiveFilter === "arquivados") {
+      docs = docs.filter((doc) => doc.archived);
+    }
+
+    if (statusFilter !== "todos") {
+      docs = docs.filter((doc) => statusFilter === "finalizados"
+        ? doc.status === "finalizado"
+        : doc.status !== "finalizado"
+      );
     }
 
     if (filterType === "type") {
@@ -110,15 +128,34 @@ const DashboardPage = () => {
         const person = extractPersonData(doc);
         if (person.nome && normalizeName(person.nome).includes(normalizeName(rawQuery))) return true;
 
+        const templateText = typeof doc.template === "string"
+          ? doc.template
+          : doc.template?.name || "";
+
         return (
           doc.title?.toLowerCase().includes(queryLower) ||
-          doc.template?.toLowerCase().includes(queryLower) ||
+          templateText.toLowerCase().includes(queryLower) ||
+          doc.templateName?.toLowerCase().includes(queryLower) ||
+          doc.documentTypeName?.toLowerCase().includes(queryLower) ||
+          doc.variantName?.toLowerCase().includes(queryLower) ||
           doc.code?.toLowerCase().includes(queryLower)
         );
       });
     }
+
+    docs.sort((a, b) => {
+      if (sortBy === "antigos") return getDocTime(a) - getDocTime(b);
+      if (sortBy === "titulo") return (a.title || "").localeCompare(b.title || "", "pt-BR");
+      if (sortBy === "tipo") {
+        const aType = a.documentTypeName || a.templateName || a.type || "";
+        const bType = b.documentTypeName || b.templateName || b.type || "";
+        return aType.localeCompare(bType, "pt-BR");
+      }
+      return getDocTime(b) - getDocTime(a);
+    });
+
     return docs;
-  }, [allDocs, activeTab, searchQuery, TAB_FILTER_TYPE]);
+  }, [allDocs, activeTab, archiveFilter, statusFilter, searchQuery, sortBy, TAB_FILTER_TYPE]);
 
   const handleEditDocument = (doc) => {
     if (doc.type === "resume") {
@@ -185,6 +222,9 @@ const DashboardPage = () => {
 
     try {
       StorageService.saveDocuments(updated, userId);
+      if (doc.status === "finalizado" && !String(doc.id).startsWith("draft-")) {
+        await DocumentService.remove(doc.id);
+      }
       showToast.success("Documento excluído.");
     } catch (err) {
       console.error("[DashboardPage][ERRO] saveDocuments falhou apos delecao:", err.message);
@@ -267,6 +307,80 @@ const DashboardPage = () => {
       console.error("[DashboardPage][ERRO] Falha ao sincronizar archive:", err.message);
     }
     showToast.success(newArchived ? "Documento arquivado." : "Documento restaurado.");
+  };
+
+  const openRenameDialog = (doc) => {
+    setRenameDoc(doc);
+    setRenameTitle(doc.title || "");
+  };
+
+  const closeRenameDialog = () => {
+    setRenameDoc(null);
+    setRenameTitle("");
+  };
+
+  const handleRenameDocument = async (event) => {
+    event?.preventDefault();
+    const nextTitle = renameTitle.trim();
+    if (!renameDoc || !nextTitle) return;
+
+    const updated = (userDocuments || []).map((d) =>
+      d.id === renameDoc.id ? { ...d, title: nextTitle, updatedAt: new Date().toISOString() } : d
+    );
+    setUserDocuments(updated);
+    StorageService.saveDocuments(updated, userId);
+
+    try {
+      if (renameDoc.status === "finalizado" && !String(renameDoc.id).startsWith("draft-")) {
+        await DocumentService.rename(renameDoc.id, userId, nextTitle);
+      }
+      showToast.success("Documento renomeado.");
+      closeRenameDialog();
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] Falha ao renomear:", err.message);
+      showToast.error("Renomeado localmente, mas não sincronizou com o servidor.");
+      closeRenameDialog();
+    }
+  };
+
+  const handleDuplicateDocument = async (doc) => {
+    const now = new Date();
+    const dateLabel = now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
+    const copyTitle = `${doc.title || doc.documentTypeName || "Documento"} (Cópia)`;
+    const docTypeKey = doc.documentType || doc.type || "documento";
+    const copyCode = generateDocumentCode(userDocuments || [], docTypeKey);
+    const duplicate = {
+      ...doc,
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 9),
+      title: copyTitle,
+      code: copyCode,
+      archived: false,
+      date: dateLabel,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      draft: doc.draft ? JSON.parse(JSON.stringify(doc.draft)) : doc.draft,
+      _duplicatedFrom: doc.id,
+    };
+
+    const insertLocalCopy = (copy) => {
+      const updated = [copy, ...(userDocuments || [])];
+      setUserDocuments(updated);
+      StorageService.saveDocuments(updated, userId);
+    };
+
+    try {
+      if (doc.status === "finalizado" && userId && !String(doc.id).startsWith("draft-")) {
+        const savedCopy = await DocumentService.insert(duplicate, userId);
+        insertLocalCopy(savedCopy);
+      } else {
+        insertLocalCopy(duplicate);
+      }
+      showToast.success("Documento copiado.");
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] Falha ao duplicar:", err.message);
+      insertLocalCopy(duplicate);
+      showToast.error("Cópia criada localmente, mas não sincronizou com o servidor.");
+    }
   };
 
   const getUserName = () => {
@@ -653,41 +767,89 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Archive toggle */}
+          {/* Filters */}
           {allDocs.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-              <button
-                onClick={() => setShowArchived((prev) => !prev)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 14px",
-                  borderRadius: 100,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  fontFamily: "var(--font-body)",
-                  border: showArchived ? "1.5px solid var(--gold)" : "1px solid var(--border)",
-                  background: showArchived ? "rgba(212,175,55,0.08)" : "transparent",
-                  color: showArchived ? "var(--gold)" : "var(--text-muted)",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  minHeight: 36,
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; e.currentTarget.style.color = "var(--gold)"; }}
-                onMouseLeave={(e) => { if (!showArchived) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}}
-              >
-                <Icon name="Archive" className="w-3.5 h-3.5" />
-                {showArchived ? "Esconder arquivados" : "Mostrar arquivados"}
-                <span style={{
-                  fontSize: 10, fontWeight: 700,
-                  padding: "1px 6px", borderRadius: 6,
-                  background: showArchived ? "rgba(212,175,55,0.18)" : "var(--surface-3)",
-                  color: showArchived ? "var(--gold)" : "var(--text-faint)",
-                }}>
-                  {allDocs.filter(d => d.archived).length}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 10,
+              marginTop: 10,
+            }}>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Arquivo
                 </span>
-              </button>
+                <select
+                  value={archiveFilter}
+                  onChange={(e) => setArchiveFilter(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: 44,
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    padding: "0 12px",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 700,
+                  }}
+                >
+                  <option value="ativos">Ativos</option>
+                  <option value="arquivados">Arquivados ({allDocs.filter(d => d.archived).length})</option>
+                  <option value="todos">Todos</option>
+                </select>
+              </label>
+
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Status
+                </span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: 44,
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    padding: "0 12px",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 700,
+                  }}
+                >
+                  <option value="todos">Todos os status</option>
+                  <option value="finalizados">Finalizados</option>
+                  <option value="rascunhos">Rascunhos</option>
+                </select>
+              </label>
+
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Ordenar
+                </span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: 44,
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    padding: "0 12px",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 700,
+                  }}
+                >
+                  <option value="recentes">Mais recentes</option>
+                  <option value="antigos">Mais antigos</option>
+                  <option value="titulo">Titulo</option>
+                  <option value="tipo">Tipo</option>
+                </select>
+              </label>
             </div>
           )}
         </section>
@@ -696,9 +858,12 @@ const DashboardPage = () => {
         {allDocs.length > 0 && (
           <nav aria-label="Filtrar documentos" className="tab-scroll" style={{ marginBottom: 24 }}>
             {visibleTabs.map((tab) => {
-              const count = tab.id === "todos" ? allDocs.length :
-                tab.filterType === "type" ? allDocs.filter(d => d.type === tab.id).length :
-                tab.filterType === "documentType" ? allDocs.filter(d => d.documentType === tab.id).length :
+              const countBase = allDocs
+                .filter((d) => archiveFilter === "ativos" ? !d.archived : archiveFilter === "arquivados" ? d.archived : true)
+                .filter((d) => statusFilter === "todos" ? true : statusFilter === "finalizados" ? d.status === "finalizado" : d.status !== "finalizado");
+              const count = tab.id === "todos" ? countBase.length :
+                tab.filterType === "type" ? countBase.filter(d => d.type === tab.id).length :
+                tab.filterType === "documentType" ? countBase.filter(d => d.documentType === tab.id).length :
                 0;
               if (count === 0 && tab.id !== "todos") return null;
               const isActive = activeTab === tab.id;
@@ -807,6 +972,8 @@ const DashboardPage = () => {
                     onDownload={handleDownloadPDF}
                     onPrint={handlePrintPDF}
                     onArchive={handleArchiveDocument}
+                    onRename={() => openRenameDialog(doc)}
+                    onDuplicate={() => handleDuplicateDocument(doc)}
                     animationDelay={index * 0.04}
                   />
                 </div>
@@ -948,7 +1115,13 @@ const DashboardPage = () => {
 
             {searchQuery.trim() && (
               <button
-                onClick={() => { setSearchQuery(""); setActiveTab("todos"); }}
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveTab("todos");
+                  setArchiveFilter("ativos");
+                  setStatusFilter("todos");
+                  setSortBy("recentes");
+                }}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -986,6 +1159,80 @@ const DashboardPage = () => {
           </div>
         )}
       </main>
+
+      {renameDoc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Renomear documento"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            background: "rgba(9,9,20,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeRenameDialog();
+          }}
+        >
+          <form
+            onSubmit={handleRenameDocument}
+            className="surface-card animate-scale-in"
+            style={{
+              width: "100%",
+              maxWidth: 440,
+              padding: 24,
+              borderRadius: 18,
+              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 18 }}>
+              <div>
+                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 800, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                  Documento
+                </p>
+                <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 900, color: "var(--text)" }}>
+                  Renomear arquivo
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeRenameDialog}
+                aria-label="Fechar"
+                className="btn-icon"
+              >
+                <Icon name="X" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <label style={{ display: "grid", gap: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-dim)" }}>
+                Novo nome
+              </span>
+              <input
+                autoFocus
+                value={renameTitle}
+                onChange={(e) => setRenameTitle(e.target.value)}
+                className="input-field"
+                style={{ fontSize: 16 }}
+              />
+            </label>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
+              <button type="button" onClick={closeRenameDialog} className="btn-secondary" style={{ flex: 1 }}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={!renameTitle.trim()}>
+                Salvar nome
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <ConfirmDialog
         {...confirmState}

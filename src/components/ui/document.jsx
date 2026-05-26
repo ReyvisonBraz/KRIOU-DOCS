@@ -83,7 +83,17 @@ function resolveAccent(doc) {
   return ACCENTS[typeKey];
 }
 
-export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, onPrint, animationDelay = 0 }) => {
+export const DocumentCard = ({
+  doc,
+  onClick,
+  onDelete,
+  onArchive,
+  onDownload,
+  onPrint,
+  onRename,
+  onDuplicate,
+  animationDelay = 0,
+}) => {
   const [hover, setHover] = useState(false);
 
   if (!doc) return null;
@@ -91,7 +101,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
   const typeKey = doc.type in ICONS ? doc.type : "default";
   const iconName = ICONS[typeKey];
   const accent = resolveAccent(doc);
-  const typeLabel = TYPE_LABELS[doc.type] || doc.type;
+  const typeLabel = TYPE_LABELS[doc.type] || doc.documentTypeName || doc.type;
   const isFinalizado = doc.status === "finalizado";
   const statusVariant = isFinalizado ? "teal" : "coral";
   const statusLabel = isFinalizado ? "Finalizado" : "Rascunho";
@@ -127,7 +137,18 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
         outline: "none",
       }}
     >
-      {/* ── Header: ícone + código ou tipo ── */}
+      <style>{`
+        .doc-action-bar {
+          opacity: 1;
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .doc-action-bar {
+            opacity: ${hover ? 1 : 0.84};
+          }
+        }
+      `}</style>
+
+      {/* Header: icone + codigo ou tipo */}
       <div
         style={{
           display: "flex",
@@ -208,7 +229,7 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
             background: "transparent",
             color: "var(--text-faint)",
             cursor: "pointer",
-            opacity: hover ? 1 : 0,
+            opacity: hover ? 1 : 0.55,
             transition: EASE,
             flexShrink: 0,
           }}
@@ -324,18 +345,46 @@ export const DocumentCard = ({ doc, onClick, onDelete, onArchive, onDownload, on
           </Badge>
         </div>
 
-        {/* ── Ações rápidas ── */}
+        {doc.archived && (
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 10,
+            padding: "4px 9px",
+            borderRadius: 999,
+            background: "rgba(212,175,55,0.10)",
+            border: "1px solid rgba(212,175,55,0.20)",
+            color: "var(--gold)",
+            fontSize: 10,
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}>
+            <Icon name="Archive" className="w-3 h-3" />
+            Arquivado
+          </div>
+        )}
+
+        {/* Acoes rapidas */}
         <div
+          className="doc-action-bar"
           style={{
             display: "flex",
-            gap: 4,
+            gap: 5,
+            flexWrap: "wrap",
             marginTop: 12,
             paddingTop: 10,
             borderTop: "1px solid var(--border)",
-            opacity: hover ? 1 : 0,
             transition: EASE,
           }}
         >
+          {onRename && (
+            <ActionBtn icon="Edit" label="Renomear" onClick={(e) => { e.stopPropagation(); onRename(doc); }} accent={accent} />
+          )}
+          {onDuplicate && (
+            <ActionBtn icon="Copy" label="Copiar" onClick={(e) => { e.stopPropagation(); onDuplicate(doc); }} accent={accent} />
+          )}
           {onDownload && (
             <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
           )}

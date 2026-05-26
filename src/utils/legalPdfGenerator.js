@@ -32,8 +32,9 @@ const CW = PAGE_W - ML - MR;
 // ─── Tipografia ───────────────────────────────────────────────────────────────
 const FONT_SERIF = "times";
 const FONT_SANS  = "helvetica";
-const LEAD       = 4.2;
-const LEAD_TIGHT = 3.8;
+const BODY_SIZE  = 9.7;
+const LEAD       = 4.9;
+const LEAD_TIGHT = 4.55;
 const SIGNATURE_SLOT_H = 27;
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
@@ -44,9 +45,12 @@ const C_MUTED     = [160, 156, 162];
 const C_DIVIDER   = [226, 224, 218];
 const C_DIVIDER_H = [235, 233, 227];
 const C_GOLD      = [165, 135, 55];
+const C_GOLD_DARK = [132, 103, 34];
 const C_GOLD_LIGHT = [235, 225, 200];
 const C_BURGUNDY  = [139, 58, 58];
+const C_BURGUNDY_DARK = [99, 35, 43];
 const C_CREAM     = [252, 250, 245];
+const C_HEADER_BG = [253, 251, 247];
 
 // ─── Estado global ───────────────────────────────────────────────────────────
 let pageY = 0;
@@ -85,68 +89,135 @@ const extractDate = (text) => {
   return m ? m[1] : text;
 };
 
+const normalizePdfText = (value) => String(value ?? "")
+  .replace(/\r\n/g, "\n")
+  .replace(/\u00a0/g, " ")
+  .replace(/[\u200b-\u200d\ufeff]/g, "")
+  .replace(/[“”]/g, "\"")
+  .replace(/[‘’]/g, "'")
+  .replace(/[–—]/g, " - ")
+  .replace(/\u2022/g, "-")
+  .replace(/[ \t]+\n/g, "\n")
+  .replace(/\n[ \t]+/g, "\n")
+  .replace(/[ \t]{2,}/g, " ");
+
 // ─── Render helpers ─────────────────────────────────────────────────────────
 
 const renderTextBlock = (doc, text, size, { indent = 0, align = "left", font = FONT_SERIF, style = "normal", color = C_TEXT, leading = LEAD } = {}) => {
-  if (!text || !text.trim()) return;
+  const cleanText = normalizePdfText(text);
+  if (!cleanText.trim()) return;
   doc.setFont(font, style);
   doc.setFontSize(size);
   doc.setTextColor(...color);
-  const lines = doc.splitTextToSize(text, CW - indent);
-  lines.forEach((line) => {
-    ensureSpace(doc, leading);
-    doc.text(line, ML + indent, pageY, { align, maxWidth: CW - indent });
-    pageY += leading;
+  const x = align === "center" ? PAGE_W / 2 : align === "right" ? PAGE_W - MR : ML + indent;
+  const hardParagraphs = cleanText.split(/\n{2,}/);
+
+  hardParagraphs.forEach((paragraph, paragraphIndex) => {
+    const forcedLines = paragraph.split("\n");
+    forcedLines.forEach((segment, segmentIndex) => {
+      const segmentText = segment.trim();
+      if (!segmentText) {
+        pageY += leading * 0.7;
+        return;
+      }
+
+      const lines = doc.splitTextToSize(segmentText, CW - indent);
+      lines.forEach((line) => {
+        ensureSpace(doc, leading + 0.5);
+        doc.text(line, x, pageY, { align, maxWidth: CW - indent });
+        pageY += leading;
+      });
+
+      if (segmentIndex < forcedLines.length - 1) pageY += leading * 0.35;
+    });
+
+    if (paragraphIndex < hardParagraphs.length - 1) pageY += leading * 0.75;
   });
 };
 
 // ─── Draw functions ─────────────────────────────────────────────────────────
 
 const drawQRTopRight = (doc, url) => {
-  const qrSize = 12;
+  const qrSize = 13;
   const qrX = PAGE_W - MR - qrSize;
-  const qrY = MT - 1;
+  const qrY = MT + 8;
   drawQRCode(doc, url, qrX, qrY, qrSize);
+
+  doc.setFont(FONT_SANS, "bold");
+  doc.setFontSize(4.8);
+  doc.setTextColor(...C_MUTED);
+  doc.text("VALIDAÇÃO", qrX + qrSize / 2, qrY + qrSize + 3, { align: "center" });
 };
 
 const drawHeader = (doc, title) => {
-  // Fine gold rule above title
-  doc.setDrawColor(...C_GOLD);
-  doc.setLineWidth(0.4);
-  const ruleW = Math.min(CW * 0.35, 60);
-  doc.line(PAGE_W / 2 - ruleW / 2, MT + 4, PAGE_W / 2 + ruleW / 2, MT + 4);
-
-  pageY = MT + 16;
+  const safeTitle = normalizePdfText(title || "Documento Juridico").toUpperCase();
+  const headerX = ML;
+  const headerY = MT + 3;
+  const titleMaxW = CW - 58;
 
   doc.setFont(FONT_SERIF, "bold");
-  doc.setFontSize(15);
-  doc.setTextColor(...C_BURGUNDY);
-  const titleLines = doc.splitTextToSize(title.toUpperCase(), CW - 30);
+  doc.setFontSize(18);
+  let titleLines = doc.splitTextToSize(safeTitle, titleMaxW);
+  if (titleLines.length > 2) {
+    doc.setFontSize(16);
+    titleLines = doc.splitTextToSize(safeTitle, titleMaxW);
+  }
+
+  const headerH = Math.max(39, 28 + titleLines.length * 7);
+
+  doc.setFillColor(...C_HEADER_BG);
+  doc.setDrawColor(...C_DIVIDER_H);
+  doc.setLineWidth(0.25);
+  doc.rect(headerX, headerY, CW, headerH, "FD");
+
+  doc.setFillColor(...C_BURGUNDY_DARK);
+  doc.rect(headerX, headerY, 2.4, headerH, "F");
+
+  doc.setDrawColor(...C_GOLD);
+  doc.setLineWidth(0.45);
+  doc.line(headerX + 8, headerY + 6, PAGE_W - MR - 30, headerY + 6);
+
+  doc.setFont(FONT_SANS, "bold");
+  doc.setFontSize(6.5);
+  doc.setTextColor(...C_GOLD_DARK);
+  doc.text("INSTRUMENTO PARTICULAR", PAGE_W / 2, headerY + 13, { align: "center" });
+
+  doc.setFont(FONT_SERIF, "bold");
+  doc.setFontSize(titleLines.length > 2 ? 16 : 18);
+  doc.setTextColor(...C_BURGUNDY_DARK);
+  let titleY = headerY + 23;
   titleLines.forEach((line) => {
-    doc.text(line, PAGE_W / 2, pageY, { align: "center" });
-    pageY += 7;
+    doc.text(line, PAGE_W / 2, titleY, { align: "center", maxWidth: titleMaxW });
+    titleY += 7.2;
   });
 
-  // Lower gold rule (shorter)
-  pageY += 1;
-  doc.setDrawColor(...C_GOLD);
-  doc.setLineWidth(0.25);
-  const ruleW2 = Math.min(CW * 0.2, 40);
-  doc.line(PAGE_W / 2 - ruleW2 / 2, pageY, PAGE_W / 2 + ruleW2 / 2, pageY);
-  pageY += 9;
+  doc.setDrawColor(...C_GOLD_LIGHT);
+  doc.setLineWidth(0.22);
+  doc.line(PAGE_W / 2 - 35, titleY - 2, PAGE_W / 2 + 35, titleY - 2);
+
+  if (docCode) {
+    doc.setFont(FONT_SANS, "normal");
+    doc.setFontSize(5.8);
+    doc.setTextColor(...C_MUTED);
+    doc.text(`Código ${docCode}`, PAGE_W / 2, headerY + headerH - 6, { align: "center" });
+  }
+
+  pageY = headerY + headerH + 8;
 
   doc.setTextColor(...C_TEXT);
 };
 
 const renderLegalBasis = (doc, legislation) => {
-  if (!legislation || !legislation.trim()) return;
+  const cleanLegislation = normalizePdfText(legislation);
+  if (!cleanLegislation.trim()) return;
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(8);
-  const lawLines = doc.splitTextToSize(legislation, CW - 22);
-  const boxH = Math.max(16, 11 + lawLines.length * 4.2);
+  doc.setFontSize(8.8);
+  const lawLines = doc.splitTextToSize(cleanLegislation, CW - 24);
+  const lineH = 4.7;
+  const boxH = Math.max(18, 12.5 + lawLines.length * lineH);
   ensureSpace(doc, boxH + 8);
 
-  pageY += 2;
+  pageY += 1;
   const boxX = ML;
   const boxW = CW;
   const boxY = pageY;
@@ -156,21 +227,21 @@ const renderLegalBasis = (doc, legislation) => {
   doc.rect(boxX, boxY, boxW, boxH, "FD");
 
   doc.setFillColor(...C_GOLD);
-  doc.rect(boxX, boxY, 2.5, boxH, "F");
+  doc.rect(boxX, boxY, 3, boxH, "F");
 
   doc.setFont(FONT_SANS, "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(...C_GOLD);
-  doc.text("FUNDAMENTO LEGAL", boxX + 14, boxY + 5);
+  doc.setFontSize(7.2);
+  doc.setTextColor(...C_GOLD_DARK);
+  doc.text("FUNDAMENTO LEGAL", boxX + 14, boxY + 5.5);
 
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(8.8);
   doc.setTextColor(...C_INK);
   lawLines.forEach((line, i) => {
-    doc.text(line, boxX + 14, boxY + 10 + i * 4.2);
+    doc.text(line, boxX + 14, boxY + 11.5 + i * lineH);
   });
 
-  pageY = boxY + boxH + 6;
+  pageY = boxY + boxH + 7;
   doc.setTextColor(...C_TEXT);
 };
 
@@ -178,8 +249,8 @@ const renderLegalBasis = (doc, legislation) => {
 
 const renderParagraph = (doc, text) => {
   if (!text || !text.trim()) return;
-  renderTextBlock(doc, text, 9, { indent: 7 });
-  pageY += 2;
+  renderTextBlock(doc, text, BODY_SIZE, { indent: 5, leading: LEAD });
+  pageY += 3;
 };
 
 const renderClause = (doc, clause) => {
@@ -188,57 +259,57 @@ const renderClause = (doc, clause) => {
   const hasParagraphs = clause.paragraphs && clause.paragraphs.length > 0;
   if (!hasTitle && !hasText && !hasParagraphs) return;
 
-  if (wouldOrphan(pageY, hasTitle ? 2 : 1)) newPage(doc);
+  doc.setFont(FONT_SERIF, "bold");
+  doc.setFontSize(10);
+  const titleLines = hasTitle
+    ? doc.splitTextToSize(normalizePdfText(clause.title).toUpperCase(), CW - 20)
+    : [];
+  const headerH = hasTitle ? 9.5 + titleLines.length * 4.7 : 8.5;
 
-  ensureSpace(doc, 12);
+  if (wouldOrphan(pageY, Math.ceil(headerH / LEAD) + 1)) newPage(doc);
+  ensureSpace(doc, headerH + 6);
 
-  // Gold left bar
+  const headerY = pageY;
+  doc.setFillColor(...C_CREAM);
+  doc.setDrawColor(...C_DIVIDER_H);
+  doc.setLineWidth(0.12);
+  doc.rect(ML, headerY - 1.5, CW, headerH + 1.5, "FD");
+
   doc.setFillColor(...C_GOLD);
-  doc.rect(ML, pageY - 1, 2, hasTitle ? 10 : 7, "F");
+  doc.rect(ML, headerY - 1.5, 2.6, headerH + 1.5, "F");
 
-  // Clause number
   doc.setFont(FONT_SANS, "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...C_GOLD);
-  doc.text(`CL\u00c1USULA ${clause.number}`, ML + 6, pageY + 0.5);
-  pageY += LEAD;
+  doc.setFontSize(7.7);
+  doc.setTextColor(...C_GOLD_DARK);
+  doc.text(`CLÁUSULA ${clause.number}`, ML + 7, headerY + 2.2);
 
   if (hasTitle) {
     doc.setFont(FONT_SERIF, "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(...C_BURGUNDY);
-    doc.text(clause.title, ML + 6, pageY + 0.5);
-    pageY += LEAD + 0.5;
+    doc.setFontSize(10);
+    doc.setTextColor(...C_BURGUNDY_DARK);
+    titleLines.forEach((line, index) => {
+      doc.text(line, ML + 7, headerY + 7.3 + index * 4.7, { maxWidth: CW - 20 });
+    });
   }
 
-  // Fine underline
-  doc.setDrawColor(...C_GOLD_LIGHT);
-  doc.setLineWidth(0.1);
-  doc.line(ML + 6, pageY - 0.3, ML + CW * 0.4, pageY - 0.3);
-  pageY += 1.5;
+  pageY = headerY + headerH + 3.5;
 
   if (hasText) {
-    renderTextBlock(doc, clause.text, 9, { indent: 0 });
+    renderTextBlock(doc, clause.text, BODY_SIZE, { indent: 0, leading: LEAD_TIGHT });
+    pageY += 1.2;
   }
 
   if (hasParagraphs) {
     clause.paragraphs.forEach((p) => {
-      ensureSpace(doc, LEAD + 1);
-      const indent = /^[§IVX\d]/.test(p.trim()) ? 8 : 4;
-      doc.setFont(FONT_SERIF, "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...C_TEXT);
-      const pLines = doc.splitTextToSize(p, CW - indent);
-      pLines.forEach((line) => {
-        ensureSpace(doc, LEAD_TIGHT);
-        doc.text(line, ML + indent, pageY, { maxWidth: CW - indent });
-        pageY += LEAD_TIGHT;
-      });
-      pageY += 1.2;
+      const cleanParagraph = normalizePdfText(p).trim();
+      if (!cleanParagraph) return;
+      const indent = /^[§IVX\d]/.test(cleanParagraph) ? 8 : 4;
+      renderTextBlock(doc, cleanParagraph, BODY_SIZE, { indent, leading: LEAD_TIGHT });
+      pageY += 1.6;
     });
   }
 
-  pageY += 2.5;
+  pageY += 3;
 };
 
 const renderClosing = (doc, text) => {
@@ -246,9 +317,9 @@ const renderClosing = (doc, text) => {
   ensureSpace(doc, 12);
   pageY += 2;
   doc.setFont(FONT_SERIF, "italic");
-  doc.setFontSize(9);
+  doc.setFontSize(9.6);
   doc.setTextColor(...C_SUBTLE);
-  const lines = doc.splitTextToSize(text, CW);
+  const lines = doc.splitTextToSize(normalizePdfText(text), CW);
   lines.forEach((line) => {
     ensureSpace(doc, LEAD);
     doc.text(line, ML, pageY);
@@ -268,9 +339,9 @@ const renderDate = (doc, text) => {
   ensureSpace(doc, 10);
   pageY += 4;
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(9.8);
   doc.setTextColor(...C_TEXT);
-  doc.text(dateOnly, PAGE_W / 2, pageY, { align: "center" });
+  doc.text(normalizePdfText(dateOnly), PAGE_W / 2, pageY, { align: "center" });
   pageY += 10;
 };
 
@@ -475,24 +546,6 @@ const drawWatermark = (doc) => {
   doc.restoreGraphicsState();
 };
 
-// ─── Side stamp (code vertical, subtle) ──────────────────────────────────
-
-const drawSideStamp = (doc) => {
-  if (!docCode) return;
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFont(FONT_SANS, "bold");
-    doc.setFontSize(5);
-    doc.setTextColor(...C_MUTED);
-    const chars = docCode.split("");
-    const startY = PAGE_H - MB - 6;
-    chars.forEach((char, i) => {
-      doc.text(char, ML - 2.5, startY - i * 3.2, { baseline: "middle" });
-    });
-  }
-};
-
 // ─── Footer ─────────────────────────────────────────────────────────────
 
 const drawFooter = (doc) => {
@@ -622,11 +675,11 @@ export const generateLegalPDF = (formData, docType, disabledFields = {}, variant
   docCode = shortDocumentCode(documentCode);
   const validationURL = getValidationURL(documentCode);
 
-  // QR code at top-right (small, discreet)
-  drawQRTopRight(doc, validationURL);
-
   // Header with document name in gold/burgundy
   drawHeader(doc, docType?.name || "Documento Jur\u00eddico");
+
+  // QR code at top-right (small, discreet)
+  drawQRTopRight(doc, validationURL);
 
   // Legal basis box
   renderLegalBasis(doc, docType?.legislation);
@@ -641,9 +694,6 @@ export const generateLegalPDF = (formData, docType, disabledFields = {}, variant
 
   // Stamp/seal space on last page
   renderStampSpace(doc);
-
-  // Side stamp on all pages
-  drawSideStamp(doc);
 
   // Footer on all pages
   drawFooter(doc);

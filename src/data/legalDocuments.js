@@ -226,7 +226,7 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
       );
 
       result = result.substring(0, openBrace) + interpolated + result.substring(closeBrace + 1);
-      scanPos = openBrace + interpolated.length;
+      scanPos = openBrace;
     }
 
     // ── Passo 1: segmentos condicionais {?, ...{field}...} ───────────────
@@ -257,7 +257,7 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
       );
 
       result = result.substring(0, openBrace) + interpolated + result.substring(closeBrace + 1);
-      scanPos = openBrace + interpolated.length;
+      scanPos = openBrace;
     }
 
     // ── Passo 2: campos opcionais simples {fieldKey?} ─────────────────────

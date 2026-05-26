@@ -152,12 +152,14 @@ const compraVenda = {
             example: "São Paulo, SP",
           }),
           field("matricula", "Matrícula do Imóvel", "text", {
-            required: true,
+            required: false,
             placeholder: "Número da matrícula",
             example: "Matrícula nº 12.345",
             hint: "A matrícula é o 'RG do imóvel' — um número único que identifica o imóvel no Cartório de Registro. Cada imóvel tem uma matrícula própria.",
             whereFind: "Na escritura do imóvel ou solicite uma 'Certidão de Matrícula' no Cartório de Registro de Imóveis da região. Custa em média R$ 50 a R$ 80.",
-            whyImportant: "Sem a matrícula, não é possível comprovar a propriedade do imóvel. É o dado mais importante do contrato de compra e venda.",
+            whyImportant: "Quando disponível, ajuda a identificar o imóvel com mais precisão e reduz risco de dúvida sobre o bem negociado.",
+            whatHappensIfEmpty: "O contrato será gerado identificando o imóvel pelo tipo, endereço, cidade e demais descrições preenchidas.",
+            disableable: true,
           }),
           field("cartorio", "Cartório de Registro", "text", {
             required: false,
@@ -165,7 +167,7 @@ const compraVenda = {
             example: "1º Cartório de Registro de Imóveis de São Paulo",
             hint: "Nome do cartório onde o imóvel está registrado. Geralmente começa com um número (1º, 2º, etc.) seguido de 'Cartório de Registro de Imóveis'.",
             whereFind: "Na escritura do imóvel ou na certidão de matrícula. Também pode ser consultado pelo site do Registro de Imóveis da cidade.",
-            whatHappensIfEmpty: "O contrato será gerado sem o nome do cartório. A matrícula já é suficiente para identificar o registro.",
+            whatHappensIfEmpty: "O contrato será gerado sem o nome do cartório, mantendo os demais dados de identificação do imóvel.",
             disableable: true,
           }),
           field("area_total", "Área Total (m²)", "text", {
@@ -183,7 +185,7 @@ const compraVenda = {
             example:
               "Imóvel composto de 3 quartos, sendo 1 suíte, sala, cozinha, 2 banheiros, garagem para 2 carros, área total de 120m².",
             hint: "Descreva o imóvel com detalhes: quantidade de quartos, banheiros, garagem, área de lazer, etc. Quanto mais detalhado, mais seguro o contrato.",
-            whatHappensIfEmpty: "O contrato identificará o imóvel apenas pelo endereço e matrícula.",
+            whatHappensIfEmpty: "O contrato identificará o imóvel pelo tipo, endereço, cidade e demais dados preenchidos.",
             disableable: true,
           }),
           field("possui_financiamento", "Possui Financiamento?", "select", {
@@ -294,12 +296,14 @@ const compraVenda = {
             example: "Campinas, SP",
           }),
           field("matricula_terreno", "Matrícula do Terreno", "text", {
-            required: true,
+            required: false,
             placeholder: "Número da matrícula",
             example: "Matrícula nº 54.321",
             hint: "A matrícula é o 'RG do terreno' — um número único no Cartório de Registro de Imóveis que comprova quem é o dono.",
             whereFind: "Escritura do terreno ou solicite uma certidão no Cartório de Registro de Imóveis da região.",
-            whyImportant: "Sem matrícula não é possível comprovar a propriedade. É o dado mais importante da venda.",
+            whyImportant: "Quando disponível, ajuda a identificar o terreno com mais precisão e reduz risco de dúvida sobre o bem negociado.",
+            whatHappensIfEmpty: "O contrato será gerado identificando o terreno pela localização, cidade, área e demais descrições preenchidas.",
+            disableable: true,
           }),
           field("area_terreno", "Área Total (m²)", "text", {
             required: true,
@@ -390,7 +394,7 @@ const compraVenda = {
         number: "1ª",
         title: "DO OBJETO",
         paragraphs: [
-          "O(A) VENDEDOR(A) promete vender ao(à) COMPRADOR(A), que promete comprar, o imóvel do tipo {tipo_imovel} situado em {endereco_imovel}, {cidade_imovel}, de matrícula n.º {matricula}{?, , registrado no {cartorio}}.",
+          "O(A) VENDEDOR(A) promete vender ao(à) COMPRADOR(A), que promete comprar, o imóvel do tipo {tipo_imovel} situado em {endereco_imovel}, {cidade_imovel}{?, , de matrícula n.º {matricula}}{?, , registrado no {cartorio}}.",
           "{?, O imóvel possui área total de {area_total}.}",
           "{?, Descrição do imóvel: {descricao_imovel_texto}.}",
           "{?, Situação do financiamento: {possui_financiamento}.}",
@@ -563,7 +567,7 @@ const compraVenda = {
         number: "1ª",
         title: "DO OBJETO",
         paragraphs: [
-          "O(A) VENDEDOR(A) vende ao(à) COMPRADOR(A) o terreno localizado em {endereco_terreno}, {cidade_terreno}, de matrícula n.º {matricula_terreno}, com área total de {area_terreno}.",
+          "O(A) VENDEDOR(A) vende ao(à) COMPRADOR(A) o terreno localizado em {endereco_terreno}, {cidade_terreno}{?, , de matrícula n.º {matricula_terreno}}, com área total de {area_terreno}.",
           "{?, Medidas do terreno: frente com {medida_frente}{?, , fundos com {medida_fundo}}{?, , lateral direita com {medida_direita}}{?, , lateral esquerda com {medida_esquerda}}.}",
           "{?, Confrontantes: {confrontantes}.}",
           "{?, Zoneamento: {zoneamento}.}",

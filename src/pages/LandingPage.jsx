@@ -453,14 +453,14 @@ const LandingPage = () => {
             <div className="max-w-[680px] mb-10">
               <p className="text-xs text-gold font-extrabold uppercase tracking-[0.16em] mb-3">Planos</p>
               <h2 className="font-display text-3xl md:text-4xl font-black text-text mb-3">Pague pelo documento que precisar.</h2>
-              <p className="text-text-dim text-lg">Sem painel confuso, sem etapas desnecessárias e com opção personalizada quando o caso exigir.</p>
+              <p className="text-text-dim text-lg">Comece grátis, pague por avulso ou assine. Sem painel confuso, sem etapas desnecessárias.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {PRICING_PLANS.map((plan, index) => (
                 <article
                   key={plan.id}
-                  className="surface-card surface-hover relative"
+                  className="surface-card surface-hover relative animate-fade-up"
                   style={{
                     padding: 24,
                     borderRadius: 16,
@@ -487,7 +487,7 @@ const LandingPage = () => {
                     ))}
                   </ul>
                   <button onClick={() => navigate("login")} className={plan.highlight ? "btn-primary w-full" : "btn-secondary w-full"}>
-                    Escolher
+                    {plan.id === "gratuito" ? "Começar grátis" : "Escolher"}
                   </button>
                 </article>
               ))}

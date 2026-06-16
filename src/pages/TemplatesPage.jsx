@@ -22,21 +22,22 @@ const CATEGORY_TEMPLATE_IDS = {
 
 const LEGAL_CATEGORIES = [
   { id: "all", label: "Todos", icon: "Grid" },
-  { id: "contratos", label: "Contratos", icon: "FileText", docIds: ["compra-venda", "locacao", "comodato", "permuta"] },
+  { id: "contratos", label: "Contratos", icon: "FileText", docIds: ["compra-venda", "locacao", "comodato", "permuta", "prestacao-servicos"] },
   { id: "pessoais", label: "Pessoais", icon: "Users", docIds: ["procuracao", "doacao", "uniao-estavel", "autorizacao-viagem"] },
   { id: "financeiros", label: "Financeiros", icon: "Money", docIds: ["recibo"] },
 ];
 
 const LEGAL_DOC_COLORS = {
-  "compra-venda": { accent: "#14FFEC", bg: "#0D7377" },
-  "locacao": { accent: "#3498DB", bg: "#1E3A5F" },
-  "procuracao": { accent: "#A855F7", bg: "#533483" },
-  "doacao": { accent: "#FF6B81", bg: "#E94560" },
-  "recibo": { accent: "#F9A825", bg: "#00838F" },
-  "uniao-estavel": { accent: "#FF6B81", bg: "#C62828" },
-  "autorizacao-viagem": { accent: "#00D2D3", bg: "#0F3460" },
-  "comodato": { accent: "#95A5A6", bg: "#2C3E50" },
-  "permuta": { accent: "#F7C948", bg: "#E65100" },
+  "compra-venda":        { accent: "#14FFEC", bg: "#0D7377" },
+  "locacao":             { accent: "#3498DB", bg: "#1E3A5F" },
+  "procuracao":          { accent: "#A855F7", bg: "#533483" },
+  "doacao":              { accent: "#FF6B81", bg: "#E94560" },
+  "recibo":              { accent: "#F9A825", bg: "#00838F" },
+  "uniao-estavel":       { accent: "#FF6B81", bg: "#C62828" },
+  "autorizacao-viagem":  { accent: "#00D2D3", bg: "#0F3460" },
+  "comodato":            { accent: "#95A5A6", bg: "#2C3E50" },
+  "permuta":             { accent: "#F7C948", bg: "#E65100" },
+  "prestacao-servicos":  { accent: "#14B8A6", bg: "#1C3144" },
 };
 
 // ─── ResumeMiniPreview ──────────────────────────────────────────────────────

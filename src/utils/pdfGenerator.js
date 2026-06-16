@@ -3,15 +3,15 @@
  * KRIOU DOCS — Professional Resume PDF Generator
  * ============================================
  * Two-column layout: sidebar (30%) + main content (70%).
- * No solid colored blocks. Clean editorial design with
- * fine lines and subtle accents.
+ * Clean editorial design with fine lines and subtle accents.
  *
  * Design principles:
  * - Never pure black (#000) or pure white (#FFF)
- * - No side-stripe borders as decorative elements
  * - Typography: Times (serif) for name/headings, Helvetica for body
  * - Template color used sparingly — accents only, not backgrounds
  * - Fine dividers (0.15mm), generous whitespace
+ * - Full multi-page support with automatic page breaks
+ * - Sidebar background drawn BEFORE content (correct PDF layering)
  *
  * @module utils/pdfGenerator
  */
@@ -19,28 +19,32 @@
 import { jsPDF } from "jspdf";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PAGE_W = 210;
-const PAGE_H = 297;
-const MARGIN = 14;
+const PAGE_W  = 210;
+const PAGE_H  = 297;
+const MARGIN  = 14;
 
 // Sidebar occupies left portion
-const SIDEBAR_W = 58;
-const SIDEBAR_X = MARGIN;
-const MAIN_GAP = 7;                     // gap between sidebar and main column
-const MAIN_X = SIDEBAR_X + SIDEBAR_W + MAIN_GAP;
-const MAIN_W = PAGE_W - MAIN_X - MARGIN;
+const SIDEBAR_W   = 58;
+const SIDEBAR_X   = MARGIN;
+const MAIN_GAP    = 7;
+const MAIN_X      = SIDEBAR_X + SIDEBAR_W + MAIN_GAP;
+const MAIN_W      = PAGE_W - MAIN_X - MARGIN;
+
+// Footer reserve (mm from bottom)
+const FOOTER_RESERVE = 16;
+const CONTENT_BOTTOM = PAGE_H - MARGIN - FOOTER_RESERVE;
 
 // Color palette — neutros tingidos (never pure black)
-const C_DARK      = [38, 42, 52];       // body heading text
-const C_TEXT      = [58, 62, 72];       // body paragraph text
-const C_MUTED     = [130, 134, 140];    // secondary labels
-const C_LIGHT     = [175, 178, 182];    // very subtle text
-const C_DIVIDER   = [222, 220, 215];    // fine lines — warm gray
-const C_BG_TINT   = 0.04;               // sidebar background tint opacity
+const C_DARK    = [38, 42, 52];
+const C_TEXT    = [58, 62, 72];
+const C_MUTED   = [130, 134, 140];
+const C_LIGHT   = [175, 178, 182];
+const C_DIVIDER = [222, 220, 215];
+const C_BG_TINT = 0.04;
 
 // Typography
-const FONT_HEADING  = "times";
-const FONT_BODY     = "helvetica";
+const FONT_HEADING = "times";
+const FONT_BODY    = "helvetica";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,30 +62,25 @@ const getInitials = (name) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-/**
- * Draw a thin horizontal divider line.
- */
-const drawDivider = (doc, x, y, width, alpha = 0.6) => {
+const drawDivider = (doc, x, y, width) => {
   doc.setDrawColor(...C_DIVIDER);
   doc.setLineWidth(0.15);
   doc.line(x, y, x + width, y);
 };
 
+// ─── Sidebar Background ───────────────────────────────────────────────────────
+
 /**
- * Draw sidebar background tint (subtle colored rectangle with low opacity).
- * Uses GState for transparency support in jsPDF v4.
+ * Draw sidebar tinted background on the CURRENT page.
+ * Must be called at the start of each new page, before any content.
  */
-const drawSidebarBg = (doc, primaryRgb) => {
-  const pageCount = doc.getNumberOfPages();
-  for (let p = 1; p <= pageCount; p++) {
-    doc.setPage(p);
-    const gs = new doc.GState({ opacity: C_BG_TINT });
-    doc.setGState(gs);
-    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    doc.rect(SIDEBAR_X, MARGIN, SIDEBAR_W, PAGE_H - MARGIN * 2, "F");
-    // Reset GState to full opacity
-    doc.setGState(new doc.GState({ opacity: 1 }));
-  }
+const drawSidebarTint = (doc, primaryRgb) => {
+  const gs = new doc.GState({ opacity: C_BG_TINT });
+  doc.setGState(gs);
+  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.rect(SIDEBAR_X, MARGIN, SIDEBAR_W, PAGE_H - MARGIN * 2, "F");
+  doc.setGState(new doc.GState({ opacity: 1 }));
+  doc.setTextColor(...C_TEXT);
 };
 
 // ─── Sidebar Content ──────────────────────────────────────────────────────────
@@ -91,17 +90,14 @@ const drawSidebarBg = (doc, primaryRgb) => {
  */
 const drawMonogram = (doc, initials, primaryRgb, accentRgb, y) => {
   const centerX = SIDEBAR_X + SIDEBAR_W / 2;
-  const radius = 13;
+  const radius  = 13;
 
-  // Outer circle — primary color
   doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.circle(centerX, y + radius, radius, "F");
 
-  // Inner circle — accent color (smaller, inset)
   doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
   doc.circle(centerX, y + radius, radius - 2, "F");
 
-  // Initials — white, times bold
   doc.setTextColor(255, 255, 255);
   doc.setFont(FONT_HEADING, "bold");
   doc.setFontSize(radius * 0.9);
@@ -116,18 +112,15 @@ const drawMonogram = (doc, initials, primaryRgb, accentRgb, y) => {
 const renderSidebarSection = (doc, label, items, y, primaryRgb, indent = 3) => {
   if (!items || items.length === 0) return y;
 
-  // Section label — accent color, small caps
   doc.setFont(FONT_BODY, "bold");
   doc.setFontSize(7.5);
   doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
   doc.text(label, SIDEBAR_X + indent, y);
   y += 5;
 
-  // Thin line under label
   drawDivider(doc, SIDEBAR_X + indent, y - 1, SIDEBAR_W - indent * 2);
   y += 4;
 
-  // Items
   doc.setFont(FONT_BODY, "normal");
   doc.setFontSize(8);
   doc.setTextColor(...C_TEXT);
@@ -159,7 +152,7 @@ const renderSidebarSection = (doc, label, items, y, primaryRgb, indent = 3) => {
 // ─── Main Content ─────────────────────────────────────────────────────────────
 
 /**
- * Render a section header in the main column — accent-colored with thin underline.
+ * Render a section header in the main column.
  */
 const renderMainSectionHeader = (doc, title, y, accentRgb) => {
   doc.setFont(FONT_BODY, "bold");
@@ -168,7 +161,6 @@ const renderMainSectionHeader = (doc, title, y, accentRgb) => {
   doc.text(title, MAIN_X, y);
   y += 3.5;
 
-  // Thin accent underline (40% of content width)
   doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
   doc.setLineWidth(0.3);
   doc.line(MAIN_X, y, MAIN_X + MAIN_W * 0.4, y);
@@ -178,29 +170,10 @@ const renderMainSectionHeader = (doc, title, y, accentRgb) => {
   return y;
 };
 
-/**
- * Render text with optional leading and indent.
- */
-const renderText = (doc, text, x, y, maxWidth, { font = FONT_BODY, size = 9, color = C_TEXT, leading = 4.5 } = {}) => {
-  if (!text || text.trim() === "") return y;
-
-  doc.setFont(font, "normal");
-  doc.setFontSize(size);
-  doc.setTextColor(...color);
-
-  const lines = doc.splitTextToSize(text, maxWidth);
-  lines.forEach((line) => {
-    doc.text(line, x, y);
-    y += leading;
-  });
-
-  return y;
-};
-
 // ─── Main Generator ───────────────────────────────────────────────────────────
 
 /**
- * Generate a professional resume PDF.
+ * Generate a professional resume PDF with automatic page breaks.
  *
  * @param {Object} formData  - Resume form data
  * @param {Object} template  - Selected template config { color, accent, id, name }
@@ -209,23 +182,37 @@ const renderText = (doc, text, x, y, maxWidth, { font = FONT_BODY, size = 9, col
 export const generateResumePDF = (formData, template) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const primaryRgb   = hexToRgb(template?.color || "#1E3A5F");
-  const accentRgb    = hexToRgb(template?.accent || "#3498DB");
-  const initials     = getInitials(formData.nome);
-  const fullName     = (formData.nome || "Nome Completo").trim();
+  const primaryRgb = hexToRgb(template?.color || "#1E3A5F");
+  const accentRgb  = hexToRgb(template?.accent || "#3498DB");
+  const initials   = getInitials(formData.nome);
+  const fullName   = (formData.nome || "Nome Completo").trim();
 
-  // ── Build contact items for sidebar ──────────────────────────────────────
+  // ── Page management ──────────────────────────────────────────────────────
+  let mainY = MARGIN + 9;
+
+  const addMainPage = () => {
+    doc.addPage();
+    drawSidebarTint(doc, primaryRgb);
+    mainY = MARGIN + 9;
+  };
+
+  const ensureMain = (needed) => {
+    if (mainY + (needed || 10) > CONTENT_BOTTOM) addMainPage();
+  };
+
+  // ── Draw sidebar background on page 1 BEFORE any content ────────────────
+  drawSidebarTint(doc, primaryRgb);
+
+  // ── Build sidebar data ───────────────────────────────────────────────────
   const contactItems = [];
-  if (formData.email)        contactItems.push(formData.email);
-  if (formData.telefone)     contactItems.push(formData.telefone);
-  if (formData.cidade)       contactItems.push(formData.cidade);
-  if (formData.linkedin)     contactItems.push(formData.linkedin);
-  if (formData.portfolio)    contactItems.push(formData.portfolio);
+  if (formData.email)          contactItems.push(formData.email);
+  if (formData.telefone)       contactItems.push(formData.telefone);
+  if (formData.cidade)         contactItems.push(formData.cidade);
+  if (formData.linkedin)       contactItems.push(formData.linkedin);
+  if (formData.portfolio)      contactItems.push(formData.portfolio);
   if (formData.dataNascimento) contactItems.push(formData.dataNascimento);
 
-  // ── Build skills list ────────────────────────────────────────────────────
   const skillItems = (formData.habilidades || []).map((s) => ({ text: s }));
-  // Add custom skills if present
   if (formData.habilidadesExtras && formData.habilidadesExtras.trim()) {
     formData.habilidadesExtras
       .split(/[,;\n]/)
@@ -234,7 +221,6 @@ export const generateResumePDF = (formData, template) => {
       .forEach((s) => skillItems.push({ text: s }));
   }
 
-  // ── Build languages list ─────────────────────────────────────────────────
   const langItems = (formData.idiomas || [])
     .filter((i) => i.idioma)
     .map((i) => ({ text: i.idioma, sub: i.nivel }));
@@ -242,11 +228,9 @@ export const generateResumePDF = (formData, template) => {
   // ── Sidebar rendering ────────────────────────────────────────────────────
   let sidebarY = MARGIN + 9;
 
-  // Monogram avatar
   drawMonogram(doc, initials, primaryRgb, accentRgb, sidebarY);
   sidebarY += 35;
 
-  // Full name in sidebar — times bold, primary color
   const nameLines = doc.splitTextToSize(fullName, SIDEBAR_W - 8);
   doc.setFont(FONT_HEADING, "bold");
   doc.setFontSize(14);
@@ -257,7 +241,6 @@ export const generateResumePDF = (formData, template) => {
   });
   sidebarY += 2;
 
-  // Accent title below name
   if (formData.cargo || formData.profissao) {
     doc.setFont(FONT_BODY, "normal");
     doc.setFontSize(7.5);
@@ -271,41 +254,33 @@ export const generateResumePDF = (formData, template) => {
     sidebarY += 6;
   }
 
-  // Divider below name
   sidebarY += 2;
   drawDivider(doc, SIDEBAR_X + 8, sidebarY, SIDEBAR_W - 16);
   sidebarY += 8;
 
-  // Contact section
-  sidebarY = renderSidebarSection(
-    doc, "CONTATO", contactItems, sidebarY, primaryRgb
-  );
+  sidebarY = renderSidebarSection(doc, "CONTATO", contactItems, sidebarY, primaryRgb);
 
-  // Skills section
   if (skillItems.length > 0) {
-    sidebarY = renderSidebarSection(
-      doc, "HABILIDADES", skillItems, sidebarY, primaryRgb
-    );
+    sidebarY = renderSidebarSection(doc, "HABILIDADES", skillItems, sidebarY, primaryRgb);
   }
 
-  // Languages section
   if (langItems.length > 0) {
-    sidebarY = renderSidebarSection(
-      doc, "IDIOMAS", langItems, sidebarY, primaryRgb
-    );
+    sidebarY = renderSidebarSection(doc, "IDIOMAS", langItems, sidebarY, primaryRgb);
   }
 
   // ── Main content rendering ───────────────────────────────────────────────
-  let mainY = MARGIN + 9;
 
   // Objective / Professional Summary
   if (formData.objetivo && formData.objetivo.trim()) {
+    ensureMain(22);
     mainY = renderMainSectionHeader(doc, "RESUMO PROFISSIONAL", mainY, accentRgb);
+
     doc.setFont(FONT_BODY, "normal");
     doc.setFontSize(9.5);
     doc.setTextColor(...C_TEXT);
     const objLines = doc.splitTextToSize(formData.objetivo, MAIN_W);
     objLines.forEach((line) => {
+      ensureMain(5);
       doc.text(line, MAIN_X, mainY);
       mainY += 5;
     });
@@ -315,16 +290,22 @@ export const generateResumePDF = (formData, template) => {
   // Professional Experience
   const activeExps = (formData.experiencias || []).filter((e) => e.empresa);
   if (activeExps.length > 0) {
+    ensureMain(22);
     mainY = renderMainSectionHeader(doc, "EXPERIÊNCIA PROFISSIONAL", mainY, accentRgb);
 
     activeExps.forEach((exp, idx) => {
-      // Job title — bold
+      // Estimate height for this entry to avoid orphaned headers
+      const descLines = exp.descricao
+        ? doc.splitTextToSize(exp.descricao, MAIN_W).length
+        : 0;
+      const entryH = 10 + descLines * 4.2 + 6;
+      ensureMain(Math.min(entryH, 40));
+
       doc.setFont(FONT_BODY, "bold");
       doc.setFontSize(10);
       doc.setTextColor(...C_DARK);
       doc.text(exp.cargo || "Cargo", MAIN_X, mainY);
 
-      // Period — right aligned, muted
       if (exp.periodo) {
         doc.setFont(FONT_BODY, "normal");
         doc.setFontSize(7.5);
@@ -335,26 +316,24 @@ export const generateResumePDF = (formData, template) => {
 
       mainY += 5;
 
-      // Company — accent color, semibold
       doc.setFont(FONT_BODY, "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
       doc.text(exp.empresa, MAIN_X, mainY);
       mainY += 5;
 
-      // Description
       if (exp.descricao && exp.descricao.trim()) {
         doc.setFont(FONT_BODY, "normal");
         doc.setFontSize(8.5);
         doc.setTextColor(...C_TEXT);
         const descLines = doc.splitTextToSize(exp.descricao, MAIN_W);
         descLines.forEach((line) => {
+          ensureMain(4.5);
           doc.text(line, MAIN_X, mainY);
           mainY += 4.2;
         });
       }
 
-      // Space between entries except last
       mainY += idx < activeExps.length - 1 ? 6 : 4;
     });
 
@@ -364,9 +343,12 @@ export const generateResumePDF = (formData, template) => {
   // Education
   const activeEdus = (formData.formacoes || []).filter((f) => f.instituicao);
   if (activeEdus.length > 0) {
+    ensureMain(22);
     mainY = renderMainSectionHeader(doc, "FORMAÇÃO ACADÊMICA", mainY, accentRgb);
 
     activeEdus.forEach((edu, idx) => {
+      ensureMain(16);
+
       doc.setFont(FONT_BODY, "bold");
       doc.setFontSize(10);
       doc.setTextColor(...C_DARK);
@@ -385,8 +367,13 @@ export const generateResumePDF = (formData, template) => {
       doc.setFont(FONT_BODY, "normal");
       doc.setFontSize(9);
       doc.setTextColor(...C_TEXT);
-      doc.text(`${edu.instituicao}${edu.status ? " \u2014 " + edu.status : ""}`, MAIN_X, mainY);
-      mainY += 5;
+      const instText = `${edu.instituicao}${edu.status ? " — " + edu.status : ""}`;
+      const instLines = doc.splitTextToSize(instText, MAIN_W);
+      instLines.forEach((line) => {
+        ensureMain(5);
+        doc.text(line, MAIN_X, mainY);
+        mainY += 5;
+      });
 
       mainY += idx < activeEdus.length - 1 ? 3 : 2;
     });
@@ -396,38 +383,57 @@ export const generateResumePDF = (formData, template) => {
 
   // Courses / Certifications
   if (formData.cursos && formData.cursos.trim()) {
+    ensureMain(20);
     mainY = renderMainSectionHeader(doc, "CURSOS E CERTIFICAÇÕES", mainY, accentRgb);
 
     doc.setFont(FONT_BODY, "normal");
     doc.setFontSize(9);
     doc.setTextColor(...C_TEXT);
-    const courseLines = doc.splitTextToSize(formData.cursos, MAIN_W);
-    courseLines.forEach((line) => {
-      doc.text(`\u2022 ${line}`, MAIN_X, mainY);
-      mainY += 5;
+
+    // Split by newlines to get individual course items
+    const courseItems = formData.cursos
+      .split(/\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    courseItems.forEach((item) => {
+      const lines = doc.splitTextToSize(item, MAIN_W - 6);
+      ensureMain(lines.length * 4.5 + 2);
+
+      // First line gets bullet
+      doc.text(`• ${lines[0]}`, MAIN_X, mainY);
+      mainY += 4.5;
+
+      // Continuation lines indented (no extra bullet)
+      for (let i = 1; i < lines.length; i++) {
+        ensureMain(4.5);
+        doc.text(lines[i], MAIN_X + 4, mainY);
+        mainY += 4.5;
+      }
+      mainY += 1;
     });
-    mainY += 4;
+
+    mainY += 3;
   }
 
-  // Additional info (optional fields like CNH, disponibilidade, etc.)
+  // Additional info
   const extras = [];
-  if (formData.cnh)                  extras.push(`CNH: ${formData.cnh}`);
-  if (formData.disponibilidade)      extras.push(`Disponibilidade: ${formData.disponibilidade}`);
-  if (formData.pretensaoSalarial)    extras.push(`Pretensão Salarial: ${formData.pretensaoSalarial}`);
+  if (formData.cnh)               extras.push(`CNH: ${formData.cnh}`);
+  if (formData.disponibilidade)   extras.push(`Disponibilidade: ${formData.disponibilidade}`);
+  if (formData.pretensaoSalarial) extras.push(`Pretensão Salarial: ${formData.pretensaoSalarial}`);
+
   if (extras.length > 0) {
+    ensureMain(18 + extras.length * 5);
     mainY = renderMainSectionHeader(doc, "INFORMAÇÕES ADICIONAIS", mainY, accentRgb);
     doc.setFont(FONT_BODY, "normal");
     doc.setFontSize(9);
     doc.setTextColor(...C_TEXT);
     extras.forEach((extra) => {
-      doc.text(`\u2022 ${extra}`, MAIN_X, mainY);
+      ensureMain(5);
+      doc.text(`• ${extra}`, MAIN_X, mainY);
       mainY += 5;
     });
   }
-
-  // ── Sidebar background (drawn after all content for full page coverage) ──
-  // Use a very subtle tinted sidebar background
-  drawSidebarBg(doc, primaryRgb);
 
   // ── Footer on every page ─────────────────────────────────────────────────
   const pageCount = doc.getNumberOfPages();
@@ -436,21 +442,17 @@ export const generateResumePDF = (formData, template) => {
 
     const footerY = PAGE_H - MARGIN + 2;
 
-    // Thin divider line
     doc.setDrawColor(...C_DIVIDER);
     doc.setLineWidth(0.15);
     doc.line(MARGIN, footerY - 4, PAGE_W - MARGIN, footerY - 4);
 
-    // Left: branding
     doc.setFont(FONT_BODY, "normal");
     doc.setFontSize(6);
     doc.setTextColor(...C_LIGHT);
     doc.text("krioudocs.com.br", MARGIN, footerY);
 
-    // Center: page number
     doc.text(`${p} / ${pageCount}`, PAGE_W / 2, footerY, { align: "center" });
 
-    // Right: generation date
     const dateStr = new Date().toLocaleDateString("pt-BR");
     doc.text(dateStr, PAGE_W - MARGIN, footerY, { align: "right" });
   }
@@ -461,7 +463,7 @@ export const generateResumePDF = (formData, template) => {
 /**
  * Download a generated PDF file.
  *
- * @param {jsPDF} doc      - PDF document instance
+ * @param {jsPDF} doc       - PDF document instance
  * @param {string} filename - Output filename
  */
 export const downloadPDF = (doc, filename = "curriculo.pdf") => {

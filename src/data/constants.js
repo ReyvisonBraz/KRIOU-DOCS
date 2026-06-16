@@ -160,16 +160,18 @@ export const RESUME_TEMPLATES = [
   },
 ];
 
-// ─── Document Types (Coming Soon) ───
+// ─── Document Types ───
 export const DOC_TYPES = [
-  { id: "compra-venda", name: "Compra e Venda", icon: "FileText", available: false },
-  { id: "aluguel", name: "Contrato de Aluguel", icon: "Home", available: false },
-  { id: "procuracao", name: "Procuração", icon: "Shield", available: false },
-  { id: "doacao", name: "Doação", icon: "Award", available: false },
-  { id: "declaracao-residencia", name: "Decl. Residência", icon: "Home", available: false },
-  { id: "uniao-estavel", name: "União Estável", icon: "User", available: false },
-  { id: "oficio", name: "Ofício", icon: "FileText", available: false },
-  { id: "parceria", name: "Contrato Parceria", icon: "Briefcase", available: false },
+  { id: "compra-venda",       name: "Compra e Venda",          icon: "FileText",    available: true },
+  { id: "locacao",            name: "Contrato de Locação",     icon: "Home",        available: true },
+  { id: "procuracao",         name: "Procuração",              icon: "Shield",      available: true },
+  { id: "doacao",             name: "Doação",                  icon: "Award",       available: true },
+  { id: "recibo",             name: "Recibo",                  icon: "FileCheck",   available: true },
+  { id: "uniao-estavel",      name: "União Estável",           icon: "Users",       available: true },
+  { id: "autorizacao-viagem", name: "Autorização de Viagem",   icon: "Briefcase",   available: true },
+  { id: "comodato",           name: "Comodato",                icon: "Key",         available: true },
+  { id: "permuta",            name: "Permuta",                 icon: "Copy",        available: true },
+  { id: "prestacao-servicos", name: "Prestação de Serviços",   icon: "Zap",         available: true },
 ];
 
 // ─── Wizard Steps Definition ───
@@ -394,8 +396,20 @@ export const FIELD_HINTS = {
   },
 };
 
-// ─── Objective Suggestions ───
 export const PRICING_PLANS = [
+  {
+    id: "gratuito",
+    name: "Gratuito",
+    price: "R$ 0",
+    sub: "para começar",
+    features: [
+      "1 currículo gratuito",
+      "Modelos básicos",
+      "Download em PDF",
+      "Sem cartão necessário",
+    ],
+    highlight: false,
+  },
   {
     id: "avulso",
     name: "Avulso",

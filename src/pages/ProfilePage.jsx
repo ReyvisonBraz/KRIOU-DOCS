@@ -139,23 +139,33 @@ const ProfilePage = () => {
           <div
             aria-hidden="true"
             style={{
-              width: 108,
-              height: 108,
+              width: 116,
+              height: 116,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #F43F5E 0%, #A855F7 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              padding: 3,
               margin: "0 auto 18px",
-              fontSize: 40,
-              fontWeight: 900,
-              fontFamily: "var(--font-display)",
-              color: "#fff",
-              letterSpacing: "0.02em",
-              boxShadow: "0 8px 36px rgba(244,63,94,0.30), 0 2px 8px rgba(168,85,247,0.25)",
+              background: "linear-gradient(135deg, rgba(212,175,55,0.55) 0%, rgba(244,63,94,0.25) 60%, rgba(212,175,55,0.45) 100%)",
+              boxShadow: "0 8px 32px rgba(212,175,55,0.18), 0 2px 8px rgba(0,0,0,0.25)",
             }}
           >
-            {getUserInitials()}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 40,
+                fontWeight: 900,
+                fontFamily: "var(--font-display)",
+                color: "#fff",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {getUserInitials()}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 4 }}>
             <h1
@@ -208,24 +218,30 @@ const ProfilePage = () => {
           )}
         </div>
 
-        {/* ─── Stats (editorial) ─── */}
+        {/* ─── Stats (bento visual) ─── */}
         <Card
           className="animate-fadeUp"
-          style={{ marginBottom: 16, padding: "18px 20px" }}
+          style={{ marginBottom: 16, padding: 16 }}
         >
-          <p style={{
-            fontFamily: "var(--font-body)",
-            fontSize: 14, color: "var(--text-dim)", lineHeight: 1.6, margin: 0,
-          }}>
-            Você criou{" "}
-            <strong style={{ color: "var(--text)" }}>{docCount} documento{docCount !== 1 ? "s" : ""}</strong>
-            {finalizedCount > 0 && (
-              <>, dos quais <strong style={{ color: "var(--teal)" }}>{finalizedCount} estão finalizado{finalizedCount !== 1 ? "s" : ""}</strong></>
-            )}
-            {docCount > 0 && finalizedCount < docCount && (
-              <> e <strong style={{ color: "var(--coral)" }}>{docCount - finalizedCount} em rascunho</strong></>
-            )}.
-          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <ProfileStat
+              value={docCount}
+              label="Documentos"
+              accent="var(--text)"
+            />
+            <ProfileStat
+              value={finalizedCount}
+              label="Finalizados"
+              accent="var(--teal)"
+              divider
+            />
+            <ProfileStat
+              value={docCount - finalizedCount}
+              label="Rascunhos"
+              accent="var(--coral)"
+              divider
+            />
+          </div>
         </Card>
 
         {/* ─── Account Info ─── */}
@@ -333,20 +349,56 @@ const ProfilePage = () => {
         {/* ─── Plan Info ─── */}
         <Card
           className="animate-fadeUp delay-2"
-          style={{ marginBottom: 16, padding: 20 }}
+          style={{
+            marginBottom: 16,
+            padding: 0,
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
-          <h3
+          <div
+            aria-hidden="true"
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 15,
-              fontWeight: 700,
-              letterSpacing: "-0.01em",
-              color: "var(--text)",
-              marginBottom: 14,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: 4,
+              background: "linear-gradient(180deg, var(--gold) 0%, rgba(212,175,55,0.15) 100%)",
             }}
-          >
-            Plano Atual
-          </h3>
+          />
+          <div style={{ padding: 20, paddingLeft: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <div
+              aria-hidden="true"
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 10,
+                background: "rgba(212,175,55,0.12)",
+                border: "1px solid rgba(212,175,55,0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--gold)",
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="Sparkles" className="w-4 h-4" />
+            </div>
+            <h3
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 15,
+                fontWeight: 700,
+                letterSpacing: "-0.01em",
+                color: "var(--text)",
+                margin: 0,
+              }}
+            >
+              Plano Atual
+            </h3>
+          </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -415,9 +467,10 @@ const ProfilePage = () => {
                 e.currentTarget.style.background = "rgba(212,175,55,0.06)";
                 e.currentTarget.style.borderColor = "rgba(212,175,55,0.25)";
               }}
-            >
-              Atualizar Plano
-            </button>
+>
+                Atualizar Plano
+              </button>
+          </div>
           </div>
         </Card>
 
@@ -439,9 +492,9 @@ const ProfilePage = () => {
             Configurações
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <SettingsRow icon="Bell" label="Notificações" />
-            <SettingsRow icon="Shield" label="Privacidade" />
-            <SettingsRow icon="HelpCircle" label="Ajuda e Suporte" last />
+            <SettingsRow icon="Bell" label="Notificações" accent="var(--coral)" />
+            <SettingsRow icon="Shield" label="Privacidade" accent="var(--gold)" />
+            <SettingsRow icon="HelpCircle" label="Ajuda e Suporte" accent="var(--teal)" last />
           </div>
         </Card>
 
@@ -624,6 +677,47 @@ const ProfilePage = () => {
 
 // ─── Sub-components ───
 
+const ProfileStat = ({ value, label, accent, divider }) => (
+  <div
+    className="bento-stat"
+    style={{
+      "--stat-accent": accent,
+      position: "relative",
+      padding: "10px 12px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: 4,
+      ...(divider ? { borderLeft: "1px solid var(--border)" } : {}),
+    }}
+  >
+    <span
+      style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "1.75rem",
+        fontWeight: 800,
+        lineHeight: 1,
+        letterSpacing: "-0.03em",
+        color: accent,
+      }}
+    >
+      {value}
+    </span>
+    <span
+      style={{
+        fontFamily: "var(--font-body)",
+        fontSize: 11,
+        fontWeight: 600,
+        color: "var(--text-muted)",
+        letterSpacing: "0.02em",
+        textTransform: "uppercase",
+      }}
+    >
+      {label}
+    </span>
+  </div>
+);
+
 const InfoRow = ({ icon, label, value, last }) => (
   <div
     style={{
@@ -753,7 +847,7 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
   </div>
 );
 
-const SettingsRow = ({ icon, label, last }) => (
+const SettingsRow = ({ icon, label, last, accent = "var(--text-muted)" }) => (
   <button
     style={{
       display: "flex",
@@ -779,11 +873,13 @@ const SettingsRow = ({ icon, label, last }) => (
         width: 40,
         height: 40,
         borderRadius: 12,
-        background: "var(--surface-2)",
+        background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+        border: `1px solid color-mix(in srgb, ${accent} 22%, transparent)`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "var(--text-muted)",
+        color: accent,
+        transition: "all 0.2s ease",
       }}
     >
       <Icon name={icon} className="w-5 h-5" />

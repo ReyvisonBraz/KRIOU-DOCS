@@ -388,6 +388,13 @@ const DashboardPage = () => {
     return name ? name.split(" ")[0] : "Usuário";
   };
 
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
   const filteredDocs = getFilteredDocs();
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
   const finishedCount = allDocs.filter(d => d.status === "finalizado").length;
@@ -477,7 +484,7 @@ const DashboardPage = () => {
                 color: "var(--text-muted)",
                 margin: "0 0 6px",
               }}>
-                Painel
+                {getGreeting()}
               </p>
               <h1 style={{
                 fontFamily: "var(--font-display)",
@@ -507,59 +514,19 @@ const DashboardPage = () => {
             </div>
 
             {allDocs.length > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "8px 14px",
-                  borderRadius: 12,
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                }}>
-                  <span style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "var(--success)",
-                    boxShadow: "0 0 8px rgba(20,184,166,0.4)",
-                    flexShrink: 0,
-                  }} />
-                  <span style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--text-dim)",
-                  }}>
-                    {finishedCount} finalizado{finishedCount !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "8px 14px",
-                  borderRadius: 12,
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                }}>
-                  <span style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "var(--gold)",
-                    boxShadow: "0 0 8px rgba(212,175,55,0.3)",
-                    flexShrink: 0,
-                  }} />
-                  <span style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--text-dim)",
-                  }}>
-                    {draftCount} rascunho{draftCount !== 1 ? "s" : ""}
-                  </span>
-                </div>
+              <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
+                <StatTile
+                  value={finishedCount}
+                  label={`finalizado${finishedCount !== 1 ? "s" : ""}`}
+                  accent="var(--success)"
+                  glow="rgba(20,184,166,0.45)"
+                />
+                <StatTile
+                  value={draftCount}
+                  label={`rascunho${draftCount !== 1 ? "s" : ""}`}
+                  accent="var(--gold)"
+                  glow="rgba(212,175,55,0.40)"
+                />
               </div>
             )}
           </div>
@@ -1242,5 +1209,54 @@ const DashboardPage = () => {
     </div>
   );
 };
+
+const StatTile = ({ value, label, accent, glow }) => (
+  <div
+    className="bento-stat"
+    style={{
+      "--stat-accent": accent,
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "10px 16px",
+      borderRadius: 14,
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
+    }}
+  >
+    <span
+      style={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: accent,
+        boxShadow: `0 0 8px ${glow}`,
+        flexShrink: 0,
+      }}
+    />
+    <span
+      style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "1rem",
+        fontWeight: 800,
+        color: "var(--text)",
+        letterSpacing: "-0.02em",
+        lineHeight: 1,
+      }}
+    >
+      {value}
+    </span>
+    <span
+      style={{
+        fontFamily: "var(--font-body)",
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        color: "var(--text-dim)",
+      }}
+    >
+      {label}
+    </span>
+  </div>
+);
 
 export default DashboardPage;

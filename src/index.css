@@ -244,6 +244,32 @@
   }
 }
 
+/* ─── Acessibilidade: respeitar prefers-reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Bento stat tile (perfil/dashboard) ─── */
+.bento-stat {
+  position: relative;
+  overflow: hidden;
+}
+.bento-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, var(--stat-accent, transparent) 0%, transparent 70%);
+  opacity: 0.10;
+  pointer-events: none;
+}
+
 /* Pills/tabs horizontais em mobile */
 .tab-scroll {
   display: flex;

@@ -6,9 +6,10 @@ import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
 import { sanitizeFormData } from "../utils/sanitization";
 import { DocumentService } from "../services/DocumentService";
+import { PaymentService } from "../services/PaymentService";
 import showToast from "../utils/toast";
 
-const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || null;
+const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
 
 /* ───────────────────────────────────────────
    Design Tokens (referenced from :root)
@@ -409,6 +410,8 @@ const CheckoutPage = () => {
     updateDocument,
     editingDocId,
     setEditingDocId,
+    userId,
+    setUserDocuments,
   } = useApp();
 
   const [selectedPayment, setSelectedPayment] = useState("pix");
@@ -428,80 +431,54 @@ const CheckoutPage = () => {
     isLegalDocument ? "Documento Jurídico" : "Currículo";
 
   // ── Check for Mercado Pago return callback ──
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const paymentId = params.get("payment_id");
-    const status = params.get("status");
-
-    if (paymentId && status === "approved") {
-      handlePaymentSuccess(paymentId);
-    } else if (paymentId && status === "failure") {
-      setPaymentError("Pagamento não aprovado. Tente novamente.");
-    }
-  }, []);
-
   const sendConfirmationEmail = useCallback(async (doc) => {
     try {
-      const title = isLegalDocument ? (documentType?.name || "Documento Jurídico") : (formData.nome || "Currículo");
-      await callEdgeFunction("send-email", {
-        to: email,
-        subject: `Seu documento está pronto — ${title}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-            <h2 style="color: #F43F5E;">Kriou Docs</h2>
-            <p>Olá!</p>
-            <p>Seu documento <strong>${title}</strong> foi gerado com sucesso e já está disponível no seu painel.</p>
-            <p>Código do documento: <strong>${doc?.code || "—"}</strong></p>
-            <p style="margin-top: 24px;">
-              <a href="${window.location.origin}/dashboard"
-                 style="background: #F43F5E; color: #fff; padding: 12px 24px; border-radius: 8px;
-                        text-decoration: none; font-weight: 600; display: inline-block;">
-                Acessar Dashboard
-              </a>
-            </p>
-            <p style="margin-top: 24px; font-size: 12px; color: #888;">
-              Equipe Kriou Docs &bull; Documentos que impressionam
-            </p>
-          </div>
-        `,
-      });
+      await PaymentService.sendConfirmationEmail(doc?.id);
     } catch (err) {
       console.warn("[CheckoutPage] Falha ao enviar e-mail de confirmação:", err.message);
     }
-  }, [email, callEdgeFunction, isLegalDocument, documentType, formData]);
+  }, []);
 
-  const handlePaymentSuccess = async (paymentId) => {
+  const handlePaymentSuccess = useCallback(async (paymentId) => {
     setIsProcessing(true);
     try {
-      const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
-      let savedDoc;
-      if (editingDocId) {
-        await updateDocument(editingDocId, docData);
-        setEditingDocId(null);
-        savedDoc = { id: editingDocId };
-      } else {
-        savedDoc = await saveDocument(docData);
+      const confirmation = await PaymentService.confirmPayment(paymentId);
+
+      if (confirmation?.status !== "approved") {
+        throw new Error("O pagamento ainda não foi aprovado");
       }
+
+      const refreshedDocuments = await DocumentService.fetchAll(userId);
+      setUserDocuments(refreshedDocuments);
+      const savedDoc = refreshedDocuments.find((doc) => doc.id === confirmation.documentId);
+
       setCheckoutComplete(true);
+      setEditingDocId(null);
       showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
       window.history.replaceState({}, "", window.location.pathname);
       sendConfirmationEmail(savedDoc);
     } catch (err) {
       console.error("[CheckoutPage][ERRO] handlePaymentSuccess:", err);
-      showToast.error("Erro ao finalizar documento. Tente novamente.");
+      setPaymentError(err.message || "Não foi possível confirmar o pagamento.");
+      showToast.error("Pagamento não confirmado. Verifique o status e tente novamente.");
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [sendConfirmationEmail, setCheckoutComplete, setEditingDocId, setUserDocuments, userId]);
 
-  const callEdgeFunction = useCallback(async (functionName, body) => {
-    const { supabase } = await import("../lib/supabase");
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body,
-    });
-    if (error) throw error;
-    return data;
-  }, []);
+  // O status da URL não é prova de pagamento. A Edge Function consulta o
+  // provedor e valida usuário, documento, moeda e valor antes de liberar.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id");
+    const providerStatus = params.get("status");
+
+    if (paymentId) {
+      handlePaymentSuccess(paymentId);
+    } else if (providerStatus === "failure") {
+      setPaymentError("Pagamento não aprovado. Tente novamente.");
+    }
+  }, [handlePaymentSuccess]);
 
   const handlePayment = async () => {
     setPaymentError(null);
@@ -510,36 +487,26 @@ const CheckoutPage = () => {
       const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
       let savedDoc;
       if (editingDocId) {
-        await updateDocument(editingDocId, docData);
+        await updateDocument(editingDocId, docData, { status: "aguardando_pagamento" });
         setEditingDocId(null);
         savedDoc = { id: editingDocId };
       } else {
-        savedDoc = await saveDocument(docData);
+        savedDoc = await saveDocument(docData, { status: "aguardando_pagamento" });
       }
 
-      // Try Mercado Pago if public key is configured
-      if (MP_PUBLIC_KEY) {
-        try {
-          const preference = await callEdgeFunction("create-preference", {
-            title: getDocumentTitle(),
-            price: "9.90",
-            userId: savedDoc?.userId || "unknown",
-            documentId: savedDoc?.id || "unknown",
-            email: email || "",
-          });
-
-          if (preference?.init_point) {
-            window.location.href = preference.init_point;
-            return;
-          }
-        } catch (mpErr) {
-          console.warn("[CheckoutPage] MP fallback, erro:", mpErr.message);
-        }
+      if (PAYMENT_MOCK_ENABLED) {
+        setCheckoutComplete(true);
+        showToast.info("Pagamento simulado: recurso exclusivo do ambiente local.");
+        return;
       }
 
-      // Fallback: save directly without payment
-      setCheckoutComplete(true);
-      showToast.success("Documento salvo com sucesso!");
+      const preference = await PaymentService.createPreference(savedDoc?.id);
+
+      if (!preference?.init_point) {
+        throw new Error("O provedor não retornou a URL de pagamento");
+      }
+
+      window.location.href = preference.init_point;
     } catch (err) {
       console.error("[CheckoutPage][ERRO] handlePayment:", err);
       showToast.error("Erro ao processar pagamento. Tente novamente.");
@@ -933,6 +900,24 @@ const CheckoutPage = () => {
 
         {/* ── Pay Button ── */}
         <PayButton />
+
+        {paymentError && (
+          <div
+            role="alert"
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              border: "1px solid rgba(239,68,68,0.35)",
+              borderRadius: 10,
+              background: "rgba(239,68,68,0.08)",
+              color: "var(--error, #ef4444)",
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            {paymentError}
+          </div>
+        )}
 
         {/* ── Security Badge ── */}
         <div style={S.securityBadge}>

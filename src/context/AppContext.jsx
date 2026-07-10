@@ -429,8 +429,8 @@ export const useApp = () => {
     lastSaved:        resume.lastSaved,
     triggerSave:      resume.triggerSave,
     userDocuments:    resume.userDocuments,        setUserDocuments: resume.setUserDocuments,
-    saveDocument:     (data) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }),
-    updateDocument:   (id, data) => resume.updateDocument(id, data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }),
+    saveDocument:     (data, options) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
+    updateDocument:   (id, data, options) => resume.updateDocument(id, data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
     editingDocId:     resume.editingDocId,        setEditingDocId: resume.setEditingDocId,
     filter:           resume.filter,              setFilter: resume.setFilter,
 

@@ -39,6 +39,10 @@ function mapDocumentRow(row) {
     variantName:      row.variant_name,
     variant:         row.variant,
     archived:         row.archived || false,
+    paymentStatus:    row.payment_status || "pending",
+    paymentId:        row.payment_id || null,
+    paymentAmount:    row.payment_amount || null,
+    paidAt:           row.paid_at || null,
     date:             new Date(row.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
     createdAt:        row.created_at,
     userId:           row.user_id,
@@ -151,20 +155,24 @@ export const DocumentService = {
       throw err;
     }
 
+    const updatePayload = {
+      title:               docData.title || "Sem titulo",
+      template:            docData.template || null,
+      template_id:         docData.templateId || null,
+      template_name:       docData.templateName || null,
+      form_data:           docData.formData  || null,
+      legal_data:          docData.legalData  || null,
+      document_type:       docData.documentType || null,
+      variant_id:          docData.variantId || null,
+      variant_name:        docData.variantName || null,
+      variant:             docData.variant || null,
+    };
+
+    if (docData.status) updatePayload.status = docData.status;
+
     const { data, error } = await supabase
       .from("documents")
-      .update({
-        title:               docData.title || "Sem titulo",
-        template:            docData.template || null,
-        template_id:         docData.templateId || null,
-        template_name:       docData.templateName || null,
-        form_data:           docData.formData  || null,
-        legal_data:          docData.legalData  || null,
-        document_type:       docData.documentType || null,
-        variant_id:          docData.variantId || null,
-        variant_name:        docData.variantName || null,
-        variant:             docData.variant || null,
-      })
+      .update(updatePayload)
       .eq("id", documentId)
       .eq("user_id", userId)
       .select()

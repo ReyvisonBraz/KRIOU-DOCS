@@ -80,7 +80,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   // ─── saveDocument — Salva documento finalizado no Supabase ──────────────
   // Diferenca entre resume e legal: documentData carrega os campos corretos
   // O param documentType quando existe indica documento juridico.
-  const saveDocument = useCallback(async (documentData, documentType, selectedTpl, variantData) => {
+  const saveDocument = useCallback(async (documentData, documentType, selectedTpl, variantData, options = {}) => {
     const docType = documentType ? "legal" : "resume";
 
     // Gera codigo sequencial baseado nos documentos existentes
@@ -93,7 +93,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       template:          selectedTpl || null,
       templateId:        selectedTpl?.id || null,
       templateName:      selectedTpl?.name || documentType?.name || "Padrao",
-      status:            "finalizado",
+      status:            options.status || "finalizado",
       code:              code,
       formData:          docType === "resume" ? documentData : null,
       legalData:         docType === "legal"  ? documentData : null,
@@ -118,7 +118,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   }, [userId]);
 
   // ─── updateDocument — Atualiza documento finalizado no Supabase ───────
-  const updateDocument = useCallback(async (documentId, documentData, documentType, selectedTpl, variantData) => {
+  const updateDocument = useCallback(async (documentId, documentData, documentType, selectedTpl, variantData, options = {}) => {
     const docType = documentType ? "legal" : "resume";
 
     const docPayload = {
@@ -135,6 +135,8 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       variantName:      variantData?.name   || null,
       variant:          variantData         || null,
     };
+
+    if (options.status) docPayload.status = options.status;
 
     try {
       await DocumentService.update(documentId, docPayload, userId);

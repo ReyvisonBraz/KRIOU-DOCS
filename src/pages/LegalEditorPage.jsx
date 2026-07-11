@@ -21,8 +21,6 @@ import {
 import showToast from "../utils/toast";
 import StorageService from "../utils/storage";
 import { generateMockFormData } from "../utils/mockData";
-import { usePDF } from "../hooks/usePDF";
-import { sanitizeFormData } from "../utils/sanitization";
 import {
   getSectionsForVariant,
   validateFields,
@@ -65,10 +63,6 @@ const getPartyInstances = (fields, prefix) => {
   return instances;
 };
 
-const labelClass = "block text-[13px] font-semibold text-text-dim mb-1.5 tracking-[0.01em] font-body";
-const errorClass = "flex items-center gap-1.5 text-coral font-medium text-xs mt-1.5 ml-1";
-const inputErrorClass = "input-field-error";
-
 const LegalEditorPage = () => {
   const {
     navigate,
@@ -77,7 +71,6 @@ const LegalEditorPage = () => {
     legalFormData,
     setLegalFormData,
     documentType,
-    setDocumentType,
     selectedVariant,
     setSelectedVariant,
     disabledFields,
@@ -88,10 +81,7 @@ const LegalEditorPage = () => {
     userDocuments,
     setUserDocuments,
     userId,
-    editingDocId,
-    setEditingDocId,
-    saveDocument,
-    updateDocument,
+    setCheckoutComplete,
   } = useApp();
 
   const [selectedDoc, setSelectedDoc] = useState(documentType || null);
@@ -100,7 +90,6 @@ const LegalEditorPage = () => {
   const [showRequirements, setShowRequirements] = useState(false);
   const [expandedParties, setExpandedParties] = useState({});
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const { generatePDF } = usePDF();
 
   const bottomNavRef = useRef(null);
   const contentRef = useRef(null);
@@ -189,24 +178,11 @@ const LegalEditorPage = () => {
   const handleFinalize = async () => {
     setIsFinalizing(true);
     try {
-      const docData = sanitizeFormData(legalFormData);
-      if (editingDocId) {
-        await updateDocument(editingDocId, docData);
-        setEditingDocId(null);
-      } else {
-        await saveDocument(docData);
-      }
-      await generatePDF({
-        type: "GENERATE_LEGAL",
-        formData: legalFormData,
-        docType: selectedDoc,
-        disabledFields: disabledFields || {},
-        variantId: selectedVariant || null,
-      });
-      showToast.success("Documento salvo e PDF gerado!");
+      setCheckoutComplete(false);
+      navigate("checkout");
     } catch (err) {
       console.error("[LegalEditor][ERRO] Finalizar:", err);
-      showToast.error("Erro ao finalizar documento. Tente novamente.");
+      showToast.error("Erro ao abrir checkout. Tente novamente.");
     } finally {
       setIsFinalizing(false);
     }
@@ -296,11 +272,7 @@ const LegalEditorPage = () => {
   };
 
   const currentVariantObj = selectedDoc?.variants?.find((v) => v.id === selectedVariant);
-  const allRequiredFields = currentSections.flatMap((s) => s.fields.filter((f) => f.required && !disabledFields[f.key]));
-  const filledRequired = allRequiredFields.filter((f) => legalFormData[f.key] && String(legalFormData[f.key]).trim() !== "");
-  const allDone = filledRequired.length === allRequiredFields.length && allRequiredFields.length > 0;
 
-  const completedSteps = new Set(steps.map((_, i) => i).filter((i) => i < currentStep));
   const navTitle = selectedDoc
     ? selectedDoc.name + (currentVariantObj && currentStep > 0 ? ` — ${currentVariantObj.name}` : "")
     : "Documento Jurídico";
@@ -315,7 +287,7 @@ const LegalEditorPage = () => {
     return { filled: filled.length, total: fields.length };
   };
 
-  const nextLabel = isLastStep ? "Gerar PDF"
+  const nextLabel = isLastStep ? "Ir para checkout"
     : isReviewStep ? "Visualizar"
     : isVariantStep ? "Começar Preenchimento"
     : `Próximo: ${steps[currentStep + 1]?.label || ""}`;
@@ -789,7 +761,7 @@ const LegalEditorPage = () => {
       <div style={{ animation: "fade-in 0.35s ease-out both" }}>
         <div style={{ marginBottom: 24 }}>
           <h2 className="font-display" style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, color: "var(--text)", letterSpacing: "-0.02em" }}>Visualização do Documento</h2>
-          <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>Revise o documento final antes de gerar o PDF</p>
+          <p style={{ fontSize: 14, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>Revise o documento final antes de seguir para o pagamento.</p>
         </div>
         <div style={{ background: "#fcfbf9", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)", maxWidth: 780, margin: "0 auto", overflow: "hidden" }}>
           <div className="le-preview-pad" style={{ padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)" }}>
@@ -815,9 +787,9 @@ const LegalEditorPage = () => {
             onMouseLeave={(e) => { if (!isFinalizing) { e.currentTarget.style.background = "var(--coral)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(244,63,94,0.3)"; }}}
           >
             {isFinalizing ? (
-              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Gerando...</>
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Abrindo checkout...</>
             ) : (
-              <><Icon name="Download" className="w-5 h-5" /> Salvar e Baixar PDF</>
+              <><Icon name="CreditCard" className="w-5 h-5" /> Ir para Checkout</>
             )}
           </button>
         </div>

@@ -8,8 +8,12 @@ node_modules/
 # Build
 dist/
 
+# Supabase CLI local state
+supabase/.temp/
+
 # Claude Code (configurações locais de cada dev)
 .claude/settings.local.json
 
 # Artefato Windows
 nul
+.vercel

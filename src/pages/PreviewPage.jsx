@@ -2,8 +2,6 @@ import React from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Button, AppNavbar, Card } from "../components/UI";
-import { usePDF } from "../hooks/usePDF";
-import showToast from "../utils/toast";
 
 const SidebarSection = ({ title, children }) => (
   <div style={{ marginBottom: 20 }}>
@@ -52,8 +50,7 @@ const MainSectionHeader = ({ title }) => (
 );
 
 const PreviewPage = () => {
-  const { navigate, selectedTemplate, formData, documentType, legalFormData, disabledFields, selectedVariant } = useApp();
-  const { generatePDF, isGenerating } = usePDF();
+  const { navigate, formData, documentType } = useApp();
 
   const isLegalDocument = !!documentType;
 
@@ -68,18 +65,6 @@ const PreviewPage = () => {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-  };
-
-  const handleDownloadPDF = async () => {
-    try {
-      if (isLegalDocument) {
-        await generatePDF({ type: "GENERATE_LEGAL", formData: legalFormData, docType: documentType, disabledFields: disabledFields || {}, variantId: selectedVariant || null });
-      } else {
-        await generatePDF({ type: "GENERATE_RESUME", formData, template: selectedTemplate });
-      }
-    } catch {
-      showToast.error("Erro ao gerar PDF. Tente novamente.");
-    }
   };
 
   const handleFinalize = () => navigate("checkout");
@@ -124,11 +109,6 @@ const PreviewPage = () => {
               onClick={() => navigate(editTarget, { replace: true })}>
               <span>Editar</span>
             </Button>
-            <Button variant="secondary" size="small" icon="Download"
-              className="preview-navbar-btn"
-              onClick={handleDownloadPDF} disabled={isGenerating}>
-              <span>{isGenerating ? "Gerando..." : "PDF"}</span>
-            </Button>
             <Button variant="primary" size="small" icon="CreditCard"
               className="preview-navbar-btn"
               onClick={handleFinalize}>
@@ -138,37 +118,6 @@ const PreviewPage = () => {
         }
       />
 
-      {/* PDF generating overlay */}
-      {isGenerating && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(9,9,20,0.6)",
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          gap: 16,
-          animation: "modalFadeIn 0.15s ease",
-        }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: "50%",
-            border: "3px solid var(--surface-3)",
-            borderTopColor: "var(--coral)",
-            animation: "spin 0.8s linear infinite",
-          }} />
-          <p style={{
-            color: "var(--text)", fontSize: 15, fontWeight: 600,
-            fontFamily: "var(--font-body)",
-          }}>
-            Gerando PDF...
-          </p>
-        </div>
-      )}
-
-      {/* Mobile responsive styles */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
       <style>{`
         @media (max-width: 680px) {
           .preview-card-inner { flex-direction: column !important; }
@@ -243,7 +192,7 @@ const PreviewPage = () => {
                 fontFamily: "var(--font-body)",
                 letterSpacing: "-0.005em",
               }}>
-                Clique em "PDF" para baixar uma prévia ou "Finalizar" para concluir.
+                Clique em "Finalizar" para seguir ao checkout. O PDF será liberado após o pagamento aprovado.
               </p>
             </div>
           </Card>

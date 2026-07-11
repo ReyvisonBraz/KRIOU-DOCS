@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createAdminClient } from "../_shared/auth.ts";
+import { createPaidIdentitySnapshot } from "../_shared/document_identity.ts";
 import { json } from "../_shared/http.ts";
 import { verifyMercadoPagoSignature } from "../_shared/mercadopago.ts";
 
@@ -104,6 +105,22 @@ serve(async (req) => {
     if (payment.status === "approved") {
       documentUpdate.status = "finalizado";
       documentUpdate.paid_at = payment.date_approved || new Date().toISOString();
+    }
+
+    const { data: document } = payment.status === "approved"
+      ? await supabase
+        .from("documents")
+        .select("id, type, document_type, form_data, legal_data")
+        .eq("id", documentId)
+        .eq("user_id", userId)
+        .single()
+      : { data: null };
+
+    if (document) {
+      documentUpdate.paid_identity_snapshot = createPaidIdentitySnapshot(document);
+      documentUpdate.sensitive_edit_used = false;
+      documentUpdate.sensitive_edit_used_at = null;
+      documentUpdate.sensitive_edit_summary = null;
     }
 
     const { data: updatedDocument, error: updateError } = await supabase

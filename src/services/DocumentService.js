@@ -43,6 +43,10 @@ function mapDocumentRow(row) {
     paymentId:        row.payment_id || null,
     paymentAmount:    row.payment_amount || null,
     paidAt:           row.paid_at || null,
+    paidIdentitySnapshot: row.paid_identity_snapshot || null,
+    sensitiveEditUsed: Boolean(row.sensitive_edit_used),
+    sensitiveEditUsedAt: row.sensitive_edit_used_at || null,
+    sensitiveEditSummary: row.sensitive_edit_summary || null,
     date:             new Date(row.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
     createdAt:        row.created_at,
     userId:           row.user_id,
@@ -200,6 +204,10 @@ export const DocumentService = {
     };
 
     if (docData.status) updatePayload.status = docData.status;
+    if (docData.paidIdentitySnapshot) updatePayload.paid_identity_snapshot = docData.paidIdentitySnapshot;
+    if (typeof docData.sensitiveEditUsed === "boolean") updatePayload.sensitive_edit_used = docData.sensitiveEditUsed;
+    if (docData.sensitiveEditUsedAt) updatePayload.sensitive_edit_used_at = docData.sensitiveEditUsedAt;
+    if (docData.sensitiveEditSummary) updatePayload.sensitive_edit_summary = docData.sensitiveEditSummary;
 
     const { data, error } = await supabase
       .from("documents")

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { authenticate, createAdminClient } from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
+import { createPaidIdentitySnapshot } from "../_shared/document_identity.ts";
 
 const MP_API = "https://api.mercadopago.com";
 const DOCUMENT_PRICE_IN_CENTS = 990;
@@ -51,7 +52,7 @@ serve(async (req) => {
 
     const { data: document, error: documentError } = await supabase
       .from("documents")
-      .select("id, user_id")
+      .select("id, user_id, type, document_type, form_data, legal_data")
       .eq("id", documentId)
       .eq("user_id", user.id)
       .single();
@@ -79,6 +80,10 @@ serve(async (req) => {
         payment_method: payment.payment_method_id || null,
         payment_amount: Number(payment.transaction_amount),
         paid_at: payment.date_approved || new Date().toISOString(),
+        paid_identity_snapshot: createPaidIdentitySnapshot(document),
+        sensitive_edit_used: false,
+        sensitive_edit_used_at: null,
+        sensitive_edit_summary: null,
       })
       .eq("id", document.id)
       .eq("user_id", user.id);

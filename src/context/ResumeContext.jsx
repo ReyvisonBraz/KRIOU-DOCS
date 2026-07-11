@@ -137,6 +137,10 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     };
 
     if (options.status) docPayload.status = options.status;
+    if (options.paidIdentitySnapshot) docPayload.paidIdentitySnapshot = options.paidIdentitySnapshot;
+    if (typeof options.sensitiveEditUsed === "boolean") docPayload.sensitiveEditUsed = options.sensitiveEditUsed;
+    if (options.sensitiveEditUsedAt) docPayload.sensitiveEditUsedAt = options.sensitiveEditUsedAt;
+    if (options.sensitiveEditSummary) docPayload.sensitiveEditSummary = options.sensitiveEditSummary;
 
     try {
       await DocumentService.update(documentId, docPayload, userId);

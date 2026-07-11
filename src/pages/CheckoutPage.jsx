@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Card, Button, AppNavbar } from "../components/UI";
+import { AppNavbar, ConfirmDialog } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
+import { useConfirm } from "../hooks/useConfirm";
 import { sanitizeFormData } from "../utils/sanitization";
+import {
+  comparePaidIdentity,
+  createPaidIdentitySnapshot,
+  summarizeIdentityChanges,
+} from "../utils/paidDocumentIdentity";
 import { DocumentService } from "../services/DocumentService";
 import { PaymentService } from "../services/PaymentService";
 import showToast from "../utils/toast";
@@ -422,6 +428,7 @@ const CheckoutPage = () => {
   const [paymentError, setPaymentError] = useState(null);
   const [pendingPayment, setPendingPayment] = useState(null);
   const { generatePDF } = usePDF();
+  const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
 
   const isLegalDocument = !!documentType;
   const price = "R$ 9,90";
@@ -578,9 +585,16 @@ const CheckoutPage = () => {
   const handlePayment = async () => {
     setPaymentError(null);
     setIsProcessing(true);
-    const checkoutWindow = PAYMENT_MOCK_ENABLED ? null : window.open("", "_blank");
+    let checkoutWindow = null;
     try {
       const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
+      if (editingDocId) {
+        const handledAsPaidEdit = await handlePaidDocumentEdit(docData);
+        if (handledAsPaidEdit) {
+          return;
+        }
+      }
+
       let savedDoc;
       if (editingDocId) {
         await updateDocument(editingDocId, docData, { status: "aguardando_pagamento" });
@@ -596,6 +610,7 @@ const CheckoutPage = () => {
         return;
       }
 
+      checkoutWindow = window.open("", "_blank");
       const preference = await PaymentService.createPreference(savedDoc?.id);
 
       if (!preference?.init_point) {
@@ -632,6 +647,86 @@ const CheckoutPage = () => {
   const handleOpenPendingCheckout = () => {
     if (!pendingPayment?.initPoint) return;
     window.open(pendingPayment.initPoint, "_blank", "noopener,noreferrer");
+  };
+
+  const buildCurrentIdentity = (docData) => createPaidIdentitySnapshot({
+    type: isLegalDocument ? "legal" : "resume",
+    documentType: isLegalDocument ? documentType?.id || null : null,
+    formData: isLegalDocument ? null : docData,
+    legalData: isLegalDocument ? docData : null,
+  });
+
+  const handlePaidDocumentEdit = async (docData) => {
+    const existingDoc = await DocumentService.fetchById(editingDocId, userId);
+    const isPaidDocument =
+      existingDoc?.status === "finalizado" &&
+      existingDoc?.paymentStatus === "approved";
+
+    if (!isPaidDocument) return false;
+
+    const previousIdentity = existingDoc.paidIdentitySnapshot || createPaidIdentitySnapshot({
+      type: existingDoc.type,
+      documentType: existingDoc.documentType || null,
+      formData: existingDoc.formData || null,
+      legalData: existingDoc.legalData || null,
+    });
+    const currentIdentity = buildCurrentIdentity(docData);
+    const identityCheck = comparePaidIdentity(previousIdentity, currentIdentity);
+    const changedFields = summarizeIdentityChanges(identityCheck.changes);
+
+    if (identityCheck.level === "critical") {
+      setPaymentError(
+        "As alterações indicam um novo documento. O plano avulso permite editar o documento pago, mas troca de tipo ou modelo exige criar um novo documento."
+      );
+      showToast.error("Crie um novo documento para continuar.");
+      return true;
+    }
+
+    if (identityCheck.level === "sensitive" && existingDoc.sensitiveEditUsed) {
+      setPaymentError(
+        `Este documento já utilizou a correção gratuita de dados principais. Para alterar ${changedFields}, crie um novo documento. Você ainda pode editar endereço, datas, valores, cláusulas e textos gerais.`
+      );
+      showToast.error("Nova alteração em dados principais exige novo documento.");
+      return true;
+    }
+
+    const updateOptions = {
+      status: "finalizado",
+      paidIdentitySnapshot: previousIdentity,
+    };
+
+    if (identityCheck.level === "sensitive") {
+      const confirmed = await requestConfirm({
+        title: "Usar correção gratuita?",
+        message: `Detectamos alteração em dados principais (${changedFields}). Você pode fazer uma correção gratuita agora caso seja ajuste de dados digitados incorretamente. Após confirmar, novas alterações em dados principais poderão exigir a criação de um novo documento.`,
+        confirmLabel: "Usar correção gratuita",
+        cancelLabel: "Voltar e revisar",
+        danger: true,
+      });
+
+      if (!confirmed) return true;
+
+      updateOptions.paidIdentitySnapshot = currentIdentity;
+      updateOptions.sensitiveEditUsed = true;
+      updateOptions.sensitiveEditUsedAt = new Date().toISOString();
+      updateOptions.sensitiveEditSummary = {
+        score: identityCheck.score,
+        fields: identityCheck.changes.map((change) => change.label),
+      };
+    }
+
+    await updateDocument(editingDocId, docData, updateOptions);
+    const refreshedDocuments = await DocumentService.fetchAll(userId);
+    setUserDocuments(refreshedDocuments);
+    setCheckoutComplete(true);
+    setEditingDocId(null);
+    clearPendingPayment();
+    showToast.success(
+      identityCheck.level === "sensitive"
+        ? "Correção gratuita aplicada. Documento atualizado."
+        : "Documento pago atualizado sem nova cobrança."
+    );
+    return true;
   };
 
   const handleGoToDashboard = () => {
@@ -1181,6 +1276,12 @@ const CheckoutPage = () => {
           </span>
         </div>
       </div>
+
+      <ConfirmDialog
+        {...confirmState}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 };

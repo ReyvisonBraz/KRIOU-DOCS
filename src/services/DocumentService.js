@@ -51,7 +51,7 @@ function mapDocumentRow(row) {
 
 export const DocumentService = {
   /**
-   * Busca todos os documentos finalizados do usuario.
+   * Busca documentos visiveis do usuario: finalizados e pagamentos em andamento.
    *
    * @param {string} userId — ID do usuario para filtrar (defesa em profundidade)
    * @returns {Promise<Array>} Lista de documentos mapeados
@@ -64,7 +64,7 @@ export const DocumentService = {
     let query = supabase
       .from("documents")
       .select("*")
-      .eq("status", "finalizado");
+      .in("status", ["finalizado", "aguardando_pagamento"]);
 
     // Filtro explícito por userId como defesa em profundidade
     if (userId) {
@@ -82,6 +82,37 @@ export const DocumentService = {
     }
 
     return (data || []).map(mapDocumentRow);
+  },
+
+  /**
+   * Busca um documento específico do usuário, inclusive quando ainda está
+   * aguardando pagamento. Usado pelo checkout para monitorar a aprovação
+   * via webhook sem expor a lista completa de documentos pendentes.
+   */
+  async fetchById(documentId, userId = null) {
+    if (!documentId) {
+      const err = new Error("[DocumentService][ERRO] fetchById: documentId e obrigatorio");
+      console.error(err.message);
+      throw err;
+    }
+
+    let query = supabase
+      .from("documents")
+      .select("*")
+      .eq("id", documentId);
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query.single();
+
+    if (error) {
+      console.error("[DocumentService][ERRO] fetchById:", error.message, { documentId, userId });
+      throw error;
+    }
+
+    return data ? mapDocumentRow(data) : null;
   },
 
   /**

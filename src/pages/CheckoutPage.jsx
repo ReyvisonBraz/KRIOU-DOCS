@@ -10,6 +10,8 @@ import { PaymentService } from "../services/PaymentService";
 import showToast from "../utils/toast";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
+const PENDING_PAYMENT_STORAGE_KEY = "kriou_pending_payment";
+const CHECKOUT_PAYMENT_METHODS = PAYMENT_METHODS.filter((method) => method.id === "pix" || method.id === "card");
 
 /* ───────────────────────────────────────────
    Design Tokens (referenced from :root)
@@ -416,7 +418,9 @@ const CheckoutPage = () => {
 
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+  const [pendingPayment, setPendingPayment] = useState(null);
   const { generatePDF } = usePDF();
 
   const isLegalDocument = !!documentType;
@@ -439,6 +443,16 @@ const CheckoutPage = () => {
     }
   }, []);
 
+  const clearPendingPayment = useCallback(() => {
+    setPendingPayment(null);
+    window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY);
+  }, []);
+
+  const persistPendingPayment = useCallback((payment) => {
+    setPendingPayment(payment);
+    window.sessionStorage.setItem(PENDING_PAYMENT_STORAGE_KEY, JSON.stringify(payment));
+  }, []);
+
   const handlePaymentSuccess = useCallback(async (paymentId) => {
     setIsProcessing(true);
     try {
@@ -454,6 +468,7 @@ const CheckoutPage = () => {
 
       setCheckoutComplete(true);
       setEditingDocId(null);
+      clearPendingPayment();
       showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
       window.history.replaceState({}, "", window.location.pathname);
       sendConfirmationEmail(savedDoc);
@@ -464,7 +479,78 @@ const CheckoutPage = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [sendConfirmationEmail, setCheckoutComplete, setEditingDocId, setUserDocuments, userId]);
+  }, [clearPendingPayment, sendConfirmationEmail, setCheckoutComplete, setEditingDocId, setUserDocuments, userId]);
+
+  const checkPendingPayment = useCallback(async ({ silent = false } = {}) => {
+    if (!pendingPayment?.documentId || !userId) return false;
+
+    if (!silent) setIsCheckingPayment(true);
+    try {
+      const doc = await DocumentService.fetchById(pendingPayment.documentId, userId);
+
+      if (doc?.status === "finalizado" && doc?.paymentStatus === "approved") {
+        const refreshedDocuments = await DocumentService.fetchAll(userId);
+        setUserDocuments(refreshedDocuments);
+        setCheckoutComplete(true);
+        setEditingDocId(null);
+        clearPendingPayment();
+        showToast.success("Pagamento confirmado! Seu documento está liberado.");
+        sendConfirmationEmail(doc);
+        return true;
+      }
+
+      if (["rejected", "cancelled", "refunded", "charged_back"].includes(doc?.paymentStatus)) {
+        setPaymentError("Pagamento não aprovado pelo Mercado Pago. Abra o checkout novamente e tente outro método.");
+        return false;
+      }
+
+      if (!silent) {
+        showToast.info("Pagamento ainda não confirmado pelo Mercado Pago.");
+      }
+      return false;
+    } catch (err) {
+      console.error("[CheckoutPage][ERRO] checkPendingPayment:", err);
+      if (!silent) {
+        setPaymentError("Não foi possível verificar o pagamento agora. Tente novamente em alguns segundos.");
+      }
+      return false;
+    } finally {
+      if (!silent) setIsCheckingPayment(false);
+    }
+  }, [
+    clearPendingPayment,
+    pendingPayment?.documentId,
+    sendConfirmationEmail,
+    setCheckoutComplete,
+    setEditingDocId,
+    setUserDocuments,
+    userId,
+  ]);
+
+  useEffect(() => {
+    try {
+      const stored = window.sessionStorage.getItem(PENDING_PAYMENT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.documentId && parsed?.initPoint) {
+          setPendingPayment(parsed);
+        }
+      }
+    } catch {
+      window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!pendingPayment?.documentId || checkoutComplete) return undefined;
+
+    checkPendingPayment({ silent: true });
+    const intervalId = window.setInterval(() => {
+      checkPendingPayment({ silent: true });
+    }, 7000);
+
+    return () => window.clearInterval(intervalId);
+  }, [checkPendingPayment, checkoutComplete, pendingPayment?.documentId]);
 
   // O status da URL não é prova de pagamento. A Edge Function consulta o
   // provedor e valida usuário, documento, moeda e valor antes de liberar.
@@ -477,12 +563,14 @@ const CheckoutPage = () => {
       handlePaymentSuccess(paymentId);
     } else if (providerStatus === "failure") {
       setPaymentError("Pagamento não aprovado. Tente novamente.");
+      clearPendingPayment();
     }
-  }, [handlePaymentSuccess]);
+  }, [clearPendingPayment, handlePaymentSuccess]);
 
   const handlePayment = async () => {
     setPaymentError(null);
     setIsProcessing(true);
+    const checkoutWindow = PAYMENT_MOCK_ENABLED ? null : window.open("", "_blank");
     try {
       const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
       let savedDoc;
@@ -506,13 +594,34 @@ const CheckoutPage = () => {
         throw new Error("O provedor não retornou a URL de pagamento");
       }
 
-      window.location.href = preference.init_point;
+      const pending = {
+        documentId: savedDoc?.id,
+        initPoint: preference.init_point,
+        preferenceId: preference.preference_id,
+        createdAt: new Date().toISOString(),
+      };
+
+      persistPendingPayment(pending);
+
+      if (checkoutWindow) {
+        checkoutWindow.opener = null;
+        checkoutWindow.location.href = preference.init_point;
+      } else {
+        setPaymentError("O navegador bloqueou a nova aba. Use o botão 'Abrir checkout novamente' abaixo.");
+      }
     } catch (err) {
+      checkoutWindow?.close();
       console.error("[CheckoutPage][ERRO] handlePayment:", err);
+      setPaymentError(err.message || "Erro ao processar pagamento. Tente novamente.");
       showToast.error("Erro ao processar pagamento. Tente novamente.");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleOpenPendingCheckout = () => {
+    if (!pendingPayment?.initPoint) return;
+    window.open(pendingPayment.initPoint, "_blank", "noopener,noreferrer");
   };
 
   const handleGoToDashboard = () => {
@@ -559,7 +668,7 @@ const CheckoutPage = () => {
         const next = (index + 1) % total;
         const nextEl = document.querySelector(`[data-payment-index="${next}"]`);
         nextEl?.focus();
-        if (nextEl) setSelectedPayment(PAYMENT_METHODS[next].id);
+        if (nextEl) setSelectedPayment(CHECKOUT_PAYMENT_METHODS[next].id);
         return;
       }
       if (e.key === "ArrowUp" || (e.key === "Tab" && e.shiftKey)) {
@@ -567,7 +676,7 @@ const CheckoutPage = () => {
         const prev = (index - 1 + total) % total;
         const prevEl = document.querySelector(`[data-payment-index="${prev}"]`);
         prevEl?.focus();
-        if (prevEl) setSelectedPayment(PAYMENT_METHODS[prev].id);
+        if (prevEl) setSelectedPayment(CHECKOUT_PAYMENT_METHODS[prev].id);
       }
     };
 
@@ -802,6 +911,137 @@ const CheckoutPage = () => {
   /* ════════════════════════════════════════
      MAIN CHECKOUT
      ════════════════════════════════════════ */
+  if (pendingPayment) {
+    return (
+      <div style={S.page}>
+        <style>{KEYFRAMES}</style>
+        <AppNavbar
+          title="Aguardando pagamento"
+          leftAction={
+            <button
+              onClick={handleGoToDashboard}
+              aria-label="Ir ao dashboard"
+              style={S.backBtn}
+            >
+              <Icon name="ChevronLeft" className="w-5 h-5" />
+            </button>
+          }
+        />
+
+        <div
+          style={{
+            ...S.container,
+            animation: "ck-fadeSlideUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both",
+            marginTop: 48,
+          }}
+        >
+          <div style={{ ...S.summaryCard, textAlign: "center" }}>
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                margin: "0 auto 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(212,175,55,0.12)",
+                border: "1px solid rgba(212,175,55,0.28)",
+                color: "var(--gold)",
+              }}
+            >
+              <Icon name="Clock" className="w-9 h-9" />
+            </div>
+
+            <div style={S.sectionLabel}>Pagamento em andamento</div>
+            <h1 style={{ ...S.successTitle, marginBottom: 10 }}>Aguardando pagamento</h1>
+            <p style={S.successDetail}>
+              Conclua o pagamento na aba segura do Mercado Pago. Esta tela verifica automaticamente
+              a aprovação e libera o PDF assim que o Mercado Pago confirmar.
+            </p>
+
+            <div
+              style={{
+                marginTop: 22,
+                padding: 16,
+                borderRadius: 16,
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+                fontSize: 13,
+                lineHeight: 1.6,
+                textAlign: "left",
+              }}
+            >
+              <div style={{ color: "var(--text)", fontWeight: 800, marginBottom: 6 }}>
+                O que acontece agora
+              </div>
+              <div>1. Escolha Pix ou cartão dentro do checkout do Mercado Pago.</div>
+              <div>2. Depois de pagar, aguarde esta tela atualizar.</div>
+              <div>3. Se a aba não abriu, use o botão abaixo para abrir novamente.</div>
+            </div>
+
+            {paymentError && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 16,
+                  padding: "12px 14px",
+                  border: "1px solid rgba(239,68,68,0.35)",
+                  borderRadius: 10,
+                  background: "rgba(239,68,68,0.08)",
+                  color: "var(--error, #ef4444)",
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  textAlign: "left",
+                }}
+              >
+                {paymentError}
+              </div>
+            )}
+
+            <div style={{ ...S.successActions, marginTop: 24 }}>
+              <button
+                onClick={handleOpenPendingCheckout}
+                style={S.successBtnPrimary}
+              >
+                <Icon name="ExternalLink" className="w-5 h-5" />
+                Abrir checkout novamente
+              </button>
+              <button
+                onClick={() => checkPendingPayment()}
+                disabled={isCheckingPayment}
+                style={{
+                  ...S.successBtnSecondary,
+                  opacity: isCheckingPayment ? 0.7 : 1,
+                  cursor: isCheckingPayment ? "not-allowed" : "pointer",
+                }}
+              >
+                {isCheckingPayment ? <Spinner /> : <Icon name="RefreshCw" className="w-5 h-5" />}
+                Verificar agora
+              </button>
+            </div>
+
+            <button
+              onClick={handleGoToDashboard}
+              style={{
+                marginTop: 16,
+                background: "transparent",
+                border: "none",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                fontSize: 13,
+                textDecoration: "underline",
+              }}
+            >
+              Ver no dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const documentTitleFull = isLegalDocument
     ? documentType?.name || "Documento Jurídico"
     : `Currículo — ${selectedTemplate?.name || "Modelo"}`;
@@ -892,8 +1132,8 @@ const CheckoutPage = () => {
           <div style={S.sectionLabel}>Forma de Pagamento</div>
 
           <div role="radiogroup" aria-label="Forma de pagamento" aria-orientation="vertical" style={{ display: "flex", flexDirection: "column" }}>
-            {PAYMENT_METHODS.map((method, idx) => (
-              <PaymentOption key={method.id} method={method} index={idx} total={PAYMENT_METHODS.length} />
+            {CHECKOUT_PAYMENT_METHODS.map((method, idx) => (
+              <PaymentOption key={method.id} method={method} index={idx} total={CHECKOUT_PAYMENT_METHODS.length} />
             ))}
           </div>
         </div>

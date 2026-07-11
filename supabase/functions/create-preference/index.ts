@@ -52,6 +52,11 @@ serve(async (req) => {
         failure: `${appUrl}/checkout`,
         pending: `${appUrl}/checkout`,
       },
+      payment_methods: {
+        excluded_payment_types: [
+          { id: "ticket" },
+        ],
+      },
       auto_return: "approved",
       external_reference: `${user.id}::${document.id}`,
     };

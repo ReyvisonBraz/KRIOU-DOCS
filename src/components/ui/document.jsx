@@ -103,8 +103,9 @@ export const DocumentCard = ({
   const accent = resolveAccent(doc);
   const typeLabel = TYPE_LABELS[doc.type] || doc.documentTypeName || doc.type;
   const isFinalizado = doc.status === "finalizado";
-  const statusVariant = isFinalizado ? "teal" : "coral";
-  const statusLabel = isFinalizado ? "Finalizado" : "Rascunho";
+  const isPaymentPending = doc.status === "aguardando_pagamento" || doc.paymentStatus === "pending";
+  const statusVariant = isFinalizado ? "teal" : isPaymentPending ? "gold" : "coral";
+  const statusLabel = isFinalizado ? "Finalizado" : isPaymentPending ? "Pagamento em andamento" : "Rascunho";
   const person = extractPersonData(doc);
 
   return (

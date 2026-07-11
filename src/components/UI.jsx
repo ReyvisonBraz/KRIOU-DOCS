@@ -5,7 +5,7 @@
  * Este arquivo mantém retrocompatibilidade com todos os imports
  * existentes do tipo: import { Button } from "../components/UI"
  *
- * A implementação real está em src/components/ui/ (subpastas).
+ * A implementação real está em src/components/UI/ (subpastas).
  * Novos imports devem usar diretamente:
  *   import { Button } from "../components/UI"
  */
@@ -16,13 +16,13 @@ export {
   Badge,
   Tag,
   Spinner,
-} from "./ui/primitives";
+} from "./UI/primitives";
 
 export {
   Input,
   Textarea,
   Select,
-} from "./ui/form";
+} from "./UI/form";
 
 export {
   Navbar,
@@ -30,7 +30,7 @@ export {
   AppNavbar,
   AppStepper,
   BottomNavigation,
-} from "./ui/layout";
+} from "./UI/layout";
 
 export {
   EmptyState,
@@ -42,7 +42,7 @@ export {
   SkeletonStep,
   SkeletonPage,
   ConfirmDialog,
-} from "./ui/feedback";
+} from "./UI/feedback";
 
 export {
   HelpTooltip,
@@ -54,7 +54,7 @@ export {
   FieldWithIcon,
   VisualExample,
   QuickFillCard,
-} from "./ui/resume-helpers";
+} from "./UI/resume-helpers";
 
 export {
   VariantSelector,
@@ -63,8 +63,8 @@ export {
   OptionalFieldToggle,
   ClientNoteBanner,
   LegalFieldRenderer,
-} from "./ui/legal-helpers";
+} from "./UI/legal-helpers";
 
-export { DocumentCard } from "./ui/document";
+export { DocumentCard } from "./UI/document";
 
-export { default as RequirementsModal } from "./ui/RequirementsModal";
+export { default as RequirementsModal } from "./UI/RequirementsModal";

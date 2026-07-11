@@ -83,7 +83,10 @@ const WelcomePage = () => {
 
       {/* ── Bottom nav ── */}
       {slide < TOTAL - 1 && (
-        <div className="pb-10 flex flex-col items-center gap-5">
+        <div
+          className="flex flex-col items-center gap-5"
+          style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom, 0px))" }}
+        >
           {/* Progress dots */}
           <div className="flex items-center gap-2">
             {Array.from({ length: TOTAL }).map((_, i) => (

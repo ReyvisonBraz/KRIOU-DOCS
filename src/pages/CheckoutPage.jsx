@@ -528,10 +528,18 @@ const CheckoutPage = () => {
   ]);
 
   useEffect(() => {
+    if (!userId) return;
+
     try {
       const stored = window.sessionStorage.getItem(PENDING_PAYMENT_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        if (parsed?.userId && parsed.userId !== userId) {
+          window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY);
+          setPendingPayment(null);
+          return;
+        }
+
         if (parsed?.documentId && parsed?.initPoint) {
           setPendingPayment(parsed);
         }
@@ -539,7 +547,7 @@ const CheckoutPage = () => {
     } catch {
       window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!pendingPayment?.documentId || checkoutComplete) return undefined;
@@ -598,6 +606,8 @@ const CheckoutPage = () => {
         documentId: savedDoc?.id,
         initPoint: preference.init_point,
         preferenceId: preference.preference_id,
+        userId,
+        payerEmail: email || null,
         createdAt: new Date().toISOString(),
       };
 

@@ -141,9 +141,11 @@ Status: concluida.
 
 Resultado: criada `src/features/checkout/PaymentWaitingScreen.jsx` e `CheckoutPage` passou a delegar a renderizacao da tela de pagamento em andamento.
 
-### AQ-202 — Extrair tela de sucesso
+### AQ-202 - Extrair tela de sucesso
 
-Status: pendente.
+Status: concluida.
+
+Resultado: criada `src/features/checkout/PaymentSuccessScreen.jsx` e `CheckoutPage` passou a delegar a renderizacao da tela de pagamento confirmado.
 
 ### AQ-203 — Extrair hook `useCheckoutFlow`
 
@@ -175,3 +177,4 @@ Status: pendente.
 | 2026-07-12 | AQ-101 | Concluída: identidade paga movida para `src/domain/paidDocuments`. |
 | 2026-07-12 | AQ-102 | Concluída: política pura de edição paga criada e testada. |
 | 2026-07-12 | AQ-201 | Concluida: tela de aguardando pagamento extraida para `src/features/checkout/PaymentWaitingScreen.jsx`. |
+| 2026-07-12 | AQ-202 | Concluida: tela de sucesso extraida para `src/features/checkout/PaymentSuccessScreen.jsx`. |

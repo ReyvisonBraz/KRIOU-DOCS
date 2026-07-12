@@ -1,10 +1,11 @@
 export { default as CheckoutErrorAlert } from "./CheckoutErrorAlert";
 export { default as CheckoutOrderSummary } from "./CheckoutOrderSummary";
 export { default as CheckoutPayButton } from "./CheckoutPayButton";
+export { default as CheckoutPaymentMethodsCard } from "./CheckoutPaymentMethodsCard";
 export { default as CheckoutSecurityBadge } from "./CheckoutSecurityBadge";
-export { default as PaymentMethodOption } from "./PaymentMethodOption";
 export { default as PaymentSuccessScreen } from "./PaymentSuccessScreen";
 export { default as PaymentWaitingScreen } from "./PaymentWaitingScreen";
+export { CHECKOUT_PAYMENT_METHODS } from "./checkoutPaymentMethods";
 export { checkoutKeyframes, checkoutStyles } from "./checkoutStyles";
 export { useCheckoutFlow } from "./useCheckoutFlow";
 export { usePaidDocumentEditFlow } from "./usePaidDocumentEditFlow";

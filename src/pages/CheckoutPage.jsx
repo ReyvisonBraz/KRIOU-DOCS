@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { AppNavbar, ConfirmDialog } from "../components/UI";
-import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
 import { useConfirm } from "../hooks/useConfirm";
 import {
+  CHECKOUT_PAYMENT_METHODS,
   CheckoutErrorAlert,
   CheckoutOrderSummary,
   CheckoutPayButton,
+  CheckoutPaymentMethodsCard,
   CheckoutSecurityBadge,
-  PaymentMethodOption,
   PaymentSuccessScreen,
   PaymentWaitingScreen,
   checkoutKeyframes,
@@ -22,7 +22,6 @@ import {
 import showToast from "../utils/toast";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
-const CHECKOUT_PAYMENT_METHODS = PAYMENT_METHODS.filter((method) => method.id === "pix" || method.id === "card");
 const S = checkoutStyles;
 const KEYFRAMES = checkoutKeyframes;
 
@@ -221,24 +220,12 @@ const CheckoutPage = () => {
           documentSubtitle={getDocumentTitle()}
         />
 
-        <div style={S.paymentCard}>
-          <div style={S.sectionLabel}>Forma de Pagamento</div>
-
-          <div role="radiogroup" aria-label="Forma de pagamento" aria-orientation="vertical" style={{ display: "flex", flexDirection: "column" }}>
-            {CHECKOUT_PAYMENT_METHODS.map((method, idx) => (
-              <PaymentMethodOption
-                key={method.id}
-                styles={S}
-                method={method}
-                index={idx}
-                total={CHECKOUT_PAYMENT_METHODS.length}
-                methods={CHECKOUT_PAYMENT_METHODS}
-                selectedPayment={selectedPayment}
-                onSelectPayment={setSelectedPayment}
-              />
-            ))}
-          </div>
-        </div>
+        <CheckoutPaymentMethodsCard
+          styles={S}
+          methods={CHECKOUT_PAYMENT_METHODS}
+          selectedPayment={selectedPayment}
+          onSelectPayment={setSelectedPayment}
+        />
 
         {/* ── Pay Button ── */}
         <CheckoutPayButton

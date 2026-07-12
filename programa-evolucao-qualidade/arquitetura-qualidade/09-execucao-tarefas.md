@@ -195,6 +195,12 @@ Status: concluida.
 
 Resultado: adicionada cobertura para `useStartCheckoutPayment` e `usePaidDocumentEditFlow`, validando inicio de pagamento, mock local, interrupcao por edicao paga, correcao gratuita e bloqueio da segunda alteracao sensivel.
 
+### AQ-211 - Extrair card de metodos de pagamento
+
+Status: concluida.
+
+Resultado: criado `CheckoutPaymentMethodsCard` e movida lista de metodos do checkout para modulo da feature.
+
 ## Fase 4 — Testes críticos
 
 ### AQ-301 - Testar fluxo de edicao paga
@@ -239,3 +245,4 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-208 | Concluida: estilos e keyframes do checkout extraidos para modulo dedicado. |
 | 2026-07-12 | AQ-209 | Concluida: exports da feature checkout organizados em barrel controlado. |
 | 2026-07-12 | AQ-210 | Concluida: hooks extraidos do checkout cobertos por testes especificos. |
+| 2026-07-12 | AQ-211 | Concluida: card e metodos de pagamento do checkout extraidos para a feature. |

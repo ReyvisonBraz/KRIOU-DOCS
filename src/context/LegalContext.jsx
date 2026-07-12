@@ -31,7 +31,7 @@ import StorageService from "../utils/storage";
 import { sanitizeFormData } from "../utils/sanitization";
 import { useAutoSave } from "../hooks/useAutoSave";
 
-export const LegalContext = createContext(null);
+const LegalContext = createContext(null);
 
 export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => {
   const [documentType, setDocumentType]       = useState(null);

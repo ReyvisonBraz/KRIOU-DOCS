@@ -10,7 +10,6 @@ const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDocs, setUserDocs] = useState([]);
-  const [loading, setLoading] = useState("stats");
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
 
@@ -22,13 +21,7 @@ const AdminPage = () => {
     return data;
   }, []);
 
-  useEffect(() => {
-    loadStats();
-    loadUsers();
-  }, []);
-
-  const loadStats = async () => {
-    setLoading("stats");
+  const loadStats = useCallback(async () => {
     setError(null);
     try {
       const data = await callAdmin("stats");
@@ -36,10 +29,9 @@ const AdminPage = () => {
     } catch (err) {
       setError(err.message);
     }
-  };
+  }, [callAdmin]);
 
-  const loadUsers = async () => {
-    setLoading("users");
+  const loadUsers = useCallback(async () => {
     setError(null);
     try {
       const data = await callAdmin("users");
@@ -47,10 +39,14 @@ const AdminPage = () => {
     } catch (err) {
       setError(err.message);
     }
-  };
+  }, [callAdmin]);
+
+  useEffect(() => {
+    loadStats();
+    loadUsers();
+  }, [loadStats, loadUsers]);
 
   const loadUserDocs = async (userId) => {
-    setLoading("docs");
     setError(null);
     setSelectedUser(userId);
     try {

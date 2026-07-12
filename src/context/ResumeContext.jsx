@@ -31,7 +31,7 @@ import { sanitizeFormData } from "../utils/sanitization";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { generateDocumentCode } from "../utils/documentCode";
 
-export const ResumeContext = createContext(null);
+const ResumeContext = createContext(null);
 
 export const ResumeProvider = ({ children, userId, isLoading }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);

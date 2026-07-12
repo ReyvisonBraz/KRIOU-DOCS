@@ -353,9 +353,9 @@ export const FieldHint = ({ hint, example, whereFind, skipLabel, onSkip }) => {
 // QUICK SUGGESTION
 // ==================================================================
 export const QuickSuggestion = ({ suggestions, onSelect, label }) => {
-  if (!suggestions || suggestions.length === 0) return null;
-
   React.useEffect(() => { injectStyles(); }, []);
+
+  if (!suggestions || suggestions.length === 0) return null;
 
   return (
     <div style={{ marginTop: 14 }}>

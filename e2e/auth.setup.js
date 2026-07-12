@@ -1,4 +1,4 @@
-import { test as setup, expect } from "@playwright/test";
+import { test as setup } from "@playwright/test";
 import path from "path";
 
 const AUTH_FILE = path.resolve("e2e/.auth/user.json");

@@ -99,7 +99,9 @@ const CompleteProfilePage = ({ onNavigate }) => {
           google_id: user?.raw_user_meta_data?.sub || null,
         },
       });
-    } catch {} // não bloqueia se falhar
+    } catch (err) {
+      console.warn("[CompleteProfile] Falha ao salvar perfil opcional:", err.message);
+    }
     onNavigate("dashboard", { replace: true });
   };
 

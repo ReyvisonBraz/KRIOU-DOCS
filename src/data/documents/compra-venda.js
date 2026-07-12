@@ -1,4 +1,4 @@
-import { field, pessoaFisicaFields, pessoaFisicaFieldsRepeated } from "./_shared.js";
+import { field, pessoaFisicaFieldsRepeated } from "./_shared.js";
 
 const compraVenda = {
   id: "compra-venda",

@@ -7,10 +7,11 @@ import { usePDF } from "../hooks/usePDF";
 import { useConfirm } from "../hooks/useConfirm";
 import { sanitizeFormData } from "../utils/sanitization";
 import {
-  comparePaidIdentity,
   createPaidIdentitySnapshot,
-  summarizeIdentityChanges,
-} from "../utils/paidDocumentIdentity";
+  evaluatePaidDocumentEdit,
+  PAID_DOCUMENT_DECISION,
+  paidDocumentMessages,
+} from "../domain/paidDocuments";
 import { DocumentService } from "../services/DocumentService";
 import { PaymentService } from "../services/PaymentService";
 import showToast from "../utils/toast";
@@ -658,35 +659,18 @@ const CheckoutPage = () => {
 
   const handlePaidDocumentEdit = async (docData) => {
     const existingDoc = await DocumentService.fetchById(editingDocId, userId);
-    const isPaidDocument =
-      existingDoc?.status === "finalizado" &&
-      existingDoc?.paymentStatus === "approved";
-
-    if (!isPaidDocument) return false;
-
-    const previousIdentity = existingDoc.paidIdentitySnapshot || createPaidIdentitySnapshot({
-      type: existingDoc.type,
-      documentType: existingDoc.documentType || null,
-      formData: existingDoc.formData || null,
-      legalData: existingDoc.legalData || null,
-    });
     const currentIdentity = buildCurrentIdentity(docData);
-    const identityCheck = comparePaidIdentity(previousIdentity, currentIdentity);
-    const changedFields = summarizeIdentityChanges(identityCheck.changes);
+    const editDecision = evaluatePaidDocumentEdit({
+      existingDocument: existingDoc,
+      nextIdentity: currentIdentity,
+    });
+    const { decision, identityCheck, previousIdentity, changedFields } = editDecision;
 
-    if (identityCheck.level === "critical") {
-      setPaymentError(
-        "As alterações indicam um novo documento. O plano avulso permite editar o documento pago, mas troca de tipo ou modelo exige criar um novo documento."
-      );
+    if (decision === PAID_DOCUMENT_DECISION.NOT_PAID) return false;
+
+    if (decision === PAID_DOCUMENT_DECISION.REQUIRE_NEW_DOCUMENT) {
+      setPaymentError(editDecision.message);
       showToast.error("Crie um novo documento para continuar.");
-      return true;
-    }
-
-    if (identityCheck.level === "sensitive" && existingDoc.sensitiveEditUsed) {
-      setPaymentError(
-        `Este documento já utilizou a correção gratuita de dados principais. Para alterar ${changedFields}, crie um novo documento. Você ainda pode editar endereço, datas, valores, cláusulas e textos gerais.`
-      );
-      showToast.error("Nova alteração em dados principais exige novo documento.");
       return true;
     }
 
@@ -695,10 +679,10 @@ const CheckoutPage = () => {
       paidIdentitySnapshot: previousIdentity,
     };
 
-    if (identityCheck.level === "sensitive") {
+    if (decision === PAID_DOCUMENT_DECISION.REQUIRE_CONFIRMATION) {
       const confirmed = await requestConfirm({
         title: "Usar correção gratuita?",
-        message: `Detectamos alteração em dados principais (${changedFields}). Você pode fazer uma correção gratuita agora caso seja ajuste de dados digitados incorretamente. Após confirmar, novas alterações em dados principais poderão exigir a criação de um novo documento.`,
+        message: paidDocumentMessages.firstSensitiveEdit(changedFields),
         confirmLabel: "Usar correção gratuita",
         cancelLabel: "Voltar e revisar",
         danger: true,

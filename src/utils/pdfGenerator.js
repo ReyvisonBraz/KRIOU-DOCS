@@ -61,7 +61,7 @@ const getInitials = (name) => {
 /**
  * Draw a thin horizontal divider line.
  */
-const drawDivider = (doc, x, y, width, alpha = 0.6) => {
+const drawDivider = (doc, x, y, width) => {
   doc.setDrawColor(...C_DIVIDER);
   doc.setLineWidth(0.15);
   doc.line(x, y, x + width, y);
@@ -175,25 +175,6 @@ const renderMainSectionHeader = (doc, title, y, accentRgb) => {
   y += 5;
 
   doc.setTextColor(...C_TEXT);
-  return y;
-};
-
-/**
- * Render text with optional leading and indent.
- */
-const renderText = (doc, text, x, y, maxWidth, { font = FONT_BODY, size = 9, color = C_TEXT, leading = 4.5 } = {}) => {
-  if (!text || text.trim() === "") return y;
-
-  doc.setFont(font, "normal");
-  doc.setFontSize(size);
-  doc.setTextColor(...color);
-
-  const lines = doc.splitTextToSize(text, maxWidth);
-  lines.forEach((line) => {
-    doc.text(line, x, y);
-    y += leading;
-  });
-
   return y;
 };
 

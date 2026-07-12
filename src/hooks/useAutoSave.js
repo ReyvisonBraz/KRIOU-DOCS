@@ -67,6 +67,9 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
+    // O feedback "saving" precisa aparecer imediatamente após a alteração,
+    // antes do debounce concluir. Esta atualização é intencional neste hook.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSaveStatus("saving");
     timerRef.current = setTimeout(async () => {
       try {
@@ -82,7 +85,6 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, delayMs]);
 
   return { saveStatus, lastSaved, triggerSave };

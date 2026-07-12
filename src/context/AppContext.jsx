@@ -450,5 +450,3 @@ export const useApp = () => {
     profile:           ui.profile,                setProfile: ui.setProfile,
   };
 };
-
-export default AppContext;

@@ -13,12 +13,12 @@
  * ============================================
  */
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useEffect } from "react";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 // Fonte da verdade: src/index.css :root
 // Estes valores DEVEM ser idênticos aos do index.css
-export const colors = {
+const colors = {
   navy:         "#090914",
   navyLight:    "#111127",
   base:         "#14142B",
@@ -49,12 +49,12 @@ export const colors = {
   danger:       "#EF4444",
 };
 
-export const fonts = {
+const fonts = {
   display: "'Outfit', system-ui, sans-serif",
   body:    "'Plus Jakarta Sans', system-ui, sans-serif",
 };
 
-export const radii = {
+const radii = {
   sm:    "10px",
   md:    "14px",
   lg:    "20px",
@@ -62,7 +62,7 @@ export const radii = {
   full:  "9999px",
 };
 
-export const shadows = {
+const shadows = {
   card:       "0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.15)",
   elevated:   "0 4px 8px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.2)",
   button:     "0 2px 8px rgba(244,63,94,0.25)",
@@ -70,11 +70,10 @@ export const shadows = {
   glow:       "0 0 40px rgba(244,63,94,0.15)",
 };
 
-export const theme = { colors, fonts, radii, shadows };
+const theme = { colors, fonts, radii, shadows };
 
 // ─── Theme Context ─────────────────────────────────────────────────────────────
 const ThemeContext = createContext(theme);
-export const useTheme = () => useContext(ThemeContext);
 
 // ─── CSS variable injection ────────────────────────────────────────────────────
 function buildCSSVariables(vars, prefix = "") {

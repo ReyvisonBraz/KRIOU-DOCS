@@ -493,18 +493,19 @@ export const ConfirmDialog = ({
   onCancel,
 }) => {
   const isOpen = visible ?? open ?? false;
-  if (!isOpen) return null;
-
-  ensureGlobalStyles();
-
   // Trava scroll do body enquanto o diálogo está aberto
   React.useEffect(() => {
+    if (!isOpen) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, []);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  ensureGlobalStyles();
 
   return (
     <div

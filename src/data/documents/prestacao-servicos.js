@@ -1,4 +1,4 @@
-import { field, pessoaFisicaFields, parteQualificacaoText } from "./_shared.js";
+import { field, pessoaFisicaFields } from "./_shared.js";
 
 const prestacaoServicos = {
   id: "prestacao-servicos",

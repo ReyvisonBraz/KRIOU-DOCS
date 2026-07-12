@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
@@ -27,7 +27,7 @@ const DashboardPage = () => {
   const [renameDoc, setRenameDoc] = useState(null);
   const [renameTitle, setRenameTitle] = useState("");
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
-  const { generatePDF, isGenerating } = usePDF();
+  const { generatePDF } = usePDF();
 
   const handleCreateResume = () => {
     setEditingDocId(null);
@@ -52,7 +52,7 @@ const DashboardPage = () => {
     navigate("templates");
   };
 
-  const allDocs = userDocuments || [];
+  const allDocs = useMemo(() => userDocuments || [], [userDocuments]);
 
   const tabs = [
     { id: "todos", label: "Todos", icon: "FileText", filterType: "all" },
@@ -258,8 +258,6 @@ const DashboardPage = () => {
   const handlePrintPDF = useCallback(async (doc) => {
     try {
       let arrayBuffer;
-      let filename;
-
       if (doc.type === "resume") {
         const template = doc.templateId
           ? { id: doc.templateId, name: doc.templateName || "Modelo", color: doc.template?.color, accent: doc.template?.accent }
@@ -267,13 +265,11 @@ const DashboardPage = () => {
         const { generateResumePDF } = await import("../utils/pdfGenerator");
         const pdf = generateResumePDF(doc.formData, template);
         arrayBuffer = pdf.output("arraybuffer");
-        filename = `curriculo-${(doc.formData?.nome || "documento").toLowerCase().replace(/\s+/g, "-")}.pdf`;
       } else {
         const { generateLegalPDF } = await import("../utils/legalPdfGenerator");
         const docType = { id: doc.documentType, name: doc.documentTypeName };
         const pdf = generateLegalPDF(doc.legalData, docType, {}, doc.variantId);
         arrayBuffer = pdf.output("arraybuffer");
-        filename = `${doc.documentType || "documento"}-kriou-docs.pdf`;
       }
 
       const blob = new Blob([arrayBuffer], { type: "application/pdf" });

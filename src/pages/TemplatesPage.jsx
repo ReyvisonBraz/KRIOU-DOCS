@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
@@ -26,6 +26,12 @@ const LEGAL_CATEGORIES = [
   { id: "pessoais", label: "Pessoais", icon: "Users", docIds: ["procuracao", "doacao", "uniao-estavel", "autorizacao-viagem"] },
   { id: "financeiros", label: "Financeiros", icon: "Money", docIds: ["recibo"] },
 ];
+
+const getInitialDocType = () => {
+  const cat = sessionStorage.getItem("kriou_template_category");
+  sessionStorage.removeItem("kriou_template_category");
+  return cat === "resume" || cat === "legal" ? cat : null;
+};
 
 const LEGAL_DOC_COLORS = {
   "compra-venda": { accent: "#14FFEC", bg: "#0D7377" },
@@ -515,17 +521,11 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
 // ─── TemplatesPage ──────────────────────────────────────────────────────────
 const TemplatesPage = () => {
   const { navigate, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType, setSelectedVariant } = useApp();
-  const [docType, setDocType] = useState(null);
+  const [docType, setDocType] = useState(getInitialDocType);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLegalCategory, setSelectedLegalCategory] = useState("all");
   const [specTemplate, setSpecTemplate] = useState(null);
   const [specLegalDoc, setSpecLegalDoc] = useState(null);
-
-  useEffect(() => {
-    const cat = sessionStorage.getItem("kriou_template_category");
-    if (cat === "resume" || cat === "legal") setDocType(cat);
-    sessionStorage.removeItem("kriou_template_category");
-  }, []);
 
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template);

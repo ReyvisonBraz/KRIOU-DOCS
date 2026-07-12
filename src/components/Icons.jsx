@@ -1050,7 +1050,5 @@ export const Icon = ({ name, className = "w-5 h-5", ...props }) => {
 };
 
 // ─── Mapeador de Ícones para Renderização Dinâmica ───
-export const iconMap = icons;
 
 // Exportar todos os ícones individualmente para importação direta
-export default icons;

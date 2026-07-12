@@ -3,7 +3,7 @@ import {
   comparePaidIdentity,
   createPaidIdentitySnapshot,
   summarizeIdentityChanges,
-} from "./paidDocumentIdentity";
+} from "./identity";
 
 describe("paidDocumentIdentity", () => {
   it("não marca endereço como alteração sensível", () => {

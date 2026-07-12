@@ -56,7 +56,7 @@ export const logger = {
     if (!shouldLog("error")) return;
     const errorMsg = error?.message || error || message;
     const errorData = error?.stack ? { stack: error.stack, ...(error?.context || {}) } : undefined;
-    console.error(`[${formatTimestamp()}][${module}][ERRO]`, message, errorData || "");
+    console.error(`[${formatTimestamp()}][${module}][ERRO]`, errorMsg, errorData || "");
 
     // Future: Sentry integration
     // if (typeof Sentry !== "undefined") {

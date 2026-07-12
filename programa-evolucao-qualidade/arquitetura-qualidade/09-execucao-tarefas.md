@@ -177,6 +177,12 @@ Status: concluida.
 
 Resultado: extraidos resumo do pedido, alerta de erro e selo de seguranca para componentes dedicados em `src/features/checkout`.
 
+### AQ-208 - Extrair estilos do checkout
+
+Status: concluida.
+
+Resultado: movidos estilos inline estaticos e keyframes para `src/features/checkout/checkoutStyles.js`, reduzindo responsabilidade visual do `CheckoutPage`.
+
 ## Fase 4 — Testes críticos
 
 ### AQ-301 - Testar fluxo de edicao paga
@@ -218,3 +224,4 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-205 | Concluida: fluxo de edicao de documento pago extraido para hook dedicado. |
 | 2026-07-12 | AQ-206 | Concluida: inicio do pagamento extraido para hook dedicado. |
 | 2026-07-12 | AQ-207 | Concluida: resumo, alerta e selo de seguranca do checkout extraidos. |
+| 2026-07-12 | AQ-208 | Concluida: estilos e keyframes do checkout extraidos para modulo dedicado. |

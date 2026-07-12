@@ -169,9 +169,9 @@ Resultado: adicionada cobertura para bloquear segunda alteracao sensivel mesmo q
 
 ### AQ-303 - Testar webhook/snapshot
 
-Status: parcial.
+Status: concluida.
 
-Resultado: adicionada cobertura do fluxo frontend que consome confirmacao de pagamento e pagamento pendente. Ainda falta teste direto das Edge Functions/webhook.
+Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago usada por `verify-payment` e `mercadopago-webhook`, cobrindo external_reference, usuario, documento, moeda e valor.
 
 ## Histórico de execução
 
@@ -189,4 +189,4 @@ Resultado: adicionada cobertura do fluxo frontend que consome confirmacao de pag
 | 2026-07-12 | AQ-203 | Concluida: fluxo de pagamento pendente extraido para `src/features/checkout/useCheckoutFlow.js`. |
 | 2026-07-12 | AQ-301 | Concluida: cenarios de edicao paga e pagamento aprovado cobertos por testes. |
 | 2026-07-12 | AQ-302 | Concluida: bloqueio de segunda alteracao sensivel coberto por teste. |
-| 2026-07-12 | AQ-303 | Parcial: fluxo frontend de confirmacao/pagamento pendente coberto; falta teste direto de webhook/Edge Function. |
+| 2026-07-12 | AQ-303 | Concluida: validacao compartilhada de pagamento Mercado Pago coberta por testes e usada no webhook/verify-payment. |

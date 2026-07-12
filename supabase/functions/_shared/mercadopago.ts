@@ -1,4 +1,5 @@
 const DEFAULT_MAX_SIGNATURE_AGE_MS = 15 * 60 * 1000;
+export const DOCUMENT_PRICE_IN_CENTS = 990;
 
 function parseSignatureHeader(xSignature: string) {
   return Object.fromEntries(
@@ -70,3 +71,53 @@ export async function verifyMercadoPagoSignature({
   return constantTimeEqualHex(expectedSignature, v1.toLowerCase());
 }
 
+export function parseMercadoPagoExternalReference(externalReference: unknown) {
+  const [userId, documentId, ...unexpected] = String(externalReference || "").split("::");
+
+  return {
+    userId: userId || null,
+    documentId: documentId || null,
+    hasUnexpectedParts: unexpected.length > 0,
+  };
+}
+
+export function validateMercadoPagoDocumentPayment({
+  payment,
+  expectedUserId,
+  expectedDocumentId,
+  expectedAmountInCents = DOCUMENT_PRICE_IN_CENTS,
+}: {
+  payment: {
+    external_reference?: unknown;
+    currency_id?: unknown;
+    transaction_amount?: unknown;
+  };
+  expectedUserId?: string | null;
+  expectedDocumentId?: string | null;
+  expectedAmountInCents?: number;
+}) {
+  const reference = parseMercadoPagoExternalReference(payment?.external_reference);
+  const amountInCents = Math.round(Number(payment?.transaction_amount) * 100);
+
+  if (reference.hasUnexpectedParts || !reference.userId || !reference.documentId) {
+    return { valid: false, reason: "invalid_external_reference", reference, amountInCents };
+  }
+
+  if (expectedUserId && reference.userId !== expectedUserId) {
+    return { valid: false, reason: "user_mismatch", reference, amountInCents };
+  }
+
+  if (expectedDocumentId && reference.documentId !== expectedDocumentId) {
+    return { valid: false, reason: "document_mismatch", reference, amountInCents };
+  }
+
+  if (payment?.currency_id !== "BRL") {
+    return { valid: false, reason: "currency_mismatch", reference, amountInCents };
+  }
+
+  if (amountInCents !== expectedAmountInCents) {
+    return { valid: false, reason: "amount_mismatch", reference, amountInCents };
+  }
+
+  return { valid: true, reason: null, reference, amountInCents };
+}

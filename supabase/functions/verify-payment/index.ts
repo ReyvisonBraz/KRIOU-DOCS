@@ -2,9 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { authenticate, createAdminClient } from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
 import { createPaidIdentitySnapshot } from "../_shared/document_identity.ts";
+import { validateMercadoPagoDocumentPayment } from "../_shared/mercadopago.ts";
 
 const MP_API = "https://api.mercadopago.com";
-const DOCUMENT_PRICE_IN_CENTS = 990;
 
 serve(async (req) => {
   const preflight = handlePreflight(req);
@@ -34,20 +34,23 @@ serve(async (req) => {
     }
 
     const payment = await response.json();
-    const [referenceUserId, documentId, ...unexpected] = String(payment.external_reference || "").split("::");
-    const amountInCents = Math.round(Number(payment.transaction_amount) * 100);
+    const paymentValidation = validateMercadoPagoDocumentPayment({
+      payment,
+      expectedUserId: user.id,
+    });
+    const { documentId } = paymentValidation.reference;
 
-    if (unexpected.length || referenceUserId !== user.id || !documentId) {
-      return json({ error: "Pagamento não pertence ao usuário autenticado" }, 403);
+    if (paymentValidation.reason === "user_mismatch" || paymentValidation.reason === "invalid_external_reference") {
+      return json({ error: "Pagamento n?o pertence ao usu?rio autenticado" }, 403);
     }
 
-    if (payment.currency_id !== "BRL" || amountInCents !== DOCUMENT_PRICE_IN_CENTS) {
-      console.error("[verify-payment] Divergência financeira", {
+    if (!paymentValidation.valid) {
+      console.error("[verify-payment] Diverg?ncia financeira", {
         paymentId: payment.id,
         currency: payment.currency_id,
-        amountInCents,
+        amountInCents: paymentValidation.amountInCents,
       });
-      return json({ error: "Valor ou moeda do pagamento não confere" }, 409);
+      return json({ error: "Valor ou moeda do pagamento n?o confere" }, 409);
     }
 
     const { data: document, error: documentError } = await supabase

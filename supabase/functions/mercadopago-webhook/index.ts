@@ -2,10 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createAdminClient } from "../_shared/auth.ts";
 import { createPaidIdentitySnapshot } from "../_shared/document_identity.ts";
 import { json } from "../_shared/http.ts";
-import { verifyMercadoPagoSignature } from "../_shared/mercadopago.ts";
+import { validateMercadoPagoDocumentPayment, verifyMercadoPagoSignature } from "../_shared/mercadopago.ts";
 
 const MP_API = "https://api.mercadopago.com";
-const DOCUMENT_PRICE_IN_CENTS = 990;
 
 serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
@@ -77,22 +76,16 @@ serve(async (req) => {
     }
 
     const payment = await paymentResponse.json();
-    const [userId, documentId, ...unexpected] = String(payment.external_reference || "").split("::");
-    const amountInCents = Math.round(Number(payment.transaction_amount) * 100);
+    const paymentValidation = validateMercadoPagoDocumentPayment({ payment });
+    const { userId, documentId } = paymentValidation.reference;
 
-    if (
-      unexpected.length ||
-      !userId ||
-      !documentId ||
-      payment.currency_id !== "BRL" ||
-      amountInCents !== DOCUMENT_PRICE_IN_CENTS
-    ) {
+    if (!paymentValidation.valid) {
       await supabase.from("payment_webhook_events").update({
         processing_status: "rejected",
-        error_code: "payment_invariant_mismatch",
+        error_code: paymentValidation.reason || "payment_invariant_mismatch",
         processed_at: new Date().toISOString(),
       }).eq("event_key", eventKey);
-      return json({ error: "Pagamento não corresponde ao pedido" }, 409);
+      return json({ error: "Pagamento n?o corresponde ao pedido" }, 409);
     }
 
     const documentUpdate: Record<string, unknown> = {

@@ -155,17 +155,23 @@ Resultado: criada `src/features/checkout/useCheckoutFlow.js` para centralizar es
 
 ## Fase 4 — Testes críticos
 
-### AQ-301 — Testar fluxo de edição paga
+### AQ-301 - Testar fluxo de edicao paga
 
-Status: pendente.
+Status: concluida.
 
-### AQ-302 — Testar bloqueio da segunda edição sensível
+Resultado: adicionados cenarios de politica paga para edicao normal, primeira alteracao sensivel e fluxo de pagamento aprovado no checkout.
 
-Status: pendente.
+### AQ-302 - Testar bloqueio da segunda edicao sensivel
 
-### AQ-303 — Testar webhook/snapshot
+Status: concluida.
 
-Status: pendente.
+Resultado: adicionada cobertura para bloquear segunda alteracao sensivel mesmo quando ha mudancas normais no documento.
+
+### AQ-303 - Testar webhook/snapshot
+
+Status: parcial.
+
+Resultado: adicionada cobertura do fluxo frontend que consome confirmacao de pagamento e pagamento pendente. Ainda falta teste direto das Edge Functions/webhook.
 
 ## Histórico de execução
 
@@ -181,3 +187,6 @@ Status: pendente.
 | 2026-07-12 | AQ-201 | Concluida: tela de aguardando pagamento extraida para `src/features/checkout/PaymentWaitingScreen.jsx`. |
 | 2026-07-12 | AQ-202 | Concluida: tela de sucesso extraida para `src/features/checkout/PaymentSuccessScreen.jsx`. |
 | 2026-07-12 | AQ-203 | Concluida: fluxo de pagamento pendente extraido para `src/features/checkout/useCheckoutFlow.js`. |
+| 2026-07-12 | AQ-301 | Concluida: cenarios de edicao paga e pagamento aprovado cobertos por testes. |
+| 2026-07-12 | AQ-302 | Concluida: bloqueio de segunda alteracao sensivel coberto por teste. |
+| 2026-07-12 | AQ-303 | Parcial: fluxo frontend de confirmacao/pagamento pendente coberto; falta teste direto de webhook/Edge Function. |

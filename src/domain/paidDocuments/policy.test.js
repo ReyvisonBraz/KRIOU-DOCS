@@ -53,6 +53,26 @@ describe("paid document policy", () => {
     expect(decision.decision).toBe(PAID_DOCUMENT_DECISION.ALLOW_NORMAL_EDIT);
   });
 
+  it("mantem edicao permitida quando muda varios dados nao identitarios", () => {
+    const nextIdentity = createPaidIdentitySnapshot({
+      type: "legal",
+      documentType: "contrato_locacao",
+      legalData: {
+        locadorNome: "Joao Silva",
+        locadorCpf: "123.456.789-09",
+        enderecoImovel: "Rua B, 200",
+        valorAluguel: "R$ 2.500,00",
+        prazoContrato: "24 meses",
+        clausulaExtra: "Permitido animal de pequeno porte",
+      },
+    });
+
+    const decision = evaluatePaidDocumentEdit({ existingDocument: paidDocument, nextIdentity });
+
+    expect(decision.decision).toBe(PAID_DOCUMENT_DECISION.ALLOW_NORMAL_EDIT);
+    expect(decision.identityCheck.score).toBe(0);
+  });
+
   it("exige confirmação na primeira alteração sensível", () => {
     const nextIdentity = createPaidIdentitySnapshot({
       type: "legal",
@@ -85,5 +105,28 @@ describe("paid document policy", () => {
     });
 
     expect(decision.decision).toBe(PAID_DOCUMENT_DECISION.REQUIRE_NEW_DOCUMENT);
+  });
+
+  it("bloqueia segunda alteracao sensivel mesmo quando tambem ha mudancas normais", () => {
+    const nextIdentity = createPaidIdentitySnapshot({
+      type: "legal",
+      documentType: "contrato_locacao",
+      legalData: {
+        locadorNome: "Maria Souza",
+        locadorCpf: "987.654.321-00",
+        enderecoImovel: "Rua B",
+        valorAluguel: "R$ 2.500,00",
+      },
+    });
+
+    const decision = evaluatePaidDocumentEdit({
+      existingDocument: { ...paidDocument, sensitiveEditUsed: true },
+      nextIdentity,
+    });
+
+    expect(decision.decision).toBe(PAID_DOCUMENT_DECISION.REQUIRE_NEW_DOCUMENT);
+    expect(decision.changedFields).toContain("Locador Nome");
+    expect(decision.changedFields).toContain("Locador Cpf");
+    expect(decision.message).toContain("crie um novo documento");
   });
 });

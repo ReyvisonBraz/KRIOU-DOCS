@@ -5,17 +5,20 @@ import { AppNavbar, ConfirmDialog } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
 import { useConfirm } from "../hooks/useConfirm";
-import PaymentSuccessScreen from "../features/checkout/PaymentSuccessScreen";
-import PaymentWaitingScreen from "../features/checkout/PaymentWaitingScreen";
-import CheckoutPayButton from "../features/checkout/CheckoutPayButton";
-import CheckoutOrderSummary from "../features/checkout/CheckoutOrderSummary";
-import CheckoutErrorAlert from "../features/checkout/CheckoutErrorAlert";
-import CheckoutSecurityBadge from "../features/checkout/CheckoutSecurityBadge";
-import PaymentMethodOption from "../features/checkout/PaymentMethodOption";
-import { checkoutKeyframes, checkoutStyles } from "../features/checkout/checkoutStyles";
-import { useCheckoutFlow } from "../features/checkout/useCheckoutFlow";
-import { usePaidDocumentEditFlow } from "../features/checkout/usePaidDocumentEditFlow";
-import { useStartCheckoutPayment } from "../features/checkout/useStartCheckoutPayment";
+import {
+  CheckoutErrorAlert,
+  CheckoutOrderSummary,
+  CheckoutPayButton,
+  CheckoutSecurityBadge,
+  PaymentMethodOption,
+  PaymentSuccessScreen,
+  PaymentWaitingScreen,
+  checkoutKeyframes,
+  checkoutStyles,
+  useCheckoutFlow,
+  usePaidDocumentEditFlow,
+  useStartCheckoutPayment,
+} from "../features/checkout";
 import showToast from "../utils/toast";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";

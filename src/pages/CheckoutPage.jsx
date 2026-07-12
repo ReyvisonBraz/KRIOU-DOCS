@@ -5,14 +5,13 @@ import { AppNavbar, ConfirmDialog } from "../components/UI";
 import { PAYMENT_METHODS } from "../data/constants";
 import { usePDF } from "../hooks/usePDF";
 import { useConfirm } from "../hooks/useConfirm";
-import { sanitizeFormData } from "../utils/sanitization";
 import PaymentSuccessScreen from "../features/checkout/PaymentSuccessScreen";
 import PaymentWaitingScreen from "../features/checkout/PaymentWaitingScreen";
 import CheckoutPayButton from "../features/checkout/CheckoutPayButton";
 import PaymentMethodOption from "../features/checkout/PaymentMethodOption";
 import { useCheckoutFlow } from "../features/checkout/useCheckoutFlow";
 import { usePaidDocumentEditFlow } from "../features/checkout/usePaidDocumentEditFlow";
-import { PaymentService } from "../services/PaymentService";
+import { useStartCheckoutPayment } from "../features/checkout/useStartCheckoutPayment";
 import showToast from "../utils/toast";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
@@ -461,6 +460,24 @@ const CheckoutPage = () => {
     clearPendingPayment,
   });
 
+  const { handlePayment } = useStartCheckoutPayment({
+    isLegalDocument,
+    formData,
+    legalFormData,
+    editingDocId,
+    userId,
+    email,
+    saveDocument,
+    updateDocument,
+    setCheckoutComplete,
+    setEditingDocId,
+    setIsProcessing,
+    setPaymentError,
+    persistPendingPayment,
+    handlePaidDocumentEdit,
+    paymentMockEnabled: PAYMENT_MOCK_ENABLED,
+  });
+
   const getDisplayEmail = () => email || "seu e-mail";
   const getDocumentTitle = () => {
     if (isLegalDocument) return documentType?.name || "Documento Jur\u00eddico";
@@ -468,68 +485,6 @@ const CheckoutPage = () => {
   };
   const getDocumentTypeLabel = () =>
     isLegalDocument ? "Documento Jur\u00eddico" : "Curr\u00edculo";
-
-  const handlePayment = async () => {
-    setPaymentError(null);
-    setIsProcessing(true);
-    let checkoutWindow = null;
-    try {
-      const docData = sanitizeFormData(isLegalDocument ? legalFormData : formData);
-      if (editingDocId) {
-        const handledAsPaidEdit = await handlePaidDocumentEdit(docData);
-        if (handledAsPaidEdit) {
-          return;
-        }
-      }
-
-      let savedDoc;
-      if (editingDocId) {
-        await updateDocument(editingDocId, docData, { status: "aguardando_pagamento" });
-        setEditingDocId(null);
-        savedDoc = { id: editingDocId };
-      } else {
-        savedDoc = await saveDocument(docData, { status: "aguardando_pagamento" });
-      }
-
-      if (PAYMENT_MOCK_ENABLED) {
-        setCheckoutComplete(true);
-        showToast.info("Pagamento simulado: recurso exclusivo do ambiente local.");
-        return;
-      }
-
-      checkoutWindow = window.open("", "_blank");
-      const preference = await PaymentService.createPreference(savedDoc?.id);
-
-      if (!preference?.init_point) {
-        throw new Error("O provedor não retornou a URL de pagamento");
-      }
-
-      const pending = {
-        documentId: savedDoc?.id,
-        initPoint: preference.init_point,
-        preferenceId: preference.preference_id,
-        userId,
-        payerEmail: email || null,
-        createdAt: new Date().toISOString(),
-      };
-
-      persistPendingPayment(pending);
-
-      if (checkoutWindow) {
-        checkoutWindow.opener = null;
-        checkoutWindow.location.href = preference.init_point;
-      } else {
-        setPaymentError("O navegador bloqueou a nova aba. Use o botão 'Abrir checkout novamente' abaixo.");
-      }
-    } catch (err) {
-      checkoutWindow?.close();
-      console.error("[CheckoutPage][ERRO] handlePayment:", err);
-      setPaymentError(err.message || "Erro ao processar pagamento. Tente novamente.");
-      showToast.error("Erro ao processar pagamento. Tente novamente.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const handleGoToDashboard = () => {
     setCheckoutComplete(false);

@@ -165,6 +165,12 @@ Status: concluida.
 
 Resultado: criada `src/features/checkout/usePaidDocumentEditFlow.js` para centralizar regra de edicao paga, confirmacao gratuita, atualizacao de documento e refresh de documentos.
 
+### AQ-206 - Extrair inicio do pagamento
+
+Status: concluida.
+
+Resultado: criada `src/features/checkout/useStartCheckoutPayment.js` para centralizar sanitizacao, salvamento do documento, criacao de preferencia Mercado Pago, persistencia do pagamento pendente e abertura do checkout.
+
 ## Fase 4 — Testes críticos
 
 ### AQ-301 - Testar fluxo de edicao paga
@@ -204,3 +210,4 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-303 | Concluida: validacao compartilhada de pagamento Mercado Pago coberta por testes e usada no webhook/verify-payment. |
 | 2026-07-12 | AQ-204 | Concluida: controles visuais do checkout extraidos para componentes dedicados. |
 | 2026-07-12 | AQ-205 | Concluida: fluxo de edicao de documento pago extraido para hook dedicado. |
+| 2026-07-12 | AQ-206 | Concluida: inicio do pagamento extraido para hook dedicado. |

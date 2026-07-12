@@ -8,6 +8,9 @@ import { useConfirm } from "../hooks/useConfirm";
 import PaymentSuccessScreen from "../features/checkout/PaymentSuccessScreen";
 import PaymentWaitingScreen from "../features/checkout/PaymentWaitingScreen";
 import CheckoutPayButton from "../features/checkout/CheckoutPayButton";
+import CheckoutOrderSummary from "../features/checkout/CheckoutOrderSummary";
+import CheckoutErrorAlert from "../features/checkout/CheckoutErrorAlert";
+import CheckoutSecurityBadge from "../features/checkout/CheckoutSecurityBadge";
 import PaymentMethodOption from "../features/checkout/PaymentMethodOption";
 import { useCheckoutFlow } from "../features/checkout/useCheckoutFlow";
 import { usePaidDocumentEditFlow } from "../features/checkout/usePaidDocumentEditFlow";
@@ -589,44 +592,12 @@ const CheckoutPage = () => {
         }}
       >
         {/* ── Order Summary Card ── */}
-        <div style={S.summaryCard}>
-          <div style={S.sectionLabel}>Resumo do Pedido</div>
+        <CheckoutOrderSummary
+          styles={S}
+          documentTitle={documentTitleFull}
+          documentSubtitle={getDocumentTitle()}
+        />
 
-          <div style={S.summaryRow}>
-            <div>
-              <div style={S.docTitle}>{documentTitleFull}</div>
-              <div style={S.docSubtitle}>{getDocumentTitle()}</div>
-              <div style={S.deliveryLabel}>
-                <Icon
-                  name="Zap"
-                  className="w-4 h-4"
-                  style={{ color: "var(--gold)" }}
-                />
-                Entrega imediata via e-mail
-              </div>
-            </div>
-
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <span style={S.priceCurrency}>R$</span>
-              <span style={S.priceDisplay}>9,90</span>
-            </div>
-          </div>
-
-          {/* Decorative accent line */}
-          <div
-            style={{
-              width: "100%",
-              height: 2,
-              marginTop: 16,
-              borderRadius: 2,
-              background:
-                "linear-gradient(90deg, var(--coral), var(--gold), transparent)",
-              opacity: 0.15,
-            }}
-          />
-        </div>
-
-        {/* ── Payment Methods Card ── */}
         <div style={S.paymentCard}>
           <div style={S.sectionLabel}>Forma de Pagamento</div>
 
@@ -654,35 +625,9 @@ const CheckoutPage = () => {
           onPay={handlePayment}
         />
 
-        {paymentError && (
-          <div
-            role="alert"
-            style={{
-              marginTop: 12,
-              padding: "12px 14px",
-              border: "1px solid rgba(239,68,68,0.35)",
-              borderRadius: 10,
-              background: "rgba(239,68,68,0.08)",
-              color: "var(--error, #ef4444)",
-              fontSize: 14,
-              lineHeight: 1.5,
-            }}
-          >
-            {paymentError}
-          </div>
-        )}
+        <CheckoutErrorAlert message={paymentError} />
 
-        {/* ── Security Badge ── */}
-        <div style={S.securityBadge}>
-          <Icon
-            name="Shield"
-            className="w-4 h-4"
-            style={{ color: "var(--text-faint)" }}
-          />
-          <span style={S.securityText}>
-            Pagamento seguro processado por Mercado Pago
-          </span>
-        </div>
+        <CheckoutSecurityBadge styles={S} />
       </div>
 
       <ConfirmDialog

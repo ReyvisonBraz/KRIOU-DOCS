@@ -171,6 +171,12 @@ Status: concluida.
 
 Resultado: criada `src/features/checkout/useStartCheckoutPayment.js` para centralizar sanitizacao, salvamento do documento, criacao de preferencia Mercado Pago, persistencia do pagamento pendente e abertura do checkout.
 
+### AQ-207 - Extrair blocos visuais restantes do checkout
+
+Status: concluida.
+
+Resultado: extraidos resumo do pedido, alerta de erro e selo de seguranca para componentes dedicados em `src/features/checkout`.
+
 ## Fase 4 — Testes críticos
 
 ### AQ-301 - Testar fluxo de edicao paga
@@ -211,3 +217,4 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-204 | Concluida: controles visuais do checkout extraidos para componentes dedicados. |
 | 2026-07-12 | AQ-205 | Concluida: fluxo de edicao de documento pago extraido para hook dedicado. |
 | 2026-07-12 | AQ-206 | Concluida: inicio do pagamento extraido para hook dedicado. |
+| 2026-07-12 | AQ-207 | Concluida: resumo, alerta e selo de seguranca do checkout extraidos. |

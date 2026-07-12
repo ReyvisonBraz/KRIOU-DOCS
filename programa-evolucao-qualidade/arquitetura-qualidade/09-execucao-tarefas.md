@@ -147,9 +147,11 @@ Status: concluida.
 
 Resultado: criada `src/features/checkout/PaymentSuccessScreen.jsx` e `CheckoutPage` passou a delegar a renderizacao da tela de pagamento confirmado.
 
-### AQ-203 — Extrair hook `useCheckoutFlow`
+### AQ-203 - Extrair hook `useCheckoutFlow`
 
-Status: pendente.
+Status: concluida.
+
+Resultado: criada `src/features/checkout/useCheckoutFlow.js` para centralizar estado de pagamento pendente, polling, callback de retorno e abertura do checkout.
 
 ## Fase 4 — Testes críticos
 
@@ -178,3 +180,4 @@ Status: pendente.
 | 2026-07-12 | AQ-102 | Concluída: política pura de edição paga criada e testada. |
 | 2026-07-12 | AQ-201 | Concluida: tela de aguardando pagamento extraida para `src/features/checkout/PaymentWaitingScreen.jsx`. |
 | 2026-07-12 | AQ-202 | Concluida: tela de sucesso extraida para `src/features/checkout/PaymentSuccessScreen.jsx`. |
+| 2026-07-12 | AQ-203 | Concluida: fluxo de pagamento pendente extraido para `src/features/checkout/useCheckoutFlow.js`. |

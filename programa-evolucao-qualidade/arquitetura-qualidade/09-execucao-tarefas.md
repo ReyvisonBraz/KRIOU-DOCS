@@ -189,6 +189,12 @@ Status: concluida.
 
 Resultado: criado `src/features/checkout/index.js` para expor a API da feature e simplificar imports externos.
 
+### AQ-210 - Testar hooks extraidos do checkout
+
+Status: concluida.
+
+Resultado: adicionada cobertura para `useStartCheckoutPayment` e `usePaidDocumentEditFlow`, validando inicio de pagamento, mock local, interrupcao por edicao paga, correcao gratuita e bloqueio da segunda alteracao sensivel.
+
 ## Fase 4 — Testes críticos
 
 ### AQ-301 - Testar fluxo de edicao paga
@@ -232,3 +238,4 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-207 | Concluida: resumo, alerta e selo de seguranca do checkout extraidos. |
 | 2026-07-12 | AQ-208 | Concluida: estilos e keyframes do checkout extraidos para modulo dedicado. |
 | 2026-07-12 | AQ-209 | Concluida: exports da feature checkout organizados em barrel controlado. |
+| 2026-07-12 | AQ-210 | Concluida: hooks extraidos do checkout cobertos por testes especificos. |

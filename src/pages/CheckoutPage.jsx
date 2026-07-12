@@ -14,6 +14,8 @@ import {
 } from "../domain/paidDocuments";
 import PaymentSuccessScreen from "../features/checkout/PaymentSuccessScreen";
 import PaymentWaitingScreen from "../features/checkout/PaymentWaitingScreen";
+import CheckoutPayButton from "../features/checkout/CheckoutPayButton";
+import PaymentMethodOption from "../features/checkout/PaymentMethodOption";
 import { useCheckoutFlow } from "../features/checkout/useCheckoutFlow";
 import { DocumentService } from "../services/DocumentService";
 import { PaymentService } from "../services/PaymentService";
@@ -611,161 +613,6 @@ const CheckoutPage = () => {
       showToast.error("Erro ao gerar PDF. Tente novamente.");
     }
   };
-
-  /* ─── PaymentOption Sub-Component ─── */
-  const PaymentOption = ({ method, index = 0, total = 1 }) => {
-    const isSelected = selectedPayment === method.id;
-    const [hover, setHover] = useState(false);
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        setSelectedPayment(method.id);
-        return;
-      }
-      if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
-        e.preventDefault();
-        const next = (index + 1) % total;
-        const nextEl = document.querySelector(`[data-payment-index="${next}"]`);
-        nextEl?.focus();
-        if (nextEl) setSelectedPayment(CHECKOUT_PAYMENT_METHODS[next].id);
-        return;
-      }
-      if (e.key === "ArrowUp" || (e.key === "Tab" && e.shiftKey)) {
-        e.preventDefault();
-        const prev = (index - 1 + total) % total;
-        const prevEl = document.querySelector(`[data-payment-index="${prev}"]`);
-        prevEl?.focus();
-        if (prevEl) setSelectedPayment(CHECKOUT_PAYMENT_METHODS[prev].id);
-      }
-    };
-
-    return (
-      <div
-        role="radio"
-        aria-checked={isSelected}
-        tabIndex={0}
-        data-payment-index={index}
-        onClick={() => setSelectedPayment(method.id)}
-        onKeyDown={handleKeyDown}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        style={{
-          ...S.optionBase,
-          ...(isSelected ? S.optionSelected : {}),
-          ...(hover && !isSelected
-            ? { border: "1.5px solid var(--border-hover)", background: "var(--surface-3)" }
-            : {}),
-        }}
-        onFocus={(e) => {
-          if (!isSelected) {
-            e.currentTarget.style.border = "1.5px solid var(--border-hover)";
-            e.currentTarget.style.background = "var(--surface-3)";
-          }
-        }}
-        onBlur={(e) => {
-          if (!isSelected) {
-            e.currentTarget.style.border = "1.5px solid var(--border)";
-            e.currentTarget.style.background = "var(--surface-2)";
-          }
-        }}
-      >
-        {/* Icon Container */}
-        <div
-          style={{
-            ...S.optionIconBox,
-            ...(isSelected ? S.optionIconBoxSelected : {}),
-          }}
-        >
-          <span style={{ fontSize: 22 }}>{method.icon}</span>
-        </div>
-
-        {/* Label + Description */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-            <span style={S.optionLabel}>{method.label}</span>
-            {method.badge && (
-              <span style={S.badgeRecommended}>{method.badge}</span>
-            )}
-          </div>
-          <span style={S.optionDesc}>{method.desc}</span>
-        </div>
-
-        {/* Radio Indicator */}
-        <div
-          style={{
-            ...S.radioOuter,
-            ...(isSelected ? S.radioOuterSelected : {}),
-          }}
-        >
-          {isSelected && <div style={S.radioInner} />}
-        </div>
-      </div>
-    );
-  };
-
-  /* ─── Spinner ─── */
-  const Spinner = () => (
-    <div
-      style={{
-        width: 20,
-        height: 20,
-        borderRadius: "50%",
-        border: "2.5px solid rgba(255,255,255,0.25)",
-        borderTopColor: "#fff",
-        animation: "ck-spin 0.7s linear infinite",
-      }}
-    />
-  );
-
-  /* ─── Pay Button ─── */
-  const PayButton = () => {
-    const [hover, setHover] = useState(false);
-
-    return (
-      <button
-        onClick={handlePayment}
-        disabled={isProcessing}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        style={{
-          ...S.payButton,
-          ...(hover && !isProcessing ? S.payButtonHover : {}),
-          ...(isProcessing ? S.payButtonDisabled : {}),
-        }}
-        onFocus={(e) => {
-          if (!isProcessing) {
-            e.currentTarget.style.outline = "2px solid var(--coral)";
-            e.currentTarget.style.outlineOffset = "2px";
-          }
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.outline = "none";
-        }}
-        aria-label={isProcessing ? "Processando pagamento" : `Pagar ${price}`}
-      >
-        {isProcessing ? (
-          <>
-            <Spinner />
-            <span>Processando...</span>
-          </>
-        ) : (
-          <>
-            <Icon
-              name="CreditCard"
-              className="w-5 h-5"
-              style={{ color: "var(--text)" }}
-            />
-            <span>Pagar {price}</span>
-          </>
-        )}
-      </button>
-    );
-  };
-
-  /* ════════════════════════════════════════
-     SUCCESS SCREEN
-     ════════════════════════════════════════ */
   if (checkoutComplete) {
     return (
       <PaymentSuccessScreen
@@ -790,7 +637,6 @@ const CheckoutPage = () => {
         onGoToDashboard={handleGoToDashboard}
         onOpenPendingCheckout={handleOpenPendingCheckout}
         onCheckPendingPayment={() => checkPendingPayment()}
-        Spinner={Spinner}
       />
     );
   }
@@ -886,13 +732,27 @@ const CheckoutPage = () => {
 
           <div role="radiogroup" aria-label="Forma de pagamento" aria-orientation="vertical" style={{ display: "flex", flexDirection: "column" }}>
             {CHECKOUT_PAYMENT_METHODS.map((method, idx) => (
-              <PaymentOption key={method.id} method={method} index={idx} total={CHECKOUT_PAYMENT_METHODS.length} />
+              <PaymentMethodOption
+                key={method.id}
+                styles={S}
+                method={method}
+                index={idx}
+                total={CHECKOUT_PAYMENT_METHODS.length}
+                methods={CHECKOUT_PAYMENT_METHODS}
+                selectedPayment={selectedPayment}
+                onSelectPayment={setSelectedPayment}
+              />
             ))}
           </div>
         </div>
 
         {/* ── Pay Button ── */}
-        <PayButton />
+        <CheckoutPayButton
+          styles={S}
+          price={price}
+          isProcessing={isProcessing}
+          onPay={handlePayment}
+        />
 
         {paymentError && (
           <div

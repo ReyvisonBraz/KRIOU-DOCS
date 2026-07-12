@@ -1,6 +1,7 @@
 import React from "react";
 import { Icon } from "../../components/Icons";
 import { AppNavbar } from "../../components/UI";
+import CheckoutSpinner from "./CheckoutSpinner";
 
 export default function PaymentWaitingScreen({
   styles: S,
@@ -10,7 +11,6 @@ export default function PaymentWaitingScreen({
   onGoToDashboard,
   onOpenPendingCheckout,
   onCheckPendingPayment,
-  Spinner,
 }) {
   return (
     <div style={S.page}>
@@ -117,7 +117,7 @@ export default function PaymentWaitingScreen({
                 cursor: isCheckingPayment ? "not-allowed" : "pointer",
               }}
             >
-              {isCheckingPayment ? React.createElement(Spinner) : <Icon name="RefreshCw" className="w-5 h-5" />}
+              {isCheckingPayment ? <CheckoutSpinner /> : <Icon name="RefreshCw" className="w-5 h-5" />}
               Verificar agora
             </button>
           </div>

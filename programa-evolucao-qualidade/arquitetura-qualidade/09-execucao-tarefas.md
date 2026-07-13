@@ -135,6 +135,12 @@ Status: concluida.
 
 Resultado: criada migration `011_enforce_paid_document_edit_policy.sql` com triggers para bloquear bypass de pagamento e segunda alteracao sensivel diretamente no banco.
 
+### AQ-104 - Corrigir acesso por pagamento no dashboard
+
+Status: concluida.
+
+Resultado: criada politica central de acesso por pagamento, filtro de documentos pagos e bloqueio de PDF/edicao para documentos sem pagamento aprovado.
+
 ## Fase 3 — Checkout
 
 ### AQ-201 - Extrair tela de aguardando pagamento
@@ -235,6 +241,7 @@ Resultado: extraida e testada validacao compartilhada de pagamento Mercado Pago 
 | 2026-07-12 | AQ-101 | Concluída: identidade paga movida para `src/domain/paidDocuments`. |
 | 2026-07-12 | AQ-102 | Concluída: política pura de edição paga criada e testada. |
 | 2026-07-12 | AQ-103 | Concluida: regra de edicao paga protegida no banco por migration e triggers. |
+| 2026-07-13 | AQ-104 | Concluida: dashboard passou a filtrar documentos pagos e bloquear acesso sem pagamento aprovado. |
 | 2026-07-12 | AQ-201 | Concluida: tela de aguardando pagamento extraida para `src/features/checkout/PaymentWaitingScreen.jsx`. |
 | 2026-07-12 | AQ-202 | Concluida: tela de sucesso extraida para `src/features/checkout/PaymentSuccessScreen.jsx`. |
 | 2026-07-12 | AQ-203 | Concluida: fluxo de pagamento pendente extraido para `src/features/checkout/useCheckoutFlow.js`. |

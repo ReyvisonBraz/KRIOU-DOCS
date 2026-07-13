@@ -9,6 +9,13 @@ import showToast from "../utils/toast";
 import { usePDF } from "../hooks/usePDF";
 import { extractPersonData, generateDocumentCode, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
+import {
+  isDocumentPaid,
+  isDocumentPaymentPending,
+  isLocalDraftDocument,
+  matchesDocumentPaymentFilter,
+  requiresPaymentToAccess,
+} from "../domain/documents/payment";
 
 const DashboardPage = () => {
   const {
@@ -89,12 +96,7 @@ const DashboardPage = () => {
       docs = docs.filter((doc) => doc.archived);
     }
 
-    if (statusFilter !== "todos") {
-      docs = docs.filter((doc) => statusFilter === "finalizados"
-        ? doc.status === "finalizado"
-        : doc.status !== "finalizado"
-      );
-    }
+    docs = docs.filter((doc) => matchesDocumentPaymentFilter(doc, statusFilter));
 
     if (filterType === "type") {
       docs = docs.filter((doc) => doc.type === activeTab);
@@ -157,7 +159,48 @@ const DashboardPage = () => {
     return docs;
   }, [allDocs, activeTab, archiveFilter, statusFilter, searchQuery, sortBy, TAB_FILTER_TYPE]);
 
+  const sendDocumentToCheckout = useCallback((doc) => {
+    if (!doc?.id) return;
+
+    if (doc.type === "resume") {
+      setFormData(doc.formData || INITIAL_FORM_DATA);
+      if (doc.templateId) {
+        setSelectedTemplate({ id: doc.templateId, name: doc.templateName || "Modelo" });
+      }
+      setDocumentType(null);
+    } else {
+      setDocumentType({ id: doc.documentType, name: doc.documentTypeName || "Documento" });
+      setSelectedVariant(doc.variantId || doc.variant || null);
+      setLegalFormData(doc.legalData || {});
+      setDisabledFields({});
+      setLegalStep(1);
+    }
+
+    setEditingDocId(doc.id);
+    showToast.info(
+      isDocumentPaymentPending(doc)
+        ? "Conclua o pagamento para liberar este documento."
+        : "Este documento ainda não está pago. Finalize o pagamento para liberar o PDF."
+    );
+    navigate("checkout");
+  }, [
+    navigate,
+    setDisabledFields,
+    setDocumentType,
+    setEditingDocId,
+    setFormData,
+    setLegalFormData,
+    setLegalStep,
+    setSelectedTemplate,
+    setSelectedVariant,
+  ]);
+
   const handleEditDocument = (doc) => {
+    if (requiresPaymentToAccess(doc)) {
+      sendDocumentToCheckout(doc);
+      return;
+    }
+
     if (doc.type === "resume") {
       if (doc.status === "finalizado" && doc.formData) {
         setFormData(doc.formData);
@@ -222,7 +265,7 @@ const DashboardPage = () => {
 
     try {
       StorageService.saveDocuments(updated, userId);
-      if (doc.status === "finalizado" && !String(doc.id).startsWith("draft-")) {
+      if (!isLocalDraftDocument(doc)) {
         await DocumentService.remove(doc.id);
       }
       showToast.success("Documento excluído.");
@@ -234,6 +277,11 @@ const DashboardPage = () => {
 
   const handleDownloadPDF = useCallback(async (doc) => {
     try {
+      if (!isDocumentPaid(doc)) {
+        showToast.error("PDF liberado somente após pagamento aprovado.");
+        return;
+      }
+
       if (doc.type === "resume") {
         const template = doc.templateId
           ? { id: doc.templateId, name: doc.templateName || "Modelo", color: doc.template?.color, accent: doc.template?.accent }
@@ -257,6 +305,11 @@ const DashboardPage = () => {
 
   const handlePrintPDF = useCallback(async (doc) => {
     try {
+      if (!isDocumentPaid(doc)) {
+        showToast.error("Impressão liberada somente após pagamento aprovado.");
+        return;
+      }
+
       let arrayBuffer;
       if (doc.type === "resume") {
         const template = doc.templateId
@@ -327,7 +380,7 @@ const DashboardPage = () => {
     StorageService.saveDocuments(updated, userId);
 
     try {
-      if (renameDoc.status === "finalizado" && !String(renameDoc.id).startsWith("draft-")) {
+      if (!isLocalDraftDocument(renameDoc)) {
         await DocumentService.rename(renameDoc.id, userId, nextTitle);
       }
       showToast.success("Documento renomeado.");
@@ -345,16 +398,43 @@ const DashboardPage = () => {
     const copyTitle = `${doc.title || doc.documentTypeName || "Documento"} (Cópia)`;
     const docTypeKey = doc.documentType || doc.type || "documento";
     const copyCode = generateDocumentCode(userDocuments || [], docTypeKey);
+    const duplicateDraft = doc.type === "resume"
+      ? {
+          formData: doc.formData || doc.draft?.formData || INITIAL_FORM_DATA,
+          selectedTemplate: doc.templateId
+            ? { id: doc.templateId, name: doc.templateName || "Modelo" }
+            : doc.draft?.selectedTemplate || null,
+          currentStep: 0,
+        }
+      : {
+          documentType: doc.documentType
+            ? { id: doc.documentType, name: doc.documentTypeName || "Documento" }
+            : doc.draft?.documentType || null,
+          selectedVariant: doc.variantId || doc.variant || doc.draft?.selectedVariant || null,
+          legalFormData: doc.legalData || doc.draft?.legalFormData || doc.draft?.formData || {},
+          disabledFields: doc.draft?.disabledFields || {},
+          legalStep: 1,
+        };
+
     const duplicate = {
       ...doc,
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 9),
       title: copyTitle,
       code: copyCode,
+      status: "rascunho",
+      paymentStatus: null,
+      paymentId: null,
+      paymentAmount: null,
+      paidAt: null,
+      paidIdentitySnapshot: null,
+      sensitiveEditUsed: false,
+      sensitiveEditUsedAt: null,
+      sensitiveEditSummary: null,
       archived: false,
       date: dateLabel,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      draft: doc.draft ? JSON.parse(JSON.stringify(doc.draft)) : doc.draft,
+      draft: JSON.parse(JSON.stringify(duplicateDraft)),
       _duplicatedFrom: doc.id,
     };
 
@@ -365,12 +445,7 @@ const DashboardPage = () => {
     };
 
     try {
-      if (doc.status === "finalizado" && userId && !String(doc.id).startsWith("draft-")) {
-        const savedCopy = await DocumentService.insert(duplicate, userId);
-        insertLocalCopy(savedCopy);
-      } else {
-        insertLocalCopy(duplicate);
-      }
+      insertLocalCopy(duplicate);
       showToast.success("Documento copiado.");
     } catch (err) {
       console.error("[DashboardPage][ERRO] Falha ao duplicar:", err.message);
@@ -393,8 +468,9 @@ const DashboardPage = () => {
 
   const filteredDocs = getFilteredDocs();
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
-  const finishedCount = allDocs.filter(d => d.status === "finalizado").length;
-  const draftCount = allDocs.filter(d => d.status !== "finalizado").length;
+  const paidCount = allDocs.filter(isDocumentPaid).length;
+  const pendingPaymentCount = allDocs.filter(isDocumentPaymentPending).length;
+  const draftCount = allDocs.filter(isLocalDraftDocument).length;
   const logoTitle = (
     <span className="font-display text-2xl font-black tracking-tight">
       <span className="text-coral">Kriou</span>{" "}
@@ -512,16 +588,22 @@ const DashboardPage = () => {
             {allDocs.length > 0 && (
               <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
                 <StatTile
-                  value={finishedCount}
-                  label={`finalizado${finishedCount !== 1 ? "s" : ""}`}
+                  value={paidCount}
+                  label={`pago${paidCount !== 1 ? "s" : ""}`}
                   accent="var(--success)"
                   glow="rgba(20,184,166,0.45)"
                 />
                 <StatTile
-                  value={draftCount}
-                  label={`rascunho${draftCount !== 1 ? "s" : ""}`}
+                  value={pendingPaymentCount}
+                  label={`pendente${pendingPaymentCount !== 1 ? "s" : ""}`}
                   accent="var(--gold)"
                   glow="rgba(212,175,55,0.40)"
+                />
+                <StatTile
+                  value={draftCount}
+                  label={`rascunho${draftCount !== 1 ? "s" : ""}`}
+                  accent="var(--coral)"
+                  glow="rgba(244,63,94,0.35)"
                 />
               </div>
             )}
@@ -782,8 +864,10 @@ const DashboardPage = () => {
                     fontWeight: 700,
                   }}
                 >
-                  <option value="todos">Todos os status</option>
-                  <option value="finalizados">Finalizados</option>
+                  <option value="todos">Todos</option>
+                  <option value="pagos">Pagos</option>
+                  <option value="pagamento_pendente">Pagamento pendente</option>
+                  <option value="nao_pagos">Não pagos</option>
                   <option value="rascunhos">Rascunhos</option>
                 </select>
               </label>
@@ -823,7 +907,7 @@ const DashboardPage = () => {
             {visibleTabs.map((tab) => {
               const countBase = allDocs
                 .filter((d) => archiveFilter === "ativos" ? !d.archived : archiveFilter === "arquivados" ? d.archived : true)
-                .filter((d) => statusFilter === "todos" ? true : statusFilter === "finalizados" ? d.status === "finalizado" : d.status !== "finalizado");
+                .filter((d) => matchesDocumentPaymentFilter(d, statusFilter));
               const count = tab.id === "todos" ? countBase.length :
                 tab.filterType === "type" ? countBase.filter(d => d.type === tab.id).length :
                 tab.filterType === "documentType" ? countBase.filter(d => d.documentType === tab.id).length :

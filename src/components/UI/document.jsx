@@ -15,6 +15,11 @@ import React, { useState } from "react";
 import { Badge } from "./primitives";
 import { Icon } from "../Icons";
 import { extractPersonData } from "../../utils/documentCode";
+import {
+  getDocumentAccessStatus,
+  isDocumentPaid,
+  isDocumentPaymentPending,
+} from "../../domain/documents/payment";
 
 // ── Design tokens ──
 const EASE = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -102,11 +107,17 @@ export const DocumentCard = ({
   const iconName = ICONS[typeKey];
   const accent = resolveAccent(doc);
   const typeLabel = TYPE_LABELS[doc.type] || doc.documentTypeName || doc.type;
-  const isFinalizado = doc.status === "finalizado";
-  const isPaid = isFinalizado && doc.paymentStatus === "approved";
-  const isPaymentPending = doc.status === "aguardando_pagamento" || doc.paymentStatus === "pending";
-  const statusVariant = isFinalizado ? "teal" : isPaymentPending ? "gold" : "coral";
-  const statusLabel = isPaid ? "Pago" : isFinalizado ? "Finalizado" : isPaymentPending ? "Pagamento em andamento" : "Rascunho";
+  const isPaid = isDocumentPaid(doc);
+  const isPaymentPending = isDocumentPaymentPending(doc);
+  const accessStatus = getDocumentAccessStatus(doc);
+  const statusVariant = isPaid ? "teal" : isPaymentPending ? "gold" : "coral";
+  const statusLabel = {
+    paid: "Pago",
+    pending_payment: "Pagamento em andamento",
+    payment_failed: "Pagamento recusado",
+    draft: "Rascunho",
+    unpaid: "Não pago",
+  }[accessStatus];
   const person = extractPersonData(doc);
 
   return (
@@ -387,10 +398,10 @@ export const DocumentCard = ({
           {onDuplicate && (
             <ActionBtn icon="Copy" label="Copiar" onClick={(e) => { e.stopPropagation(); onDuplicate(doc); }} accent={accent} />
           )}
-          {onDownload && (
+          {onDownload && isPaid && (
             <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
           )}
-          {onPrint && (
+          {onPrint && isPaid && (
             <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />
           )}
           {onArchive && (

@@ -6,7 +6,7 @@ const permuta = {
   description: "Troca de bens entre duas partes (imóvel por imóvel, veículo, etc.)",
   icon: "Repeat",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 533",
+  legislation: "Código Civil (Lei nº 10.406/2002), art. 533",
   spec: {
     whenUse: "Quando duas partes trocam bens entre si (sem dinheiro envolvido ou com complemento)",
     parties: ["Parte A", "Parte B"],

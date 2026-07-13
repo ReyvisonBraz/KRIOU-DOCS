@@ -6,7 +6,7 @@ const locacao = {
   description: "Contrato de aluguel para imóveis residenciais ou comerciais",
   icon: "Home",
   available: true,
-  legislation: "Lei 8.245/91 (Lei do Inquilinato) e Código Civil",
+  legislation: "Lei do Inquilinato (Lei nº 8.245/1991) e Código Civil (Lei nº 10.406/2002)",
   spec: {
     whenUse: "Quando um proprietário cede o uso de um imóvel a alguém mediante pagamento de aluguel",
     parties: ["Locador (proprietário)", "Locatário (inquilino)"],
@@ -208,8 +208,8 @@ const locacao = {
   ],
 
   internalNotes: [
-    "Verificar se imóvel residencial atende Lei do Inquilinato (Lei 8.245/91)",
-    "Para comercial, atentar para direito de renovação (art. 51 da Lei 8.245/91)",
+    "Verificar se o imóvel residencial atende à Lei do Inquilinato (Lei nº 8.245/1991)",
+    "Na locação comercial, observar os requisitos do direito de renovação (art. 51 da Lei nº 8.245/1991)",
   ],
 
   documentBody: {
@@ -286,7 +286,7 @@ const locacao = {
         paragraphs: [
           "O presente contrato obriga as partes e seus sucessores, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
           "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se feitas por escrito e assinadas por ambas as partes.",
-          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+          "As partes reconhecem como válidas as assinaturas eletrônicas que permitam comprovar autoria e integridade, inclusive por certificado ICP-Brasil ou outro meio por elas admitido, nos termos do art. 10, §§ 1º e 2º, da Medida Provisória nº 2.200-2/2001.",
         ],
       },
       {
@@ -335,7 +335,7 @@ const locacao = {
         type: "clause",
         number: "2ª",
         title: "DO PRAZO",
-        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}. Nos termos do artigo 51 da Lei 8.245/91, o(a) LOCATÁRIO(A) terá direito à renovação compulsória do contrato, desde que preenchidos os requisitos legais.",
+        text: "O prazo desta locação tem início em {prazo_inicio} e término em {prazo_fim}. O eventual direito à renovação do contrato dependerá do preenchimento cumulativo dos requisitos previstos no art. 51 da Lei nº 8.245/1991.",
       },
       {
         type: "clause",
@@ -383,7 +383,7 @@ const locacao = {
         paragraphs: [
           "O presente contrato obriga as partes e seus sucessores, sendo considerado título executivo extrajudicial para todos os fins de direito.",
           "As partes declaram que leram e compreenderam todos os termos deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se feitas por escrito e assinadas por ambas as partes.",
-          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+          "As partes reconhecem como válidas as assinaturas eletrônicas que permitam comprovar autoria e integridade, inclusive por certificado ICP-Brasil ou outro meio por elas admitido, nos termos do art. 10, §§ 1º e 2º, da Medida Provisória nº 2.200-2/2001.",
         ],
       },
       {

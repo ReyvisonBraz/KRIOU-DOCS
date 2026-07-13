@@ -6,7 +6,7 @@ const uniaoEstavel = {
   description: "Declaração ou dissolução de união estável entre companheiros",
   icon: "Heart",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 1.723 a 1.727",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 1.723 a 1.727",
   spec: {
     whenUse: "Para declarar existência de união estável ou dissolvê-la formalmente",
     parties: ["Companheiro 1", "Companheiro 2"],

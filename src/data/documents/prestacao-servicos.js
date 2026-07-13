@@ -6,7 +6,7 @@ const prestacaoServicos = {
   description: "Contrato para prestação de serviços autônomos, consultorias e trabalhos temporários",
   icon: "Wrench",
   available: true,
-  legislation: "Arts. 593 a 609 do Código Civil Brasileiro (Lei 10.406/2002)",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 593 a 609",
   spec: {
     whenUse: "Para contratar profissionais autônomos, consultores ou prestadores de serviço por tarefa, projeto ou período determinado, sem vínculo empregatício.",
     parties: ["Contratante (quem contrata)", "Contratado (quem presta o serviço)"],
@@ -442,7 +442,7 @@ const prestacaoServicos = {
         type: "clause",
         title: "CLÁUSULA SEXTA — DA CONFIDENCIALIDADE",
         paragraphs: [
-          "{confidencialidade_consul == 'Sim - incluir cláusula' ? 'O CONSULTOR se compromete a manter sigilo absoluto sobre todas as informações, dados, documentos e estratégias do CONTRATANTE às quais tiver acesso durante a vigência deste contrato, obrigação que perdura mesmo após o encerramento da consultoria.' : 'As partes dispensam, neste ato, a formalização de acordo específico de confidencialidade, comprometendo-se, contudo, à boa-fé e à proteção das informações mútuas.'}",
+          "O CONSULTOR compromete-se a preservar o sigilo das informações, dados, documentos e estratégias do CONTRATANTE a que tiver acesso em razão deste contrato, não podendo divulgá-los ou utilizá-los para finalidade diversa da execução dos serviços sem autorização prévia e escrita do CONTRATANTE.",
         ],
       },
       {
@@ -512,7 +512,7 @@ const prestacaoServicos = {
         type: "clause",
         title: "CLÁUSULA QUARTA — DA PROPRIEDADE INTELECTUAL",
         paragraphs: [
-          "{propriedade_intelectual == 'Pertence ao contratante' ? 'Todo e qualquer resultado, material, conteúdo, código, projeto, documento ou criação decorrente dos serviços prestados será de propriedade exclusiva do CONTRATANTE, cedendo o PRESTADOR todos os direitos autorais e de propriedade intelectual a ele relativos, em caráter definitivo e irrevogável.' : propriedade_intelectual == 'Pertence ao contratado' ? 'O PRESTADOR detém a propriedade intelectual sobre o resultado dos serviços, concedendo ao CONTRATANTE licença de uso não exclusiva, pelo prazo de 5 (cinco) anos.' : 'A propriedade intelectual sobre o resultado dos serviços será compartilhada entre as partes, que definirão conjuntamente os termos de exploração comercial.'}",
+          "A titularidade da propriedade intelectual produzida na execução dos serviços observará o regime escolhido pelas partes: {propriedade_intelectual}. Eventual cessão ou licença compreenderá somente os direitos e usos expressamente previstos neste contrato, preservados os direitos morais do autor na forma da legislação brasileira.",
         ],
       },
       {

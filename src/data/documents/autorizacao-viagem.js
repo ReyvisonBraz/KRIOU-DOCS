@@ -6,7 +6,7 @@ const autorizacaoViagem = {
   description: "Autorização para menor de idade viajar desacompanhado de um dos pais",
   icon: "Plane",
   available: true,
-  legislation: "Estatuto da Criança e do Adolescente (Lei 8.069/90), Art. 83 e 84",
+  legislation: "Estatuto da Criança e do Adolescente (Lei nº 8.069/1990), arts. 83 e 84",
   spec: {
     whenUse: "Quando menor viaja sozinho, com outro familiar ou para o exterior",
     parties: ["Responsável legal", "Menor", "Acompanhante (se houver)"],
@@ -262,7 +262,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "(Conforme Resolução CNJ nº 131/2011 e Estatuto da Criança e do Adolescente)",
+        text: "(Conforme a Resolução CNJ nº 131/2011 e os arts. 83 a 85 do Estatuto da Criança e do Adolescente)",
       },
       {
         type: "paragraph",

@@ -6,7 +6,7 @@ const compraVenda = {
   description: "Contrato para compra e venda de bens (imóvel, veículo, terreno)",
   icon: "Tag",
   available: true,
-  legislation: "Código Civil Brasileiro (Lei 10.406/2002), Arts. 481 a 532",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 481 a 532",
   spec: {
     whenUse: "Quando duas partes precisam formalizar a transferência de propriedade de um bem mediante pagamento",
     parties: ["Vendedor (quem vende)", "Comprador (quem compra)"],
@@ -436,7 +436,7 @@ const compraVenda = {
         paragraphs: [
           "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
           "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor. Eventuais alterações somente terão validade se realizadas mediante aditivo contratual escrito e assinado por ambas as partes.",
-          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+          "As partes reconhecem como válidas as assinaturas eletrônicas que permitam comprovar autoria e integridade, inclusive por certificado ICP-Brasil ou outro meio por elas admitido, nos termos do art. 10, §§ 1º e 2º, da Medida Provisória nº 2.200-2/2001.",
         ],
       },
       {
@@ -519,7 +519,7 @@ const compraVenda = {
         paragraphs: [
           "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
           "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor.",
-          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+          "As partes reconhecem como válidas as assinaturas eletrônicas que permitam comprovar autoria e integridade, inclusive por certificado ICP-Brasil ou outro meio por elas admitido, nos termos do art. 10, §§ 1º e 2º, da Medida Provisória nº 2.200-2/2001.",
         ],
       },
       {
@@ -605,7 +605,7 @@ const compraVenda = {
         paragraphs: [
           "O presente contrato obriga as partes e seus sucessores a qualquer título, sendo considerado título executivo extrajudicial para todos os fins de direito, nos termos do Código de Processo Civil.",
           "As partes declaram que leram e compreenderam todos os termos e cláusulas deste instrumento, concordando com seu inteiro teor.",
-          "Fica eleita a assinatura digital com certificação ou reconhecida em cartório como meio válido para a formalização deste contrato, nos termos da Lei 14.063/2020.",
+          "As partes reconhecem como válidas as assinaturas eletrônicas que permitam comprovar autoria e integridade, inclusive por certificado ICP-Brasil ou outro meio por elas admitido, nos termos do art. 10, §§ 1º e 2º, da Medida Provisória nº 2.200-2/2001.",
         ],
       },
       {

@@ -10,7 +10,7 @@ const comodato = {
   description: "Empréstimo gratuito de bem (imóvel, veículo, equipamento)",
   icon: "Key",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 579 a 585",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 579 a 585",
   spec: {
     whenUse: "Quando alguém cede gratuitamente o uso de um bem para outra pessoa",
     parties: ["Comodante (quem empresta)", "Comodatário (quem recebe)"],
@@ -176,7 +176,7 @@ const comodato = {
         type: "clause",
         number: "4ª",
         title: "DA VEDAÇÃO DE CESSÃO",
-        text: "É vedado ao(à) COMODATÁRIO(A) sub-comodatar ou locar o bem a terceiros, bem como ceder ou transferir o presente contrato sem prévia autorização, por escrito, do(a) COMODANTE.",
+        text: "É vedado ao(à) COMODATÁRIO(A) subcomodatar ou locar o bem a terceiros, bem como ceder ou transferir o presente contrato sem autorização prévia e escrita do(a) COMODANTE.",
       },
       {
         type: "clause",

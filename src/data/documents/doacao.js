@@ -6,7 +6,7 @@ const doacao = {
   description: "Transferência gratuita de bens entre pessoas",
   icon: "Gift",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 538 a 564",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 538 a 564",
   spec: {
     whenUse: "Quando alguém quer doar um bem de forma gratuita e formal para outra pessoa",
     parties: ["Doador (quem dá)", "Donatário (quem recebe)"],

@@ -6,7 +6,7 @@ const procuracao = {
   description: "Documento para delegar poderes a outra pessoa em seu nome",
   icon: "Shield",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 653 a 692",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 653 a 692",
   spec: {
     whenUse: "Quando uma pessoa precisa que outra atue em seu nome em actos jurídicos ou administrativos",
     parties: ["Outorgante (quem dá poderes)", "Outorgado (quem recebe poderes)"],

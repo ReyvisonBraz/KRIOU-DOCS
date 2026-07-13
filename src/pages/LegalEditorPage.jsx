@@ -141,6 +141,11 @@ const LegalEditorPage = () => {
 
   const currentStepObj = steps[currentStep];
   const currentSection = isFillStep ? currentSections[currentStepObj?.sectionIndex] : null;
+  const signatureParties = selectedDoc && selectedVariant
+    ? (getDocumentBody(selectedDoc.id, selectedVariant, legalFormData, disabledFields) || [])
+        .filter((block) => block.type === "signatures")
+        .flatMap((block) => block.parties || [])
+    : [];
 
   const handleUpdateField = useCallback((key, value) => {
     setLegalFormData((prev) => ({ ...prev, [key]: value }));
@@ -190,6 +195,14 @@ const LegalEditorPage = () => {
 
   const handleNext = () => {
     if (currentStep === 0 && !selectedVariant) return;
+    if (isReviewStep && legalFormData._signatureAtRequestEnabled === "yes") {
+      const cpfDigits = String(legalFormData._signatureAtRequestSignerCpf || "").replace(/\D/g, "");
+      if (!legalFormData._signatureAtRequestPartyName || !legalFormData._signatureAtRequestSignerName || cpfDigits.length !== 11) {
+        showToast.error("Informe a parte representada, o nome e um CPF válido do assinante a rogo.");
+        document.getElementById("signature-at-request-options")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    }
     if (isFillStep && currentSection) {
       const sectionFields = currentSection.fields.filter((f) => !disabledFields[f.key]);
       const validation = validateFields(selectedDoc.id, selectedVariant, legalFormData, disabledFields);
@@ -637,7 +650,7 @@ const LegalEditorPage = () => {
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
               <Badge variant="teal">{currentVariantObj?.icon} {currentVariantObj?.name}</Badge>
               <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>
-                {Object.keys(legalFormData).filter((k) => legalFormData[k] && legalFormData[k].trim() !== "").length} campos preenchidos
+                {Object.keys(legalFormData).filter((k) => !k.startsWith("_") && legalFormData[k] && String(legalFormData[k]).trim() !== "").length} campos preenchidos
               </span>
             </div>
           </div>
@@ -662,6 +675,94 @@ const LegalEditorPage = () => {
           </Card>
         );
       })}
+      <Card style={{ padding: 20, marginTop: 20, marginBottom: 16, border: "1px solid var(--border)", borderRadius: 16, background: "var(--surface)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(165,135,55,0.12)", color: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon name="Edit" className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-display)" }}>Espaço para assinaturas</h4>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>Escolha o tamanho das linhas que serão impressas no documento.</p>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          {[
+            { value: "standard", title: "Padrão", description: "Duas assinaturas lado a lado quando houver espaço." },
+            { value: "large", title: "Assinatura grande", description: "Uma linha larga e exclusiva para cada assinante." },
+          ].map((option) => {
+            const selected = (legalFormData._signatureLayout || "standard") === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => handleUpdateField("_signatureLayout", option.value)}
+                style={{ textAlign: "left", padding: 16, borderRadius: 12, border: `2px solid ${selected ? "var(--gold)" : "var(--border)"}`, background: selected ? "rgba(165,135,55,0.08)" : "var(--surface-2)", color: "var(--text)", cursor: "pointer", minHeight: 92 }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700, fontFamily: "var(--font-display)" }}>
+                  <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: "50%", border: `2px solid ${selected ? "var(--gold)" : "var(--text-muted)"}`, boxShadow: selected ? "inset 0 0 0 3px var(--surface), inset 0 0 0 8px var(--gold)" : "none" }} />
+                  {option.title}
+                </span>
+                <span style={{ display: "block", marginTop: 7, fontSize: 12, lineHeight: 1.45, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>{option.description}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+      <Card id="signature-at-request-options" style={{ padding: 20, marginBottom: 16, border: "1px solid var(--border)", borderRadius: 16, background: "var(--surface)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 300px" }}>
+            <h4 style={{ margin: "0 0 5px", fontSize: 15, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-display)" }}>Assinatura a rogo</h4>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--text-dim)", fontFamily: "var(--font-body)" }}>Use quando uma das partes não souber ou não puder assinar. O documento identificará quem assina e em nome de quem.</p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={legalFormData._signatureAtRequestEnabled === "yes"}
+            onClick={() => handleUpdateField("_signatureAtRequestEnabled", legalFormData._signatureAtRequestEnabled === "yes" ? "no" : "yes")}
+            style={{ border: "none", borderRadius: 999, padding: "10px 16px", minHeight: 42, cursor: "pointer", fontWeight: 700, fontSize: 13, background: legalFormData._signatureAtRequestEnabled === "yes" ? "var(--gold)" : "var(--surface-2)", color: legalFormData._signatureAtRequestEnabled === "yes" ? "#fff" : "var(--text-dim)", boxShadow: "inset 0 0 0 1px var(--border)" }}
+          >
+            {legalFormData._signatureAtRequestEnabled === "yes" ? "Ativada" : "Adicionar"}
+          </button>
+        </div>
+        {legalFormData._signatureAtRequestEnabled === "yes" && (
+          <div style={{ marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--border)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--text-dim)" }}>
+              Parte que será representada
+              <select
+                value={signatureParties.findIndex((party) => party.name === legalFormData._signatureAtRequestPartyName && party.role === legalFormData._signatureAtRequestPartyRole)}
+                onChange={(event) => {
+                  const party = signatureParties[Number(event.target.value)];
+                  handleUpdateField("_signatureAtRequestPartyName", party?.name || "");
+                  handleUpdateField("_signatureAtRequestPartyRole", party?.role || "");
+                }}
+                style={{ width: "100%", minHeight: 44, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", fontSize: 14 }}
+              >
+                <option value="-1">Selecione a parte</option>
+                {signatureParties.map((party, index) => <option key={`${party.role}-${index}`} value={index}>{party.name} — {party.role}</option>)}
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--text-dim)" }}>
+              Motivo
+              <select value={legalFormData._signatureAtRequestReason || "não poder assinar"} onChange={(event) => handleUpdateField("_signatureAtRequestReason", event.target.value)} style={{ width: "100%", minHeight: 44, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", fontSize: 14 }}>
+                <option value="não poder assinar">Não pode assinar</option>
+                <option value="não saber assinar">Não sabe assinar</option>
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--text-dim)" }}>
+              Nome de quem assinará a rogo
+              <input value={legalFormData._signatureAtRequestSignerName || ""} onChange={(event) => handleUpdateField("_signatureAtRequestSignerName", event.target.value)} placeholder="Nome completo" style={{ width: "100%", minHeight: 44, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", fontSize: 14 }} />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--text-dim)" }}>
+              CPF de quem assinará a rogo
+              <input value={legalFormData._signatureAtRequestSignerCpf || ""} onChange={(event) => handleUpdateField("_signatureAtRequestSignerCpf", event.target.value)} placeholder="000.000.000-00" inputMode="numeric" style={{ width: "100%", minHeight: 44, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", fontSize: 14 }} />
+            </label>
+            <div style={{ gridColumn: "1 / -1", padding: 12, borderRadius: 10, background: "rgba(165,135,55,0.08)", border: "1px solid rgba(165,135,55,0.22)", color: "var(--text-dim)", fontSize: 12.5, lineHeight: 1.5 }}>
+              O PDF incluirá a declaração “assinante a rogo”, a parte representada, o motivo, o CPF do assinante e duas testemunhas. Confirme com o cartório os requisitos específicos do ato.
+            </div>
+          </div>
+        )}
+      </Card>
       <div style={{ marginTop: 12, padding: 14, background: "rgba(16,185,129,0.08)", borderRadius: 12, display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(16,185,129,0.18)" }}>
         <Icon name="CheckCircle" className="w-5 h-5" style={{ color: "var(--success)", flexShrink: 0 }} />
         <span style={{ fontSize: 14, color: "var(--success)", fontWeight: 600, fontFamily: "var(--font-body)" }}>Todos os campos obrigatórios estão preenchidos</span>
@@ -706,18 +807,26 @@ const LegalEditorPage = () => {
           return <p key={i} style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 14.5, color: "#767b84", fontStyle: "italic", lineHeight: 1.7, textAlign: "justify", margin: "28px 0 12px 0", wordBreak: "break-word" }}>{block.text}</p>;
         case "date":
           return <p key={i} style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: "#3a4048", textAlign: "center", margin: "8px 0 36px 0" }}>{block.text}</p>;
-        case "signatures":
+        case "signatures": {
+          const largeSignatures = legalFormData._signatureLayout === "large";
           return (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: `repeat(${block.parties.length}, 1fr)`, gap: 48, marginTop: 44, marginBottom: 20 }}>
-              {block.parties.map((party, j) => (
-                <div key={j} style={{ textAlign: "center" }}>
-                  <div style={{ borderBottom: "1.5px dashed #b0ada5", marginBottom: 8, minHeight: 44 }} />
-                  <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: "var(--gold, #a58737)", margin: "0 0 2px 0" }}>{party.role}</p>
-                  <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13.5, color: "#3a4048", margin: 0 }}>{party.name}</p>
-                </div>
-              ))}
+            <div key={i} style={{ display: "grid", gridTemplateColumns: largeSignatures ? "1fr" : `repeat(${Math.min(block.parties.length, 2)}, 1fr)`, columnGap: 40, rowGap: largeSignatures ? 20 : 18, marginTop: 34, marginBottom: 16 }}>
+              {block.parties.map((party, j) => {
+                const atRequest = legalFormData._signatureAtRequestEnabled === "yes"
+                  && party.name === legalFormData._signatureAtRequestPartyName
+                  && party.role === legalFormData._signatureAtRequestPartyRole;
+                return (
+                  <div key={j} style={{ textAlign: "center", maxWidth: largeSignatures ? 620 : "none", width: "100%", margin: largeSignatures ? "0 auto" : 0 }}>
+                    <div style={{ borderBottom: "1.5px dashed #b0ada5", marginBottom: 7, minHeight: atRequest ? (largeSignatures ? 72 : 52) : (largeSignatures ? 62 : 40) }} />
+                    <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: largeSignatures ? 13.5 : 12.5, fontWeight: 700, color: "var(--gold, #a58737)", margin: "0 0 2px 0" }}>{atRequest ? "ASSINANTE A ROGO" : party.role}</p>
+                    <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: largeSignatures ? 15.5 : 14, color: "#3a4048", margin: 0 }}>{atRequest ? legalFormData._signatureAtRequestSignerName : party.name}</p>
+                    {atRequest && <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 12, color: "#767b84", lineHeight: 1.4, margin: "4px 0 0" }}>A rogo de {party.name} ({party.role}), que declarou {legalFormData._signatureAtRequestReason || "não poder assinar"}. CPF: {legalFormData._signatureAtRequestSignerCpf}</p>}
+                  </div>
+                );
+              })}
             </div>
           );
+        }
         case "witnesses":
           return (
             <div key={i} style={{ marginTop: 28 }}>
@@ -766,6 +875,7 @@ const LegalEditorPage = () => {
         <div style={{ background: "#fcfbf9", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)", maxWidth: 780, margin: "0 auto", overflow: "hidden" }}>
           <div className="le-preview-pad" style={{ padding: "clamp(32px, 6vw, 60px) clamp(24px, 6vw, 64px) clamp(40px, 6vw, 64px)" }}>
             {hasBody ? docBody.map((block, i) => renderBlock(block, i)) : renderFallback()}
+            {hasBody && legalFormData._signatureAtRequestEnabled === "yes" && !docBody.some((block) => block.type === "witnesses") && renderBlock({ type: "witnesses", count: 2 }, "rogo-witnesses")}
             {selectedDoc?.legislation && (
               <p style={{ marginTop: 36, padding: "12px 0", fontSize: 10.5, color: "#767b84", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontStyle: "italic" }}>
                 <strong style={{ color: "#161d26", fontWeight: 700, fontStyle: "normal" }}>Base Legal:</strong> {selectedDoc.legislation}

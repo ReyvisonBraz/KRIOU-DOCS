@@ -6,7 +6,7 @@ const recibo = {
   description: "Comprovante de pagamento ou recebimento de valores",
   icon: "FileCheck",
   available: true,
-  legislation: "Código Civil Brasileiro, Arts. 319 a 322",
+  legislation: "Código Civil (Lei nº 10.406/2002), arts. 319 a 322",
   spec: {
     whenUse: "Para comprovação de pagamento ou recebimento de dinheiro ou bens",
     parties: ["Recebedor (quem recebe)", "Pagador (quem paga)"],

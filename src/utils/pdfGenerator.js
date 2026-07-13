@@ -1,455 +1,282 @@
-/**
- * ============================================
- * KRIOU DOCS — Professional Resume PDF Generator
- * ============================================
- * Two-column layout: sidebar (30%) + main content (70%).
- * No solid colored blocks. Clean editorial design with
- * fine lines and subtle accents.
- *
- * Design principles:
- * - Never pure black (#000) or pure white (#FFF)
- * - No side-stripe borders as decorative elements
- * - Typography: Times (serif) for name/headings, Helvetica for body
- * - Template color used sparingly — accents only, not backgrounds
- * - Fine dividers (0.15mm), generous whitespace
- *
- * @module utils/pdfGenerator
- */
-
 import { jsPDF } from "jspdf";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
 const MARGIN = 14;
-
-// Sidebar occupies left portion
 const SIDEBAR_W = 58;
 const SIDEBAR_X = MARGIN;
-const MAIN_GAP = 7;                     // gap between sidebar and main column
+const MAIN_GAP = 8;
 const MAIN_X = SIDEBAR_X + SIDEBAR_W + MAIN_GAP;
 const MAIN_W = PAGE_W - MAIN_X - MARGIN;
-
-// Color palette — neutros tingidos (never pure black)
-const C_DARK      = [38, 42, 52];       // body heading text
-const C_TEXT      = [58, 62, 72];       // body paragraph text
-const C_MUTED     = [130, 134, 140];    // secondary labels
-const C_LIGHT     = [175, 178, 182];    // very subtle text
-const C_DIVIDER   = [222, 220, 215];    // fine lines — warm gray
-const C_BG_TINT   = 0.04;               // sidebar background tint opacity
-
-// Typography
-const FONT_HEADING  = "times";
-const FONT_BODY     = "helvetica";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const CONTENT_TOP = 18;
+const CONTENT_BOTTOM = 278;
+const C_DARK = [30, 35, 45];
+const C_TEXT = [48, 54, 65];
+const C_MUTED = [92, 99, 109];
+const C_DIVIDER = [205, 209, 214];
+const FONT_HEADING = "times";
+const FONT_BODY = "helvetica";
 
 const hexToRgb = (hex) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
-    : { r: 15, g: 52, b: 96 };
+  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+  return match
+    ? { r: parseInt(match[1], 16), g: parseInt(match[2], 16), b: parseInt(match[3], 16) }
+    : { r: 30, g: 58, b: 95 };
 };
 
-const getInitials = (name) => {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+const accessibleColor = ({ r, g, b }) => {
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (luminance <= 0.52) return { r, g, b };
+  const factor = 0.5 / luminance;
+  return { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
 };
 
-/**
- * Draw a thin horizontal divider line.
- */
-const drawDivider = (doc, x, y, width) => {
-  doc.setDrawColor(...C_DIVIDER);
-  doc.setLineWidth(0.15);
-  doc.line(x, y, x + width, y);
+const initials = (name = "") => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return parts.length > 1 ? `${parts[0][0]}${parts.at(-1)[0]}`.toUpperCase() : (parts[0]?.[0] || "?").toUpperCase();
 };
 
-/**
- * Draw sidebar background tint (subtle colored rectangle with low opacity).
- * Uses GState for transparency support in jsPDF v4.
- */
-const drawSidebarBg = (doc, primaryRgb) => {
-  const pageCount = doc.getNumberOfPages();
-  for (let p = 1; p <= pageCount; p++) {
-    doc.setPage(p);
-    const gs = new doc.GState({ opacity: C_BG_TINT });
-    doc.setGState(gs);
-    doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    doc.rect(SIDEBAR_X, MARGIN, SIDEBAR_W, PAGE_H - MARGIN * 2, "F");
-    // Reset GState to full opacity
-    doc.setGState(new doc.GState({ opacity: 1 }));
+const clean = (value) => String(value ?? "")
+  .replace(/\u00a0/g, " ")
+  .replace(/[\u200b-\u200d\ufeff]/g, "")
+  .replace(/[\u2011\u2012\u2013\u2014]/g, "-")
+  .replace(/\u2022/g, "-")
+  .replace(/[ \t]{2,}/g, " ")
+  .trim();
+
+const drawSidebarBackground = (doc, primary) => {
+  doc.setFillColor(246, 248, 249);
+  doc.rect(SIDEBAR_X, MARGIN, SIDEBAR_W, PAGE_H - MARGIN * 2, "F");
+  doc.setFillColor(primary.r, primary.g, primary.b);
+  doc.rect(SIDEBAR_X, MARGIN, 1.4, PAGE_H - MARGIN * 2, "F");
+};
+
+const drawFooter = (doc) => {
+  const pages = doc.getNumberOfPages();
+  for (let page = 1; page <= pages; page += 1) {
+    doc.setPage(page);
+    doc.setDrawColor(...C_DIVIDER);
+    doc.setLineWidth(0.18);
+    doc.line(MARGIN, 283, PAGE_W - MARGIN, 283);
+    doc.setFont(FONT_BODY, "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...C_MUTED);
+    doc.text("KRIOU DOCS", MARGIN, 288);
+    doc.text(`Página ${page} de ${pages}`, PAGE_W / 2, 288, { align: "center" });
+    doc.text(new Date().toLocaleDateString("pt-BR"), PAGE_W - MARGIN, 288, { align: "right" });
   }
 };
 
-// ─── Sidebar Content ──────────────────────────────────────────────────────────
-
-/**
- * Draw the monogram circle (initials avatar) in the sidebar.
- */
-const drawMonogram = (doc, initials, primaryRgb, accentRgb, y) => {
-  const centerX = SIDEBAR_X + SIDEBAR_W / 2;
-  const radius = 13;
-
-  // Outer circle — primary color
-  doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.circle(centerX, y + radius, radius, "F");
-
-  // Inner circle — accent color (smaller, inset)
-  doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
-  doc.circle(centerX, y + radius, radius - 2, "F");
-
-  // Initials — white, times bold
-  doc.setTextColor(255, 255, 255);
-  doc.setFont(FONT_HEADING, "bold");
-  doc.setFontSize(radius * 0.9);
-  doc.text(initials, centerX, y + radius + 1.2, { align: "center" });
-
-  doc.setTextColor(...C_TEXT);
-};
-
-/**
- * Render a sidebar section (label + items).
- */
-const renderSidebarSection = (doc, label, items, y, primaryRgb, indent = 3) => {
-  if (!items || items.length === 0) return y;
-
-  // Section label — accent color, small caps
+const drawSidebarSection = (doc, label, items, y, primary) => {
+  if (!items.length || y > 266) return y;
   doc.setFont(FONT_BODY, "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  doc.text(label, SIDEBAR_X + indent, y);
+  doc.setFontSize(8.2);
+  doc.setTextColor(primary.r, primary.g, primary.b);
+  doc.text(label, SIDEBAR_X + 6, y);
+  y += 3;
+  doc.setDrawColor(...C_DIVIDER);
+  doc.line(SIDEBAR_X + 6, y, SIDEBAR_X + SIDEBAR_W - 6, y);
   y += 5;
-
-  // Thin line under label
-  drawDivider(doc, SIDEBAR_X + indent, y - 1, SIDEBAR_W - indent * 2);
-  y += 4;
-
-  // Items
-  doc.setFont(FONT_BODY, "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...C_TEXT);
-
-  items.forEach((item) => {
-    const isObject = typeof item === "object";
-    const text = isObject ? item.text : item;
-    const lines = doc.splitTextToSize(text, SIDEBAR_W - indent * 2 - 3);
-
-    lines.forEach((line) => {
-      doc.text(line, SIDEBAR_X + indent + 3, y);
-      y += 4.2;
-    });
-
-    if (isObject && item.sub) {
-      doc.setFont(FONT_BODY, "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...C_MUTED);
-      doc.text(item.sub, SIDEBAR_X + indent + 3, y);
-      y += 3.8;
-      doc.setFontSize(8);
-      doc.setTextColor(...C_TEXT);
+  for (const item of items) {
+    if (y > 268) break;
+    const value = typeof item === "object" ? item.text : item;
+    const lines = doc.splitTextToSize(clean(value), SIDEBAR_W - 15);
+    doc.setFont(FONT_BODY, "normal");
+    doc.setFontSize(8.2);
+    doc.setTextColor(...C_TEXT);
+    for (const line of lines) {
+      if (y > 268) break;
+      doc.text(line, SIDEBAR_X + 8, y);
+      y += 4.1;
     }
-  });
-
+    if (typeof item === "object" && item.sub && y <= 268) {
+      doc.setFontSize(7.4);
+      doc.setTextColor(...C_MUTED);
+      doc.text(clean(item.sub), SIDEBAR_X + 8, y);
+      y += 4;
+    }
+    y += 1;
+  }
   return y + 4;
 };
 
-// ─── Main Content ─────────────────────────────────────────────────────────────
-
-/**
- * Render a section header in the main column — accent-colored with thin underline.
- */
-const renderMainSectionHeader = (doc, title, y, accentRgb) => {
-  doc.setFont(FONT_BODY, "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-  doc.text(title, MAIN_X, y);
-  y += 3.5;
-
-  // Thin accent underline (40% of content width)
-  doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
-  doc.setLineWidth(0.3);
-  doc.line(MAIN_X, y, MAIN_X + MAIN_W * 0.4, y);
-  y += 5;
-
-  doc.setTextColor(...C_TEXT);
-  return y;
-};
-
-// ─── Main Generator ───────────────────────────────────────────────────────────
-
-/**
- * Generate a professional resume PDF.
- *
- * @param {Object} formData  - Resume form data
- * @param {Object} template  - Selected template config { color, accent, id, name }
- * @returns {jsPDF} Generated PDF instance
- */
-export const generateResumePDF = (formData, template) => {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-  const primaryRgb   = hexToRgb(template?.color || "#1E3A5F");
-  const accentRgb    = hexToRgb(template?.accent || "#3498DB");
-  const initials     = getInitials(formData.nome);
-  const fullName     = (formData.nome || "Nome Completo").trim();
-
-  // ── Build contact items for sidebar ──────────────────────────────────────
-  const contactItems = [];
-  if (formData.email)        contactItems.push(formData.email);
-  if (formData.telefone)     contactItems.push(formData.telefone);
-  if (formData.cidade)       contactItems.push(formData.cidade);
-  if (formData.linkedin)     contactItems.push(formData.linkedin);
-  if (formData.portfolio)    contactItems.push(formData.portfolio);
-  if (formData.dataNascimento) contactItems.push(formData.dataNascimento);
-
-  // ── Build skills list ────────────────────────────────────────────────────
-  const skillItems = (formData.habilidades || []).map((s) => ({ text: s }));
-  // Add custom skills if present
-  if (formData.habilidadesExtras && formData.habilidadesExtras.trim()) {
-    formData.habilidadesExtras
-      .split(/[,;\n]/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .forEach((s) => skillItems.push({ text: s }));
-  }
-
-  // ── Build languages list ─────────────────────────────────────────────────
-  const langItems = (formData.idiomas || [])
-    .filter((i) => i.idioma)
-    .map((i) => ({ text: i.idioma, sub: i.nivel }));
-
-  // ── Sidebar rendering ────────────────────────────────────────────────────
-  let sidebarY = MARGIN + 9;
-
-  // Monogram avatar
-  drawMonogram(doc, initials, primaryRgb, accentRgb, sidebarY);
-  sidebarY += 35;
-
-  // Full name in sidebar — times bold, primary color
-  const nameLines = doc.splitTextToSize(fullName, SIDEBAR_W - 8);
+const drawSidebar = (doc, data, primary, accent, compact = false) => {
+  drawSidebarBackground(doc, primary);
+  let y = CONTENT_TOP;
+  const center = SIDEBAR_X + SIDEBAR_W / 2;
+  doc.setFillColor(primary.r, primary.g, primary.b);
+  doc.circle(center, y + 10, 10, "F");
+  doc.setFillColor(accent.r, accent.g, accent.b);
+  doc.circle(center, y + 10, 7.8, "F");
   doc.setFont(FONT_HEADING, "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-  nameLines.forEach((line) => {
-    doc.text(line, SIDEBAR_X + SIDEBAR_W / 2, sidebarY, { align: "center" });
-    sidebarY += 7;
-  });
-  sidebarY += 2;
-
-  // Accent title below name
-  if (formData.cargo || formData.profissao) {
-    doc.setFont(FONT_BODY, "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text(initials(data.nome), center, y + 11.4, { align: "center" });
+  y += 26;
+  doc.setFont(FONT_HEADING, "bold");
+  doc.setFontSize(compact ? 12 : 13.5);
+  doc.setTextColor(primary.r, primary.g, primary.b);
+  const nameLines = doc.splitTextToSize(clean(data.nome) || "Nome completo", SIDEBAR_W - 12);
+  for (const line of nameLines.slice(0, 4)) {
+    doc.text(line, center, y, { align: "center" });
+    y += 6;
+  }
+  if (compact) {
+    doc.setFont(FONT_BODY, "bold");
     doc.setFontSize(7.5);
     doc.setTextColor(...C_MUTED);
-    doc.text(
-      (formData.cargo || formData.profissao).toUpperCase(),
-      SIDEBAR_X + SIDEBAR_W / 2,
-      sidebarY,
-      { align: "center", maxWidth: SIDEBAR_W - 10 }
-    );
-    sidebarY += 6;
+    doc.text("CONTINUAÇÃO", center, y + 3, { align: "center" });
+    return;
   }
-
-  // Divider below name
-  sidebarY += 2;
-  drawDivider(doc, SIDEBAR_X + 8, sidebarY, SIDEBAR_W - 16);
-  sidebarY += 8;
-
-  // Contact section
-  sidebarY = renderSidebarSection(
-    doc, "CONTATO", contactItems, sidebarY, primaryRgb
-  );
-
-  // Skills section
-  if (skillItems.length > 0) {
-    sidebarY = renderSidebarSection(
-      doc, "HABILIDADES", skillItems, sidebarY, primaryRgb
-    );
+  const role = clean(data.cargo || data.profissao);
+  if (role) {
+    y += 1;
+    doc.setFont(FONT_BODY, "bold");
+    doc.setFontSize(7.4);
+    doc.setTextColor(...C_MUTED);
+    const roleLines = doc.splitTextToSize(role.toUpperCase(), SIDEBAR_W - 12);
+    for (const line of roleLines.slice(0, 4)) {
+      doc.text(line, center, y, { align: "center" });
+      y += 3.7;
+    }
   }
+  y += 6;
+  const contacts = [data.email, data.telefone, data.cidade, data.linkedin, data.portfolio, data.dataNascimento].filter(Boolean);
+  y = drawSidebarSection(doc, "CONTATO", contacts, y, primary);
+  const skills = [...(data.habilidades || [])];
+  if (data.habilidadesExtras) skills.push(...data.habilidadesExtras.split(/[,;\n]/).map((s) => s.trim()).filter(Boolean));
+  y = drawSidebarSection(doc, "HABILIDADES", skills, y, primary);
+  const languages = (data.idiomas || []).filter((item) => item.idioma).map((item) => ({ text: item.idioma, sub: item.nivel }));
+  drawSidebarSection(doc, "IDIOMAS", languages, y, primary);
+};
 
-  // Languages section
-  if (langItems.length > 0) {
-    sidebarY = renderSidebarSection(
-      doc, "IDIOMAS", langItems, sidebarY, primaryRgb
-    );
-  }
+export const generateResumePDF = (formData, template) => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const primary = accessibleColor(hexToRgb(template?.color || "#1E3A5F"));
+  const accent = accessibleColor(hexToRgb(template?.accent || "#2563A6"));
+  let page = 1;
+  let y = CONTENT_TOP;
 
-  // ── Main content rendering ───────────────────────────────────────────────
-  let mainY = MARGIN + 9;
-
-  // Objective / Professional Summary
-  if (formData.objetivo && formData.objetivo.trim()) {
-    mainY = renderMainSectionHeader(doc, "RESUMO PROFISSIONAL", mainY, accentRgb);
+  const preparePage = () => {
+    drawSidebar(doc, formData, primary, accent, page > 1);
+    y = CONTENT_TOP;
+  };
+  const addPage = () => {
+    doc.addPage();
+    page += 1;
+    preparePage();
+  };
+  const ensure = (height) => {
+    if (y + height > CONTENT_BOTTOM) addPage();
+  };
+  const sectionTitle = (title) => {
+    ensure(14);
+    doc.setFont(FONT_BODY, "bold");
+    doc.setFontSize(10.2);
+    doc.setTextColor(accent.r, accent.g, accent.b);
+    doc.text(title, MAIN_X, y);
+    y += 3;
+    doc.setDrawColor(accent.r, accent.g, accent.b);
+    doc.setLineWidth(0.35);
+    doc.line(MAIN_X, y, MAIN_X + 44, y);
+    y += 6;
+  };
+  const paragraph = (text, size = 9.5, leading = 4.8) => {
+    const lines = doc.splitTextToSize(clean(text), MAIN_W);
     doc.setFont(FONT_BODY, "normal");
-    doc.setFontSize(9.5);
+    doc.setFontSize(size);
     doc.setTextColor(...C_TEXT);
-    const objLines = doc.splitTextToSize(formData.objetivo, MAIN_W);
-    objLines.forEach((line) => {
-      doc.text(line, MAIN_X, mainY);
-      mainY += 5;
-    });
-    mainY += 7;
+    for (const line of lines) {
+      ensure(leading + 1);
+      doc.text(line, MAIN_X, y);
+      y += leading;
+    }
+  };
+
+  preparePage();
+  if (formData.objetivo || formData.resumo) {
+    sectionTitle("RESUMO PROFISSIONAL");
+    paragraph(formData.objetivo || formData.resumo, 9.6, 4.9);
+    y += 7;
   }
 
-  // Professional Experience
-  const activeExps = (formData.experiencias || []).filter((e) => e.empresa);
-  if (activeExps.length > 0) {
-    mainY = renderMainSectionHeader(doc, "EXPERIÊNCIA PROFISSIONAL", mainY, accentRgb);
-
-    activeExps.forEach((exp, idx) => {
-      // Job title — bold
+  const experiences = (formData.experiencias || []).filter((item) => item.empresa);
+  if (experiences.length) {
+    sectionTitle("EXPERIÊNCIA PROFISSIONAL");
+    for (const experience of experiences) {
+      const descriptionLines = doc.splitTextToSize(clean(experience.descricao), MAIN_W);
+      ensure(16 + descriptionLines.length * 4.5);
       doc.setFont(FONT_BODY, "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(9.8);
       doc.setTextColor(...C_DARK);
-      doc.text(exp.cargo || "Cargo", MAIN_X, mainY);
-
-      // Period — right aligned, muted
-      if (exp.periodo) {
+      const titleLines = doc.splitTextToSize(clean(experience.cargo || "Cargo"), MAIN_W - 30);
+      for (const line of titleLines) {
+        doc.text(line, MAIN_X, y);
+        y += 4.7;
+      }
+      if (experience.periodo) {
         doc.setFont(FONT_BODY, "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(...C_MUTED);
-        const pw = doc.getTextWidth(exp.periodo);
-        doc.text(exp.periodo, MAIN_X + MAIN_W - pw, mainY);
+        doc.text(clean(experience.periodo), MAIN_X + MAIN_W, y - 4.7, { align: "right" });
       }
-
-      mainY += 5;
-
-      // Company — accent color, semibold
       doc.setFont(FONT_BODY, "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-      doc.text(exp.empresa, MAIN_X, mainY);
-      mainY += 5;
-
-      // Description
-      if (exp.descricao && exp.descricao.trim()) {
-        doc.setFont(FONT_BODY, "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C_TEXT);
-        const descLines = doc.splitTextToSize(exp.descricao, MAIN_W);
-        descLines.forEach((line) => {
-          doc.text(line, MAIN_X, mainY);
-          mainY += 4.2;
-        });
+      doc.setFontSize(8.6);
+      doc.setTextColor(accent.r, accent.g, accent.b);
+      const companyLines = doc.splitTextToSize(clean(experience.empresa), MAIN_W);
+      for (const line of companyLines) {
+        doc.text(line, MAIN_X, y);
+        y += 4.3;
       }
-
-      // Space between entries except last
-      mainY += idx < activeExps.length - 1 ? 6 : 4;
-    });
-
-    mainY += 8;
+      paragraph(experience.descricao, 8.9, 4.5);
+      y += 6;
+    }
   }
 
-  // Education
-  const activeEdus = (formData.formacoes || []).filter((f) => f.instituicao);
-  if (activeEdus.length > 0) {
-    mainY = renderMainSectionHeader(doc, "FORMAÇÃO ACADÊMICA", mainY, accentRgb);
-
-    activeEdus.forEach((edu, idx) => {
+  const education = (formData.formacoes || []).filter((item) => item.instituicao);
+  if (education.length) {
+    sectionTitle("FORMAÇÃO ACADÊMICA");
+    for (const item of education) {
+      ensure(18);
       doc.setFont(FONT_BODY, "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(9.7);
       doc.setTextColor(...C_DARK);
-      doc.text(edu.curso || "Curso", MAIN_X, mainY);
-
-      if (edu.periodo) {
+      const courseLines = doc.splitTextToSize(clean(item.curso || "Curso"), MAIN_W - 26);
+      for (const line of courseLines) {
+        doc.text(line, MAIN_X, y);
+        y += 4.7;
+      }
+      if (item.periodo) {
         doc.setFont(FONT_BODY, "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(...C_MUTED);
-        const pw = doc.getTextWidth(edu.periodo);
-        doc.text(edu.periodo, MAIN_X + MAIN_W - pw, mainY);
+        doc.text(clean(item.periodo), MAIN_X + MAIN_W, y - 4.7, { align: "right" });
       }
-
-      mainY += 5;
-
-      doc.setFont(FONT_BODY, "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...C_TEXT);
-      doc.text(`${edu.instituicao}${edu.status ? " \u2014 " + edu.status : ""}`, MAIN_X, mainY);
-      mainY += 5;
-
-      mainY += idx < activeEdus.length - 1 ? 3 : 2;
-    });
-
-    mainY += 8;
+      paragraph(`${item.instituicao}${item.status ? ` - ${item.status}` : ""}`, 8.9, 4.5);
+      y += 5;
+    }
   }
 
-  // Courses / Certifications
-  if (formData.cursos && formData.cursos.trim()) {
-    mainY = renderMainSectionHeader(doc, "CURSOS E CERTIFICAÇÕES", mainY, accentRgb);
-
-    doc.setFont(FONT_BODY, "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...C_TEXT);
-    const courseLines = doc.splitTextToSize(formData.cursos, MAIN_W);
-    courseLines.forEach((line) => {
-      doc.text(`\u2022 ${line}`, MAIN_X, mainY);
-      mainY += 5;
-    });
-    mainY += 4;
+  if (formData.cursos) {
+    sectionTitle("CURSOS E CERTIFICAÇÕES");
+    paragraph(formData.cursos, 9.2, 4.7);
+    y += 5;
   }
 
-  // Additional info (optional fields like CNH, disponibilidade, etc.)
   const extras = [];
-  if (formData.cnh)                  extras.push(`CNH: ${formData.cnh}`);
-  if (formData.disponibilidade)      extras.push(`Disponibilidade: ${formData.disponibilidade}`);
-  if (formData.pretensaoSalarial)    extras.push(`Pretensão Salarial: ${formData.pretensaoSalarial}`);
-  if (extras.length > 0) {
-    mainY = renderMainSectionHeader(doc, "INFORMAÇÕES ADICIONAIS", mainY, accentRgb);
-    doc.setFont(FONT_BODY, "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...C_TEXT);
-    extras.forEach((extra) => {
-      doc.text(`\u2022 ${extra}`, MAIN_X, mainY);
-      mainY += 5;
-    });
+  if (formData.cnh) extras.push(`CNH: ${formData.cnh}`);
+  if (formData.disponibilidade) extras.push(`Disponibilidade: ${formData.disponibilidade}`);
+  if (formData.pretensaoSalarial) extras.push(`Pretensão salarial: ${formData.pretensaoSalarial}`);
+  if (formData.extras) extras.push(formData.extras);
+  if (extras.length) {
+    sectionTitle("INFORMAÇÕES ADICIONAIS");
+    paragraph(extras.join("\n"), 9.2, 4.7);
   }
 
-  // ── Sidebar background (drawn after all content for full page coverage) ──
-  // Use a very subtle tinted sidebar background
-  drawSidebarBg(doc, primaryRgb);
-
-  // ── Footer on every page ─────────────────────────────────────────────────
-  const pageCount = doc.getNumberOfPages();
-  for (let p = 1; p <= pageCount; p++) {
-    doc.setPage(p);
-
-    const footerY = PAGE_H - MARGIN + 2;
-
-    // Thin divider line
-    doc.setDrawColor(...C_DIVIDER);
-    doc.setLineWidth(0.15);
-    doc.line(MARGIN, footerY - 4, PAGE_W - MARGIN, footerY - 4);
-
-    // Left: branding
-    doc.setFont(FONT_BODY, "normal");
-    doc.setFontSize(6);
-    doc.setTextColor(...C_LIGHT);
-    doc.text("krioudocs.com.br", MARGIN, footerY);
-
-    // Center: page number
-    doc.text(`${p} / ${pageCount}`, PAGE_W / 2, footerY, { align: "center" });
-
-    // Right: generation date
-    const dateStr = new Date().toLocaleDateString("pt-BR");
-    doc.text(dateStr, PAGE_W - MARGIN, footerY, { align: "right" });
-  }
-
+  drawFooter(doc);
   return doc;
 };
 
-/**
- * Download a generated PDF file.
- *
- * @param {jsPDF} doc      - PDF document instance
- * @param {string} filename - Output filename
- */
-export const downloadPDF = (doc, filename = "curriculo.pdf") => {
-  doc.save(filename);
-};
+export const downloadPDF = (doc, filename = "curriculo.pdf") => doc.save(filename);
 
-export default {
-  generateResumePDF,
-  downloadPDF,
-};
+export default { generateResumePDF, downloadPDF };

@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
+import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
@@ -282,6 +283,8 @@ const DashboardPage = () => {
         return;
       }
 
+      await DocumentAccessService.authorizeDownload(doc.id);
+
       if (doc.type === "resume") {
         const template = doc.templateId
           ? { id: doc.templateId, name: doc.templateName || "Modelo", color: doc.template?.color, accent: doc.template?.accent }
@@ -309,6 +312,8 @@ const DashboardPage = () => {
         showToast.error("Impressão liberada somente após pagamento aprovado.");
         return;
       }
+
+      await DocumentAccessService.authorizeDownload(doc.id);
 
       let arrayBuffer;
       if (doc.type === "resume") {

@@ -63,6 +63,21 @@ const getPartyInstances = (fields, prefix) => {
   return instances;
 };
 
+const TERRAIN_MEASURE_KEYS = ["medida_frente", "medida_fundo", "medida_direita", "medida_esquerda"];
+
+const parseMetricValue = (value) => {
+  const normalized = String(value || "").replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+  const number = Number.parseFloat(normalized);
+  return Number.isFinite(number) && number > 0 ? number : null;
+};
+
+const calculateTerrainArea = (data) => {
+  const [front, back, right, left] = TERRAIN_MEASURE_KEYS.map((key) => parseMetricValue(data[key]));
+  if ([front, back, right, left].some((value) => value == null)) return "";
+  const area = ((front + back) / 2) * ((right + left) / 2);
+  return area.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 const LegalEditorPage = () => {
   const {
     navigate,
@@ -148,7 +163,20 @@ const LegalEditorPage = () => {
     : [];
 
   const handleUpdateField = useCallback((key, value) => {
-    setLegalFormData((prev) => ({ ...prev, [key]: value }));
+    setLegalFormData((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "area_terreno") return { ...next, _areaTerrenoAuto: false };
+      if (TERRAIN_MEASURE_KEYS.includes(key)) {
+        const calculatedArea = calculateTerrainArea(next);
+        if (calculatedArea && (!next.area_terreno || next._areaTerrenoAuto)) {
+          next.area_terreno = calculatedArea;
+          next._areaTerrenoAuto = true;
+        } else if (!calculatedArea && next._areaTerrenoAuto) {
+          next.area_terreno = "";
+        }
+      }
+      return next;
+    });
   }, [setLegalFormData]);
 
   const handleToggleDisabled = (key) => {
@@ -184,7 +212,7 @@ const LegalEditorPage = () => {
     setIsFinalizing(true);
     try {
       setCheckoutComplete(false);
-      navigate("checkout");
+      navigate("checkout", { replace: true });
     } catch (err) {
       console.error("[LegalEditor][ERRO] Finalizar:", err);
       showToast.error("Erro ao abrir checkout. Tente novamente.");
@@ -300,7 +328,7 @@ const LegalEditorPage = () => {
     return { filled: filled.length, total: fields.length };
   };
 
-  const nextLabel = isLastStep ? "Ir para checkout"
+  const nextLabel = isLastStep ? "Ir para pagamento"
     : isReviewStep ? "Visualizar"
     : isVariantStep ? "Começar Preenchimento"
     : `Próximo: ${steps[currentStep + 1]?.label || ""}`;
@@ -327,6 +355,8 @@ const LegalEditorPage = () => {
           <button
             key={step.key}
             onClick={() => handleStepClick(idx)}
+            title={isFuture ? "Conclua a etapa atual para liberar esta etapa" : step.label}
+            aria-disabled={isFuture}
             disabled={isFuture}
             aria-label={`${step.label}${isCompleted ? " (concluído)" : ""}`}
             style={{
@@ -899,7 +929,7 @@ const LegalEditorPage = () => {
             {isFinalizing ? (
               <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Abrindo checkout...</>
             ) : (
-              <><Icon name="CreditCard" className="w-5 h-5" /> Ir para Checkout</>
+              <><Icon name="CreditCard" className="w-5 h-5" /> Ir para pagamento</>
             )}
           </button>
         </div>
@@ -967,15 +997,18 @@ const LegalEditorPage = () => {
 
       <div ref={bottomNavRef}>
         <BottomNavigation
-          onBack={handlePrevious}
+          onBack={() => (isFirstStep ? navigate("templates", { replace: true }) : handlePrevious())}
           onNext={isLastStep ? handleFinalize : handleNext}
           isFirstStep={isFirstStep}
           isLastStep={isLastStep}
           nextLabel={nextLabel}
           onSaveLater={handleSaveLater}
+          showBackOnFirstStep
+          backLabel="Modelos"
           extraContent={
-            isFillStep && (
-              <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-body)" }}>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontFamily: "var(--font-body)" }}>
+              <span style={{ whiteSpace: "nowrap" }}>Etapa {currentStep + 1} de {steps.length}</span>
+              {isFillStep && <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                 <span style={{ color: currentStepObj?.color?.accent || "var(--teal)", fontWeight: 700, fontFamily: "var(--font-display)" }}>
                   {currentStepObj?.label}
                 </span>
@@ -985,8 +1018,9 @@ const LegalEditorPage = () => {
                     {currentSection.fields.filter(f => !disabledFields[f.key]).length} campos)
                   </span>
                 )}
-              </div>
-            )
+              </div>}
+              <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+            </div>
           }
         />
       </div>

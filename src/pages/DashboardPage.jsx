@@ -15,7 +15,6 @@ import {
   isDocumentPaymentPending,
   isLocalDraftDocument,
   matchesDocumentPaymentFilter,
-  requiresPaymentToAccess,
 } from "../domain/documents/payment";
 
 const DashboardPage = () => {
@@ -197,11 +196,6 @@ const DashboardPage = () => {
   ]);
 
   const handleEditDocument = (doc) => {
-    if (requiresPaymentToAccess(doc)) {
-      sendDocumentToCheckout(doc);
-      return;
-    }
-
     if (doc.type === "resume") {
       if (doc.status === "finalizado" && doc.formData) {
         setFormData(doc.formData);
@@ -1022,6 +1016,7 @@ const DashboardPage = () => {
                     onClick={() => handleEditDocument(doc)}
                     onDelete={() => handleDeleteDocument(doc)}
                     onDownload={handleDownloadPDF}
+                    onPay={sendDocumentToCheckout}
                     onPrint={handlePrintPDF}
                     onArchive={handleArchiveDocument}
                     onRename={() => openRenameDialog(doc)}

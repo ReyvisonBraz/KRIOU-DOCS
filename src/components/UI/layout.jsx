@@ -264,6 +264,8 @@ export const BottomNavigation = ({
   nextLabel,
   extraContent,
   onSaveLater,
+  showBackOnFirstStep = false,
+  backLabel = "Voltar",
   style,
 }) => {
   const [hovered, setHovered] = React.useState(null);
@@ -304,6 +306,16 @@ export const BottomNavigation = ({
         ...style,
       }}
     >
+      <style>{`
+        @media (max-width: 480px) {
+          .bottom-nav-back, .bottom-nav-save { padding: 10px 12px !important; }
+          .bottom-nav-save span { display: none !important; }
+          .bottom-nav-next { padding: 12px 16px !important; font-size: 0.875rem !important; }
+        }
+        @media (max-width: 360px) {
+          .bottom-nav-back span { display: none !important; }
+        }
+      `}</style>
       <div
         style={{
           display: "flex",
@@ -314,7 +326,7 @@ export const BottomNavigation = ({
         }}
       >
         {/* ─── Botão Voltar: transparente com borda ouro ─── */}
-        {!isFirstStep && (
+        {(!isFirstStep || showBackOnFirstStep) && (
           <button
             type="button"
             onClick={onBack}
@@ -322,8 +334,8 @@ export const BottomNavigation = ({
             onMouseLeave={clearFocus}
             onFocus={() => setFocus("back")}
             onBlur={clearFocus}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
-            aria-label="Voltar à etapa anterior"
+            className="bottom-nav-back focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+            aria-label={isFirstStep ? backLabel : "Voltar à etapa anterior"}
             style={{
               flex: "0 0 auto",
               ...btnBase,
@@ -345,7 +357,7 @@ export const BottomNavigation = ({
             }}
           >
             <Icon name="ChevronLeft" className="w-4 h-4" />
-            <span>Voltar</span>
+            <span>{isFirstStep ? backLabel : "Voltar"}</span>
           </button>
         )}
 
@@ -358,7 +370,7 @@ export const BottomNavigation = ({
             onMouseLeave={clearFocus}
             onFocus={() => setFocus("save")}
             onBlur={clearFocus}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+            className="bottom-nav-save focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
             title="Salvar rascunho"
             aria-label="Salvar rascunho"
             style={{
@@ -395,7 +407,7 @@ export const BottomNavigation = ({
           onMouseLeave={clearFocus}
           onFocus={() => setFocus("next")}
           onBlur={clearFocus}
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+          className="bottom-nav-next focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
           aria-label={
             nextLabel ||
             (isLastStep ? "Finalizar formulário" : "Avançar para próxima etapa")

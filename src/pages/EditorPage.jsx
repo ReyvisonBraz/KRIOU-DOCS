@@ -429,6 +429,21 @@ const EditorPage = () => {
     }
   };
 
+  const handleOpenPreview = () => {
+    for (let step = 0; step < STEPS.length; step += 1) {
+      const validation = validateStep(step, formData);
+      if (!validation.valid) {
+        setCurrentStep(step);
+        setStepErrors(validation.errors);
+        setShowErrors(true);
+        return;
+      }
+    }
+    setStepErrors({});
+    setShowErrors(false);
+    navigate("preview");
+  };
+
   const handlePrevious = () => {
     if (!isFirstStep) {
       setCurrentStep(currentStep - 1);
@@ -486,11 +501,11 @@ const EditorPage = () => {
             </button>
             <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
             <button
-              onClick={() => navigate("preview")}
+              onClick={handleOpenPreview}
               className="touch-target inline-flex items-center gap-2 bg-coral text-white font-bold text-[13px] md:text-[14px] px-4 py-2.5 rounded-xl border-none cursor-pointer transition-all duration-250 shadow-[0_2px_10px_rgba(244,63,94,0.28)] hover:shadow-[0_6px_22px_rgba(244,63,94,0.38)] hover:bg-coral-hover active:scale-[0.97] focus-ring"
             >
               <Icon name="Eye" className="w-4 h-4" />
-              <span className="hidden sm:inline">Preview</span>
+              <span className="hidden sm:inline">Visualizar</span>
             </button>
           </div>
         }
@@ -520,10 +535,18 @@ const EditorPage = () => {
 
       <BottomNavigation
         onBack={handlePrevious}
-        onNext={isLastStep ? () => navigate("preview") : handleNext}
+        onNext={isLastStep ? handleOpenPreview : handleNext}
         isFirstStep={isFirstStep}
         isLastStep={isLastStep}
         nextLabel={isLastStep ? "Visualizar Currículo" : undefined}
+        showBackOnFirstStep
+        backLabel="Dashboard"
+        extraContent={
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontSize: 11, color: "var(--text-muted)" }}>
+            <span>Etapa {currentStep + 1} de {STEPS.length}</span>
+            <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+          </div>
+        }
       />
 
       <ConfirmDialog

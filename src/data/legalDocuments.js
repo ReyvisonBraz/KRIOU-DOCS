@@ -161,14 +161,24 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
   if (!template) return null;
 
   // Verifica se um campo está ausente (desabilitado ou vazio)
-  const isAbsent = (key) =>
-    disabledFields[key] || !formData[key] || String(formData[key]).trim() === "";
+  const resolveFieldValue = (key) => {
+    // O foro normalmente coincide com a cidade do contrato. O fallback evita
+    // pedir a mesma informação duas vezes e preserva documentos antigos.
+    if (key === "foro") return formData.foro || formData.cidade_contrato || "";
+    return formData[key];
+  };
+
+  const isAbsent = (key) => {
+    const value = resolveFieldValue(key);
+    return disabledFields[key] || !value || String(value).trim() === "";
+  };
 
   /**
    * Formata o valor de um campo antes de inserir no template.
    * Datas ISO são convertidas para pt-BR extenso.
    */
   const formatFieldValue = (key, value) => {
+    value = resolveFieldValue(key) || value;
     if (!value) return value;
     // Campos de data: formata para extenso pt-BR
     const str = String(value);

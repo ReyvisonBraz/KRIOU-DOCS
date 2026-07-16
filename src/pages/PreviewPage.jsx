@@ -50,7 +50,7 @@ const MainSectionHeader = ({ title }) => (
 );
 
 const PreviewPage = () => {
-  const { navigate, formData, documentType } = useApp();
+  const { navigate, goBack, formData, documentType } = useApp();
 
   const isLegalDocument = !!documentType;
 
@@ -67,13 +67,17 @@ const PreviewPage = () => {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   };
 
-  const handleFinalize = () => navigate("checkout");
+  const handleFinalize = () => navigate("checkout", { replace: true });
 
   const editTarget = isLegalDocument ? "legalEditor" : "editor";
+  const handleBackToEditor = () => {
+    if (window.history.state?.page === "preview") goBack(editTarget);
+    else navigate(editTarget, { replace: true });
+  };
 
   const navbarTitle = isLegalDocument
-    ? `Preview — ${documentType?.name || "Documento"}`
-    : "Preview do Currículo";
+    ? `Visualização — ${documentType?.name || "Documento"}`
+    : "Visualização do Currículo";
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--navy)" }}>
@@ -81,7 +85,7 @@ const PreviewPage = () => {
         title={navbarTitle}
         leftAction={
           <button
-            onClick={() => navigate(editTarget, { replace: true })}
+            onClick={handleBackToEditor}
             aria-label="Voltar ao editor"
             className="kf"
             style={{
@@ -106,13 +110,13 @@ const PreviewPage = () => {
           <div style={{ display: "flex", gap: 6 }}>
             <Button variant="secondary" size="small" icon="Edit"
               className="preview-navbar-btn"
-              onClick={() => navigate(editTarget, { replace: true })}>
+              onClick={handleBackToEditor}>
               <span>Editar</span>
             </Button>
             <Button variant="primary" size="small" icon="CreditCard"
               className="preview-navbar-btn"
               onClick={handleFinalize}>
-              <span>Finalizar</span>
+              <span>Pagamento</span>
             </Button>
           </div>
         }
@@ -192,17 +196,17 @@ const PreviewPage = () => {
                 fontFamily: "var(--font-body)",
                 letterSpacing: "-0.005em",
               }}>
-                Clique em "Finalizar" para seguir ao checkout. O PDF será liberado após o pagamento aprovado.
+                Clique em "Ir para pagamento" para continuar. O PDF será liberado após o pagamento aprovado.
               </p>
             </div>
           </Card>
 
           <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 28 }}>
-            <Button variant="secondary" icon="Edit" onClick={() => navigate("legalEditor", { replace: true })}>
+            <Button variant="secondary" icon="Edit" onClick={handleBackToEditor}>
               Voltar e Editar
             </Button>
             <Button variant="primary" icon="CreditCard" onClick={handleFinalize}>
-              Finalizar Compra
+              Ir para Pagamento
             </Button>
           </div>
         </div>
@@ -558,11 +562,11 @@ const PreviewPage = () => {
           <div className="preview-bottom-actions" style={{
             display: "flex", justifyContent: "center", gap: 12, marginTop: 20,
           }}>
-            <Button variant="secondary" icon="Edit" onClick={() => navigate("editor", { replace: true })}>
+            <Button variant="secondary" icon="Edit" onClick={handleBackToEditor}>
               Voltar e Editar
             </Button>
             <Button variant="primary" icon="CreditCard" onClick={handleFinalize} style={{ padding: "12px 32px" }}>
-              Finalizar Compra
+              Ir para Pagamento
             </Button>
           </div>
         </div>

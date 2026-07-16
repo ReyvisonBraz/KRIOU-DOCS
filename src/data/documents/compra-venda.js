@@ -305,15 +305,16 @@ const compraVenda = {
             whatHappensIfEmpty: "O contrato será gerado identificando o terreno pela localização, cidade, área e demais descrições preenchidas.",
             disableable: true,
           }),
-          field("area_terreno", "Área Total (m²)", "text", {
-            required: true,
+          field("area_terreno", "Área Total aproximada (m²)", "text", {
+            required: false,
             placeholder: "Ex: 300,00",
             example: "300,00 m²",
-            hint: "Área total do terreno em metros quadrados. Use vírgula para decimais.",
+            hint: "Preencha se constar no registro. Se deixar vazio, calcularemos uma estimativa quando as quatro medidas forem informadas.",
             whereFind: "Escritura, carnê de IPTU ou certidão de matrícula.",
+            disableable: true,
           }),
           field("medida_frente", "Medida da Frente (m)", "text", {
-            required: false,
+            required: true,
             placeholder: "Ex: 12,00",
             example: "12,00 m",
             hint: "Largura do terreno na frente (lado que dá para a rua).",
@@ -321,7 +322,7 @@ const compraVenda = {
             disableable: true,
           }),
           field("medida_fundo", "Medida do Fundo (m)", "text", {
-            required: false,
+            required: true,
             placeholder: "Ex: 12,00",
             example: "12,00 m",
             hint: "Largura do terreno no fundo (lado oposto à rua).",
@@ -329,14 +330,14 @@ const compraVenda = {
             disableable: true,
           }),
           field("medida_direita", "Medida Lateral Direita (m)", "text", {
-            required: false,
+            required: true,
             placeholder: "Ex: 25,00",
             example: "25,00 m",
             hint: "Comprimento do terreno no lado direito (olhando da rua).",
             disableable: true,
           }),
           field("medida_esquerda", "Medida Lateral Esquerda (m)", "text", {
-            required: false,
+            required: true,
             placeholder: "Ex: 25,00",
             example: "25,00 m",
             hint: "Comprimento do terreno no lado esquerdo (olhando da rua).",
@@ -443,7 +444,7 @@ const compraVenda = {
         type: "clause",
         number: "6ª",
         title: "DO FORO",
-        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {foro}{?, {foro} — }{cidade_contrato}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
+        text: "Para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, as partes elegem o Foro da Comarca de {foro}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
       },
       {
         type: "closing",
@@ -567,7 +568,7 @@ const compraVenda = {
         number: "1ª",
         title: "DO OBJETO",
         paragraphs: [
-          "O(A) VENDEDOR(A) vende ao(à) COMPRADOR(A) o terreno localizado em {endereco_terreno}, {cidade_terreno}{?, , de matrícula n.º {matricula_terreno}}, com área total de {area_terreno}.",
+          "O(A) VENDEDOR(A) vende ao(à) COMPRADOR(A) o terreno localizado em {endereco_terreno}, {cidade_terreno}{?, , de matrícula n.º {matricula_terreno}}{?, , com área total aproximada de {area_terreno}}.",
           "{?, Medidas do terreno: frente com {medida_frente}{?, , fundos com {medida_fundo}}{?, , lateral direita com {medida_direita}}{?, , lateral esquerda com {medida_esquerda}}.}",
           "{?, Confrontantes: {confrontantes}.}",
           "{?, Zoneamento: {zoneamento}.}",

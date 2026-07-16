@@ -23,20 +23,20 @@ import { drawQRCode } from "./qrHelper";
 // ─── Layout A4 ────────────────────────────────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
-const ML = 18;
-const MR = 16;
-const MT = 14;
-const MB = 14;
+const ML = 15;
+const MR = 14;
+const MT = 9;
+const MB = 10;
 const CW = PAGE_W - ML - MR;
-const CONTENT_BOTTOM = PAGE_H - MB - 8;
+const CONTENT_BOTTOM = PAGE_H - MB - 5;
 
 // ─── Tipografia ───────────────────────────────────────────────────────────────
 const FONT_SERIF = "times";
 const FONT_SANS  = "helvetica";
-const BODY_SIZE  = 12.5;
-const LEAD       = 6.25;
-const LEAD_TIGHT = 6.05;
-const SIGNATURE_SLOT_H = 24;
+const BODY_SIZE  = 9.5;
+const LEAD       = 4.55;
+const LEAD_TIGHT = 4.35;
+const SIGNATURE_SLOT_H = 18;
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
 const C_INK       = [10, 10, 15];
@@ -491,7 +491,7 @@ const renderWitnesses = (doc, count = 2) => {
 const renderStampSpace = (doc) => {
   // Reserva cartorial obrigatória para dois selos. Se não houver espaço útil na
   // última página, cria uma página limpa em vez de sobrepor assinaturas ou texto.
-  const requiredH = 43;
+  const requiredH = 32;
   if (pageY + requiredH > CONTENT_BOTTOM) newPage(doc);
   pageY += 2;
 
@@ -507,7 +507,7 @@ const renderStampSpace = (doc) => {
 
   const gap = 8;
   const boxW = (CW - gap) / 2;
-  const boxH = 28;
+  const boxH = 19;
   const boxX = ML;
   const boxY = pageY;
 

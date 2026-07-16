@@ -94,6 +94,7 @@ export const DocumentCard = ({
   onDelete,
   onArchive,
   onDownload,
+  onPay,
   onPrint,
   onRename,
   onDuplicate,
@@ -138,7 +139,7 @@ export const DocumentCard = ({
         position: "relative",
         cursor: "pointer",
         background: hover ? "#14142B" : "var(--surface)",
-        border: `1px solid ${hover ? "var(--border-hover)" : "var(--border)"}`,
+        border: `1px solid ${isPaid ? "rgba(20,184,166,0.55)" : hover ? "var(--border-hover)" : "var(--border)"}`,
         borderRadius: RAD_LG,
         overflow: "hidden",
         transition: EASE,
@@ -150,6 +151,15 @@ export const DocumentCard = ({
         outline: "none",
       }}
     >
+      {isPaid && (
+        <div style={{
+          padding: "7px 14px", background: "rgba(20,184,166,0.12)", color: "var(--teal)",
+          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <Icon name="Check" className="w-3.5 h-3.5" /> Documento pago · edição liberada
+        </div>
+      )}
       <style>{`
         .doc-action-bar {
           opacity: 1;
@@ -392,6 +402,18 @@ export const DocumentCard = ({
             transition: EASE,
           }}
         >
+          <button
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            style={{
+              minHeight: 36, padding: "0 12px", borderRadius: 9,
+              border: `1px solid ${accent}45`, background: `${accent}14`, color: accent,
+              display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
+              fontSize: 11, fontWeight: 800, fontFamily: "var(--font-body)",
+            }}
+            title="Editar o conteúdo deste documento"
+          >
+            <Icon name="Edit" className="w-4 h-4" /> Editar documento
+          </button>
           {onRename && (
             <ActionBtn icon="Edit" label="Renomear" onClick={(e) => { e.stopPropagation(); onRename(doc); }} accent={accent} />
           )}
@@ -400,6 +422,20 @@ export const DocumentCard = ({
           )}
           {onDownload && isPaid && (
             <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
+          )}
+          {onPay && !isPaid && accessStatus !== "draft" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPay(doc); }}
+              style={{
+                minHeight: 36, padding: "0 12px", borderRadius: 9, border: "none",
+                background: "var(--coral)", color: "#fff", display: "inline-flex",
+                alignItems: "center", gap: 7, cursor: "pointer", fontSize: 11,
+                fontWeight: 800, fontFamily: "var(--font-body)",
+              }}
+              title="Finalizar o pagamento e liberar o PDF"
+            >
+              <Icon name="CreditCard" className="w-4 h-4" /> Pagar e liberar PDF
+            </button>
           )}
           {onPrint && isPaid && (
             <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />

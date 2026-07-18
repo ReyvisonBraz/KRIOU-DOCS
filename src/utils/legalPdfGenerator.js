@@ -37,6 +37,10 @@ const BODY_SIZE  = 12;
 const LEAD       = 4.95;
 const LEAD_TIGHT = 4.75;
 const SIGNATURE_SLOT_H = 24;
+const CLAUSE_ORNAMENT_W = 1.8;
+const CLAUSE_TEXT_GUTTER = 5;
+const CLAUSE_BODY_GAP = 2.5;
+const CLAUSE_ORNAMENT_MIN_H = 6.5;
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
 const C_INK       = [10, 10, 15];
@@ -257,8 +261,12 @@ const renderClause = (doc, clause) => {
 
   doc.setFont(FONT_SERIF, "bold");
   doc.setFontSize(12);
+  const normalizedTitle = normalizePdfText(clause.title || "").trim();
+  const titleAlreadyContainsClause = /^CLÁUSULA\b/i.test(normalizedTitle);
+  const titleStart = titleAlreadyContainsClause ? CLAUSE_TEXT_GUTTER : 34;
+  const titleWidth = CW - titleStart - 6;
   const titleLines = hasTitle
-    ? doc.splitTextToSize(normalizePdfText(clause.title).toUpperCase(), CW - 20)
+    ? doc.splitTextToSize(normalizedTitle.toUpperCase(), titleWidth)
     : [];
   const headerH = hasTitle ? 4.5 + titleLines.length * 4.6 : 5;
 
@@ -271,10 +279,9 @@ const renderClause = (doc, clause) => {
   doc.line(ML + 5, headerY + headerH, ML + CW, headerY + headerH);
 
   doc.setFillColor(...C_BURGUNDY_DARK);
-  doc.rect(ML, headerY - 0.7, 1.8, headerH + 0.7, "F");
+  const ornamentH = Math.max(CLAUSE_ORNAMENT_MIN_H, headerH - 3);
+  doc.rect(ML, headerY - 0.7, CLAUSE_ORNAMENT_W, ornamentH, "F");
 
-  const normalizedTitle = normalizePdfText(clause.title || "").trim();
-  const titleAlreadyContainsClause = /^CLÁUSULA\b/i.test(normalizedTitle);
   if (!titleAlreadyContainsClause) {
     doc.setFillColor(...C_GOLD_DARK);
     doc.roundedRect(ML + 5, headerY - 0.4, 25, 5.7, 1, 1, "F");
@@ -291,18 +298,20 @@ const renderClause = (doc, clause) => {
     titleLines.forEach((line, index) => {
       doc.text(
         line,
-        ML + (titleAlreadyContainsClause ? 5 : 34),
+        ML + titleStart,
         headerY + 3.8 + index * 4.8,
-        { maxWidth: CW - (titleAlreadyContainsClause ? 12 : 40) }
+        { maxWidth: titleWidth }
       );
     });
   }
 
   // Zona de segurança: impede que o primeiro parágrafo encoste na linha do título.
-  pageY = headerY + headerH + 2.5;
+  // Reserva vertical para a altura real dos glifos e um corredor horizontal
+  // exclusivo do ornamento. Assim nenhuma quebra ou título longo invade a barra.
+  pageY = headerY + headerH + CLAUSE_BODY_GAP;
 
   if (hasText) {
-    renderTextBlock(doc, clause.text, BODY_SIZE, { indent: 0, leading: LEAD_TIGHT });
+    renderTextBlock(doc, clause.text, BODY_SIZE, { indent: CLAUSE_TEXT_GUTTER, leading: LEAD_TIGHT });
     pageY += 0.8;
   }
 
@@ -310,7 +319,7 @@ const renderClause = (doc, clause) => {
     clause.paragraphs.forEach((p) => {
       const cleanParagraph = normalizePdfText(p).trim();
       if (!cleanParagraph) return;
-      const indent = /^[§IVX\d]/.test(cleanParagraph) ? 8 : 4;
+      const indent = /^[§IVX\d]/.test(cleanParagraph) ? 9 : CLAUSE_TEXT_GUTTER;
       renderTextBlock(doc, cleanParagraph, BODY_SIZE, { indent, leading: LEAD_TIGHT });
       pageY += 1.1;
     });

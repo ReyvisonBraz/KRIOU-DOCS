@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LEGAL_DOCUMENTS, getSectionsForVariant } from "../data/legalDocuments";
 import { generateMockFormData } from "./mockData";
-import { generateLegalPDF } from "./legalPdfGenerator";
+import { generateLegalPDF, resolvePdfLineAlignment } from "./legalPdfGenerator";
 
 const scenariosFor = (document, variant) => {
   const sections = getSectionsForVariant(document.id, variant.id);
@@ -34,4 +34,16 @@ describe("paginacao dos documentos juridicos", () => {
       });
     }
   }
+});
+
+describe("alinhamento do texto jurídico", () => {
+  it("justifica linhas intermediárias e preserva a última linha natural", () => {
+    expect(resolvePdfLineAlignment("justify", "linha intermediária com palavras", 0, 2)).toBe("justify");
+    expect(resolvePdfLineAlignment("justify", "última linha", 1, 2)).toBe("left");
+  });
+
+  it("não altera alinhamentos próprios de títulos, datas ou assinaturas", () => {
+    expect(resolvePdfLineAlignment("center", "texto", 0, 2)).toBe("center");
+    expect(resolvePdfLineAlignment("right", "texto", 0, 2)).toBe("right");
+  });
 });

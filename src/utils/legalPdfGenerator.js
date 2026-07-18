@@ -91,9 +91,15 @@ const normalizePdfText = (value) => String(value ?? "")
   .replace(/\n[ \t]+/g, "\n")
   .replace(/[ \t]{2,}/g, " ");
 
+export const resolvePdfLineAlignment = (requestedAlignment, line, lineIndex, lineCount) => {
+  if (requestedAlignment !== "justify") return requestedAlignment;
+  const isWrappedLine = lineIndex < lineCount - 1;
+  return isWrappedLine && /\s/.test(line) ? "justify" : "left";
+};
+
 // ─── Render helpers ─────────────────────────────────────────────────────────
 
-const renderTextBlock = (doc, text, size, { indent = 0, align = "left", font = FONT_SERIF, style = "normal", color = C_TEXT, leading = LEAD } = {}) => {
+const renderTextBlock = (doc, text, size, { indent = 0, align = "justify", font = FONT_SERIF, style = "normal", color = C_TEXT, leading = LEAD } = {}) => {
   const cleanText = normalizePdfText(text);
   if (!cleanText.trim()) return;
   doc.setFont(font, style);
@@ -112,9 +118,10 @@ const renderTextBlock = (doc, text, size, { indent = 0, align = "left", font = F
       }
 
       const lines = doc.splitTextToSize(segmentText, CW - indent);
-      lines.forEach((line) => {
+      lines.forEach((line, lineIndex) => {
         ensureSpace(doc, leading + 0.5);
-        doc.text(line, x, pageY, { align, maxWidth: CW - indent });
+        const lineAlign = resolvePdfLineAlignment(align, line, lineIndex, lines.length);
+        doc.text(line, x, pageY, { align: lineAlign, maxWidth: CW - indent });
         pageY += leading;
       });
 
@@ -316,14 +323,12 @@ const renderClosing = (doc, text) => {
   if (!text || !text.trim()) return;
   ensureSpace(doc, 12);
   pageY += 2;
-  doc.setFont(FONT_SERIF, "italic");
-  doc.setFontSize(12);
-  doc.setTextColor(...C_SUBTLE);
-  const lines = doc.splitTextToSize(normalizePdfText(text), CW);
-  lines.forEach((line) => {
-    ensureSpace(doc, LEAD);
-    doc.text(line, ML, pageY);
-    pageY += LEAD;
+  renderTextBlock(doc, text, BODY_SIZE, {
+    align: "justify",
+    font: FONT_SERIF,
+    style: "italic",
+    color: C_SUBTLE,
+    leading: LEAD,
   });
   pageY += 2;
   doc.setTextColor(...C_TEXT);

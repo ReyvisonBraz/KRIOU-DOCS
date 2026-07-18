@@ -20,6 +20,11 @@ export const PaymentService = {
     return invoke("verify-payment", { paymentId });
   },
 
+  confirmDocumentPayment(documentId) {
+    if (!documentId) throw new Error("Documento inválido para verificação");
+    return invoke("verify-payment", { documentId });
+  },
+
   sendConfirmationEmail(documentId) {
     if (!documentId) throw new Error("Documento inválido para confirmação por e-mail");
     return invoke("send-email", { documentId });

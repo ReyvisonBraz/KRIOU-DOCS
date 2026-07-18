@@ -23,9 +23,9 @@ import { drawQRCode } from "./qrHelper";
 // ─── Layout A4 ────────────────────────────────────────────────────────────────
 const PAGE_W = 210;
 const PAGE_H = 297;
-const ML = 15;
-const MR = 14;
-const MT = 9;
+const ML = 11;
+const MR = 11;
+const MT = 8;
 const MB = 10;
 const CW = PAGE_W - ML - MR;
 const CONTENT_BOTTOM = PAGE_H - MB - 5;
@@ -33,10 +33,10 @@ const CONTENT_BOTTOM = PAGE_H - MB - 5;
 // ─── Tipografia ───────────────────────────────────────────────────────────────
 const FONT_SERIF = "times";
 const FONT_SANS  = "helvetica";
-const BODY_SIZE  = 9.5;
-const LEAD       = 4.55;
-const LEAD_TIGHT = 4.35;
-const SIGNATURE_SLOT_H = 18;
+const BODY_SIZE  = 12;
+const LEAD       = 4.95;
+const LEAD_TIGHT = 4.75;
+const SIGNATURE_SLOT_H = 24;
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
 const C_INK       = [10, 10, 15];
@@ -157,7 +157,7 @@ const drawHeader = (doc, title) => {
     titleLines = doc.splitTextToSize(safeTitle, titleMaxW);
   }
 
-  const headerH = Math.max(51, 34 + titleLines.length * 7.5);
+  const headerH = Math.max(43, 28 + titleLines.length * 7.2);
 
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(...C_DIVIDER_H);
@@ -175,10 +175,10 @@ const drawHeader = (doc, title) => {
   doc.setFont(FONT_SERIF, "bold");
   doc.setFontSize(titleLines.length > 2 ? 16.5 : 19);
   doc.setTextColor(...C_BURGUNDY_DARK);
-  let titleY = headerY + 20;
+  let titleY = headerY + 18;
   titleLines.forEach((line) => {
     doc.text(line, headerX + 9, titleY, { maxWidth: titleMaxW });
-    titleY += 7.5;
+    titleY += 7.2;
   });
 
   doc.setDrawColor(...C_GOLD);
@@ -206,10 +206,10 @@ const renderLegalBasis = (doc, legislation) => {
   const cleanLegislation = normalizePdfText(legislation);
   if (!cleanLegislation.trim()) return;
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(10.2);
+  doc.setFontSize(12);
   const lawLines = doc.splitTextToSize(cleanLegislation, CW - 24);
-  const lineH = 5.35;
-  const boxH = Math.max(18, 12.5 + lawLines.length * lineH);
+  const lineH = 4.8;
+  const boxH = Math.max(17, 11.5 + lawLines.length * lineH);
   ensureSpace(doc, boxH + 8);
 
   pageY += 1;
@@ -230,13 +230,13 @@ const renderLegalBasis = (doc, legislation) => {
   doc.text("FUNDAMENTO LEGAL", boxX + 14, boxY + 5.5);
 
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(10.2);
+  doc.setFontSize(12);
   doc.setTextColor(...C_INK);
   lawLines.forEach((line, i) => {
     doc.text(line, boxX + 14, boxY + 11.5 + i * lineH);
   });
 
-  pageY = boxY + boxH + 7;
+  pageY = boxY + boxH + 4;
   doc.setTextColor(...C_TEXT);
 };
 
@@ -245,7 +245,7 @@ const renderLegalBasis = (doc, legislation) => {
 const renderParagraph = (doc, text) => {
   if (!text || !text.trim()) return;
   renderTextBlock(doc, text, BODY_SIZE, { indent: 5, leading: LEAD });
-  pageY += 3;
+  pageY += 1.5;
 };
 
 const renderClause = (doc, clause) => {
@@ -255,11 +255,11 @@ const renderClause = (doc, clause) => {
   if (!hasTitle && !hasText && !hasParagraphs) return;
 
   doc.setFont(FONT_SERIF, "bold");
-  doc.setFontSize(10.2);
+  doc.setFontSize(12);
   const titleLines = hasTitle
     ? doc.splitTextToSize(normalizePdfText(clause.title).toUpperCase(), CW - 20)
     : [];
-  const headerH = hasTitle ? 4.5 + titleLines.length * 4.8 : 6;
+  const headerH = hasTitle ? 4.5 + titleLines.length * 4.6 : 5;
 
   if (wouldOrphan(pageY, Math.ceil(headerH / LEAD) + 1)) newPage(doc);
   ensureSpace(doc, headerH + 6);
@@ -285,7 +285,7 @@ const renderClause = (doc, clause) => {
 
   if (hasTitle) {
     doc.setFont(FONT_SERIF, "bold");
-    doc.setFontSize(10.7);
+    doc.setFontSize(12);
     doc.setTextColor(...C_BURGUNDY_DARK);
     titleLines.forEach((line, index) => {
       doc.text(
@@ -298,7 +298,7 @@ const renderClause = (doc, clause) => {
   }
 
   // Zona de segurança: impede que o primeiro parágrafo encoste na linha do título.
-  pageY = headerY + headerH + 4.4;
+  pageY = headerY + headerH + 2.5;
 
   if (hasText) {
     renderTextBlock(doc, clause.text, BODY_SIZE, { indent: 0, leading: LEAD_TIGHT });
@@ -315,7 +315,7 @@ const renderClause = (doc, clause) => {
     });
   }
 
-  pageY += 2;
+  pageY += 1;
 };
 
 const renderClosing = (doc, text) => {
@@ -323,7 +323,7 @@ const renderClosing = (doc, text) => {
   ensureSpace(doc, 12);
   pageY += 2;
   doc.setFont(FONT_SERIF, "italic");
-  doc.setFontSize(9.6);
+  doc.setFontSize(12);
   doc.setTextColor(...C_SUBTLE);
   const lines = doc.splitTextToSize(normalizePdfText(text), CW);
   lines.forEach((line) => {
@@ -331,7 +331,7 @@ const renderClosing = (doc, text) => {
     doc.text(line, ML, pageY);
     pageY += LEAD;
   });
-  pageY += 4;
+  pageY += 2;
   doc.setTextColor(...C_TEXT);
   doc.setFont(FONT_SERIF, "normal");
 };
@@ -342,10 +342,10 @@ const renderDate = (doc, text) => {
   ensureSpace(doc, 10);
   pageY += 4;
   doc.setFont(FONT_SERIF, "normal");
-  doc.setFontSize(9.8);
+  doc.setFontSize(12);
   doc.setTextColor(...C_TEXT);
   doc.text(normalizePdfText(dateOnly), PAGE_W / 2, pageY, { align: "center" });
-  pageY += 10;
+  pageY += 7;
 };
 
 // ─── Signatures (Page 2) ──────────────────────────────────────────────────
@@ -401,7 +401,7 @@ const renderSignatures = (doc, parties) => {
     }
 
     doc.setFont(FONT_SERIF, "normal");
-    doc.setFontSize(useLargeSignatures ? 10.5 : 9);
+    doc.setFontSize(12);
     doc.setTextColor(...C_TEXT);
     const isAtRequest = signatureAtRequest
       && signatureAtRequest.partyName === party.name
@@ -425,7 +425,7 @@ const renderSignatures = (doc, parties) => {
 
     if (isAtRequest) {
       doc.setFont(FONT_SANS, "normal");
-      doc.setFontSize(useLargeSignatures ? 8 : 7.2);
+      doc.setFontSize(10);
       doc.setTextColor(...C_SUBTLE);
       const assisted = `A rogo de ${party.name} (${party.role}), que declarou ${signatureAtRequest.reason}.`;
       const signerCpf = signatureAtRequest.signerCpf ? `CPF do assinante: ${signatureAtRequest.signerCpf}` : "";
@@ -627,7 +627,7 @@ const renderFallback = (doc, docType, formData, disabledFields) => {
       doc.setTextColor(...C_SUBTLE);
       doc.text(f.label, ML, pageY);
       doc.setFont(FONT_SERIF, "normal");
-      doc.setFontSize(9);
+      doc.setFontSize(12);
       doc.setTextColor(...C_TEXT);
       const vLines = doc.splitTextToSize(value, CW - 3);
       vLines.forEach((l) => {
@@ -644,6 +644,7 @@ const renderFallback = (doc, docType, formData, disabledFields) => {
 
 export const generateLegalPDF = (formData, docType, disabledFields = {}, variantId = null) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  doc.setCharSpace(-0.08);
 
   pageY = MT;
   useLargeSignatures = formData?._signatureLayout === "large";

@@ -12,6 +12,7 @@ export function useCheckoutFlow({
   setCheckoutComplete,
   setEditingDocId,
   setUserDocuments,
+  restoreDocument,
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
@@ -48,12 +49,13 @@ export function useCheckoutFlow({
       const refreshedDocuments = await DocumentService.fetchAll(userId);
       setUserDocuments(refreshedDocuments);
       const savedDoc = refreshedDocuments.find((doc) => doc.id === confirmation.documentId);
+      if (savedDoc) restoreDocument?.(savedDoc);
 
       setCheckoutComplete(true);
       setEditingDocId(null);
       clearPendingPayment();
       showToast.success("Pagamento confirmado! Seu documento está sendo gerado.");
-      window.history.replaceState({}, "", window.location.pathname);
+      window.history.replaceState({ page: "checkout" }, "", window.location.pathname);
       sendConfirmationEmail(savedDoc);
     } catch (err) {
       console.error("[useCheckoutFlow][ERRO] handlePaymentSuccess:", err);
@@ -62,18 +64,21 @@ export function useCheckoutFlow({
     } finally {
       setIsProcessing(false);
     }
-  }, [clearPendingPayment, sendConfirmationEmail, setCheckoutComplete, setEditingDocId, setUserDocuments, userId]);
+  }, [clearPendingPayment, restoreDocument, sendConfirmationEmail, setCheckoutComplete, setEditingDocId, setUserDocuments, userId]);
 
   const checkPendingPayment = useCallback(async ({ silent = false } = {}) => {
     if (!pendingPayment?.documentId || !userId) return false;
 
     if (!silent) setIsCheckingPayment(true);
     try {
+      const confirmation = await PaymentService.confirmDocumentPayment(pendingPayment.documentId);
       const doc = await DocumentService.fetchById(pendingPayment.documentId, userId);
 
-      if (doc?.status === "finalizado" && doc?.paymentStatus === "approved") {
+      if (confirmation?.status === "approved" || (doc?.status === "finalizado" && doc?.paymentStatus === "approved")) {
         const refreshedDocuments = await DocumentService.fetchAll(userId);
         setUserDocuments(refreshedDocuments);
+        const restoredDoc = refreshedDocuments.find((item) => item.id === pendingPayment.documentId) || doc;
+        restoreDocument?.(restoredDoc);
         setCheckoutComplete(true);
         setEditingDocId(null);
         clearPendingPayment();
@@ -103,6 +108,7 @@ export function useCheckoutFlow({
   }, [
     clearPendingPayment,
     pendingPayment?.documentId,
+    restoreDocument,
     sendConfirmationEmail,
     setCheckoutComplete,
     setEditingDocId,
@@ -123,13 +129,24 @@ export function useCheckoutFlow({
           return;
         }
 
-        if (parsed?.documentId && parsed?.initPoint) {
+        if (parsed?.documentId) {
           setPendingPayment(parsed);
         }
       }
     } catch {
       window.sessionStorage.removeItem(PENDING_PAYMENT_STORAGE_KEY);
     }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const params = new URLSearchParams(window.location.search);
+    const returnDocumentId = params.get("document_id");
+    if (!returnDocumentId) return;
+
+    setPendingPayment((current) => current?.documentId === returnDocumentId
+      ? current
+      : { documentId: returnDocumentId, userId, returnedFromProvider: true });
   }, [userId]);
 
   useEffect(() => {

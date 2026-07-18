@@ -18,6 +18,7 @@ vi.mock("../../services/DocumentService", () => ({
 vi.mock("../../services/PaymentService", () => ({
   PaymentService: {
     confirmPayment: vi.fn(),
+    confirmDocumentPayment: vi.fn(),
     sendConfirmationEmail: vi.fn(),
   },
 }));
@@ -48,6 +49,7 @@ describe("useCheckoutFlow", () => {
     vi.clearAllMocks();
     window.sessionStorage.clear();
     window.history.replaceState({}, "", "/checkout");
+    PaymentService.confirmDocumentPayment.mockResolvedValue({ status: "pending", documentId: "doc-1" });
   });
 
   it("confirma pagamento retornado pelo Mercado Pago e libera o documento", async () => {
@@ -83,6 +85,7 @@ describe("useCheckoutFlow", () => {
     window.sessionStorage.setItem("kriou_pending_payment", JSON.stringify(pendingPayment));
     DocumentService.fetchById.mockResolvedValue(paidDocument);
     DocumentService.fetchAll.mockResolvedValue([paidDocument]);
+    PaymentService.confirmDocumentPayment.mockResolvedValue({ status: "approved", documentId: "doc-1" });
 
     renderCheckoutFlow();
 
@@ -94,8 +97,23 @@ describe("useCheckoutFlow", () => {
     });
 
     expect(hookProps.setUserDocuments).toHaveBeenCalledWith([paidDocument]);
+    expect(PaymentService.confirmDocumentPayment).toHaveBeenCalledWith("doc-1");
     expect(PaymentService.sendConfirmationEmail).toHaveBeenCalledWith("doc-1");
     expect(window.sessionStorage.getItem("kriou_pending_payment")).toBeNull();
+  });
+
+  it("restaura o documento indicado no retorno do provedor", async () => {
+    const restoreDocument = vi.fn();
+    const paidDocument = { id: "doc-return", type: "legal", status: "finalizado", paymentStatus: "approved" };
+    window.history.replaceState({}, "", "/checkout?document_id=doc-return");
+    PaymentService.confirmDocumentPayment.mockResolvedValue({ status: "approved", documentId: "doc-return" });
+    DocumentService.fetchById.mockResolvedValue(paidDocument);
+    DocumentService.fetchAll.mockResolvedValue([paidDocument]);
+
+    renderCheckoutFlow({ restoreDocument });
+
+    await waitFor(() => expect(restoreDocument).toHaveBeenCalledWith(paidDocument));
+    expect(PaymentService.confirmDocumentPayment).toHaveBeenCalledWith("doc-return");
   });
 
   it("mantem a tela de espera com erro quando o pagamento pendente foi rejeitado", async () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { AppNavbar, ConfirmDialog } from "../components/UI";
@@ -20,6 +20,7 @@ import {
   useStartCheckoutPayment,
 } from "../features/checkout";
 import showToast from "../utils/toast";
+import { getDocumentById } from "../data/legalDocuments";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
 const S = checkoutStyles;
@@ -29,13 +30,18 @@ const CheckoutPage = () => {
   const {
     navigate,
     selectedTemplate,
+    setSelectedTemplate,
     formData,
+    setFormData,
     email,
     checkoutComplete,
     setCheckoutComplete,
     documentType,
+    setDocumentType,
     legalFormData,
+    setLegalFormData,
     selectedVariant,
+    setSelectedVariant,
     disabledFields,
     saveDocument,
     updateDocument,
@@ -48,6 +54,26 @@ const CheckoutPage = () => {
   const [selectedPayment, setSelectedPayment] = useState("pix");
   const { generatePDF } = usePDF();
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
+
+  const restoreDocument = useCallback((doc) => {
+    if (!doc) return;
+    if (doc.type === "legal") {
+      const legalType = getDocumentById(doc.documentType) || {
+        id: doc.documentType,
+        name: doc.documentTypeName || "Documento Jurídico",
+      };
+      setDocumentType(legalType);
+      setSelectedVariant(doc.variantId || doc.variant?.id || doc.variant || null);
+      setLegalFormData(doc.legalData || {});
+    } else {
+      setDocumentType(null);
+      setFormData(doc.formData || {});
+      setSelectedTemplate(doc.template || (doc.templateId ? {
+        id: doc.templateId,
+        name: doc.templateName || "Modelo",
+      } : null));
+    }
+  }, [setDocumentType, setFormData, setLegalFormData, setSelectedTemplate, setSelectedVariant]);
 
   const {
     isProcessing,
@@ -66,6 +92,7 @@ const CheckoutPage = () => {
     setCheckoutComplete,
     setEditingDocId,
     setUserDocuments,
+    restoreDocument,
   });
 
   const isLegalDocument = !!documentType;
@@ -161,6 +188,7 @@ const CheckoutPage = () => {
         isCheckingPayment={isCheckingPayment}
         onGoToDashboard={handleGoToDashboard}
         onOpenPendingCheckout={handleOpenPendingCheckout}
+        canOpenPendingCheckout={Boolean(pendingPayment?.initPoint)}
         onCheckPendingPayment={() => checkPendingPayment()}
       />
     );

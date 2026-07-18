@@ -569,7 +569,7 @@ const compraVenda = {
         title: "DO OBJETO",
         paragraphs: [
           "O(A) VENDEDOR(A) vende ao(à) COMPRADOR(A) o terreno localizado em {endereco_terreno}, {cidade_terreno}{?, , de matrícula n.º {matricula_terreno}}{?, , com área total aproximada de {area_terreno}}.",
-          "{?, Medidas do terreno: frente com {medida_frente}{?, , fundos com {medida_fundo}}{?, , lateral direita com {medida_direita}}{?, , lateral esquerda com {medida_esquerda}}.}",
+          "{?any, Medidas do terreno:{?, frente com {medida_frente}}{?, , fundos com {medida_fundo}}{?, , lateral direita com {medida_direita}}{?, , lateral esquerda com {medida_esquerda}}.}",
           "{?, Confrontantes: {confrontantes}.}",
           "{?, Zoneamento: {zoneamento}.}",
         ],

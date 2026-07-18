@@ -10,6 +10,7 @@ export default function PaymentWaitingScreen({
   isCheckingPayment,
   onGoToDashboard,
   onOpenPendingCheckout,
+  canOpenPendingCheckout,
   onCheckPendingPayment,
 }) {
   return (
@@ -101,13 +102,12 @@ export default function PaymentWaitingScreen({
           )}
 
           <div style={{ ...S.successActions, marginTop: 24 }}>
-            <button
-              onClick={onOpenPendingCheckout}
-              style={S.successBtnPrimary}
-            >
-              <Icon name="ExternalLink" className="w-5 h-5" />
-              Abrir checkout novamente
-            </button>
+            {canOpenPendingCheckout && (
+              <button onClick={onOpenPendingCheckout} style={S.successBtnPrimary}>
+                <Icon name="ExternalLink" className="w-5 h-5" />
+                Abrir checkout novamente
+              </button>
+            )}
             <button
               onClick={onCheckPendingPayment}
               disabled={isCheckingPayment}

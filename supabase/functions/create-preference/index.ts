@@ -38,6 +38,8 @@ serve(async (req) => {
       return json({ error: "Documento não encontrado" }, 404);
     }
 
+    const returnUrl = `${appUrl}/checkout?document_id=${encodeURIComponent(document.id)}`;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const preference: Record<string, unknown> = {
       items: [{
         id: document.id,
@@ -47,9 +49,9 @@ serve(async (req) => {
         unit_price: DOCUMENT_PRICE,
       }],
       back_urls: {
-        success: `${appUrl}/checkout`,
-        failure: `${appUrl}/checkout`,
-        pending: `${appUrl}/checkout`,
+        success: returnUrl,
+        failure: returnUrl,
+        pending: returnUrl,
       },
       payment_methods: {
         excluded_payment_types: [
@@ -59,6 +61,9 @@ serve(async (req) => {
       auto_return: "approved",
       external_reference: `${user.id}::${document.id}`,
     };
+    if (supabaseUrl) {
+      preference.notification_url = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
+    }
 
     const response = await fetch(`${MP_API}/checkout/preferences`, {
       method: "POST",

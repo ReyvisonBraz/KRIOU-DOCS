@@ -38,6 +38,19 @@ describe("PaymentService", () => {
     });
   });
 
+  it("verifica o pagamento diretamente pelo documento", async () => {
+    supabase.functions.invoke.mockResolvedValue({
+      data: { status: "approved", documentId: "doc-123" },
+      error: null,
+    });
+
+    await PaymentService.confirmDocumentPayment("doc-123");
+
+    expect(supabase.functions.invoke).toHaveBeenCalledWith("verify-payment", {
+      body: { documentId: "doc-123" },
+    });
+  });
+
   it("propaga falha segura da Edge Function", async () => {
     supabase.functions.invoke.mockResolvedValue({
       data: null,

@@ -237,7 +237,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "{?, O(A) menor viajará acompanhado(a) de {nome_acompanhante}{?, ({parentesco_acompanhante})}{?, , inscrito(a) no CPF sob n.º {cpf_acompanhante}}.}",
+        text: "{?any, O(A) menor viajará acompanhado(a) de {nome_acompanhante?}{?, ({parentesco_acompanhante})}{?, , inscrito(a) no CPF sob n.º {cpf_acompanhante}}.}",
       },
       {
         type: "paragraph",
@@ -278,7 +278,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "{?, O(A) menor viajará acompanhado(a) de {nome_acompanhante}{?, ({parentesco_acompanhante})}{?, , inscrito(a) no CPF sob n.º {cpf_acompanhante}}.}",
+        text: "{?any, O(A) menor viajará acompanhado(a) de {nome_acompanhante?}{?, ({parentesco_acompanhante})}{?, , inscrito(a) no CPF sob n.º {cpf_acompanhante}}.}",
       },
       {
         type: "paragraph",

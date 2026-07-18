@@ -8,7 +8,7 @@ import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 import { usePDF } from "../hooks/usePDF";
-import { extractPersonData, generateDocumentCode, looksLikeCode, looksLikeCPF, normalizeCPF, normalizeRG, normalizeName } from "../utils/documentCode";
+import { generateDocumentCode } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
 import {
   isDocumentPaid,
@@ -16,6 +16,7 @@ import {
   isLocalDraftDocument,
   matchesDocumentPaymentFilter,
 } from "../domain/documents/payment";
+import { selectDashboardDocuments } from "../domain/documents/dashboard";
 
 const DashboardPage = () => {
   const {
@@ -80,84 +81,9 @@ const DashboardPage = () => {
 
   const TAB_FILTER_TYPE = Object.fromEntries(tabs.map(t => [t.id, t.filterType]));
 
-  const getDocTime = (doc) => {
-    const value = doc?.updatedAt || doc?.createdAt;
-    const time = value ? new Date(value).getTime() : 0;
-    return Number.isFinite(time) ? time : 0;
-  };
-
-  const getFilteredDocs = useCallback(() => {
-    const filterType = TAB_FILTER_TYPE[activeTab] || "all";
-    let docs = [...allDocs];
-
-    if (archiveFilter === "ativos") {
-      docs = docs.filter((doc) => !doc.archived);
-    } else if (archiveFilter === "arquivados") {
-      docs = docs.filter((doc) => doc.archived);
-    }
-
-    docs = docs.filter((doc) => matchesDocumentPaymentFilter(doc, statusFilter));
-
-    if (filterType === "type") {
-      docs = docs.filter((doc) => doc.type === activeTab);
-    } else if (filterType === "documentType") {
-      docs = docs.filter((doc) => doc.documentType === activeTab);
-    }
-
-    if (searchQuery.trim()) {
-      const rawQuery = searchQuery.trim();
-      const queryLower = rawQuery.toLowerCase();
-
-      const isSearchByCode = looksLikeCode(rawQuery);
-      const isSearchByCPF = looksLikeCPF(rawQuery);
-      const isSearchByRG = !isSearchByCPF && /^\d+$/.test(rawQuery.replace(/\D/g, "")) && rawQuery.replace(/\D/g, "").length >= 6;
-
-      docs = docs.filter((doc) => {
-        if (isSearchByCode) {
-          if (doc.code?.toLowerCase().includes(queryLower)) return true;
-        }
-
-        if (isSearchByCPF) {
-          const person = extractPersonData(doc);
-          if (person.cpf && normalizeCPF(person.cpf).includes(normalizeCPF(rawQuery))) return true;
-        }
-
-        if (isSearchByRG) {
-          const person = extractPersonData(doc);
-          if (person.rg && normalizeRG(person.rg).includes(normalizeRG(rawQuery))) return true;
-        }
-
-        const person = extractPersonData(doc);
-        if (person.nome && normalizeName(person.nome).includes(normalizeName(rawQuery))) return true;
-
-        const templateText = typeof doc.template === "string"
-          ? doc.template
-          : doc.template?.name || "";
-
-        return (
-          doc.title?.toLowerCase().includes(queryLower) ||
-          templateText.toLowerCase().includes(queryLower) ||
-          doc.templateName?.toLowerCase().includes(queryLower) ||
-          doc.documentTypeName?.toLowerCase().includes(queryLower) ||
-          doc.variantName?.toLowerCase().includes(queryLower) ||
-          doc.code?.toLowerCase().includes(queryLower)
-        );
-      });
-    }
-
-    docs.sort((a, b) => {
-      if (sortBy === "antigos") return getDocTime(a) - getDocTime(b);
-      if (sortBy === "titulo") return (a.title || "").localeCompare(b.title || "", "pt-BR");
-      if (sortBy === "tipo") {
-        const aType = a.documentTypeName || a.templateName || a.type || "";
-        const bType = b.documentTypeName || b.templateName || b.type || "";
-        return aType.localeCompare(bType, "pt-BR");
-      }
-      return getDocTime(b) - getDocTime(a);
-    });
-
-    return docs;
-  }, [allDocs, activeTab, archiveFilter, statusFilter, searchQuery, sortBy, TAB_FILTER_TYPE]);
+  const filteredDocs = useMemo(() => selectDashboardDocuments(allDocs, {
+    activeTab, archiveFilter, statusFilter, searchQuery, sortBy, tabFilterType: TAB_FILTER_TYPE,
+  }), [allDocs, activeTab, archiveFilter, statusFilter, searchQuery, sortBy, TAB_FILTER_TYPE]);
 
   const sendDocumentToCheckout = useCallback((doc) => {
     if (!doc?.id) return;
@@ -465,7 +391,6 @@ const DashboardPage = () => {
     return "Boa noite";
   };
 
-  const filteredDocs = getFilteredDocs();
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
   const paidCount = allDocs.filter(isDocumentPaid).length;
   const pendingPaymentCount = allDocs.filter(isDocumentPaymentPending).length;

@@ -132,7 +132,7 @@ const permuta = {
           "O presente contrato tem por finalidade a permuta dos bens abaixo descritos:",
           "PRIMEIRO(A) PERMUTANTE entrega: {bem_permutante1}.",
           "SEGUNDO(A) PERMUTANTE entrega: {bem_permutante2}.",
-          "{?, Torna: {torna}, no valor de {valor_torna}.}",
+          "{?any, Torna: {torna?}{?, , no valor de {valor_torna}}.}",
           "§ 1º. Os permutantes declaram que são proprietários legítimos e possuidores a justo título dos bens descritos, encontrando-se estes livres e desembaraçados de qualquer ônus ou gravame.",
         ],
       },

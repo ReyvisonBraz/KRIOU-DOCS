@@ -18,7 +18,6 @@ import { extractPersonData } from "../../utils/documentCode";
 import {
   getDocumentAccessStatus,
   isDocumentPaid,
-  isDocumentPaymentPending,
 } from "../../domain/documents/payment";
 
 // ── Design tokens ──
@@ -109,9 +108,14 @@ export const DocumentCard = ({
   const accent = resolveAccent(doc);
   const typeLabel = TYPE_LABELS[doc.type] || doc.documentTypeName || doc.type;
   const isPaid = isDocumentPaid(doc);
-  const isPaymentPending = isDocumentPaymentPending(doc);
   const accessStatus = getDocumentAccessStatus(doc);
-  const statusVariant = isPaid ? "teal" : isPaymentPending ? "gold" : "coral";
+  const statusVariant = {
+    paid: "teal",
+    pending_payment: "gold",
+    payment_failed: "coral",
+    draft: "default",
+    unpaid: "gold",
+  }[accessStatus] || "default";
   const statusLabel = {
     paid: "Pago",
     pending_payment: "Pagamento em andamento",
@@ -405,7 +409,7 @@ export const DocumentCard = ({
           <button
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
-              minHeight: 36, padding: "0 12px", borderRadius: 9,
+              minHeight: TOQUE, padding: "0 12px", borderRadius: 9,
               border: `1px solid ${accent}45`, background: `${accent}14`, color: accent,
               display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
               fontSize: 11, fontWeight: 800, fontFamily: "var(--font-body)",
@@ -427,7 +431,7 @@ export const DocumentCard = ({
             <button
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
               style={{
-                minHeight: 36, padding: "0 12px", borderRadius: 9, border: "none",
+                minHeight: TOQUE, padding: "0 12px", borderRadius: 9, border: "none",
                 background: "var(--coral)", color: "#fff", display: "inline-flex",
                 alignItems: "center", gap: 7, cursor: "pointer", fontSize: 11,
                 fontWeight: 800, fontFamily: "var(--font-body)",
@@ -468,12 +472,13 @@ const ActionBtn = ({ icon, label, onClick, accent }) => (
   <button
     onClick={onClick}
     title={label}
+    aria-label={label}
     style={{
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      width: 36,
-      height: 36,
+      width: TOQUE,
+      height: TOQUE,
       borderRadius: 8,
       border: "none",
       background: "transparent",

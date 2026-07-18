@@ -1,4 +1,7 @@
-import { field, pessoaFisicaFields } from "./_shared.js";
+import { field, parteQualificacaoText, pessoaFisicaFields } from "./_shared.js";
+
+const contratanteQualificacao = parteQualificacaoText("contratante", "CONTRATANTE");
+const contratadoQualificacao = parteQualificacaoText("contratado", "CONTRATADO(A)");
 
 const prestacaoServicos = {
   id: "prestacao-servicos",
@@ -215,12 +218,6 @@ const prestacaoServicos = {
             options: ["À vista", "Mensal", "50% início + 50% conclusão", "Parcelado (especificar no contrato)"],
             hint: "De quanto em quanto tempo o pagamento será feito.",
           }),
-          field("confidencialidade_consul", "Cláusula de Confidencialidade", "select", {
-            required: false,
-            options: ["Sim - incluir cláusula", "Não - dispensar"],
-            hint: "Se o consultor deve manter sigilo sobre informações da empresa.",
-            whatHappensIfEmpty: "O contrato não incluirá cláusula de confidencialidade.",
-          }),
         ],
       },
     ],
@@ -295,7 +292,7 @@ const prestacaoServicos = {
       },
       {
         type: "paragraph",
-        text: "{contratante_qualificacao} doravante denominado(a) simplesmente CONTRATANTE; e {contratado_qualificacao} {?, , portador(a) do registro profissional n.º {contratado_registro}} {?, , {contratado_profissao}}, doravante denominado(a) simplesmente CONTRATADO(A), celebram o presente CONTRATO DE PRESTAÇÃO DE SERVIÇOS AUTÔNOMOS, que se regerá pelas cláusulas e condições seguintes:",
+        text: `${contratanteQualificacao}, doravante denominado(a) simplesmente CONTRATANTE; e ${contratadoQualificacao}{?, , portador(a) do registro profissional n.º {contratado_registro}}, doravante denominado(a) simplesmente CONTRATADO(A), celebram o presente CONTRATO DE PRESTAÇÃO DE SERVIÇOS AUTÔNOMOS, que se regerá pelas cláusulas e condições seguintes:`,
       },
       {
         type: "clause",
@@ -374,15 +371,8 @@ const prestacaoServicos = {
         ],
       },
       {
-        type: "paragraph",
-        text: "Testemunhas:",
-      },
-      {
-        type: "signatures",
-        parties: [
-          { role: "Testemunha 1", fieldKey: "contratante_nome", optional: true },
-          { role: "Testemunha 2", fieldKey: "contratado_nome", optional: true },
-        ],
+        type: "witnesses",
+        count: 2,
       },
     ],
 
@@ -397,7 +387,7 @@ const prestacaoServicos = {
       },
       {
         type: "paragraph",
-        text: "{contratante_qualificacao} doravante denominado(a) simplesmente CONTRATANTE; e {contratado_qualificacao} {?, , {contratado_profissao}} {?, , portador(a) do registro n.º {contratado_registro}}, doravante denominado(a) simplesmente CONSULTOR(A), celebram o presente CONTRATO DE CONSULTORIA, que se regerá pelas seguintes cláusulas:",
+        text: `${contratanteQualificacao}, doravante denominado(a) simplesmente CONTRATANTE; e ${contratadoQualificacao}{?, , portador(a) do registro n.º {contratado_registro}}, doravante denominado(a) simplesmente CONSULTOR(A), celebram o presente CONTRATO DE CONSULTORIA, que se regerá pelas seguintes cláusulas:`,
       },
       {
         type: "clause",
@@ -481,7 +471,7 @@ const prestacaoServicos = {
       },
       {
         type: "paragraph",
-        text: "{contratante_qualificacao} doravante denominado(a) simplesmente CONTRATANTE; e {contratado_qualificacao} {?, , {contratado_profissao}}, doravante denominado(a) simplesmente PRESTADOR(A), celebram o presente CONTRATO DE PRESTAÇÃO DE SERVIÇOS TEMPORÁRIOS POR PROJETO, nos termos das cláusulas seguintes:",
+        text: `${contratanteQualificacao}, doravante denominado(a) simplesmente CONTRATANTE; e ${contratadoQualificacao}{?, , portador(a) do registro profissional n.º {contratado_registro}}, doravante denominado(a) simplesmente PRESTADOR(A), celebram o presente CONTRATO DE PRESTAÇÃO DE SERVIÇOS TEMPORÁRIOS POR PROJETO, nos termos das cláusulas seguintes:`,
       },
       {
         type: "clause",

@@ -79,12 +79,6 @@ const wouldOrphan = (startY, headerLines) => {
 
 // ─── Extrair cidade da data ──────────────────────────────────────────────────
 
-const extractDate = (text) => {
-  if (!text) return text;
-  const m = text.match(/(\d{1,2} de \w+ de \d{4}|\d{2}\/\d{2}\/\d{4})/);
-  return m ? m[1] : text;
-};
-
 const normalizePdfText = (value) => String(value ?? "")
   .replace(/\r\n/g, "\n")
   .replace(/\u00a0/g, " ")
@@ -338,13 +332,12 @@ const renderClosing = (doc, text) => {
 
 const renderDate = (doc, text) => {
   if (!text || !text.trim()) return;
-  const dateOnly = extractDate(text);
   ensureSpace(doc, 10);
   pageY += 4;
   doc.setFont(FONT_SERIF, "normal");
   doc.setFontSize(12);
   doc.setTextColor(...C_TEXT);
-  doc.text(normalizePdfText(dateOnly), PAGE_W / 2, pageY, { align: "center" });
+  doc.text(normalizePdfText(text), PAGE_W / 2, pageY, { align: "center" });
   pageY += 7;
 };
 

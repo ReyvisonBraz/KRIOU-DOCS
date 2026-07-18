@@ -18,6 +18,7 @@ export function useCheckoutFlow({
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [pendingPayment, setPendingPayment] = useState(null);
+  const [completedDocument, setCompletedDocument] = useState(null);
 
   const sendConfirmationEmail = useCallback(async (doc) => {
     try {
@@ -49,7 +50,10 @@ export function useCheckoutFlow({
       const refreshedDocuments = await DocumentService.fetchAll(userId);
       setUserDocuments(refreshedDocuments);
       const savedDoc = refreshedDocuments.find((doc) => doc.id === confirmation.documentId);
-      if (savedDoc) restoreDocument?.(savedDoc);
+      if (savedDoc) {
+        setCompletedDocument(savedDoc);
+        restoreDocument?.(savedDoc);
+      }
 
       setCheckoutComplete(true);
       setEditingDocId(null);
@@ -78,6 +82,7 @@ export function useCheckoutFlow({
         const refreshedDocuments = await DocumentService.fetchAll(userId);
         setUserDocuments(refreshedDocuments);
         const restoredDoc = refreshedDocuments.find((item) => item.id === pendingPayment.documentId) || doc;
+        setCompletedDocument(restoredDoc);
         restoreDocument?.(restoredDoc);
         setCheckoutComplete(true);
         setEditingDocId(null);
@@ -185,6 +190,7 @@ export function useCheckoutFlow({
     paymentError,
     setPaymentError,
     pendingPayment,
+    completedDocument,
     clearPendingPayment,
     persistPendingPayment,
     checkPendingPayment,

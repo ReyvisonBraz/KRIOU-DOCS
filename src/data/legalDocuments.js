@@ -139,6 +139,36 @@ export const formatDateBR = (dateStr) => {
   return `${parseInt(day, 10)} de ${mesNome} de ${year}`;
 };
 
+const parseLocalizedMeasure = (value) => {
+  if (value === null || value === undefined) return null;
+  let normalized = String(value).trim().replace(/[^\d,.-]/g, "");
+  if (!normalized) return null;
+
+  if (normalized.includes(",")) {
+    normalized = normalized.replace(/\./g, "").replace(",", ".");
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const formatSquareMeters = (value) =>
+  `${value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²`;
+
+const calculateEstimatedLandArea = (formData) => {
+  const front = parseLocalizedMeasure(formData.medida_frente);
+  const back = parseLocalizedMeasure(formData.medida_fundo);
+  const right = parseLocalizedMeasure(formData.medida_direita);
+  const left = parseLocalizedMeasure(formData.medida_esquerda);
+
+  if ([front, back, right, left].some((measure) => measure === null)) return "";
+  return formatSquareMeters(((front + back) / 2) * ((right + left) / 2));
+};
+
+const normalizeForumLocation = (value) => String(value || "")
+  .trim()
+  .replace(/^(?:foro\s+da\s+)?comarca\s+de\s+/i, "");
+
 /**
  * Retorna o corpo do documento para uma variante, interpolando os valores do formulário.
  *
@@ -164,7 +194,18 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
   const resolveFieldValue = (key) => {
     // O foro normalmente coincide com a cidade do contrato. O fallback evita
     // pedir a mesma informação duas vezes e preserva documentos antigos.
-    if (key === "foro") return formData.foro || formData.cidade_contrato || "";
+    if (key === "foro") {
+      return normalizeForumLocation(formData.foro || formData.cidade_contrato);
+    }
+    if (key === "area_terreno_descricao") {
+      if (formData.area_terreno) {
+        return `área total aproximada de ${formData.area_terreno}`;
+      }
+      const estimatedArea = calculateEstimatedLandArea(formData);
+      return estimatedArea
+        ? `área estimada de ${estimatedArea}, calculada a partir das quatro medidas informadas`
+        : "";
+    }
     return formData[key];
   };
 
@@ -215,10 +256,13 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
     // ── Passo 0: segmentos "qualquer campo" {?any, ...} ──────────────────
     // Uses balanced brace counting to support nested {?,} / {?any,} blocks.
     let scanPos = 0;
-    while ((scanPos = result.indexOf("{?any,", scanPos)) !== -1) {
+    while ((scanPos = result.lastIndexOf("{?any,")) !== -1) {
+      // Processa do bloco mais interno para o mais externo. Caso contrário,
+      // o bloco pai consumiria os campos opcionais do filho antes de ele
+      // decidir se deve permanecer no texto.
       const openBrace = scanPos;
       const closeBrace = findMatchingBrace(result, openBrace);
-      if (closeBrace === -1) { scanPos += 6; continue; }
+      if (closeBrace === -1) break;
 
       const segmentStart = openBrace + 6; // after "{?any,"
       const segment = result.substring(segmentStart, closeBrace);
@@ -231,12 +275,15 @@ export const getDocumentBody = (docId, variantId, formData = {}, disabledFields 
         continue;
       }
 
-      const interpolated = segment.replace(/\{(\w+)\?\}/g, (_, k) =>
-        isAbsent(k) ? "\x00" : (formatFieldValue(k, formData[k]) || "")
-      );
+      // Dentro de um bloco "qualquer campo", ausências nunca podem virar
+      // placeholders técnicos. Campos obrigatórios presentes são preservados
+      // para que blocos condicionais internos ainda possam processá-los.
+      const interpolated = segment.replace(/\{(\w+)(\?)?\}/g, (match, k, optional) => {
+        if (isAbsent(k)) return "\x00";
+        return optional ? (formatFieldValue(k, formData[k]) || "") : match;
+      });
 
       result = result.substring(0, openBrace) + interpolated + result.substring(closeBrace + 1);
-      scanPos = openBrace;
     }
 
     // ── Passo 1: segmentos condicionais {?, ...{field}...} ───────────────

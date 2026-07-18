@@ -34,6 +34,7 @@ export const field = (key, label, type, opts = {}) => ({
   options: opts.options || null,
   disableable: opts.disableable ?? !opts.required,
   visibleInVariants: opts.visibleInVariants || null, // null = todas as variantes
+  dependsOn: opts.dependsOn || null,
 });
 
 /**
@@ -175,6 +176,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
           "O CPF é obrigatório em todo contrato. Ele identifica a pessoa perante a Receita Federal e garante a validade jurídica do documento.",
         mask: "cpf",
         disableable: i !== 0,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_rg`, `RG do ${papel}${labelSuffix}`, "text", {
         required: false,
@@ -186,6 +188,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         whyImportant: "O RG complementa a identificação pelo CPF e torna o contrato mais seguro juridicamente.",
         whatHappensIfEmpty: "O documento será gerado apenas com o CPF. Não prejudica a validade, mas é menos completo.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_nacionalidade`, `Nacionalidade do ${papel}${labelSuffix}`, "text", {
         required: false,
@@ -196,6 +199,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         whatHappensIfEmpty:
           "O documento será gerado sem mencionar a nacionalidade. Isso é normal e não afeta a validade.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_estado_civil`, `Estado Civil do ${papel}${labelSuffix}`, "select", {
         required: false,
@@ -208,6 +212,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         whatHappensIfEmpty:
           "O documento será gerado sem mencionar o estado civil. Em contratos de bens comuns do casal, isso pode ser questionado.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_profissao`, `Profissão do ${papel}${labelSuffix}`, "text", {
         required: false,
@@ -218,6 +223,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         whatHappensIfEmpty:
           "O documento será gerado sem mencionar a profissão. Isso é normal e aceito.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_endereco`, `Endereço Completo do ${papel}${labelSuffix}`, "text", {
         required: false,
@@ -230,6 +236,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         whatHappensIfEmpty:
           "O documento será gerado sem o endereço. Para contratos de alto valor, é recomendável informar.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       }),
       field(`${prefix}_${i}_cidade`, `Cidade / UF do ${papel}${labelSuffix}`, "text", {
         required: false,
@@ -238,6 +245,7 @@ export const pessoaFisicaFieldsRepeated = (prefix, papel, count) => {
         hint: "Cidade e estado onde reside. Use a sigla do estado (SP, RJ, MG, etc.).",
         whatHappensIfEmpty: "O documento será gerado sem mencionar a cidade de residência.",
         disableable: true,
+        dependsOn: i === 0 ? null : `${prefix}_${i}_nome`,
       })
     );
   }

@@ -520,7 +520,7 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
 
 // ─── TemplatesPage ──────────────────────────────────────────────────────────
 const TemplatesPage = () => {
-  const { navigate, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType, setSelectedVariant } = useApp();
+  const { navigate, goBack, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType, setSelectedVariant } = useApp();
   const [docType, setDocType] = useState(getInitialDocType);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLegalCategory, setSelectedLegalCategory] = useState("all");
@@ -565,7 +565,7 @@ const TemplatesPage = () => {
     <button
       onClick={() => onSelect(cat.id)}
       style={{
-        minHeight: 36, minWidth: 44, padding: "8px 18px", borderRadius: 100,
+        minHeight: 44, minWidth: 44, padding: "8px 18px", borderRadius: 100,
         border: selected ? `1.5px solid ${accent}` : "1px solid var(--border)",
         background: selected ? `${accent}14` : "var(--surface-2)",
         color: selected ? accent : "var(--text-dim)",
@@ -593,7 +593,7 @@ const TemplatesPage = () => {
     <div style={{
       flex: 1, display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      padding: "32px 20px", position: "relative",
+      padding: "32px 20px", position: "relative", overflow: "hidden",
     }}>
       <div style={{ position: "absolute", top: "10%", left: "15%", width: 520, height: 520, background: "radial-gradient(circle, rgba(244,63,94,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: "10%", right: "10%", width: 440, height: 440, background: "radial-gradient(circle, rgba(20,184,166,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -738,7 +738,7 @@ const TemplatesPage = () => {
 
   // ── Resume Templates ─────────────────────────────────────────────────────
   const renderResumeTemplates = () => (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
+    <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
       <style>{`
         @media (max-width: 768px) {
           .tpl-resume-header { flex-direction: column !important; align-items: flex-start !important; }
@@ -842,7 +842,7 @@ const TemplatesPage = () => {
   const renderLegalTemplates = () => {
     const categories = LEGAL_CATEGORIES;
     return (
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px" }}>
+      <div style={{ width: "100%", maxWidth: 960, margin: "0 auto", padding: "24px 16px" }}>
         <style>{`
           @media (max-width: 640px) {
             .legal-card-actions { flex-direction: row !important; }
@@ -1158,7 +1158,7 @@ const TemplatesPage = () => {
         }
         leftAction={
           <button
-            onClick={() => docType ? handleBack() : navigate("dashboard", { replace: true })}
+            onClick={() => docType ? handleBack() : goBack("dashboard")}
             style={{
               display: "flex", alignItems: "center", gap: 6,
               minHeight: 44, padding: "6px 4px",

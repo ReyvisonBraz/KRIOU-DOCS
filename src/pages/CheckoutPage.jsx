@@ -21,6 +21,7 @@ import {
 } from "../features/checkout";
 import showToast from "../utils/toast";
 import { getDocumentById } from "../data/legalDocuments";
+import { DocumentAccessService } from "../services/DocumentAccessService";
 
 const PAYMENT_MOCK_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_PAYMENT_MOCK === "true";
 const S = checkoutStyles;
@@ -40,9 +41,7 @@ const CheckoutPage = () => {
     setDocumentType,
     legalFormData,
     setLegalFormData,
-    selectedVariant,
     setSelectedVariant,
-    disabledFields,
     saveDocument,
     updateDocument,
     editingDocId,
@@ -82,6 +81,7 @@ const CheckoutPage = () => {
     paymentError,
     setPaymentError,
     pendingPayment,
+    completedDocument,
     clearPendingPayment,
     persistPendingPayment,
     checkPendingPayment,
@@ -146,19 +146,34 @@ const CheckoutPage = () => {
 
   const handleDownloadPDF = async () => {
     try {
-      if (isLegalDocument) {
+      if (!completedDocument?.id) {
+        showToast.error("Não foi possível identificar o documento liberado. Volte ao dashboard e tente novamente.");
+        return;
+      }
+
+      await DocumentAccessService.authorizeDownload(completedDocument.id);
+
+      if (completedDocument.type === "legal") {
+        const completedType = getDocumentById(completedDocument.documentType) || {
+          id: completedDocument.documentType,
+          name: completedDocument.documentTypeName || "Documento Jurídico",
+        };
         await generatePDF({
           type: "GENERATE_LEGAL",
-          formData: legalFormData,
-          docType: documentType,
-          disabledFields: disabledFields || {},
-          variantId: selectedVariant || null,
+          formData: completedDocument.legalData || {},
+          docType: completedType,
+          disabledFields: completedDocument.disabledFields || {},
+          variantId: completedDocument.variantId || completedDocument.variant?.id || completedDocument.variant || null,
         });
       } else {
+        const completedTemplate = completedDocument.template || (completedDocument.templateId ? {
+          id: completedDocument.templateId,
+          name: completedDocument.templateName || "Modelo",
+        } : null);
         await generatePDF({
           type: "GENERATE_RESUME",
-          formData,
-          template: selectedTemplate,
+          formData: completedDocument.formData || {},
+          template: completedTemplate,
         });
       }
     } catch {

@@ -20,7 +20,7 @@ formData._signatureAtRequestSignerName = "Mariana Souza de Oliveira";
 formData._signatureAtRequestSignerCpf = "123.456.789-09";
 
 const pdf = generateLegalPDF(formData, document, {}, variantId);
-const outputDir = path.resolve("tmp");
+const outputDir = path.resolve("tmp/pdfs");
 await fs.mkdir(outputDir, { recursive: true });
 await fs.writeFile(path.join(outputDir, "qa-assinatura-grande.pdf"), Buffer.from(pdf.output("arraybuffer")));
 console.log(`PDF de assinatura grande gerado com ${pdf.getNumberOfPages()} páginas.`);

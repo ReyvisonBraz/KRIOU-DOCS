@@ -75,6 +75,17 @@ describe("useCheckoutFlow", () => {
     expect(window.location.search).toBe("");
   });
 
+  it("mantém a referência exata do documento concluído para o download", async () => {
+    const paidDocument = { id: "doc-legal-1", type: "legal", legalData: { menor_nome: "Maria" }, status: "finalizado", paymentStatus: "approved" };
+    PaymentService.confirmPayment.mockResolvedValue({ status: "approved", documentId: paidDocument.id });
+    DocumentService.fetchAll.mockResolvedValue([paidDocument]);
+    window.history.replaceState({}, "", "/checkout?payment_id=pay-1&status=approved");
+
+    const { result } = renderCheckoutFlow();
+
+    await waitFor(() => expect(result.current.completedDocument).toEqual(paidDocument));
+  });
+
   it("verifica pagamento pendente salvo na sessao e libera quando ja foi aprovado", async () => {
     const pendingPayment = {
       documentId: "doc-1",

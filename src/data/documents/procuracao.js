@@ -183,7 +183,7 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "a quem confiro poderes para, em meu nome e por minha conta: {poderes_desc}.",
+        text: "a quem confiro poderes para, em meu nome e por minha conta, com a finalidade de {finalidade_proc}: {poderes_desc}.",
       },
       {
         type: "paragraph",
@@ -216,11 +216,11 @@ const procuracao = {
       },
       {
         type: "paragraph",
-        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Dr.(a) {outorgado_nome}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?any, , com escritório em {outorgado_endereco?}, {outorgado_cidade?}},",
+        text: "nomeio e constituo meu(minha) advogado(a) e bastante Procurador(a) o(a) Dr.(a) {outorgado_nome}{?, , {outorgado_nacionalidade}}{?, , {outorgado_estado_civil}}{?, , de profissão {outorgado_profissao}}{?, , portador(a) do RG n.º {outorgado_rg}}, inscrito(a) na OAB sob n.º {oab_numero}{?, , CPF n.º {outorgado_cpf}}{?any, , com escritório em {outorgado_endereco?}, {outorgado_cidade?}},",
       },
       {
         type: "paragraph",
-        text: "a quem confiro amplos poderes para o foro em geral, com os poderes especiais de:",
+        text: "a quem confiro amplos poderes para o foro em geral{?, , especialmente em matéria {tipo_processo}}, com os poderes especiais de:",
       },
       {
         type: "clause",

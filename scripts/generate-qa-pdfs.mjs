@@ -46,23 +46,53 @@ const resumeData = {
 };
 
 const manifest = [];
-const save = async (doc, filename, kind, model, variant) => {
+const save = async (doc, filename, kind, model, variant, scenario = "normal") => {
   const bytes = Buffer.from(doc.output("arraybuffer"));
   await fs.writeFile(path.join(outputDir, filename), bytes);
-  manifest.push({ filename, kind, model, variant, bytes: bytes.length, pages: doc.getNumberOfPages() });
+  manifest.push({ filename, kind, model, variant, scenario, bytes: bytes.length, pages: doc.getNumberOfPages() });
 };
 
 for (const document of LEGAL_DOCUMENTS.filter((item) => item.available)) {
   for (const variant of document.variants || []) {
     const sections = getSectionsForVariant(document.id, variant.id);
-    const formData = generateMockFormData(document.id, variant.id, sections);
+    const completeData = generateMockFormData(document.id, variant.id, sections);
+    const optionalKeys = sections
+      .flatMap((section) => section.fields || [])
+      .filter((field) => !field.required)
+      .map((field) => field.key);
+    const normalData = { ...completeData };
+    optionalKeys.forEach((key) => delete normalData[key]);
+
+    const normalPdf = generateLegalPDF(normalData, document, {}, variant.id);
+    await save(normalPdf, `juridico-${document.id}-${variant.id}.pdf`, "juridico", document.name, variant.name);
+
+    const completePdf = generateLegalPDF(completeData, document, {}, variant.id);
+    await save(
+      completePdf,
+      `juridico-${document.id}-${variant.id}-completo.pdf`,
+      "juridico",
+      document.name,
+      variant.name,
+      "completo",
+    );
+
+    const stressData = { ...completeData };
     for (const section of sections) {
       for (const field of section.fields || []) {
-        if (field.type === "textarea" && formData[field.key]) formData[field.key] = `${formData[field.key]} ${stressText}`;
+        if (field.type === "textarea" && stressData[field.key]) {
+          stressData[field.key] = `${stressData[field.key]} ${stressText}`;
+        }
       }
     }
-    const pdf = generateLegalPDF(formData, document, {}, variant.id);
-    await save(pdf, `juridico-${document.id}-${variant.id}.pdf`, "juridico", document.name, variant.name);
+    const stressPdf = generateLegalPDF(stressData, document, {}, variant.id);
+    await save(
+      stressPdf,
+      `juridico-${document.id}-${variant.id}-stress.pdf`,
+      "juridico",
+      document.name,
+      variant.name,
+      "stress",
+    );
   }
 }
 
@@ -71,6 +101,20 @@ for (const template of RESUME_TEMPLATES) {
   await save(pdf, `curriculo-${template.id}.pdf`, "curriculo", template.name, null);
 }
 
-await fs.writeFile(path.join(outputDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
+const layoutAlerts = manifest
+  .filter((item) => item.kind === "juridico")
+  .filter((item) => (
+    (item.scenario === "normal" && item.pages > 2)
+    || (item.scenario !== "normal" && item.pages > 3)
+  ))
+  .map((item) => ({ filename: item.filename, scenario: item.scenario, pages: item.pages }));
+
+await fs.writeFile(
+  path.join(outputDir, "manifest.json"),
+  JSON.stringify({ generatedAt: new Date().toISOString(), layoutAlerts, files: manifest }, null, 2) + "\n",
+  "utf8",
+);
 console.log(`Gerados ${manifest.length} PDFs em ${outputDir}`);
 console.log(`Páginas totais: ${manifest.reduce((sum, item) => sum + item.pages, 0)}`);
+console.log(`Alertas de layout: ${layoutAlerts.length}`);
+if (layoutAlerts.length) process.exitCode = 1;

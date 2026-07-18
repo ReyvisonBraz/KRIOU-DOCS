@@ -270,7 +270,7 @@ const autorizacaoViagem = {
       },
       {
         type: "paragraph",
-        text: "IDENTIFICAÇÃO DO(A) MENOR: {nome_menor}, nascido(a) em {data_nascimento_menor}, portador(a) do Passaporte n.º {passaporte_menor}{?, , inscrito(a) no CPF sob n.º {cpf_menor}},",
+        text: "IDENTIFICAÇÃO DO(A) MENOR: {nome_menor}, nascido(a) em {data_nascimento_menor}{?, , portador(a) do RG n.º {rg_menor}}, portador(a) do Passaporte n.º {passaporte_menor}{?, , inscrito(a) no CPF sob n.º {cpf_menor}},",
       },
       {
         type: "paragraph",

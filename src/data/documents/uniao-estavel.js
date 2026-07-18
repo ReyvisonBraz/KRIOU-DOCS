@@ -306,7 +306,7 @@ const uniaoEstavel = {
         number: "4ª",
         title: "DOS ALIMENTOS",
         paragraphs: [
-          "{?, As partes acordam pensão alimentícia: {pensao_alimenticia}{?, , no valor mensal de {valor_pensao}}.}",
+          "{?any, As partes acordam pensão alimentícia: {pensao_alimenticia?}{?, , no valor mensal de {valor_pensao}}.}",
           "As partes que não pleiteiam pensão alimentícia declaram ter plenas condições de prover a própria subsistência, renunciando expressamente ao direito de pleitear alimentos uma da outra.",
         ],
       },

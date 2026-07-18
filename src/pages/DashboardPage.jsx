@@ -11,6 +11,7 @@ import { usePDF } from "../hooks/usePDF";
 import { generateDocumentCode } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
 import {
+  canDownloadDocument,
   isDocumentPaid,
   isDocumentPaymentPending,
   isLocalDraftDocument,
@@ -198,7 +199,7 @@ const DashboardPage = () => {
 
   const handleDownloadPDF = useCallback(async (doc) => {
     try {
-      if (!isDocumentPaid(doc)) {
+      if (!canDownloadDocument(doc, profile)) {
         showToast.error("PDF liberado somente após pagamento aprovado.");
         return;
       }
@@ -224,11 +225,11 @@ const DashboardPage = () => {
       console.error("[DashboardPage][ERRO] handleDownloadPDF:", err.message);
       showToast.error("Erro ao gerar PDF. Tente novamente.");
     }
-  }, [generatePDF]);
+  }, [generatePDF, profile]);
 
   const handlePrintPDF = useCallback(async (doc) => {
     try {
-      if (!isDocumentPaid(doc)) {
+      if (!canDownloadDocument(doc, profile)) {
         showToast.error("Impressão liberada somente após pagamento aprovado.");
         return;
       }
@@ -266,7 +267,7 @@ const DashboardPage = () => {
       console.error("[DashboardPage][ERRO] handlePrintPDF:", err.message);
       showToast.error("Erro ao gerar PDF para impressão.");
     }
-  }, []);
+  }, [profile]);
 
   const handleArchiveDocument = async (doc) => {
     const newArchived = !doc.archived;
@@ -946,6 +947,7 @@ const DashboardPage = () => {
                     onArchive={handleArchiveDocument}
                     onRename={() => openRenameDialog(doc)}
                     onDuplicate={() => handleDuplicateDocument(doc)}
+                    unlimitedAccess={profile?.role === "admin"}
                     animationDelay={index * 0.04}
                   />
                 </div>

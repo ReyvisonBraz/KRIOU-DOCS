@@ -79,20 +79,28 @@ serve(async (req) => {
       case "users": {
         const { data: users, error: usersError } = await supabase
           .from("profiles")
-          .select("id, nome, sobrenome, email, role, created_at")
+          .select("id, nome, sobrenome, role, created_at")
           .order("created_at", { ascending: false });
 
         if (usersError) throw usersError;
 
-        const usersWithCounts = await Promise.all(
-          (users || []).map(async (u) => {
-            const { count: docCount } = await supabase
-              .from("documents")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", u.id);
-            return { ...u, docCount: docCount || 0 };
-          })
-        );
+        const [{ data: documents, error: documentsError }, authUsersResult] = await Promise.all([
+          supabase.from("documents").select("user_id"),
+          supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+        ]);
+        if (documentsError) throw documentsError;
+        if (authUsersResult.error) throw authUsersResult.error;
+
+        const counts = (documents || []).reduce((result, document) => {
+          result[document.user_id] = (result[document.user_id] || 0) + 1;
+          return result;
+        }, {} as Record<string, number>);
+        const emails = new Map(authUsersResult.data.users.map((authUser) => [authUser.id, authUser.email || null]));
+        const usersWithCounts = (users || []).map((profile) => ({
+          ...profile,
+          email: emails.get(profile.id) || null,
+          docCount: counts[profile.id] || 0,
+        }));
 
         return new Response(JSON.stringify(usersWithCounts), {
           status: 200,
@@ -108,7 +116,7 @@ serve(async (req) => {
 
         const { data: docs, error: docsError } = await supabase
           .from("documents")
-          .select("*")
+          .select("id, title, code, type, document_type, document_type_name, status, payment_status, created_at, updated_at")
           .eq("user_id", targetUserId)
           .order("created_at", { ascending: false });
 

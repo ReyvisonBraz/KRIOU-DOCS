@@ -20,6 +20,15 @@ export function isDocumentPaid(document) {
   return document?.status === "finalizado" && document?.paymentStatus === "approved";
 }
 
+export function hasUnlimitedDocumentAccess(profile) {
+  return profile?.role === "admin";
+}
+
+export function canDownloadDocument(document, profile) {
+  if (!document || isLocalDraftDocument(document)) return false;
+  return isDocumentPaid(document) || hasUnlimitedDocumentAccess(profile);
+}
+
 export function isDocumentPaymentPending(document) {
   if (!document) return false;
   return (

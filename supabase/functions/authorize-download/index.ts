@@ -14,6 +14,14 @@ serve(async (req) => {
     const user = await authenticate(req, supabase);
     if (!user) return json({ error: "Não autorizado" }, 401);
 
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profileError || !profile) return json({ error: "Perfil não encontrado" }, 403);
+    const hasUnlimitedAccess = profile.role === "admin";
+
     const { documentId } = await req.json();
     if (!documentId || typeof documentId !== "string") {
       return json({ error: "documentId é obrigatório" }, 400);
@@ -30,13 +38,14 @@ serve(async (req) => {
       return json({ error: "Documento não encontrado" }, 404);
     }
 
-    if (document.status !== "finalizado" || document.payment_status !== "approved" || !document.payment_id) {
+    if (!hasUnlimitedAccess && (document.status !== "finalizado" || document.payment_status !== "approved" || !document.payment_id)) {
       return json({ error: "PDF liberado somente após pagamento aprovado" }, 409);
     }
 
     return json({
       authorized: true,
       documentId: document.id,
+      accessMode: hasUnlimitedAccess ? "admin_unlimited" : "paid_document",
       expiresAt: new Date(Date.now() + AUTHORIZATION_TTL_SECONDS * 1000).toISOString(),
     });
   } catch (error) {

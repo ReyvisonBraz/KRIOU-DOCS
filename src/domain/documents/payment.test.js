@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canDownloadDocument,
   getDocumentAccessStatus,
   isDocumentPaid,
   isDocumentPaymentPending,
@@ -39,5 +40,12 @@ describe("document payment access policy", () => {
 
     expect(matchesDocumentPaymentFilter(paid, "pagos")).toBe(true);
     expect(matchesDocumentPaymentFilter(pending, "pagos")).toBe(false);
+  });
+
+  it("libera qualquer documento persistido da própria conta para administrador", () => {
+    const unpaid = { id: "doc-1", status: "aguardando_pagamento", paymentStatus: "pending" };
+    expect(canDownloadDocument(unpaid, { role: "admin" })).toBe(true);
+    expect(canDownloadDocument(unpaid, { role: "user" })).toBe(false);
+    expect(canDownloadDocument({ id: "draft-local", status: "rascunho" }, { role: "admin" })).toBe(false);
   });
 });

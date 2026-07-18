@@ -97,6 +97,7 @@ export const DocumentCard = ({
   onPrint,
   onRename,
   onDuplicate,
+  unlimitedAccess = false,
   animationDelay = 0,
 }) => {
   const [hover, setHover] = useState(false);
@@ -109,6 +110,7 @@ export const DocumentCard = ({
   const typeLabel = TYPE_LABELS[doc.type] || doc.documentTypeName || doc.type;
   const isPaid = isDocumentPaid(doc);
   const accessStatus = getDocumentAccessStatus(doc);
+  const hasDownloadAccess = isPaid || unlimitedAccess;
   const statusVariant = {
     paid: "teal",
     pending_payment: "gold",
@@ -162,6 +164,15 @@ export const DocumentCard = ({
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Icon name="Check" className="w-3.5 h-3.5" /> Documento pago · edição liberada
+        </div>
+      )}
+      {!isPaid && unlimitedAccess && (
+        <div style={{
+          padding: "7px 14px", background: "rgba(212,175,55,0.12)", color: "var(--gold)",
+          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <Icon name="Shield" className="w-3.5 h-3.5" /> Conta admin · download ilimitado
         </div>
       )}
       <style>{`
@@ -424,10 +435,10 @@ export const DocumentCard = ({
           {onDuplicate && (
             <ActionBtn icon="Copy" label="Copiar" onClick={(e) => { e.stopPropagation(); onDuplicate(doc); }} accent={accent} />
           )}
-          {onDownload && isPaid && (
+          {onDownload && hasDownloadAccess && (
             <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
           )}
-          {onPay && !isPaid && accessStatus !== "draft" && (
+          {onPay && !hasDownloadAccess && accessStatus !== "draft" && (
             <button
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
               style={{
@@ -441,7 +452,7 @@ export const DocumentCard = ({
               <Icon name="CreditCard" className="w-4 h-4" /> Pagar e liberar PDF
             </button>
           )}
-          {onPrint && isPaid && (
+          {onPrint && hasDownloadAccess && (
             <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />
           )}
           {onArchive && (

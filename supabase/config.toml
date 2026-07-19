@@ -1,3 +1,8 @@
 [functions.mercadopago-webhook]
 verify_jwt = false
 
+# A funcao faz a autenticacao internamente com supabase.auth.getUser(token).
+# Desativar a validacao duplicada do gateway evita falsos 401 por clock skew
+# sem tornar a verificacao publica: requisicoes sem usuario continuam rejeitadas.
+[functions.verify-payment]
+verify_jwt = false

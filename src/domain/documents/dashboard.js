@@ -7,6 +7,46 @@ function documentTime(doc) {
   return Number.isFinite(time) ? time : 0;
 }
 
+function collectSearchableValues(value, values = [], seen = new WeakSet()) {
+  if (value == null) return values;
+
+  if (["string", "number", "boolean"].includes(typeof value)) {
+    values.push(String(value));
+    return values;
+  }
+
+  if (typeof value !== "object" || seen.has(value)) return values;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSearchableValues(item, values, seen));
+    return values;
+  }
+
+  Object.entries(value).forEach(([key, item]) => {
+    // Metadados internos controlam o formulario, mas nao representam
+    // informacoes que o cliente espera encontrar na busca.
+    if (!key.startsWith("_")) collectSearchableValues(item, values, seen);
+  });
+
+  return values;
+}
+
+function matchesInternalDocumentData(doc, rawQuery) {
+  const normalizedQuery = normalizeName(rawQuery);
+  const queryDigits = rawQuery.replace(/\D/g, "");
+  const searchableValues = collectSearchableValues({
+    formData: doc.formData,
+    legalData: doc.legalData,
+    draft: doc.draft,
+  });
+
+  return searchableValues.some((value) => {
+    if (normalizeName(value).includes(normalizedQuery)) return true;
+    return queryDigits.length >= 3 && value.replace(/\D/g, "").includes(queryDigits);
+  });
+}
+
 function matchesSearch(doc, rawQuery) {
   const queryLower = rawQuery.toLowerCase();
   const digits = rawQuery.replace(/\D/g, "");
@@ -19,6 +59,7 @@ function matchesSearch(doc, rawQuery) {
   if (searchByCPF && person.cpf && normalizeCPF(person.cpf).includes(normalizeCPF(rawQuery))) return true;
   if (searchByRG && person.rg && normalizeRG(person.rg).includes(normalizeRG(rawQuery))) return true;
   if (person.nome && normalizeName(person.nome).includes(normalizeName(rawQuery))) return true;
+  if (matchesInternalDocumentData(doc, rawQuery)) return true;
 
   const templateText = typeof doc.template === "string" ? doc.template : doc.template?.name || "";
   return [doc.title, templateText, doc.templateName, doc.documentTypeName, doc.variantName, doc.code]

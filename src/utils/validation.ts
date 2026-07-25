@@ -8,14 +8,33 @@
  * @module utils/validation
  */
 
+export interface ValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
+export interface StepValidationResult {
+  valid: boolean;
+  errors: Record<string, string>;
+}
+
+export interface StepStatus {
+  isValid: boolean;
+  isComplete: boolean;
+  errors: Record<string, string>;
+}
+
+export type ValidationRuleFn = (value: any) => boolean;
+
 // ─── CPF Validation (Mod11 algorithm) ───
 /**
  * Validate a Brazilian CPF using the Mod11 checksum algorithm.
  * Rejects all-same-digit sequences (e.g. 000.000.000-00).
- * @param {string} cpf - CPF with or without formatting
- * @returns {boolean} True if CPF is mathematically valid
+ * @param cpf - CPF with or without formatting
+ * @returns True if CPF is mathematically valid
  */
-export function validateCpf(cpf) {
+export function validateCpf(cpf: string): boolean {
+  if (!cpf) return false;
   const digits = cpf.replace(/\D/g, "");
   if (digits.length !== 11) return false;
   // Reject known invalid patterns (all same digit)
@@ -40,10 +59,8 @@ export function validateCpf(cpf) {
 export const VALIDATION_RULES = {
   /**
    * Required field validation
-   * @param {any} value - Value to validate
-   * @returns {boolean} Is valid
    */
-  required: (value) => {
+  required: (value: any): boolean => {
     if (typeof value === "string") {
       return value.trim().length > 0;
     }
@@ -55,52 +72,48 @@ export const VALIDATION_RULES = {
 
   /**
    * Email validation — RFC-compliant pattern.
-   * @param {string} email - Email to validate
-   * @returns {boolean} Is valid email
    */
-  email: (email) => {
+  email: (email: string): boolean => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test((email || "").trim().toLowerCase());
   },
 
   /**
    * CPF validation using Mod11 checksum.
-   * @param {string} cpf - CPF with or without formatting
-   * @returns {boolean} Is valid CPF
    */
-  cpf: (cpf) => validateCpf(cpf),
+  cpf: (cpf: string): boolean => validateCpf(cpf),
 
   /**
    * Phone validation (Brazilian format)
-   * @param {string} phone - Phone number to validate
-   * @returns {boolean} Is valid phone
    */
-  phone: (phone) => {
-    const numbers = phone.replace(/\D/g, "");
+  phone: (phone: string): boolean => {
+    const numbers = (phone || "").replace(/\D/g, "");
     return numbers.length >= 10 && numbers.length <= 11;
   },
 
   /**
    * Minimum length validation
-   * @param {number} min - Minimum length
-   * @returns {Function} Validation function
    */
-  minLength: (min) => (value) => {
-    return value && value.length >= min;
+  minLength: (min: number) => (value: string): boolean => {
+    return !!value && value.length >= min;
   },
 
   /**
    * Maximum length validation
-   * @param {number} max - Maximum length
-   * @returns {Function} Validation function
    */
-  maxLength: (max) => (value) => {
-    return value && value.length <= max;
+  maxLength: (max: number) => (value: string): boolean => {
+    return !!value && value.length <= max;
   },
 };
 
+export interface FieldRuleConfig {
+  rules: ValidationRuleFn[];
+  message?: string;
+  custom?: (value: any) => ValidationResult;
+}
+
 // ─── Step Validation Configurations ───
-export const STEP_VALIDATIONS = {
+export const STEP_VALIDATIONS: Record<number, Record<string, FieldRuleConfig>> = {
   /**
    * Step 0: Personal Data validation
    */
@@ -135,8 +148,8 @@ export const STEP_VALIDATIONS = {
   2: {
     experiencias: {
       rules: [],
-      custom: (experiencias) => {
-        // If any field is filled, validate it
+      custom: (experiencias: any[]): ValidationResult => {
+        if (!Array.isArray(experiencias)) return { valid: true };
         const hasContent = experiencias.some(
           (exp) => exp.empresa || exp.cargo || exp.descricao
         );
@@ -155,7 +168,8 @@ export const STEP_VALIDATIONS = {
   3: {
     formacoes: {
       rules: [],
-      custom: (formacoes) => {
+      custom: (formacoes: any[]): ValidationResult => {
+        if (!Array.isArray(formacoes)) return { valid: true };
         const hasContent = formacoes.some((f) => f.instituicao || f.curso);
         if (!hasContent) return { valid: true }; // Optional
         return {
@@ -174,12 +188,12 @@ export const STEP_VALIDATIONS = {
 
 /**
  * Validate a specific field
- * @param {string} field - Field name
- * @param {any} value - Field value
- * @param {Object} rules - Validation rules
- * @returns {Object} Validation result { valid: boolean, message?: string }
  */
-export const validateField = (field, value, rules) => {
+export const validateField = (
+  field: string,
+  value: any,
+  rules?: FieldRuleConfig
+): ValidationResult => {
   if (!rules || !rules.rules) {
     return { valid: true };
   }
@@ -201,23 +215,23 @@ export const validateField = (field, value, rules) => {
 
 /**
  * Validate an entire step
- * @param {number} step - Step number
- * @param {Object} formData - Form data object
- * @returns {Object} Validation result { valid: boolean, errors: Object }
  */
-export const validateStep = (step, formData) => {
+export const validateStep = (
+  step: number,
+  formData: Record<string, any>
+): StepValidationResult => {
   const stepValidation = STEP_VALIDATIONS[step];
   if (!stepValidation) {
     return { valid: true, errors: {} };
   }
 
-  const errors = {};
+  const errors: Record<string, string> = {};
 
   for (const [field, rules] of Object.entries(stepValidation)) {
-    const value = formData[field];
+    const value = formData ? formData[field] : undefined;
     const result = validateField(field, value, rules);
 
-    if (!result.valid) {
+    if (!result.valid && result.message) {
       errors[field] = result.message;
     }
   }
@@ -230,11 +244,9 @@ export const validateStep = (step, formData) => {
 
 /**
  * Validate entire form
- * @param {Object} formData - Full form data
- * @returns {Object} Validation result
  */
-export const validateForm = (formData) => {
-  const allErrors = {};
+export const validateForm = (formData: Record<string, any>): StepValidationResult => {
+  const allErrors: Record<string, string> = {};
 
   for (let step = 0; step <= 6; step++) {
     const result = validateStep(step, formData);
@@ -249,15 +261,17 @@ export const validateForm = (formData) => {
 
 /**
  * Get step completion status
- * @param {number} step - Step number
- * @param {Object} formData - Form data
- * @returns {Object} Completion status
  */
-export const getStepStatus = (step, formData) => {
+export const getStepStatus = (
+  step: number,
+  formData: Record<string, any>
+): StepStatus => {
   const result = validateStep(step, formData);
   return {
     isValid: result.valid,
-    isComplete: Object.values(formData).some((v) => v && (Array.isArray(v) ? v.length > 0 : v.toString().trim().length > 0)),
+    isComplete: Object.values(formData || {}).some(
+      (v) => v && (Array.isArray(v) ? v.length > 0 : v.toString().trim().length > 0)
+    ),
     errors: result.errors,
   };
 };

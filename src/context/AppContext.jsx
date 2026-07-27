@@ -53,7 +53,8 @@
  * Erros nao-criticos sao logados com console.error e prefixo [ERRO].
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import StorageService from "../utils/storage";
 import { DocumentService } from "../services/DocumentService";
 import { APP_INIT_DELAY_MS } from "../constants/timing";
@@ -62,6 +63,7 @@ import { ResumeProvider, useResume } from "./ResumeContext";
 import { LegalProvider, useLegal } from "./LegalContext";
 import {
   PAGE_TO_PATH,
+  PATH_TO_PAGE,
   PUBLIC_PAGES,
   RESTORABLE_PAGES,
   resolveHistoryIndex,
@@ -84,84 +86,43 @@ const UIContext         = createContext(null);
 
 // ─── Mapeamento pagina ↔ path ────────────────────────────────────────────────
 // ─── NavigationProvider ───────────────────────────────────────────────────────
-// Gerencia a navegacao SPA via history.pushState/replaceState.
-//
-// DETECCAO DE OAUTH: Se a URL contiver parametros de autenticacao
-// (access_token, refresh_token, type=recovery, error_description)
-// em qualquer pathname, forca a pagina "authCallback".
-//
-// RESTAURACAO VIA URL: Ao carregar a pagina, detecta qual pagina
-// mostrar baseado no pathname.
+// Integra a API unificada do useApp() com o React Router (useNavigate / useLocation).
 const NavigationProvider = ({ children }) => {
-  const pathname = window.location.pathname;
-  const hash = window.location.hash;
+  const location = useLocation();
+  const routerNavigate = useNavigate();
 
-  const getInitialPage = () => resolveInitialPage(pathname, hash);
+  const currentPage = useMemo(() => {
+    return resolveInitialPage(location.pathname, location.hash);
+  }, [location.pathname, location.hash]);
 
-  const [currentPage, setCurrentPage] = useState(getInitialPage);
-  const isPopstateRef = useRef(false);
-  const historyIndexRef = useRef(resolveHistoryIndex(window.history.state));
+  const navigate = useCallback((pageOrPath, options = {}) => {
+    let targetPath = pageOrPath;
+    let pageKey = pageOrPath;
 
-  useEffect(() => {
-    if (!Number.isInteger(window.history.state?.appIndex)) {
-      window.history.replaceState(
-        { ...window.history.state, page: getInitialPage(), appIndex: historyIndexRef.current },
-        "",
-        window.location.href,
-      );
-    }
-  // O estado inicial do histórico é preparado uma única vez.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ─── navigate ──────────────────────────────────────────────────────────────
-  // @param {string} page — nome da pagina (ex: "dashboard", "editor")
-  // @param {Object} [options] — { replace: boolean } para substituir a entrada
-  //   atual no historico (usado apos OAuth callback para limpar /auth/callback).
-  const navigate = useCallback((page, options = {}) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-
-    const path = PAGE_TO_PATH[page] || "/";
-
-    if (options.replace) {
-      window.history.replaceState({ page, appIndex: historyIndexRef.current }, "", path);
-    } else if (!isPopstateRef.current) {
-      historyIndexRef.current += 1;
-      window.history.pushState({ page, appIndex: historyIndexRef.current }, "", path);
+    if (PAGE_TO_PATH[pageOrPath]) {
+      targetPath = PAGE_TO_PATH[pageOrPath];
+    } else if (PATH_TO_PAGE[pageOrPath]) {
+      pageKey = PATH_TO_PAGE[pageOrPath];
     }
 
-    if (RESTORABLE_PAGES.has(page)) {
-      StorageService.savePage(page);
+    if (RESTORABLE_PAGES.has(pageKey)) {
+      StorageService.savePage(pageKey);
     } else {
       StorageService.clearPage();
     }
-  }, []);
 
-  // ─── goBack — Volta no historico real do navegador ────────────────────────
-  // Usado por botoes de "Voltar" para nao poluir o historico com entradas
-  // duplicadas. Se nao houver historico suficiente, navega para o fallback.
+    window.scrollTo(0, 0);
+    routerNavigate(targetPath, { replace: !!options.replace });
+  }, [routerNavigate]);
+
   const goBack = useCallback((fallbackPage = "dashboard") => {
-    if (historyIndexRef.current > 0) {
-      window.history.back();
+    const fallbackPath = PAGE_TO_PATH[fallbackPage] || "/dashboard";
+    if (window.history.length > 1) {
+      routerNavigate(-1);
     } else {
-      navigate(fallbackPage, { replace: true });
+      routerNavigate(fallbackPath, { replace: true });
     }
-  }, [navigate]);
-
-  // ─── popstate (botao voltar/avancar do navegador) ─────────────────────────
-  useEffect(() => {
-    const handlePopstate = (event) => {
-      historyIndexRef.current = resolveHistoryIndex(event.state);
-      isPopstateRef.current = true;
-      setCurrentPage(resolvePopstatePage(event.state, window.location.pathname));
-      window.scrollTo(0, 0);
-      isPopstateRef.current = false;
-    };
-
-    window.addEventListener("popstate", handlePopstate);
-    return () => window.removeEventListener("popstate", handlePopstate);
-  }, []);
+  }, [routerNavigate]);
 
   return (
     <NavigationContext.Provider value={{ currentPage, navigate, goBack }}>

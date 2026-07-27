@@ -11,11 +11,11 @@
 
 /**
  * Format a Brazilian CPF number as the user types.
- * @param {string} value - Raw input value
- * @returns {string} Formatted CPF: 000.000.000-00
+ * @param value - Raw input value
+ * @returns Formatted CPF: 000.000.000-00
  */
-export function formatCpf(value) {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
+export function formatCpf(value: string): string {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
   if (digits.length <= 9)
@@ -26,11 +26,11 @@ export function formatCpf(value) {
 /**
  * Format a Brazilian phone number as the user types.
  * Supports 10-digit (landline) and 11-digit (mobile).
- * @param {string} value - Raw input value
- * @returns {string} Formatted phone: (00) 00000-0000
+ * @param value - Raw input value
+ * @returns Formatted phone: (00) 00000-0000
  */
-export function formatPhone(value) {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
+export function formatPhone(value: string): string {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 2) return digits;
   if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   if (digits.length <= 10)
@@ -40,11 +40,11 @@ export function formatPhone(value) {
 
 /**
  * Format a Brazilian CNPJ number as the user types.
- * @param {string} value - Raw input value
- * @returns {string} Formatted CNPJ: 00.000.000/0000-00
+ * @param value - Raw input value
+ * @returns Formatted CNPJ: 00.000.000/0000-00
  */
-export function formatCnpj(value) {
-  const digits = value.replace(/\D/g, "").slice(0, 14);
+export function formatCnpj(value: string): string {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 14);
   if (digits.length <= 2) return digits;
   if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
   if (digits.length <= 8)
@@ -56,33 +56,33 @@ export function formatCnpj(value) {
 
 /**
  * Format a Brazilian CEP (postal code) as the user types.
- * @param {string} value - Raw input value
- * @returns {string} Formatted CEP: 00000-000
+ * @param value - Raw input value
+ * @returns Formatted CEP: 00000-000
  */
-export function formatCep(value) {
-  const digits = value.replace(/\D/g, "").slice(0, 8);
+export function formatCep(value: string): string {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 8);
   if (digits.length <= 5) return digits;
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
 /**
  * Format a value as Brazilian currency (BRL).
- * @param {number} value - Numeric value
- * @returns {string} Formatted currency: R$ 0,00
+ * @param value - Numeric value
+ * @returns Formatted currency: R$ 0,00
  */
-export function formatCurrency(value) {
+export function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(value);
+  }).format(value || 0);
 }
 
 /**
  * Format a date string to Brazilian short format.
- * @param {string} isoDate - ISO date string
- * @returns {string} Formatted date: dd/mm/aaaa
+ * @param isoDate - ISO date string
+ * @returns Formatted date: dd/mm/aaaa
  */
-export function formatDate(isoDate) {
+export function formatDate(isoDate: string): string {
   if (!isoDate) return "";
   // Parse YYYY-MM-DD manually to avoid UTC-offset day shift
   const parts = isoDate.split("T")[0].split("-");

@@ -36,6 +36,12 @@ export default defineConfig({
   test: {
     // Expõe describe/it/expect globalmente (necessário para jest-dom)
     globals: true,
+    // Garante o build de desenvolvimento do React mesmo se o shell exportar
+    // NODE_ENV=production (build de produção do React 19 não exporta `act`,
+    // quebrando @testing-library/react com "React.act is not a function").
+    env: {
+      NODE_ENV: 'test',
+    },
     // Ambiente padrão para testes de utils (node é mais rápido)
     environment: 'node',
     include: ['src/**/*.test.{js,jsx}'],

@@ -3,6 +3,15 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { AppNavbar } from "../components/UI";
 import AdminRoute from "../components/AdminRoute";
+import {
+  PeriodFilter,
+  MetricsCards,
+  MiniChart,
+  RecentFailures,
+  AdminEnvironmentBadge,
+} from "../components/admin";
+import { MetricsService } from "../services/MetricsService";
+import { formatCurrency } from "../utils/formatting";
 
 const AdminPage = () => {
   const { navigate, profile } = useApp();
@@ -12,6 +21,11 @@ const AdminPage = () => {
   const [userDocs, setUserDocs] = useState([]);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
+
+  // ── Métricas do painel (admin-metrics) ──
+  const [period, setPeriod] = useState("30d");
+  const [metrics, setMetrics] = useState(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
 
   const callAdmin = useCallback(async (action, params = {}) => {
     const { supabase } = await import("../lib/supabase");
@@ -45,6 +59,31 @@ const AdminPage = () => {
     loadStats();
     loadUsers();
   }, [loadStats, loadUsers]);
+
+  const loadMetrics = useCallback(async (targetPeriod) => {
+    setError(null);
+    setMetricsLoading(true);
+    try {
+      const data = await MetricsService.getMetrics(targetPeriod);
+      setMetrics(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setMetricsLoading(false);
+    }
+  }, []);
+
+  // Carrega métricas ao abrir e sempre que o período mudar.
+  useEffect(() => {
+    loadMetrics(period);
+  }, [period, loadMetrics]);
+
+  // Saúde geral: atenção quando há falhas recentes que exigem ação.
+  const healthy =
+    !error &&
+    (!metrics ||
+      !Array.isArray(metrics.recentFailures) ||
+      metrics.recentFailures.length === 0);
 
   const loadUserDocs = async (userId) => {
     setError(null);
@@ -80,7 +119,7 @@ const AdminPage = () => {
   const TabBar = () => (
     <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
       {[
-        { id: "overview", label: "Visão Geral", icon: "BarChart" },
+        { id: "overview", label: "Visão Geral", icon: "Layout" },
         { id: "users", label: "Usuários", icon: "Users" },
       ].map((t) => (
         <button key={t.id} onClick={() => setTab(t.id)} style={s.tabBtn(tab === t.id)}>
@@ -106,14 +145,17 @@ const AdminPage = () => {
         />
 
         <div style={s.container}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(244,63,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="Shield" className="w-5 h-5" style={{ color: "var(--coral)" }} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(244,63,94,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name="Shield" className="w-5 h-5" style={{ color: "var(--coral)" }} />
+              </div>
+              <div>
+                <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 800, margin: 0 }}>Painel Administrativo</h1>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Bem-vindo, {profile?.nome || "Admin"}</p>
+              </div>
             </div>
-            <div>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 800, margin: 0 }}>Painel Administrativo</h1>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Bem-vindo, {profile?.nome || "Admin"}</p>
-            </div>
+            <AdminEnvironmentBadge healthy={healthy} />
           </div>
 
           {error && (
@@ -124,22 +166,33 @@ const AdminPage = () => {
 
           <TabBar />
 
-          {tab === "overview" && stats && (
+          {tab === "overview" && (
             <>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
-                  <strong style={{ color: "var(--coral)" }}>{stats.totalUsers}</strong> usuário{stats.totalUsers !== 1 ? "s" : ""}
-                </span>
-                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
-                  <strong style={{ color: "var(--teal)" }}>{stats.totalDocs}</strong> documento{stats.totalDocs !== 1 ? "s" : ""}
-                </span>
-                <span style={{ padding: "10px 18px", borderRadius: 100, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 13, color: "var(--text-dim)" }}>
-                  <strong style={{ color: "var(--gold)" }}>{stats.finalizedDocs}</strong> finalizado{stats.finalizedDocs !== 1 ? "s" : ""}
-                </span>
+              {/* Seletor de período das métricas */}
+              <div style={{ marginBottom: 20 }}>
+                <PeriodFilter value={period} onChange={setPeriod} disabled={metricsLoading} />
               </div>
 
-              {stats.docsByType && Object.keys(stats.docsByType).length > 0 && (
+              {/* Indicadores principais */}
+              <div style={{ marginBottom: 16 }}>
+                <MetricsCards summary={metrics?.summary} isLoading={metricsLoading} />
+              </div>
+
+              {/* Gráficos diários */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 16 }}>
                 <div style={s.card}>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>Documentos por dia</h3>
+                  <MiniChart data={metrics?.series?.documents} color="var(--teal)" formatValue={(v) => `${v} doc`} isLoading={metricsLoading} />
+                </div>
+                <div style={s.card}>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>Receita aprovada por dia</h3>
+                  <MiniChart data={metrics?.series?.revenue} color="var(--coral)" formatValue={(v) => formatCurrency(v)} isLoading={metricsLoading} />
+                </div>
+              </div>
+
+              {/* Distribuição por tipo (vem do stats existente) */}
+              {stats?.docsByType && Object.keys(stats.docsByType).length > 0 && (
+                <div style={{ ...s.card, marginBottom: 16 }}>
                   <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>Documentos por Tipo</h3>
                   {Object.entries(stats.docsByType).map(([type, count]) => (
                     <div key={type} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
@@ -149,6 +202,14 @@ const AdminPage = () => {
                   ))}
                 </div>
               )}
+
+              {/* Falhas recentes que exigem ação */}
+              <div style={s.card}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>
+                  Falhas que exigem ação
+                </h3>
+                <RecentFailures failures={metrics?.recentFailures} isLoading={metricsLoading} />
+              </div>
             </>
           )}
 

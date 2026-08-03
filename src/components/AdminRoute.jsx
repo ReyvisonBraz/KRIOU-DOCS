@@ -1,11 +1,30 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useApp } from "../context/AppContext";
+import { Spinner } from "./UI";
 
 const AdminRoute = ({ children }) => {
-  const { profile, navigate } = useApp();
+  const { profile, isLoading, navigate } = useApp();
 
-  if (!profile || profile.role !== "admin") {
-    navigate("dashboard", { replace: true });
+  const isAdmin = profile?.role === "admin";
+
+  useEffect(() => {
+    // O perfil e carregado de forma assíncrona no bootstrap. Redirecionar
+    // enquanto `isLoading` ainda é true expulsava administradores legítimos
+    // de /admin antes de a role chegar do Supabase.
+    if (!isLoading && !isAdmin) {
+      navigate("dashboard", { replace: true });
+    }
+  }, [isAdmin, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy">
+        <Spinner size={36} />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return null;
   }
 

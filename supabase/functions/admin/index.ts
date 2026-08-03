@@ -14,6 +14,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handlePreflight, json } from "../_shared/http.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -21,13 +22,16 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 serve(async (req) => {
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
+
   try {
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "");
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Nao autorizado" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      return json({ error: "Nao autorizado" }, 401);
     }
 
     const { data: profile } = await supabase
@@ -37,7 +41,7 @@ serve(async (req) => {
       .single();
 
     if (profile?.role !== "admin") {
-      return new Response(JSON.stringify({ error: "Acesso restrito a administradores" }), { status: 403, headers: { "Content-Type": "application/json" } });
+      return json({ error: "Acesso restrito a administradores" }, 403);
     }
 
     const url = new URL(req.url);
@@ -68,12 +72,12 @@ serve(async (req) => {
           typeCount[key] = (typeCount[key] || 0) + 1;
         });
 
-        return new Response(JSON.stringify({
+        return json({
           totalUsers: totalUsers || 0,
           totalDocs: totalDocs || 0,
           finalizedDocs: finalizedDocs || 0,
           docsByType: typeCount,
-        }), { status: 200, headers: { "Content-Type": "application/json" } });
+        });
       }
 
       case "users": {
@@ -102,16 +106,13 @@ serve(async (req) => {
           docCount: counts[profile.id] || 0,
         }));
 
-        return new Response(JSON.stringify(usersWithCounts), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json(usersWithCounts);
       }
 
       case "user-docs": {
         const targetUserId = url.searchParams.get("userId");
         if (!targetUserId) {
-          return new Response(JSON.stringify({ error: "userId é obrigatório" }), { status: 400, headers: { "Content-Type": "application/json" } });
+          return json({ error: "userId é obrigatório" }, 400);
         }
 
         const { data: docs, error: docsError } = await supabase
@@ -122,23 +123,14 @@ serve(async (req) => {
 
         if (docsError) throw docsError;
 
-        return new Response(JSON.stringify(docs || []), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json(docs || []);
       }
 
       default:
-        return new Response(JSON.stringify({ error: "Acao invalida. Use: stats, users, user-docs" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json({ error: "Acao invalida. Use: stats, users, user-docs" }, 400);
     }
   } catch (err) {
     console.error("[admin][ERRO]", err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: err.message }, 500);
   }
 });

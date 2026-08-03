@@ -246,6 +246,36 @@ export interface MetricsResult {
   }>;
 }
 
+type RecentFailure = MetricsResult["recentFailures"][number];
+
+async function computeRecentFailures(
+  supabase: ReturnType<typeof createAdminClient>,
+): Promise<RecentFailure[]> {
+  try {
+    const { data, error } = await supabase
+      .from("payment_webhook_events")
+      .select("event_key, provider, action, payment_id, error_code, processing_status, received_at")
+      .not("error_code", "is", null)
+      .order("received_at", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    return (data || []).map((failure) => ({
+      ...failure,
+      id: failure.event_key,
+    }));
+  } catch (err) {
+    // A trilha financeira é complementar às métricas principais. Uma migration
+    // ainda não aplicada não deve zerar usuários, documentos e receita.
+    console.warn(
+      "[metrics] payment_webhook_events indisponível:",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+}
+
 export async function calculateMetrics(
   supabase: ReturnType<typeof createAdminClient>,
   period: MetricsPeriod,
@@ -341,19 +371,7 @@ export async function calculateMetrics(
   // ── Falhas recentes que exigem ação (webhook / pagamento) ──
   // Atenção: a PK da tabela é `event_key`, não `id`. Selecionamos `event_key`
   // e reexpomos como `id` para manter o contrato do frontend estável.
-  const { data: webhookFailures, error: failuresError } = await supabase
-    .from("payment_webhook_events")
-    .select("event_key, provider, action, payment_id, error_code, processing_status, received_at")
-    .not("error_code", "is", null)
-    .order("received_at", { ascending: false })
-    .limit(10);
-
-  if (failuresError) throw failuresError;
-
-  const recentFailures = (webhookFailures || []).map((failure) => ({
-    ...failure,
-    id: failure.event_key,
-  }));
+  const recentFailures = await computeRecentFailures(supabase);
 
   return {
     period,

@@ -38,7 +38,11 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - pacote identificado como `kriou-docs@0.1.0`;
 - README, guia de contribuição, convenções, ADRs e Definition of Done criados/atualizados;
 - typecheck adicionado ao CI e ao comando agregado `npm run quality`;
-- baseline validada: lint, typecheck, 321 testes, build e E2E público 4/4 aprovados;
+- baseline validada: lint, typecheck, 321 testes, build e E2E público/negativo 16/16 aprovados;
+- visitante bloqueado nas oito rotas protegidas; refresh público e `/admin`
+  autenticado em produção comprovados;
+- auto-save sem usuário corrigido e coberto por regressão de console;
+- ainda falta sessão E2E determinística de usuário comum/admin e callback OAuth completo;
 - branch local de trabalho: `chore/modernizacao-m00`.
 
 ## Segurança
@@ -51,6 +55,8 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
   desenvolvimento (`brace-expansion`) e uma cadeia direta do Router relacionada a
   RSC Mode; remediação e prova de alcançabilidade detalhadas em S2.2;
 - scripts de instalação pendentes de revisão: `core-js` e `fsevents`;
+- `admin-metrics` ainda retorna non-2xx em produção; tornar a trilha de webhook
+  tolerante a ausência foi publicado como hardening, mas não resolveu a causa;
 - itens S0/S1 devem ser tratados antes da ampliação pública do painel.
 
 ## Planos históricos

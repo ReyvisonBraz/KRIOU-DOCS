@@ -15,6 +15,14 @@ Ainda faltam as fases operacionais posteriores do plano: busca e paginação
 server-side, responsividade da tabela, ações auditadas, financeiro detalhado,
 reprocessamento e observabilidade completa.
 
+Atualização de validação em 03/08/2026: autenticação administrativa, refresh em
+`/admin` e listagem de 10 usuários foram comprovados no ambiente publicado. A
+visão de métricas ainda exibe `Edge Function returned a non-2xx status code` e
+totais zerados, embora `docsByType` some 10 documentos. A versão 2 de
+`admin-metrics` tornou `payment_webhook_events` tolerante a indisponibilidade,
+mas o erro persistiu; portanto essa tabela não era a causa principal e o endpoint
+continua bloqueador aberto.
+
 ## O que foi feito (4 checkpoints concluídos)
 
 ### 1. Backend
@@ -56,7 +64,7 @@ reprocessamento e observabilidade completa.
 - **Bug crítico corrigido**: `recentFailures` selecionava coluna `id` na tabela
   `payment_webhook_events`, cuja PK é **`event_key`** (não existe `id`) → daria
   500 no endpoint inteiro. Corrigido: seleciona `event_key` e reexpõe como `id`.
-- Lint limpo, build de produção ok, testes 322/322 passando (após fix do
+- Lint limpo, typecheck e build de produção ok, testes 321/321 passando (após fix do
   `test.env: { NODE_ENV: 'test' }` no `vite.config.js` — build de produção do
   React 19 não exporta `act`, quebrava @testing-library/react).
 
@@ -67,7 +75,11 @@ reprocessamento e observabilidade completa.
 - [x] Migrations `014`, `015` e `016` aplicadas.
 - [x] Funções `admin` e `admin-metrics` publicadas.
 - [x] Rota `/admin` aberta com a conta proprietária.
+- [x] Refresh direto em `/admin` preserva a sessão e o painel.
+- [x] Aba de usuários carrega dados pela função `admin`.
 - [x] Preflight e rejeição sem token validados.
+- [ ] Corrigir o non-2xx de `admin-metrics` e provar totais coerentes.
+- [ ] Criar sessões E2E determinísticas para usuário comum e administrador.
 
 ## Versionamento
 

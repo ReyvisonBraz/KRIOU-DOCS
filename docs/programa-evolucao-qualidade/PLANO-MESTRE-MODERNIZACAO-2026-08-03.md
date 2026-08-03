@@ -253,15 +253,23 @@ lockfile anterior. Scanner especializado continua planejado para o CI em S2.1/S2
 - [x] resolver a localização única dos planos em `docs/programa-evolucao-qualidade/`;
 - [x] validar lint, 321 testes e build de produção após o merge `959ddaa`;
 - [x] adicionar checagem de TypeScript (`tsc --noEmit`) ao comando local e ao CI;
-- [ ] testar manual/E2E as rotas profundas, refresh, callback OAuth, rota `/admin`
-  e redirecionamento de usuário sem privilégio após a troca de roteador;
+- [ ] concluir a matriz de rotas: visitante em todas as rotas protegidas, refresh,
+  callback OAuth e administrador em `/admin` já foram comprovados; ainda falta
+  usuário **autenticado sem papel admin** em `/admin` e callback OAuth completo;
 - [x] confirmar configuração de rewrite da hospedagem para que rotas diretas não
   retornem 404 em produção (`vercel.json` reescreve para `index.html`);
 - [ ] criar teste de regressão para lazy loading e erro de chunk após deploy.
 
 Evidência adicional de 03/08/2026: `npm run quality` aprovado com lint,
-TypeScript, 321 testes e build; E2E público aprovado com 4/4 casos após instalação
-explícita do Chromium do Playwright. Rotas autenticadas permanecem pendentes.
+TypeScript, 321 testes e build; suíte pública/negativa ampliada para 16/16 casos.
+Em produção, a sessão administrativa preservou `/admin` após refresh e carregou
+a lista de usuários. A função `admin-metrics` continua retornando non-2xx e é
+bloqueador separado; sessão determinística de usuário comum continua pendente.
+
+Achado de desenvolvimento: editar arquivos de Context durante HMR provoca
+invalidação de Fast Refresh e pode produzir erro transitório de provider até o
+reload completo. Builds e testes frescos passam, mas a separação entre provider
+e hook deve entrar na decomposição de Contexts para eliminar ruído local.
 
 Aceite: integração reproduzível no CI e rotas críticas comprovadas localmente e
 no ambiente publicado.

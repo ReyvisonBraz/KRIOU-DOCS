@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(deno --version)",
+      "Bash(supabase --version)",
+      "Bash(node_modules/.bin/supabase --version)",
+      "Bash(node --check src/services/MetricsService.js)",
+      "Bash(node_modules/.bin/tsc --version)",
+      "Bash(npx --no-install esbuild supabase/functions/_shared/metrics.ts supabase/functions/admin-metrics/index.ts --bundle=false --format=esm --outdir=/tmp/kriou-esbuild-check)",
+      "Bash(npm test *)",
+      "Bash(npm ls *)",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(npm run *)"
+    ]
+  }
+}

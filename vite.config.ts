@@ -3,8 +3,19 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -44,15 +55,15 @@ export default defineConfig({
     },
     // Ambiente padrão para testes de utils (node é mais rápido)
     environment: 'node',
-    include: ['src/**/*.test.{js,jsx}'],
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
     reporters: ['verbose'],
     setupFiles: ['./src/tests/setup.js'],
     coverage: {
       provider: 'v8',
       // Cobre apenas os módulos com testes unitários escritos
       include: [
-        'src/utils/validation.js',
-        'src/utils/formatting.js',
+        'src/utils/validation.ts',
+        'src/utils/formatting.ts',
         'src/utils/sanitization.js',
         'src/hooks/useAutoSave.js',
       ],

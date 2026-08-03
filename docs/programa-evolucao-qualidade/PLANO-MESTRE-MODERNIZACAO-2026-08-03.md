@@ -190,14 +190,14 @@ Não haverá “big bang”. Cada fase deve:
 Objetivo: tornar o repositório previsível antes das refatorações.
 
 - [x] consolidar qual plano está vigente e marcar documentos antigos como históricos;
-- [ ] criar `CONTRIBUTING.md` com instalação, comandos e fluxo de mudança;
-- [ ] atualizar `README.md` para refletir arquitetura e operação reais;
-- [ ] corrigir nome/versão/descrição do pacote;
-- [ ] adicionar `.nvmrc` ou campo `engines` para Node/npm;
+- [x] criar `CONTRIBUTING.md` com instalação, comandos e fluxo de mudança;
+- [x] atualizar `README.md` para refletir arquitetura e operação reais;
+- [x] corrigir nome/versão/descrição do pacote;
+- [x] adicionar `.nvmrc` e campo `engines` para Node/npm;
 - [x] parar de rastrear `dist/` e `coverage/`, preservando artefatos somente no CI;
-- [ ] documentar convenções de nomes, imports, pastas e testes;
-- [ ] registrar Architectural Decision Records em `docs/adr/`;
-- [ ] criar checklist único de Definition of Done.
+- [x] documentar convenções de nomes, imports, pastas e testes;
+- [x] registrar decisões arquiteturais no registro vigente `DECISOES.md`;
+- [x] criar checklist único de Definition of Done.
 
 #### M00.1 — Identidade e autoria Git
 
@@ -252,12 +252,16 @@ lockfile anterior. Scanner especializado continua planejado para o CI em S2.1/S2
   reorganização documental, sem sobrescrever o trabalho do colaborador;
 - [x] resolver a localização única dos planos em `docs/programa-evolucao-qualidade/`;
 - [x] validar lint, 321 testes e build de produção após o merge `959ddaa`;
-- [ ] adicionar checagem de TypeScript (`tsc --noEmit`) ao comando local e ao CI;
+- [x] adicionar checagem de TypeScript (`tsc --noEmit`) ao comando local e ao CI;
 - [ ] testar manual/E2E as rotas profundas, refresh, callback OAuth, rota `/admin`
   e redirecionamento de usuário sem privilégio após a troca de roteador;
-- [ ] confirmar configuração de rewrite da hospedagem para que rotas diretas não
-  retornem 404 em produção;
+- [x] confirmar configuração de rewrite da hospedagem para que rotas diretas não
+  retornem 404 em produção (`vercel.json` reescreve para `index.html`);
 - [ ] criar teste de regressão para lazy loading e erro de chunk após deploy.
+
+Evidência adicional de 03/08/2026: `npm run quality` aprovado com lint,
+TypeScript, 321 testes e build; E2E público aprovado com 4/4 casos após instalação
+explícita do Chromium do Playwright. Rotas autenticadas permanecem pendentes.
 
 Aceite: integração reproduzível no CI e rotas críticas comprovadas localmente e
 no ambiente publicado.

@@ -147,3 +147,8 @@ vite.config.ts.timestamp-*
 .cursor/
 .idea/
 .vscode/*.local.json
+
+# Test reports and traces
+test-results/
+playwright-report/
+blob-report/

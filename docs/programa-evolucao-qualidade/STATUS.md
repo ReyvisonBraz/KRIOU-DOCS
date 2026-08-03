@@ -33,6 +33,12 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - `.claude/settings.local.json` removido do rastreamento e preservado apenas localmente;
 - stash temporário revisado e descartado por conter somente build/lockfile obsoletos;
 - varredura inicial de padrões de segredo no estado atual e histórico sem credencial real encontrada;
+- ambiente oficial padronizado em Node 22.12+ e npm 10/11 por `.nvmrc`,
+  `package.json` e CI;
+- pacote identificado como `kriou-docs@0.1.0`;
+- README, guia de contribuição, convenções, ADRs e Definition of Done criados/atualizados;
+- typecheck adicionado ao CI e ao comando agregado `npm run quality`;
+- baseline validada: lint, typecheck, 321 testes, build e E2E público 4/4 aprovados;
 - branch local de trabalho: `chore/modernizacao-m00`.
 
 ## Segurança

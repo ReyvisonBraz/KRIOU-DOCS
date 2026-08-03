@@ -1,143 +1,111 @@
-# Kriou Docs - Documentos Profissionais
+# KRIOU-DOCS
 
-Plataforma para criação de documentos profissionais como currículos, contratos e documentos jurídicos com entrega via WhatsApp.
+Aplicação web para criar, editar, pagar, gerar e administrar documentos
+profissionais e jurídicos. O frontend usa React/Vite; autenticação, banco,
+políticas de acesso e funções de backend usam Supabase.
 
-## 🚀 Quick Start
+## Estado do projeto
+
+O produto está funcional e passa por modernização incremental. O painel
+administrativo e as proteções contra autoelevação de privilégio já foram
+implantados. As prioridades e pendências estão no
+[status consolidado](./docs/programa-evolucao-qualidade/STATUS.md).
+
+## Requisitos
+
+- Node.js `22.x` (mínimo `22.12.0`);
+- npm `10.x` ou `11.x`;
+- navegador Chromium para os testes E2E;
+- Supabase CLI para trabalho com banco e Edge Functions.
+
+Com `nvm`, a versão oficial fica em `.nvmrc`:
 
 ```bash
-# Install dependencies
-npm install
+nvm install
+nvm use
+node --version
+npm --version
+```
 
-# Run development server
+## Instalação local
+
+```bash
+npm ci
+npx playwright install chromium
+cp .env.example .env.local
 npm run dev
-
-# Run tests
-npm test
-
-# Build for production
-npm run build
 ```
 
-## 📁 Project Structure
+Preencha em `.env.local` somente as variáveis públicas descritas no exemplo. A
+chave `service_role`, tokens de pagamento e outros segredos pertencem ao backend
+ou ao gerenciador de secrets e nunca podem usar o prefixo `VITE_`.
 
-```
-src/
-├── components/     # Reusable UI components
-│   ├── ErrorBoundary.jsx  # Error handling
-│   ├── Icons.jsx    # SVG icon library
-│   ├── Theme.jsx    # Theme and global styles
-│   └── UI.jsx       # Buttons, Cards, Forms, etc.
-├── constants/       # Application constants
-│   ├── styles.js    # Shared style objects
-│   ├── timing.js    # Timing/delay values
-│   └── storage.js   # Storage key definitions
-├── context/        # React Context state management
-│   └── AppContext.jsx
-├── hooks/          # Custom React Hooks
-│   ├── useAutoSave.js      # Debounced auto-save with status
-│   ├── useConfirm.js       # Async confirmation dialog
-│   ├── useUnsavedChanges.js # Page leave warning
-│   ├── usePDF.js           # PDF generation via Web Worker
-│   └── index.js
-├── pages/          # Page components
-│   ├── LandingPage.jsx
-│   ├── LoginPage.jsx
-│   ├── DashboardPage.jsx
-│   ├── TemplatesPage.jsx
-│   ├── EditorPage.jsx      # 7-step resume wizard
-│   ├── LegalEditorPage.jsx # Legal document wizard
-│   ├── PreviewPage.jsx
-│   ├── CheckoutPage.jsx
-│   └── ProfilePage.jsx
-├── services/       # Business logic services (TODO)
-├── utils/          # Utility functions
-│   ├── formatting.js      # formatCpf, formatPhone, formatCnpj, etc.
-│   ├── validation.js      # validateCpf (Mod11), validateEmail, etc.
-│   ├── sanitization.js    # XSS prevention
-│   ├── rateLimiter.js     # Client-side rate limiting
-│   ├── pdfGenerator.js    # Resume PDF generation
-│   ├── legalPdfGenerator.js # Legal PDF generation
-│   └── storage.js         # localStorage utilities
-├── workers/
-│   └── pdfWorker.js       # Web Worker for PDF generation
-└── App.jsx         # Router with lazy loading
-```
-
-## 🎨 Theme Customization
-
-Edit `src/components/Theme.jsx` to change colors and styles:
-
-```javascript
-const theme = {
-  colors: {
-    coral: "#E94560",
-    teal: "#00D2D3",
-    // ...
-  }
-};
-```
-
-## 🔐 Security Features
-
-- **CPF Validation** — Mod11 algorithm (rejects `000.000.000-00`)
-- **Email Validation** — RFC-compliant regex
-- **Rate Limiting** — Client-side protection for login/OTP
-- **Input Sanitization** — XSS prevention for all form data
-- **useUnsavedChanges** — Warns user before losing changes
-- **useConfirm** — Confirms destructive actions
-
-## ⚡ Performance Features
-
-- **Code Splitting** — Pages load on demand via `React.lazy()`
-- **PDF Web Worker** — PDF generation doesn't freeze UI
-- **Auto-save** — Debounced (1.5s) with visual status indicator
-- **Sonner Toasts** — Non-blocking notifications
-
-## 📝 Adding New Templates
-
-1. Add new template to `RESUME_TEMPLATES` in `src/data/constants.js`
-2. Define colors and styles
-3. PreviewPage and PDF generator will automatically apply
-
-## 🔧 Development
-
-### Add New Page
-1. Create component in `src/pages/`
-2. Add to lazy routes in `App.jsx`
-3. Update `src/context/AppContext.jsx` with new page key
-
-### PDF Generation
-```javascript
-import { usePDF } from "./hooks/usePDF";
-
-const { generatePDF, isGenerating } = usePDF();
-await generatePDF({ type: "GENERATE_RESUME", formData, template });
-```
-
-### Validation
-```javascript
-import { validateCpf, validateEmail } from "./utils/validation";
-
-validateCpf("123.456.789-09"); // true
-validateEmail("user@example.com"); // true
-```
-
-### Formatting
-```javascript
-import { formatCpf, formatPhone, formatCurrency } from "./utils/formatting";
-
-formatCpf("12345678909"); // "123.456.789-09"
-formatPhone("11987654321"); // "(11) 98765-4321"
-formatCurrency(99.90); // "R$ 99,90"
-```
-
-## 🧪 Testing
+## Verificações
 
 ```bash
-npm test           # Run tests once
-npm run test:watch # Watch mode
+npm run quality          # lint + tipos + testes + build
+npm run test:watch       # testes durante desenvolvimento
+npm run test:e2e:public  # fluxo público no Chromium
+npm run test:e2e         # suíte E2E completa, quando o ambiente estiver preparado
 ```
 
-## 📄 License
+O CI executa instalação reproduzível pelo lockfile, lint, TypeScript, 321+ testes
+unitários, build e E2E público.
 
-MIT License - 2026 Kriou Docs
+## Estrutura atual
+
+```text
+src/
+  components/   componentes reutilizáveis e componentes do admin
+  context/      autenticação, dados e composição de estado
+  domain/       regras puras de navegação, documentos e pagamentos
+  features/     capacidades já migradas para organização por feature
+  hooks/        hooks compartilhados
+  pages/        páginas e orquestração de rotas
+  services/     acesso a Supabase/Edge Functions e contratos externos
+  utils/        formatação, validação, PDF, storage e logging
+  workers/      processamento pesado de PDF
+
+supabase/
+  functions/    Edge Functions e helpers compartilhados
+  migrations/   evolução versionada do banco, RLS, grants e triggers
+
+e2e/            testes Playwright
+docs/           conhecimento, modelos e planejamento técnico
+```
+
+A arquitetura-alvo e a estratégia de migração estão no
+[Plano Mestre de Modernização](./docs/programa-evolucao-qualidade/PLANO-MESTRE-MODERNIZACAO-2026-08-03.md).
+
+## Regras importantes
+
+- frontend nunca é autoridade de papel administrativo ou pagamento;
+- migrations aplicadas não são editadas; mudanças usam uma nova migration;
+- `dist`, `coverage`, sessões, secrets e configurações pessoais não entram no Git;
+- mudança de rota, autenticação, checkout ou admin exige teste do fluxo afetado;
+- refatorações preservam comportamento e avançam em incrementos pequenos.
+
+## Rotas principais
+
+- `/` e `/login`: acesso público;
+- `/auth/callback`: retorno da autenticação;
+- `/dashboard`, `/templates`, `/editor`, `/preview`: criação de documentos;
+- `/checkout`: pagamento e liberação;
+- `/profile`: perfil do usuário;
+- `/admin`: painel protegido por validação de papel no backend.
+
+A hospedagem precisa reescrever rotas desconhecidas para `index.html`; a
+configuração do Vercel está em `vercel.json`.
+
+## Colaboração
+
+Antes de alterar o projeto, leia:
+
+- [Guia de contribuição](./CONTRIBUTING.md)
+- [Convenções de engenharia](./docs/CONVENTIONS.md)
+- [Definition of Done](./docs/DEFINITION-OF-DONE.md)
+- [Planos ativos](./docs/programa-evolucao-qualidade/README.md)
+- [Decisões arquiteturais](./docs/programa-evolucao-qualidade/DECISOES.md)
+
+O projeto é privado. Nenhuma licença pública de reutilização é concedida enquanto
+não houver um arquivo `LICENSE` aprovado pelo proprietário.

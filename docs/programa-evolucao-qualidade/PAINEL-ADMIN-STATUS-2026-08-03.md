@@ -15,13 +15,13 @@ Ainda faltam as fases operacionais posteriores do plano: busca e paginação
 server-side, responsividade da tabela, ações auditadas, financeiro detalhado,
 reprocessamento e observabilidade completa.
 
-Atualização de validação em 03/08/2026: autenticação administrativa, refresh em
-`/admin` e listagem de 10 usuários foram comprovados no ambiente publicado. A
-visão de métricas ainda exibe `Edge Function returned a non-2xx status code` e
-totais zerados, embora `docsByType` some 10 documentos. A versão 2 de
-`admin-metrics` tornou `payment_webhook_events` tolerante a indisponibilidade,
-mas o erro persistiu; portanto essa tabela não era a causa principal e o endpoint
-continua bloqueador aberto.
+Atualização de validação em 03/08/2026: a causa dupla foi reproduzida localmente.
+`functions.invoke()` enviava POST por padrão a uma função que aceita GET; após
+corrigir o método, o banco revelou `42501 permission denied for table documents`.
+A migration `017` concede somente os acessos backend necessários e foi aplicada
+no remoto. Usuário comum retorna 403 e administrador retorna 200 no ambiente
+local; a publicação do cliente frontend é o passo restante para a prova visual
+final em produção.
 
 ## O que foi feito (4 checkpoints concluídos)
 
@@ -78,8 +78,9 @@ continua bloqueador aberto.
 - [x] Refresh direto em `/admin` preserva a sessão e o painel.
 - [x] Aba de usuários carrega dados pela função `admin`.
 - [x] Preflight e rejeição sem token validados.
-- [ ] Corrigir o non-2xx de `admin-metrics` e provar totais coerentes.
-- [ ] Criar sessões E2E determinísticas para usuário comum e administrador.
+- [x] Corrigir as causas do non-2xx de `admin-metrics` e provar resposta coerente local.
+- [x] Criar sessões E2E determinísticas para usuário comum e administrador.
+- [ ] Publicar o cliente GET e repetir a prova visual no frontend de produção.
 
 ## Versionamento
 

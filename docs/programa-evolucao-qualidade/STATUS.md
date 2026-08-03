@@ -7,14 +7,15 @@ prosseguir com refatorações estruturais amplas, mantendo o hardening S0 em par
 
 ## Painel administrativo
 
-- migrations `014`, `015` e `016` aplicadas no Supabase remoto;
+- migrations `014` a `017` aplicadas no Supabase remoto;
 - Edge Functions `admin` e `admin-metrics` publicadas;
 - conta proprietária configurada como `admin`;
 - rota administrativa corrigida para aguardar o carregamento do perfil;
 - CORS/preflight da função `admin` corrigido;
 - autoelevação por `profiles.role` bloqueada;
 - métricas, gráficos, filtro de período, usuários e falhas recentes implementados;
-- lint, 321 testes e build aprovados;
+- causa dupla do non-2xx identificada: verbo HTTP incorreto no cliente e falta
+  de privilégios SQL explícitos do backend; correções publicadas no Supabase;
 - ainda faltam busca/paginação, responsividade da tabela e conclusão das fases P02–P05;
 - entrega integrada e publicada no `main` pelo merge `959ddaa`.
 
@@ -38,11 +39,12 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - pacote identificado como `kriou-docs@0.1.0`;
 - README, guia de contribuição, convenções, ADRs e Definition of Done criados/atualizados;
 - typecheck adicionado ao CI e ao comando agregado `npm run quality`;
-- baseline validada: lint, typecheck, 321 testes, build e E2E público/negativo 16/16 aprovados;
+- baseline validada: lint, typecheck, testes, build e E2E público/negativo 16/16 aprovados;
 - visitante bloqueado nas oito rotas protegidas; refresh público e `/admin`
   autenticado em produção comprovados;
 - auto-save sem usuário corrigido e coberto por regressão de console;
-- ainda falta sessão E2E determinística de usuário comum/admin e callback OAuth completo;
+- sessões E2E locais determinísticas de usuário comum/admin implementadas; callback
+  OAuth completo continua pendente por depender do provedor externo;
 - branch local de trabalho: `chore/modernizacao-m00`.
 
 ## Segurança
@@ -55,8 +57,8 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
   desenvolvimento (`brace-expansion`) e uma cadeia direta do Router relacionada a
   RSC Mode; remediação e prova de alcançabilidade detalhadas em S2.2;
 - scripts de instalação pendentes de revisão: `core-js` e `fsevents`;
-- `admin-metrics` ainda retorna non-2xx em produção; tornar a trilha de webhook
-  tolerante a ausência foi publicado como hardening, mas não resolveu a causa;
+- `admin-metrics`: migration `017` e função atualizada já estão no Supabase; o
+  cliente GET está validado localmente e aguarda publicação do frontend;
 - itens S0/S1 devem ser tratados antes da ampliação pública do painel.
 
 ## Planos históricos

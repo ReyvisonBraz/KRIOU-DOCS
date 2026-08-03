@@ -36,3 +36,16 @@
   afetados recebem E2E ou verificação manual registrada.
 - **Consequência:** refatorações grandes devem ser divididas por responsabilidade
   e não podem misturar correção funcional, formatação massiva e reorganização sem necessidade.
+
+## ADR-006 — Reparo excepcional de migrations de dados operacionais
+
+- **Estado:** aceita em 2026-08-03.
+- **Contexto:** as migrations `013` e `015`, já aplicadas em produção, abortavam
+  qualquer reconstrução limpa quando a conta proprietária não existia. Elas
+  promovem dados operacionais e não definem um requisito do schema.
+- **Decisão:** reparar esses dois arquivos históricos para que a promoção seja
+  condicional e remova o e-mail em texto aberto. A mudança não reaplica nem
+  reverte dados do remoto; futuras mudanças continuam exigindo nova migration.
+- **Consequência:** banco local e CI sobem do zero sem copiar identidades de
+  produção. Promoções futuras devem usar procedimento operacional auditado, não
+  migrations dependentes da presença de uma conta.

@@ -8,7 +8,8 @@ import { supabase } from "../lib/supabase";
 export const MetricsService = {
   async getMetrics(period = "30d") {
     const { data, error } = await supabase.functions.invoke(
-      `admin-metrics?period=${encodeURIComponent(period)}`
+      `admin-metrics?period=${encodeURIComponent(period)}`,
+      { method: "GET" },
     );
 
     if (error) throw new Error(error.message || "Falha ao carregar métricas");

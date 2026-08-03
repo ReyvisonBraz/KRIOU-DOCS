@@ -253,18 +253,19 @@ lockfile anterior. Scanner especializado continua planejado para o CI em S2.1/S2
 - [x] resolver a localização única dos planos em `docs/programa-evolucao-qualidade/`;
 - [x] validar lint, 321 testes e build de produção após o merge `959ddaa`;
 - [x] adicionar checagem de TypeScript (`tsc --noEmit`) ao comando local e ao CI;
-- [ ] concluir a matriz de rotas: visitante em todas as rotas protegidas, refresh,
-  callback OAuth e administrador em `/admin` já foram comprovados; ainda falta
-  usuário **autenticado sem papel admin** em `/admin` e callback OAuth completo;
+- [x] concluir a matriz local de rotas: visitante em todas as rotas protegidas,
+  refresh, administrador em `/admin` e usuário autenticado sem papel admin em
+  `/admin`; callback OAuth completo permanece como integração externa posterior;
 - [x] confirmar configuração de rewrite da hospedagem para que rotas diretas não
   retornem 404 em produção (`vercel.json` reescreve para `index.html`);
 - [ ] criar teste de regressão para lazy loading e erro de chunk após deploy.
 
-Evidência adicional de 03/08/2026: `npm run quality` aprovado com lint,
-TypeScript, 321 testes e build; suíte pública/negativa ampliada para 16/16 casos.
-Em produção, a sessão administrativa preservou `/admin` após refresh e carregou
-a lista de usuários. A função `admin-metrics` continua retornando non-2xx e é
-bloqueador separado; sessão determinística de usuário comum continua pendente.
+Evidência adicional de 03/08/2026: banco reconstruído do zero pelas migrations;
+contas locais determinísticas `user`/`admin` criadas sem credenciais de produção;
+usuário comum rejeitado em `/admin`; administrador preservado após refresh. A
+causa dupla de `admin-metrics` foi isolada: cliente enviava POST para endpoint GET
+e `service_role` não possuía os GRANTs de tabela. A migration `017` foi aplicada
+no remoto e o cliente passou a enviar GET explicitamente.
 
 Achado de desenvolvimento: editar arquivos de Context durante HMR provoca
 invalidação de Fast Refresh e pode produzir erro transitório de provider até o

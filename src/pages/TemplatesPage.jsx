@@ -24,7 +24,7 @@ const LEGAL_CATEGORIES = [
   { id: "all", label: "Todos", icon: "Grid" },
   { id: "contratos", label: "Contratos", icon: "FileText", docIds: ["compra-venda", "locacao", "comodato", "permuta"] },
   { id: "pessoais", label: "Pessoais", icon: "Users", docIds: ["procuracao", "doacao", "uniao-estavel", "autorizacao-viagem"] },
-  { id: "financeiros", label: "Financeiros", icon: "Money", docIds: ["recibo"] },
+  { id: "financeiros", label: "Financeiros", icon: "CreditCard", docIds: ["recibo"] },
 ];
 
 const getInitialDocType = () => {

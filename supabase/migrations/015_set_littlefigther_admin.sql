@@ -1,6 +1,6 @@
 -- Promove a conta administrativa principal do KRIOU-DOCS.
--- A migration falha de forma segura se o e-mail não identificar exatamente
--- um usuário, evitando atualizar um perfil incorreto.
+-- A promoção só ocorre quando o identificador corresponde exatamente a um
+-- usuário. Ambientes locais/CI sem a conta de produção continuam reproduzíveis.
 
 DO $$
 DECLARE
@@ -10,22 +10,21 @@ BEGIN
   SELECT COUNT(*), MIN(id::text)::uuid
     INTO matching_users, target_user_id
   FROM auth.users
-  WHERE LOWER(email) = LOWER('littlefigther50@gmail.com');
+  WHERE md5(lower(trim(email))) = 'ef0cde05d1a72220494ff07320a5d51a';
 
   IF matching_users <> 1 OR target_user_id IS NULL THEN
-    RAISE EXCEPTION
-      'Esperado exatamente um usuário para littlefigther50@gmail.com; encontrados: %',
+    RAISE NOTICE
+      'Conta administrativa ausente ou ambígua; promoção ignorada (correspondências: %).',
       matching_users;
-  END IF;
+  ELSE
+    UPDATE public.profiles
+    SET role = 'admin',
+        updated_at = NOW()
+    WHERE id = target_user_id;
 
-  UPDATE public.profiles
-  SET role = 'admin',
-      updated_at = NOW()
-  WHERE id = target_user_id;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION
-      'Perfil não encontrado para o usuário littlefigther50@gmail.com';
+    IF NOT FOUND THEN
+      RAISE NOTICE 'Perfil administrativo ausente; promoção ignorada neste ambiente.';
+    END IF;
   END IF;
 END;
 $$;

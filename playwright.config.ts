@@ -1,11 +1,30 @@
 import { defineConfig } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+
+const localSupabaseEnv = (() => {
+  if (process.env.E2E_LOCAL !== "1") return {};
+
+  const status = JSON.parse(
+    execFileSync("supabase", ["status", "--output", "json"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }),
+  );
+
+  return {
+    VITE_SUPABASE_URL: status.API_URL,
+    VITE_SUPABASE_ANON_KEY: status.ANON_KEY,
+  };
+})();
+
+const baseURL = process.env.E2E_BASE_URL || "http://localhost:5173";
 
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30000,
   retries: 1,
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL,
     headless: true,
     viewport: { width: 1280, height: 720 },
     screenshot: "only-on-failure",
@@ -18,9 +37,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: true,
+    command: process.env.E2E_LOCAL === "1"
+      ? "npm run dev -- --host 127.0.0.1 --port 5174"
+      : "npm run dev",
+    env: { ...process.env, ...localSupabaseEnv },
+    url: baseURL,
+    reuseExistingServer: process.env.E2E_LOCAL !== "1",
     timeout: 30000,
   },
 });

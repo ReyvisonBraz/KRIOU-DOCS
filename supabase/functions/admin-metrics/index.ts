@@ -21,6 +21,24 @@ import { authenticate, createAdminClient } from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
 import { calculateMetrics, isMetricsPeriod } from "../_shared/metrics.ts";
 
+function diagnosticError(error: unknown) {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message };
+  }
+
+  if (error && typeof error === "object") {
+    const candidate = error as Record<string, unknown>;
+    return {
+      code: typeof candidate.code === "string" ? candidate.code : undefined,
+      message: typeof candidate.message === "string" ? candidate.message : "erro não identificado",
+      details: typeof candidate.details === "string" ? candidate.details : undefined,
+      hint: typeof candidate.hint === "string" ? candidate.hint : undefined,
+    };
+  }
+
+  return { message: String(error) };
+}
+
 serve(async (req) => {
   const preflight = handlePreflight(req);
   if (preflight) return preflight;
@@ -55,7 +73,9 @@ serve(async (req) => {
     const metrics = await calculateMetrics(supabase, rawPeriod);
     return json(metrics, 200);
   } catch (err) {
-    console.error("[admin-metrics] Erro interno", err instanceof Error ? err.message : "desconhecido");
+    // Não registra tokens, payloads nem conteúdo documental. Erros estruturados
+    // do PostgREST são preservados para tornar incidentes diagnosticáveis.
+    console.error("[admin-metrics] Erro interno", diagnosticError(err));
     return json({ error: "Erro interno ao calcular métricas" }, 500);
   }
 });

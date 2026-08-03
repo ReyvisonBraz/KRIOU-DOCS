@@ -8,29 +8,32 @@ test.describe("Dashboard (autenticado)", () => {
   test("deve exibir saudação do usuário", async ({ page }) => {
     await page.goto("/dashboard");
 
-    await expect(page.locator("text=Documentos")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Olá, Usuario" }),
+    ).toBeVisible();
   });
 
-  test("deve exibir tabs de filtro", async ({ page }) => {
+  test("deve exibir busca e ações de criação", async ({ page }) => {
     await page.goto("/dashboard");
 
-    const tabs = ["Todos", "Currículos", "Compra/Venda", "Locação"];
-    for (const tab of tabs) {
-      await expect(page.locator(`text=${tab}`).first()).toBeVisible();
-    }
+    await expect(
+      page.getByPlaceholder("Buscar por nome, CPF, RG ou código..."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Novo Currículo" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Novo Documento" })).toBeVisible();
   });
 
   test("deve permitir criar novo currículo", async ({ page }) => {
     await page.goto("/dashboard");
 
-    await page.locator('button:has-text("Currículo")').first().click();
+    await page.getByRole("button", { name: "Novo Currículo" }).click();
     await expect(page).toHaveURL(/\/templates/);
   });
 
   test("deve permitir criar novo documento jurídico", async ({ page }) => {
     await page.goto("/dashboard");
 
-    await page.locator('button:has-text("Documento")').first().click();
+    await page.getByRole("button", { name: "Novo Documento" }).click();
     await expect(page).toHaveURL(/\/templates/);
   });
 });

@@ -201,39 +201,50 @@ Objetivo: tornar o repositório previsível antes das refatorações.
 
 #### M00.1 — Identidade e autoria Git
 
-- [ ] configurar `user.name` com o nome que deve aparecer publicamente;
-- [ ] configurar `user.email` com e-mail verificado no GitHub ou endereço
+- [x] configurar `user.name` com o nome que deve aparecer publicamente;
+- [x] configurar `user.email` com e-mail verificado no GitHub ou endereço
   `noreply` da conta, preferencialmente apenas neste repositório até confirmar a
   preferência global;
-- [ ] validar com `git config --show-origin --get-regexp '^user\.(name|email)$'`;
-- [ ] decidir se os quatro commits já publicados com e-mail local permanecerão
-  como registro histórico ou se haverá reescrita coordenada do histórico;
+- [x] validar com `git config --show-origin --get-regexp '^user\.(name|email)$'`;
+- [x] decidir que os commits já publicados com e-mail local permanecerão como
+  registro histórico, evitando reescrita do `main` compartilhado; a identidade
+  corrigida vale para os novos commits;
 - [ ] não reescrever `main` sem janela de manutenção, backup das referências,
   comunicação com colaboradores e confirmação explícita do proprietário;
-- [ ] adicionar a conferência de autoria ao checklist de preparação de commit.
+- [ ] adicionar a conferência de autoria ao checklist de preparação de commit
+  quando a Definition of Done for criada.
+
+Evidência de 03/08/2026: configuração local do repositório definida como
+`Reyvison Braz <110267807+ReyvisonBraz@users.noreply.github.com>`.
 
 Aceite: novos commits usam identidade verificável; nenhuma reescrita de histórico
 é realizada implicitamente; a decisão sobre commits antigos fica registrada.
 
 #### M00.2 — Arquivos locais, ignore e stashes
 
-- [ ] remover `.claude/settings.local.json` do rastreamento e adicioná-lo ao
+- [x] remover `.claude/settings.local.json` do rastreamento e adicioná-lo ao
   `.gitignore`, mantendo apenas um exemplo neutro se a configuração for útil à equipe;
-- [ ] revisar arquivos locais equivalentes de IDE/assistentes (`.vscode`, `.idea`,
+- [x] revisar arquivos locais equivalentes de IDE/assistentes (`.vscode`, `.idea`,
   `.cursor`, `.claude`) antes de definir a política de ignore;
-- [ ] executar varredura de segredos no histórico, pois ignorar um arquivo não
+- [x] executar varredura inicial de segredos no histórico, pois ignorar um arquivo não
   remove conteúdo que já tenha sido publicado;
-- [ ] registrar que o stash `wip-before-origin-main-integration-2026-08-03`
+- [x] registrar que o stash `wip-before-origin-main-integration-2026-08-03`
   contém somente saídas de build e lockfile obsoleto;
-- [ ] comparar o lockfile do stash com o atual uma última vez e então remover o
+- [x] comparar o lockfile do stash com o atual uma última vez e então remover o
   stash explicitamente, sem reaplicá-lo;
-- [ ] documentar política: stash deve ter descrição, responsável, finalidade e
+- [x] documentar política: stash deve ter descrição, responsável, finalidade e
   prazo curto; trabalho duradouro deve ficar em branch/commit recuperável;
-- [ ] verificar `git status --ignored` e `git ls-files` para garantir que build,
+- [x] verificar `git status --ignored` e `git ls-files` para garantir que build,
   cobertura, segredos e configurações locais não sejam rastreados.
 
 Aceite: árvore de trabalho limpa; nenhum artefato/configuração pessoal rastreado;
 nenhum stash órfão; varredura de segredos sem achado não tratado.
+
+Evidência de 03/08/2026: busca por formatos de chaves privadas, tokens GitHub,
+Stripe e nomes de secrets Supabase/Mercado Pago/Resend no estado atual e histórico
+encontrou somente placeholders, documentação e leituras por variável de ambiente.
+O stash obsoleto foi removido após confirmar que continha apenas `dist/` antigo e
+lockfile anterior. Scanner especializado continua planejado para o CI em S2.1/S2.2.
 
 #### M00.3 — Baseline após integração concorrente
 

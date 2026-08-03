@@ -29,8 +29,10 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - primeiro marco: M00 — governança e higiene do repositório.
 - `dist/` e `coverage/` removidos do rastreamento;
 - planos consolidados em `docs/programa-evolucao-qualidade/`;
-- identidade Git, configuração local `.claude` e descarte do stash temporário
-  adicionados formalmente ao M00;
+- identidade Git local configurada com e-mail `noreply` verificado do GitHub;
+- `.claude/settings.local.json` removido do rastreamento e preservado apenas localmente;
+- stash temporário revisado e descartado por conter somente build/lockfile obsoletos;
+- varredura inicial de padrões de segredo no estado atual e histórico sem credencial real encontrada;
 - branch local de trabalho: `chore/modernizacao-m00`.
 
 ## Segurança

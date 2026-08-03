@@ -15,9 +15,9 @@ arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 
 ## Ordem de trabalho atual
 
-1. terminar e validar o painel administrativo;
-2. versionar a entrega atual em commits coerentes;
-3. iniciar M00 do plano de modernização;
+1. executar M00: identidade Git, higiene de arquivos locais/stash e baseline do Router/TypeScript;
+2. tratar a auditoria de dependências descrita em S2.2, sem correção automática forçada;
+3. concluir as funcionalidades remanescentes do painel administrativo;
 4. iniciar M01 (erros e observabilidade);
 5. executar segurança S0/S1 em paralelo conforme risco e dependências.
 
@@ -33,4 +33,3 @@ arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 - nenhum plano histórico é apagado;
 - novos planos precisam declarar objetivo, estado, relação com os planos ativos e critério de encerramento;
 - `STATUS.md` deve ser atualizado ao concluir um marco relevante.
-

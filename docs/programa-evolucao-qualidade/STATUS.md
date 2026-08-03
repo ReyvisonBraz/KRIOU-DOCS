@@ -2,8 +2,8 @@
 
 ## Foco atual
 
-Concluir o painel administrativo antes de iniciar a modernização estrutural e o
-hardening amplo de segurança.
+Executar M00 (governança e baseline) e tratar riscos de dependências antes de
+prosseguir com refatorações estruturais amplas, mantendo o hardening S0 em paralelo.
 
 ## Painel administrativo
 
@@ -16,7 +16,7 @@ hardening amplo de segurança.
 - métricas, gráficos, filtro de período, usuários e falhas recentes implementados;
 - lint, 321 testes e build aprovados;
 - ainda faltam busca/paginação, responsividade da tabela e conclusão das fases P02–P05;
-- commit da entrega atual ainda pendente.
+- entrega integrada e publicada no `main` pelo merge `959ddaa`.
 
 ## Modernização
 
@@ -27,6 +27,11 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - hotspots acima de mil linhas identificados;
 - observabilidade externa, contratos e decomposição continuam pendentes;
 - primeiro marco: M00 — governança e higiene do repositório.
+- `dist/` e `coverage/` removidos do rastreamento;
+- planos consolidados em `docs/programa-evolucao-qualidade/`;
+- identidade Git, configuração local `.claude` e descarte do stash temporário
+  adicionados formalmente ao M00;
+- branch local de trabalho: `chore/modernizacao-m00`.
 
 ## Segurança
 
@@ -34,6 +39,10 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
 
 - vulnerabilidade crítica de autoelevação corrigida;
 - testes reais de RLS, auditoria efetiva, MFA/AAL2 e rate limiting permanecem pendentes;
+- auditoria npm registra 3 alertas altos agrupados em 2 causas: uma transitiva de
+  desenvolvimento (`brace-expansion`) e uma cadeia direta do Router relacionada a
+  RSC Mode; remediação e prova de alcançabilidade detalhadas em S2.2;
+- scripts de instalação pendentes de revisão: `core-js` e `fsevents`;
 - itens S0/S1 devem ser tratados antes da ampliação pública do painel.
 
 ## Planos históricos

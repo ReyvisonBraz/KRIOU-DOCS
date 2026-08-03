@@ -57,7 +57,7 @@ complementa:
 | Worker de PDF | aproximadamente 987 KB |
 | Chunk jsPDF | aproximadamente 400 KB |
 | Ocorrências de estilos/classes em UI | mais de 1.600 |
-| Vulnerabilidades `npm audit` | 1 alta transitiva, correção disponível |
+| Vulnerabilidades `npm audit` | 3 altas reportadas, agrupadas em 2 causas; análise detalhada no plano de segurança |
 
 ### Hotspots estruturais
 
@@ -96,10 +96,22 @@ complementa:
    duplicados entre funções.
 10. **Documentação concorrente:** existem múltiplos planos, análises e estruturas
     antigas sem indicação clara de qual documento está vigente.
-11. **Higiene do Git:** `dist/` e `coverage/` estão ignorados hoje, mas artefatos
-    antigos continuam rastreados pelo Git.
+11. **Higiene do Git parcialmente corrigida:** `dist/` e `coverage/` foram
+    removidos do rastreamento no commit de integração `959ddaa`, mas ainda falta
+    impedir a entrada de configurações locais de ferramentas e formalizar a
+    limpeza de stashes temporários.
 12. **Identidade do pacote provisória:** nome `kriou-teste`, versão `0.0.0` e falta
     de contrato explícito de versões Node/npm.
+13. **Identidade Git ausente:** `user.name` e `user.email` não estão configurados;
+    os commits `0fa519c`, `86b8abe`, `7f24336` e `959ddaa` usam endereços locais
+    `@Reyvisons-*.local`, que não ficam associados corretamente à conta GitHub.
+14. **Configuração local versionada:** `.claude/settings.local.json` entrou no
+    repositório. O conteúdo auditado não possui segredo, mas é específico da
+    máquina e pode crescer com permissões ou caminhos inadequados no futuro.
+15. **Estado temporário preservado:** o stash
+    `wip-before-origin-main-integration-2026-08-03` contém apenas dois artefatos
+    antigos de `dist/` e uma versão anterior do `package-lock.json`. Não contém
+    código-fonte, mas precisa de descarte controlado para não ser reaplicado por engano.
 
 ## Arquitetura-alvo
 
@@ -177,15 +189,67 @@ Não haverá “big bang”. Cada fase deve:
 
 Objetivo: tornar o repositório previsível antes das refatorações.
 
-- [ ] consolidar qual plano está vigente e marcar documentos antigos como históricos;
+- [x] consolidar qual plano está vigente e marcar documentos antigos como históricos;
 - [ ] criar `CONTRIBUTING.md` com instalação, comandos e fluxo de mudança;
 - [ ] atualizar `README.md` para refletir arquitetura e operação reais;
 - [ ] corrigir nome/versão/descrição do pacote;
 - [ ] adicionar `.nvmrc` ou campo `engines` para Node/npm;
-- [ ] parar de rastrear `dist/` e `coverage/`, preservando artefatos somente no CI;
+- [x] parar de rastrear `dist/` e `coverage/`, preservando artefatos somente no CI;
 - [ ] documentar convenções de nomes, imports, pastas e testes;
 - [ ] registrar Architectural Decision Records em `docs/adr/`;
 - [ ] criar checklist único de Definition of Done.
+
+#### M00.1 — Identidade e autoria Git
+
+- [ ] configurar `user.name` com o nome que deve aparecer publicamente;
+- [ ] configurar `user.email` com e-mail verificado no GitHub ou endereço
+  `noreply` da conta, preferencialmente apenas neste repositório até confirmar a
+  preferência global;
+- [ ] validar com `git config --show-origin --get-regexp '^user\.(name|email)$'`;
+- [ ] decidir se os quatro commits já publicados com e-mail local permanecerão
+  como registro histórico ou se haverá reescrita coordenada do histórico;
+- [ ] não reescrever `main` sem janela de manutenção, backup das referências,
+  comunicação com colaboradores e confirmação explícita do proprietário;
+- [ ] adicionar a conferência de autoria ao checklist de preparação de commit.
+
+Aceite: novos commits usam identidade verificável; nenhuma reescrita de histórico
+é realizada implicitamente; a decisão sobre commits antigos fica registrada.
+
+#### M00.2 — Arquivos locais, ignore e stashes
+
+- [ ] remover `.claude/settings.local.json` do rastreamento e adicioná-lo ao
+  `.gitignore`, mantendo apenas um exemplo neutro se a configuração for útil à equipe;
+- [ ] revisar arquivos locais equivalentes de IDE/assistentes (`.vscode`, `.idea`,
+  `.cursor`, `.claude`) antes de definir a política de ignore;
+- [ ] executar varredura de segredos no histórico, pois ignorar um arquivo não
+  remove conteúdo que já tenha sido publicado;
+- [ ] registrar que o stash `wip-before-origin-main-integration-2026-08-03`
+  contém somente saídas de build e lockfile obsoleto;
+- [ ] comparar o lockfile do stash com o atual uma última vez e então remover o
+  stash explicitamente, sem reaplicá-lo;
+- [ ] documentar política: stash deve ter descrição, responsável, finalidade e
+  prazo curto; trabalho duradouro deve ficar em branch/commit recuperável;
+- [ ] verificar `git status --ignored` e `git ls-files` para garantir que build,
+  cobertura, segredos e configurações locais não sejam rastreados.
+
+Aceite: árvore de trabalho limpa; nenhum artefato/configuração pessoal rastreado;
+nenhum stash órfão; varredura de segredos sem achado não tratado.
+
+#### M00.3 — Baseline após integração concorrente
+
+- [x] integrar o painel/admin com o `main` que recebeu React Router, TypeScript e
+  reorganização documental, sem sobrescrever o trabalho do colaborador;
+- [x] resolver a localização única dos planos em `docs/programa-evolucao-qualidade/`;
+- [x] validar lint, 321 testes e build de produção após o merge `959ddaa`;
+- [ ] adicionar checagem de TypeScript (`tsc --noEmit`) ao comando local e ao CI;
+- [ ] testar manual/E2E as rotas profundas, refresh, callback OAuth, rota `/admin`
+  e redirecionamento de usuário sem privilégio após a troca de roteador;
+- [ ] confirmar configuração de rewrite da hospedagem para que rotas diretas não
+  retornem 404 em produção;
+- [ ] criar teste de regressão para lazy loading e erro de chunk após deploy.
+
+Aceite: integração reproduzível no CI e rotas críticas comprovadas localmente e
+no ambiente publicado.
 
 Aceite: uma pessoa nova instala, testa e localiza uma feature usando somente a documentação vigente.
 

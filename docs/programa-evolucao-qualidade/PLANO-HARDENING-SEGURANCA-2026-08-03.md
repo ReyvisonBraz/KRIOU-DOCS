@@ -137,13 +137,65 @@ Aceite: nenhum segredo aparece no bundle, Git, logs ou arquivos entregáveis.
 
 #### S2.2 — Dependências e supply chain
 
-- auditoria contínua de dependências diretas e transitivas;
-- lockfile obrigatório e atualizações revisadas;
-- CI com SCA, secret scanning e análise estática;
-- política para vulnerabilidades críticas/altas e prazo de correção;
-- revisão de scripts de instalação/build e pacotes abandonados.
+Diagnóstico reproduzível em 03/08/2026:
 
-Aceite: CI bloqueia segredo detectado e vulnerabilidade crítica explorável.
+| Cadeia | Uso no projeto | Risco reportado | Exposição preliminar | Tratamento |
+|---|---|---|---|---|
+| `eslint -> minimatch -> brace-expansion@1.1.13` | desenvolvimento/CI | DoS por expansão excessiva, dois advisories na mesma dependência | baixa para usuários do produto; ferramenta não processa padrões fornecidos pelo público | atualizar para `brace-expansion >=1.1.17` pela árvore suportada ou override temporário validado |
+| `react-router-dom@7.18.1 -> react-router@7.18.1` | runtime direto | bypass de CSRF em **RSC Mode** | aparentemente não alcançável no SPA atual, que usa `BrowserRouter` e não usa ações/RSC do framework; hipótese deve ser comprovada | acompanhar versão corrigida compatível ou downgrade planejado; não usar `--force` sem testes |
+
+Observações da auditoria:
+
+- o total de “3 altas” inclui `react-router` e o pacote direto
+  `react-router-dom` apontando para a mesma causa, além de `brace-expansion`;
+- `npm audit fix --dry-run` propôs `brace-expansion@1.1.18`, mas a própria saída
+  continuou reportando a cadeia do Router e apresentou recomendações inconsistentes
+  entre atualização patch e downgrade; o resultado precisa ser confirmado com nova auditoria;
+- `npm install` identificou scripts ainda não aprovados em `core-js` e duas
+  instalações de `fsevents`; isso não prova comprometimento, mas exige revisão e
+  política explícita antes de liberar scripts;
+- o lockfile é obrigatório e qualquer correção deve ser feita em branch isolada,
+  nunca por `npm audit fix --force` diretamente no `main`.
+
+Plano de remediação:
+
+- [ ] abrir uma branch específica de dependências a partir do `main` validado;
+- [ ] registrar `npm audit --json`, `npm ls` e `npm explain` como evidência inicial;
+- [ ] corrigir `brace-expansion` pela atualização da cadeia ESLint/minimatch; se
+  isso não estiver disponível, testar `overrides` para `1.1.18` e documentar por
+  que a API permanece compatível;
+- [x] comprovar por busca de código que o projeto não usa RSC Mode,
+  loaders/actions server-side ou endpoints de ação do React Router; em 03/08/2026
+  foram encontrados somente `BrowserRouter`, `Routes`, `Route`, `Navigate`,
+  `useNavigate` e `useLocation`;
+- [ ] adicionar teste/checagem automática que impeça ativação acidental de RSC
+  Mode ou actions vulneráveis enquanto a dependência permanecer afetada;
+- [ ] consultar advisory e release oficial do React Router antes de selecionar a
+  versão; preferir versão corrigida suportada em vez de downgrade silencioso;
+- [ ] se a correção exigir downgrade/major, criar matriz de regressão para
+  `BrowserRouter`, `Routes`, `Route`, `Navigate`, `useNavigate`, `useLocation`,
+  lazy loading, OAuth callback, refresh e rota administrativa;
+- [ ] executar `npm ci`, lint, `tsc --noEmit`, 321+ testes, build e E2E em instalação limpa;
+- [ ] repetir `npm audit --omit=dev` para separar risco de runtime e
+  `npm audit` completo para risco de desenvolvimento/CI;
+- [ ] revisar scripts de instalação pendentes (`core-js`, `fsevents`) por origem,
+  conteúdo, necessidade e plataforma antes de aprová-los;
+- [ ] adicionar Renovate ou Dependabot com PRs pequenos, agrupamento controlado e
+  execução obrigatória dos testes;
+- [ ] adicionar SCA no CI com política provisória: crítica explorável bloqueia
+  imediatamente; alta direta explorável bloqueia; alta não alcançável exige
+  justificativa, responsável e prazo;
+- [ ] gerar inventário/SBOM por release e definir retenção da evidência;
+- [ ] revisar pacotes abandonados, duplicados e desnecessários trimestralmente.
+
+Critérios de aceite:
+
+- `npm audit --omit=dev` sem vulnerabilidade alta/critical explorável em runtime;
+- auditoria completa sem alta/critical não tratada, ou exceção temporária contendo
+  advisory, análise de alcançabilidade, responsável, prazo e compensação;
+- instalação limpa reproduzível pelo lockfile e todos os gates aprovados;
+- scripts de instalação explicitamente aprovados ou bloqueados após revisão;
+- CI bloqueia segredo detectado e vulnerabilidade crítica explorável.
 
 #### S2.3 — Logs seguros e alertas
 

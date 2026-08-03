@@ -56,7 +56,9 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
 
   // Funcao de auto-save — persiste localmente e sincroniza com nuvem
   const saveFn = useCallback((data) => {
-    if (!isReadyRef.current) return;
+    // Providers existem também nas páginas públicas. Sem usuário autenticado,
+    // não há dono válido para o rascunho e nenhuma persistência deve ocorrer.
+    if (!isReadyRef.current || !userId) return;
     const sanitized = sanitizeFormData(data);
     StorageService.saveDraft(sanitized, userId, "resume");
     DocumentService.saveDraft(userId, "resume", sanitized, currentStep).catch(() => {});

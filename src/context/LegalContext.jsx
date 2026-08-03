@@ -49,7 +49,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
 
   // Funcao de auto-save — persiste localmente e sincroniza com nuvem
   const saveFn = useCallback((data) => {
-    if (!isReadyRef.current || Object.keys(data).length === 0) return;
+    if (!isReadyRef.current || !userId || Object.keys(data).length === 0) return;
     const sanitized = sanitizeFormData(data);
     StorageService.saveDraft(sanitized, userId, "legal");
     DocumentService.saveDraft(userId, "legal", sanitized, legalStep).catch(() => {});

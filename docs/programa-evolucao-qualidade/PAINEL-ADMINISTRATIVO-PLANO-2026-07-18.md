@@ -4,6 +4,11 @@
 
 Criar uma central operacional segura para acompanhar usuários, documentos, pagamentos e falhas, sem expor o conteúdo pessoal dos documentos por padrão e sem transformar o frontend em autoridade administrativa.
 
+> A ampliação de poderes operacionais está detalhada em
+> [PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md](./PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md).
+> Esse plano preserva esta base e adiciona matriz de ações, papéis, MFA,
+> cortesia financeira, acesso excepcional e edição versionada.
+
 ## Princípios
 
 - Toda ação administrativa é validada pela Edge Function e pelo papel armazenado no banco.
@@ -43,7 +48,8 @@ Na primeira versão, `admin` continua sendo o único papel privilegiado. A separ
 - [x] Corrigir obtenção de e-mail pela API administrativa de autenticação.
 - [x] Remover consulta N+1 da contagem de documentos.
 - [x] Restringir lista de documentos a metadados.
-- [ ] Criar tabela `admin_audit_events` com RLS bloqueada para clientes.
+- [x] Criar tabela `admin_audit_events` com RLS bloqueada para clientes.
+- [ ] Integrar a gravação append-only da auditoria às ações administrativas.
 - [ ] Adicionar paginação, limites máximos e busca server-side.
 
 Aceite: usuário comum recebe 403; nenhuma lista retorna `form_data` ou `legal_data`; 100 usuários não geram 100 consultas extras.

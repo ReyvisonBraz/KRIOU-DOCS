@@ -72,6 +72,20 @@ Plano ativo: [PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md](./PLANO-SINC
 - exclusão real de conta dependerá de backend auditado e política de retenção;
 - implementação ainda não iniciada.
 
+## Controles administrativos
+
+Plano ativo: [PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md](./PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md).
+
+- capacidades propostas para usuários, documentos, pagamentos e operação;
+- `Marcar como pago` rejeitado: conciliação usa o provedor e exceção vira
+  `Liberar como cortesia`, separada da receita;
+- download/visualização de conteúdo de cliente será excepcional, temporário,
+  motivado, protegido por MFA e auditado;
+- edição administrativa será proposta versionada, sem impersonação e sem apagar original;
+- primeira entrega recomendada limita-se a busca/detalhe, arquivamento, suspensão,
+  bloqueios, atualização e auditoria;
+- implementação ainda não iniciada; A0 é bloqueador obrigatório.
+
 ## Planos históricos
 
 Planos concluídos ou substituídos foram preservados em [historico/](./historico/README.md).

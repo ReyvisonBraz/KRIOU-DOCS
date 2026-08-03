@@ -10,6 +10,7 @@ Esta é a entrada única para planejamento técnico do projeto.
 | 2 | [Modernização e manutenibilidade](./PLANO-MESTRE-MODERNIZACAO-2026-08-03.md) | reorganizar arquitetura, erros, testes, performance e manutenção | planejado |
 | 3 | [Hardening de segurança](./PLANO-HARDENING-SEGURANCA-2026-08-03.md) | elevar segurança, auditoria e prontidão operacional | planejado; S0/S1 pode avançar em paralelo |
 | 4 | [Sincronização, exclusão e auditoria](./PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md) | garantir exclusões confirmadas, atualização econômica do admin e trilha backend | planejado; executar D0 antes das demais fases |
+| 5 | [Controles administrativos](./PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md) | ampliar operação de usuários, documentos, pagamentos e acesso excepcional | planejado; A0 bloqueia todas as mutações novas |
 
 O acompanhamento resumido fica em [STATUS.md](./STATUS.md). Decisões
 arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).

@@ -181,7 +181,7 @@ KRIOU-DOCS/
 │   └── main.jsx
 ├── docs/
 │   ├── CONHECIMENTO.md       # Este documento
-│   ├── UX_IMPROVEMENTS.md    # Checklist de melhorias
+│   ├── programa-evolucao-qualidade/ # Planos ativos e históricos
 │   └── PROJECT_SUMMARY.md   # Resumo do projeto
 ├── package.json
 └── README.md

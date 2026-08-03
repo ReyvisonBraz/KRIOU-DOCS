@@ -1,53 +1,36 @@
-# Programa de Evolução de Qualidade — Kriou Docs
+# Planos e evolução — KRIOU-DOCS
 
-> Fonte operacional do projeto a partir de 10/07/2026.
+Esta é a entrada única para planejamento técnico do projeto.
 
-Este programa substitui `plano-evolucao/` como plano ativo. O plano anterior permanece no repositório apenas como histórico, pois parte de seu diagnóstico já foi superada.
+## Planos ativos
 
-## Objetivo
+| Ordem | Plano | Objetivo | Estado |
+|---:|---|---|---|
+| 1 | [Painel administrativo](./PAINEL-ADMINISTRATIVO-PLANO-2026-07-18.md) | concluir a operação administrativa iniciada | em execução |
+| 2 | [Modernização e manutenibilidade](./PLANO-MESTRE-MODERNIZACAO-2026-08-03.md) | reorganizar arquitetura, erros, testes, performance e manutenção | planejado |
+| 3 | [Hardening de segurança](./PLANO-HARDENING-SEGURANCA-2026-08-03.md) | elevar segurança, auditoria e prontidão operacional | planejado; S0/S1 pode avançar em paralelo |
 
-Elevar o Kriou Docs de MVP funcional para produto comercial seguro, testável, observável e sustentável, sem interromper os fluxos atuais.
+O acompanhamento resumido fica em [STATUS.md](./STATUS.md). Decisões
+arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 
-## Regra de execução
+## Ordem de trabalho atual
 
-Cada tarefa segue este ciclo:
+1. terminar e validar o painel administrativo;
+2. versionar a entrega atual em commits coerentes;
+3. iniciar M00 do plano de modernização;
+4. iniciar M01 (erros e observabilidade);
+5. executar segurança S0/S1 em paralelo conforme risco e dependências.
 
-1. confirmar o problema com evidência;
-2. definir contrato e critério de aceite;
-3. fazer a menor mudança segura;
-4. criar ou atualizar testes;
-5. executar lint, testes e build;
-6. registrar resultado e dívida remanescente;
-7. somente então avançar a próxima tarefa.
+## Documentos de apoio
 
-## Ordem obrigatória
+- [Handoff do painel admin](./PAINEL-ADMIN-STATUS-2026-08-03.md)
+- [Histórico de planos](./historico/README.md)
 
-| Etapa | Setor | Prioridade | Estado |
-|---|---|---:|---|
-| 00 | Governança e linha de base | P0 | Em andamento |
-| 01 | Segurança, pagamentos e autorização | P0 | Em andamento |
-| 02 | Qualidade estática e padrões | P0 | Planejada |
-| 03 | Testes e integração contínua | P0 | Planejada |
-| 04 | Arquitetura frontend | P1 | Planejada |
-| 05 | Dados, Supabase e serviços | P1 | Planejada |
-| 06 | Componentes e design system | P1 | Planejada |
-| 07 | Performance e PDFs | P1 | Planejada |
-| 08 | UX, acessibilidade e responsividade | P1 | Planejada |
-| 09 | Observabilidade e operação | P1 | Planejada |
-| 10 | LGPD, conteúdo jurídico e produção | P1 | Planejada |
+## Regra de organização
 
-## Portões de qualidade globais
-
-- nenhum erro de lint;
-- testes unitários e de integração 100% verdes;
-- E2E crítico reproduzível e verde;
-- build de produção verde;
-- zero vulnerabilidade alta ou crítica conhecida em produção;
-- nenhuma confirmação financeira baseada apenas em dados do navegador;
-- toda mudança de banco reversível e versionada;
-- documentação e checklist atualizados na mesma entrega.
-
-## Estrutura
-
-Cada pasta possui escopo, tarefas, critérios de aceite, validação e ordem interna. O acompanhamento consolidado fica em [STATUS.md](./STATUS.md) e as decisões arquiteturais em [DECISOES.md](./DECISOES.md).
+- somente planos vigentes permanecem nesta pasta principal;
+- plano concluído ou substituído vai para `historico/`;
+- nenhum plano histórico é apagado;
+- novos planos precisam declarar objetivo, estado, relação com os planos ativos e critério de encerramento;
+- `STATUS.md` deve ser atualizado ao concluir um marco relevante.
 

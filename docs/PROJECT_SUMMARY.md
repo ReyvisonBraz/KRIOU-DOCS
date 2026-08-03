@@ -189,7 +189,7 @@ KRIOU-DOCS/
 │   ├── workers/
 │   │   └── pdfWorker.js           ✅
 │   └── App.jsx                   ✅ (code splitting done)
-├── plano-evolucao/
+├── programa-evolucao-qualidade/  # Planos ativos e histórico organizado
 │   ├── 00-VISAO-GERAL.md
 │   ├── 01-SEGURANCA.md
 │   ├── 02-ARQUITETURA.md

@@ -354,25 +354,44 @@ export const DocumentService = {
     const avatar_url = googleData?.avatar_url || user?.raw_user_meta_data?.avatar_url || null;
     const google_id = user?.raw_user_meta_data?.sub || null;
 
-    const { data, error } = await supabase
+    const profileFields = {
+      nome,
+      sobrenome,
+      cpf,
+      email,
+      avatar_url,
+      google_id,
+    };
+
+    // UPDATE e INSERT separados: o banco concede UPDATE apenas aos campos
+    // editáveis. Um upsert incluiria `id` também no ramo de UPDATE e exigiria
+    // permissão desnecessária sobre a chave/identidade do perfil.
+    const { data: updatedProfile, error: updateError } = await supabase
       .from("profiles")
-      .upsert({
-        id: user.id,
-        nome,
-        sobrenome,
-        cpf,
-        email,
-        avatar_url,
-        google_id,
-      }, { onConflict: "id" })
+      .update(profileFields)
+      .eq("id", user.id)
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      console.error("[DocumentService][ERRO] updateProfile:", updateError.message);
+      throw updateError;
+    }
+
+    if (updatedProfile) return updatedProfile;
+
+    const { data: createdProfile, error: insertError } = await supabase
+      .from("profiles")
+      .insert({ id: user.id, ...profileFields })
       .select()
       .single();
 
-    if (error) {
-      console.error("[DocumentService][ERRO] updateProfile:", error.message);
-      throw error;
+    if (insertError) {
+      console.error("[DocumentService][ERRO] createProfile:", insertError.message);
+      throw insertError;
     }
-    return data;
+
+    return createdProfile;
   },
 
   /**

@@ -61,6 +61,17 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
   cliente GET está validado localmente e aguarda publicação do frontend;
 - itens S0/S1 devem ser tratados antes da ampliação pública do painel.
 
+## Sincronização, exclusão e auditoria
+
+Plano ativo: [PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md](./PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md).
+
+- exclusão de documento será confirmada pelo servidor antes de remover o card;
+- falha preservará/restaurará o estado e exibirá mensagem acionável;
+- painel receberá botão, idade dos dados e refresh por foco;
+- polling será opcional e econômico; Realtime foi adiado até existir evidência;
+- exclusão real de conta dependerá de backend auditado e política de retenção;
+- implementação ainda não iniciada.
+
 ## Planos históricos
 
 Planos concluídos ou substituídos foram preservados em [historico/](./historico/README.md).

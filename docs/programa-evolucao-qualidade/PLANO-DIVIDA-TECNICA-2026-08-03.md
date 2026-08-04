@@ -56,7 +56,7 @@ reuso, revisão ou desempenho.
 | ID | Dívida / risco | Prioridade | Dependência | Resultado verificável | Estado |
 |---|---|---|---|---|---|
 | DT-01 | autorização/RLS sem matriz real automatizada | crítica | Supabase local | testes provam usuário A/B, admin e backend | parcial: usuário/admin/backend comprovados; owner pendente |
-| DT-02 | capacidades administrativas ainda baseadas em papel amplo | crítica | DT-01, auditoria | capacidades privadas, negação padrão e MFA nos atos sensíveis | parcial: matriz/leitura e gate AAL2 prontos; UX MFA e gestão pendentes |
+| DT-02 | capacidades administrativas ainda baseadas em papel amplo | crítica | DT-01, auditoria | capacidades privadas, negação padrão e MFA nos atos sensíveis | parcial: matriz, gate e UX TOTP prontos; recuperação/gestão pendentes |
 | DT-03 | exclusão/sincronização com confirmação e recuperação incompletas | alta | contratos de serviço | UI só remove após confirmação e restaura em falha | planejado |
 | DT-04 | erros e logs sem correlação/monitoramento externo | alta | política de PII | falha possui código, referência e evento sanitizado | planejado |
 | DT-05 | respostas de serviços e Edge Functions sem schema validado | alta | decisão de schema | payload inválido falha na fronteira, não na UI | planejado |

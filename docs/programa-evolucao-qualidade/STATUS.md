@@ -96,7 +96,12 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
 - `admin` e `admin-metrics` autorizam por capacidade; integração local comprova
   respostas 401/403/200 para visitante, usuário comum e administrador;
 - admin AAL1 não usa mais bypass de download não pago: recebe `403 mfa_required`;
-- próximo item executável: UX de MFA e gestão de papéis exclusiva do owner.
+- perfil possui UI de cadastro TOTP, QR secreto, chave manual, confirmação e
+  reforço de sessão, isolada em `features/account`;
+- teste local comprova criação/cancelamento do fator e testes de componente
+  cobrem cadastro, AAL2 e sessão AAL1 com fator existente;
+- próximo item executável: recuperação segura, teste manual do autenticador e
+  gestão de papéis exclusiva do owner.
 
 ## Controles administrativos
 

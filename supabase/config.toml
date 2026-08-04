@@ -15,3 +15,9 @@ verify_jwt = false
 
 [functions.admin]
 verify_jwt = false
+
+# Segundo fator TOTP usado para elevar sessões administrativas de AAL1 para
+# AAL2. A configuração remota deve ser confirmada antes do deploy da UI MFA.
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true

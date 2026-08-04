@@ -133,6 +133,26 @@ const [rowsA, rowsB] = await Promise.all([
   seedOwnedRows(clientB, users[1].id, "B"),
 ]);
 
+const { data: existingFactors, error: existingFactorsError } =
+  await clientB.auth.mfa.listFactors();
+assert.ifError(existingFactorsError);
+for (const factor of existingFactors.totp.filter(({ status }) => status !== "verified")) {
+  const { error } = await clientB.auth.mfa.unenroll({ factorId: factor.id });
+  assert.ifError(error);
+}
+
+const { data: enrollment, error: enrollmentError } = await clientB.auth.mfa.enroll({
+  factorType: "totp",
+  friendlyName: `Security test ${randomUUID()}`,
+});
+assert.ifError(enrollmentError);
+assert(enrollment.totp.qr_code, "Cadastro MFA não retornou QR Code.");
+assert(enrollment.totp.secret, "Cadastro MFA não retornou chave manual.");
+const { error: cancelEnrollmentError } = await clientB.auth.mfa.unenroll({
+  factorId: enrollment.id,
+});
+assert.ifError(cancelEnrollmentError);
+
 await assertVisibleIds(clientA, "profiles", users[0].id, users[1].id);
 await assertVisibleIds(clientA, "documents", rowsA.documentId, rowsB.documentId);
 await assertVisibleIds(clientA, "document_drafts", rowsA.draftId, rowsB.draftId);
@@ -239,5 +259,5 @@ assert(
 );
 
 console.log(
-  "[Security] RLS, capacidades privadas, autoelevação e auditoria append-only comprovadas.",
+  "[Security] RLS, capacidades, ciclo MFA e auditoria append-only comprovados.",
 );

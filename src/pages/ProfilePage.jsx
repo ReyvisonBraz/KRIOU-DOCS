@@ -16,6 +16,7 @@ import showToast from "../utils/toast";
 import { validateCpf } from "../utils/validation";
 import LocalDataCleanupCard from "../features/account/LocalDataCleanupCard";
 import { clearLocalAccountData } from "../features/account/localDataCleanup";
+import MfaSecurityCard from "../features/account/MfaSecurityCard";
 
 // ─── CSS Variables Reference ─────────────────────────────────────────────────
 // --navy, --surface, --surface-2, --surface-3, --coral, --gold, --teal,
@@ -499,6 +500,8 @@ const ProfilePage = () => {
             <SettingsRow icon="HelpCircle" label="Ajuda e Suporte" accent="var(--teal)" last />
           </div>
         </Card>
+
+        <MfaSecurityCard />
 
         {/* ─── Logout ─── */}
         <button

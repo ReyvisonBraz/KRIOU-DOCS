@@ -56,8 +56,12 @@ outro usuário ou adquirir privilégio administrativo.
 - [x] criar helper backend que valida AAL pela API MFA do Supabase e falha fechado;
 - [x] remover bypass de download não pago baseado apenas em `profiles.role`;
 - [x] comprovar que admin AAL1 recebe `403 mfa_required` na exceção protegida;
+- [x] criar UI isolada para cadastro TOTP, QR secreto, chave manual, confirmação
+  e reforço de sessão já cadastrada;
+- [x] testar localmente criação e cancelamento do fator sem deixar cadastro órfão;
 - [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
-- [ ] criar fluxo de cadastro, desafio, recuperação e remoção segura do fator;
+- [ ] concluir recuperação e remoção segura do fator;
+- [ ] executar cadastro manual com autenticador real na conta administrativa;
 - reautenticar antes de mudança de papel, suspensão, exportação ou reprocessamento;
 - definir duração máxima da sessão administrativa e comportamento de revogação;
 - impedir uso administrativo com provedor/conta não verificada.

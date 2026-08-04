@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useApp } from "../context/AppContext";
-import { Spinner } from "./UI";
+import { Spinner } from "./UI/primitives";
 import AdminMfaGate from "./AdminMfaGate";
 
 const AdminRoute = ({ children }) => {

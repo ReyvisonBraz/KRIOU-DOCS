@@ -61,6 +61,20 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - inspeção visual em claro/escuro e suíte de 343 testes aprovadas;
 - migração visual continua aberta para estados menos comuns, responsividade e
   remoção definitiva das cores fixas antigas antes de publicação na `main`.
+- auditoria formal de visual, mobile e PWA iniciada em 04/08/2026;
+- baseline Lighthouse no build de produção: mobile 77/95/100/82 e desktop
+  99/95/100/82 para Performance/Acessibilidade/Boas práticas/SEO;
+- fontes externas bloqueantes, JavaScript inicial desnecessário, três contrastes
+  residuais na landing e ausência de manifesto/service worker foram confirmados;
+- o site é responsivo, mas ainda não deve ser apresentado como PWA instalável;
+- plano detalhado: [PLANO-AUDITORIA-VISUAL-PWA-2026-08-04.md](./PLANO-AUDITORIA-VISUAL-PWA-2026-08-04.md).
+- primeiro lote técnico concluído localmente: Lighthouse mobile passou de
+  77/95/100/82 para 93/100/100/100;
+- jsPDF deixou de ser pré-carregado, fontes passaram ao próprio bundle e o
+  JavaScript não utilizado estimado caiu de 210 KiB para 72 KiB;
+- matriz Playwright/axe cobre desktop, Android 360 px, iPhone 390 px e tablet em
+  claro/escuro; 14 verificações passaram e 2 foram ignoradas por viewport;
+- lint, typecheck, 355 testes unitários e build permanecem aprovados.
 
 ## Segurança
 

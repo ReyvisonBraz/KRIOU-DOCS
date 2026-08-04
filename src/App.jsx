@@ -21,7 +21,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./components/Theme";
 import ThemeToggle from "./components/ThemeToggle";
-import { Spinner } from "./components/UI";
+import { Spinner } from "./components/UI/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AdminRoute from "./components/AdminRoute";
 import { Toaster } from "sonner";

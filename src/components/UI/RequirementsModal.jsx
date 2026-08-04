@@ -1219,7 +1219,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           /* Show print document */
           .print-document {
             display: block !important;
-            font-family: 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Plus Jakarta Sans Variable', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             color: #1a1a1a !important;
           }
           .print-document * {

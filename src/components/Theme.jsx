@@ -13,8 +13,8 @@ const colors = {
 };
 
 const fonts = {
-  display: "'Outfit', system-ui, sans-serif",
-  body: "'Plus Jakarta Sans', system-ui, sans-serif",
+  display: "'Outfit Variable', system-ui, sans-serif",
+  body: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
 };
 
 const radii = { sm: "10px", md: "14px", lg: "20px", xl: "24px", full: "9999px" };

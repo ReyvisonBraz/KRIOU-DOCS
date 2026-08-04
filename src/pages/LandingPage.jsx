@@ -190,7 +190,7 @@ const LandingPage = () => {
               onClick={() => navigate("landing")}
               className="landing-brand font-display text-2xl font-black tracking-tight bg-transparent border-none cursor-pointer touch-target px-2"
             >
-              <span className="text-coral">Kriou</span>Docs
+              <span style={{ color: "var(--header-brand-accent)" }}>Kriou</span>Docs
             </button>
 
             <nav className="hidden md:flex items-center gap-2 text-sm font-semibold">
@@ -293,7 +293,7 @@ const LandingPage = () => {
                     </div>
 
                     <div style={{ margin: "0 34px", padding: "13px 16px", borderLeft: "4px solid #a58737", background: "#faf7ee", border: "1px solid #e8e1cf" }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "#a58737", marginBottom: 6 }}>FUNDAMENTO LEGAL</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#6f500a", marginBottom: 6 }}>FUNDAMENTO LEGAL</div>
                       <div style={{ height: 7, width: "84%", background: "#1f2937", opacity: 0.18, borderRadius: 10 }} />
                     </div>
 
@@ -317,7 +317,7 @@ const LandingPage = () => {
                           <div key={label}>
                             <div style={{ borderTop: "1px dashed #2b2c35", height: 12 }} />
                             <div style={{ height: 6, width: "72%", margin: "0 auto 5px", background: "#252936", opacity: 0.14, borderRadius: 10 }} />
-                            <div style={{ fontSize: 8, fontWeight: 800, color: "#a58737", textAlign: "center" }}>{label}</div>
+                            <div style={{ fontSize: 10, fontWeight: 800, color: "#6f500a", textAlign: "center" }}>{label}</div>
                           </div>
                         ))}
                       </div>
@@ -448,7 +448,7 @@ const LandingPage = () => {
               {LEGAL_FLOW.map((item, index) => (
                 <div key={item} className="surface-card" style={{ padding: 18, borderRadius: 16 }}>
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-coral text-white flex items-center justify-center font-display font-black">
+                    <span className="w-9 h-9 rounded-xl bg-coral flex items-center justify-center font-display font-black" style={{ color: "var(--on-action)" }}>
                       {index + 1}
                     </span>
                     <span className="text-sm font-extrabold text-text">{item}</span>
@@ -480,7 +480,7 @@ const LandingPage = () => {
                   }}
                 >
                   {plan.highlight && (
-                    <span className="absolute top-4 right-4 text-[10px] uppercase tracking-wide font-black text-white bg-coral px-2 py-1 rounded-md">
+                    <span className="absolute top-4 right-4 text-xs uppercase tracking-wide font-black bg-coral px-2 py-1 rounded-md" style={{ color: "var(--on-action)" }}>
                       Popular
                     </span>
                   )}

@@ -18,6 +18,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:setup": "playwright test e2e/auth.setup.js --project=setup",
     "test:e2e:public": "playwright test e2e/landing.spec.js e2e/navigation.spec.js",
+    "test:e2e:responsive": "playwright test e2e/interface.responsive.spec.js",
     "test:security:local": "node scripts/test-local-security.mjs",
     "test:admin-functions:local": "node scripts/test-local-admin-functions.mjs",
     "quality": "npm run lint && npm run typecheck && npm run test:ci && npm run build"
@@ -27,6 +28,8 @@
     "npm": ">=10 <12"
   },
   "dependencies": {
+    "@fontsource-variable/outfit": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@supabase/supabase-js": "^2.103.2",
     "jspdf": "^4.2.1",
     "qrcode-generator": "^2.0.4",
@@ -36,6 +39,7 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.2.2",

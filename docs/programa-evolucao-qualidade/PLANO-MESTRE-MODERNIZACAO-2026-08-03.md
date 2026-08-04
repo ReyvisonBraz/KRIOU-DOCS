@@ -361,6 +361,10 @@ Aceite: cada estado tem proprietário único e comportamento previsível após r
 
 Objetivo: reduzir estilos duplicados e facilitar alterações de interface.
 
+Execução detalhada e baseline atual em
+`PLANO-AUDITORIA-VISUAL-PWA-2026-08-04.md`. O mesmo plano também detalha os
+itens mobile/PWA relacionados a M06 e M07.
+
 - [ ] escolher estratégia principal: classes utilitárias + tokens ou módulos por feature;
 - [ ] manter estilos inline somente quando realmente dinâmicos;
 - [ ] consolidar cores, tipografia, espaçamento, radius, sombra e breakpoints;

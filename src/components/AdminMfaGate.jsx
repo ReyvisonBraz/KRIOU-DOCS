@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Spinner } from "./UI";
+import { Spinner } from "./UI/primitives";
 import { Icon } from "./Icons";
 import MfaService from "../features/account/MfaService";
 

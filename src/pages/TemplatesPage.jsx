@@ -5,6 +5,7 @@ import { Card, Button, AppNavbar } from "../components/UI";
 import { RESUME_TEMPLATES } from "../data/constants";
 import { getAvailableDocuments } from "../data/legalDocuments";
 import { getContrastingTextColor } from "../utils/colorContrast";
+import { resolveTemplateBackAction, resolveTemplateEntry } from "../domain/templates/navigation";
 
 const TEMPLATE_CATEGORIES = [
   { id: "all", label: "Todos", icon: "Grid" },
@@ -28,10 +29,10 @@ const LEGAL_CATEGORIES = [
   { id: "financeiros", label: "Financeiros", icon: "CreditCard", docIds: ["recibo"] },
 ];
 
-const getInitialDocType = () => {
+const getInitialTemplateEntry = () => {
   const cat = sessionStorage.getItem("kriou_template_category");
   sessionStorage.removeItem("kriou_template_category");
-  return cat === "resume" || cat === "legal" ? cat : null;
+  return resolveTemplateEntry(cat);
 };
 
 const LEGAL_DOC_COLORS = {
@@ -522,7 +523,8 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
 // ─── TemplatesPage ──────────────────────────────────────────────────────────
 const TemplatesPage = () => {
   const { navigate, goBack, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType, setSelectedVariant } = useApp();
-  const [docType, setDocType] = useState(getInitialDocType);
+  const [initialEntry] = useState(getInitialTemplateEntry);
+  const [docType, setDocType] = useState(initialEntry.docType);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLegalCategory, setSelectedLegalCategory] = useState("all");
   const [specTemplate, setSpecTemplate] = useState(null);
@@ -542,6 +544,14 @@ const TemplatesPage = () => {
   };
 
   const handleBack = () => {
+    const action = resolveTemplateBackAction({
+      docType,
+      openedDirectly: initialEntry.openedDirectly,
+    });
+    if (action === "dashboard") {
+      goBack("dashboard");
+      return;
+    }
     setDocType(null);
     setSelectedCategory("all");
     setSelectedLegalCategory("all");

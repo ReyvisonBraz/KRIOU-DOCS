@@ -125,6 +125,20 @@ Plano ativo: [PLANO-DASHBOARD-E-TEMPLATES-2026-08-03.md](./PLANO-DASHBOARD-E-TEM
 - migração será híbrida e gradual, começando por inventário/registry somente leitura;
 - implementação ainda não iniciada.
 
+## Autenticidade e QR de documentos
+
+Plano ativo: [PLANO-AUTENTICIDADE-QR-DOCUMENTOS-2026-08-03.md](./PLANO-AUTENTICIDADE-QR-DOCUMENTOS-2026-08-03.md).
+
+- QR de MFA e QR público do documento formalmente separados;
+- causa do QR sem tela confirmada: URL fixa para domínio/rota inexistentes;
+- código atual é gerado no cliente e não possui vínculo verificável no backend;
+- solução planejada com versão imutável, token opaco, hash, revogação e página pública;
+- tela pública mostrará metadados mínimos e nomes mascarados por padrão;
+- titular poderá entrar com Google, preservar o destino e resolver somente documento próprio;
+- scanner no painel será responsivo/PWA, com fallback manual e download ainda
+  submetido à autorização backend;
+- Q0–Q3 precisam ser concluídos juntos antes de chamar o QR de autenticador.
+
 ## Planos históricos
 
 Planos concluídos ou substituídos foram preservados em [historico/](./historico/README.md).

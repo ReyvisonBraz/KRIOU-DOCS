@@ -13,6 +13,7 @@ Esta é a entrada única para planejamento técnico do projeto.
 | 5 | [Controles administrativos](./PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md) | ampliar operação de usuários, documentos, pagamentos e acesso excepcional | planejado; A0 bloqueia todas as mutações novas |
 | 6 | [Dashboard e templates](./PLANO-DASHBOARD-E-TEMPLATES-2026-08-03.md) | criar centro operacional e catálogo versionado de documentos | planejado; iniciar por B0/B1 e T0/T1 |
 | 7 | [Dívida técnica](./PLANO-DIVIDA-TECNICA-2026-08-03.md) | manter inventário priorizado e executar a modernização por risco | em execução; TD0 é o marco atual |
+| 8 | [Autenticidade e QR de documentos](./PLANO-AUTENTICIDADE-QR-DOCUMENTOS-2026-08-03.md) | vincular QR público a versões imutáveis e recuperação autenticada | planejado; Q0–Q3 bloqueiam promessa de autenticidade |
 
 O acompanhamento resumido fica em [STATUS.md](./STATUS.md). Decisões
 arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
@@ -27,6 +28,7 @@ arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 6. ampliar controles administrativos somente sobre esses guardrails;
 7. avançar decomposição estrutural por feature, começando pelas áreas tocadas;
 8. iniciar dashboard por B0/B1 e templates por T0/T1; editor/publicação somente após os gates.
+9. após a fundação MFA, executar Q0/Q1 do QR; publicar verificador e PDF vinculado somente juntos.
 
 ## Documentos de apoio
 

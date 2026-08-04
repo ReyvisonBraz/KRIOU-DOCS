@@ -69,6 +69,7 @@ reuso, revisão ou desempenho.
 | DT-12 | bundles pesados de PDF/editor sem orçamento formal | média | medição de navegação | orçamento por rota e dependências pesadas sob demanda | planejado |
 | DT-13 | documentação contém indicadores históricos misturados ao estado atual | média | governança | status atual único; concluídos movidos ao histórico | em execução |
 | DT-14 | dependências com alertas e scripts de instalação pendentes de decisão | alta | análise de alcançabilidade | decisão documentada, lockfile controlado e CI verificando | planejado |
+| DT-15 | QR do PDF aponta para rota inexistente e não está vinculado a versão backend | crítica | versionamento, privacidade | token opaco, versão imutável e verificador público | planejado em Q0–Q3 |
 
 ## Sequência de execução
 

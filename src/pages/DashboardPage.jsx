@@ -592,7 +592,7 @@ const DashboardPage = () => {
             </div>
             <div className="wa-cta-btn" style={{
               display: "flex", alignItems: "center", gap: 6, padding: "10px 16px",
-              borderRadius: 12, background: "#25D366", color: "#fff",
+              borderRadius: 12, background: "var(--action-whatsapp)", color: "var(--on-action)",
               fontFamily: "var(--font-body)", fontWeight: 700,
               fontSize: 14, whiteSpace: "nowrap", flexShrink: 0, border: "none",
             }}>
@@ -672,7 +672,7 @@ const DashboardPage = () => {
                   border: "none",
                   cursor: "pointer",
                   background: "var(--coral)",
-                  color: "#fff",
+                  color: "var(--on-action)",
                   fontFamily: "var(--font-body)",
                   fontWeight: 700,
                   fontSize: "0.875rem",
@@ -682,7 +682,7 @@ const DashboardPage = () => {
                 }}
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e63950";
+                  e.currentTarget.style.background = "var(--action-accent-hover)";
                   e.currentTarget.style.boxShadow = "0 6px 24px rgba(244,63,94,0.4)";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
@@ -855,7 +855,7 @@ const DashboardPage = () => {
                     border: isActive ? "none" : "1px solid transparent",
                     cursor: "pointer",
                     background: isActive ? "var(--coral)" : "var(--surface)",
-                    color: isActive ? "#fff" : "var(--text-muted)",
+                    color: isActive ? "var(--on-action)" : "var(--text-muted)",
                     fontFamily: "var(--font-body)",
                     fontWeight: isActive ? 700 : 600,
                     fontSize: "0.875rem",
@@ -889,8 +889,8 @@ const DashboardPage = () => {
                     height: 22,
                     padding: "0 6px",
                     borderRadius: 8,
-                    background: isActive ? "rgba(255,255,255,0.2)" : "var(--surface-3)",
-                    color: isActive ? "#fff" : "var(--text-muted)",
+                    background: isActive ? "transparent" : "var(--surface-3)",
+                    color: isActive ? "var(--on-action)" : "var(--text-muted)",
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
                     fontSize: "0.75rem",
@@ -1022,7 +1022,7 @@ const DashboardPage = () => {
                     border: "none",
                     cursor: "pointer",
                     background: "var(--coral)",
-                    color: "#fff",
+                    color: "var(--on-action)",
                     fontFamily: "var(--font-body)",
                     fontWeight: 700,
                     fontSize: "1rem",
@@ -1032,7 +1032,7 @@ const DashboardPage = () => {
                   }}
                   className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e63950";
+                    e.currentTarget.style.background = "var(--action-accent-hover)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                     e.currentTarget.style.boxShadow = "0 8px 24px rgba(244,63,94,0.4)";
                   }}

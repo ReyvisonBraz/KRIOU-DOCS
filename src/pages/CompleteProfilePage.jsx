@@ -182,8 +182,8 @@ const CompleteProfilePage = ({ onNavigate }) => {
           </div>
 
           {/* Info */}
-          <div className="flex items-start gap-2.5 p-3.5 bg-blue/10 border border-blue/20 rounded-xl">
-            <Icon name="Shield" className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="flex items-start gap-2.5 p-3.5 bg-teal/10 border border-teal/20 rounded-xl">
+            <Icon name="Shield" className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
             <p className="text-[12px] text-text-muted leading-relaxed">
               Dados usados apenas para identificação interna. Não aparecem nos documentos. Você pode completar o CPF depois no seu perfil.
             </p>
@@ -193,7 +193,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full py-4 bg-coral hover:bg-coral-light text-white font-bold text-[16px] rounded-2xl transition-all shadow-lg shadow-coral/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+            className="w-full py-4 bg-coral hover:bg-coral-hover text-white font-bold text-[16px] rounded-2xl transition-all shadow-lg shadow-coral/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
           >
             {isSaving ? (
               <>

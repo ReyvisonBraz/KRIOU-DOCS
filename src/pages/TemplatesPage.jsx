@@ -4,6 +4,7 @@ import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { RESUME_TEMPLATES } from "../data/constants";
 import { getAvailableDocuments } from "../data/legalDocuments";
+import { getContrastingTextColor } from "../utils/colorContrast";
 
 const TEMPLATE_CATEGORIES = [
   { id: "all", label: "Todos", icon: "Grid" },
@@ -115,7 +116,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             position: "absolute", top: 12, right: 12, padding: "4px 12px",
             borderRadius: 100, fontSize: 10, fontWeight: 800,
             background: template.accent,
-            color: template.id === "primeiro-emprego" ? "var(--navy)" : "#fff",
+            color: getContrastingTextColor(template.accent),
             zIndex: 2, letterSpacing: "0.04em", textTransform: "uppercase",
             boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
           }}>
@@ -169,7 +170,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
               background: template.accent, border: "none",
-              color: template.id === "primeiro-emprego" ? "var(--navy)" : "#fff",
+              color: getContrastingTextColor(template.accent),
               fontSize: 13, fontWeight: 700, cursor: "pointer",
               display: "flex", alignItems: "center", gap: 7,
               transition: "all 0.15s ease",
@@ -477,7 +478,7 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
                 <h3 style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Seções</h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {spec.sections.map((s, i) => (
-                    <span key={i} style={{ padding: "6px 14px", background: `${colors.accent}10`, color: colors.accent, borderRadius: 6, fontSize: 11, fontWeight: 600, border: `1px solid ${colors.accent}22` }}>{s}</span>
+                    <span key={i} style={{ padding: "6px 14px", background: `${colors.accent}10`, color: "var(--text-secondary)", borderRadius: 6, fontSize: 12, fontWeight: 600, border: `1px solid ${colors.accent}22` }}>{s}</span>
                   ))}
                 </div>
               </div>
@@ -498,7 +499,7 @@ const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
               <div style={{ padding: 16, borderRadius: 10, marginBottom: 18, background: "rgba(244,63,94,0.06)", border: "1px solid rgba(244,63,94,0.12)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <Icon name="AlertTriangle" className="w-4 h-4" style={{ color: "var(--coral)" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--coral)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pontos de atenção</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pontos de atenção</span>
                 </div>
                 {spec.commonIssues.map((issue, i) => (
                   <div key={i} style={{ fontSize: 12, color: "var(--text)", display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
@@ -603,7 +604,7 @@ const TemplatesPage = () => {
         <span style={{
           display: "inline-block", padding: "6px 18px", borderRadius: 100,
           background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.18)",
-          fontSize: 11, fontWeight: 700, color: "var(--coral)",
+          fontSize: 12, fontWeight: 700, color: "var(--text-accent)",
           letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 18,
         }}>
           Criar novo documento
@@ -670,7 +671,7 @@ const TemplatesPage = () => {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <span style={{
                 padding: "5px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700,
-                background: "rgba(244,63,94,0.12)", color: "var(--coral)",
+                background: "rgba(244,63,94,0.12)", color: "var(--text-accent)",
               }}>
                 {RESUME_TEMPLATES.length} modelos
               </span>
@@ -763,7 +764,7 @@ const TemplatesPage = () => {
               }}>
                 <Icon name="User" className="w-4 h-4" style={{ color: "var(--coral)" }} />
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "var(--coral)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                 Currículos
               </span>
             </div>
@@ -826,7 +827,7 @@ const TemplatesPage = () => {
             onClick={() => navigate("dashboard", { replace: true })}
             style={{
               background: "none", border: "none",
-              color: "var(--coral)", fontWeight: 700, fontSize: 14,
+              color: "var(--text-accent)", fontWeight: 700, fontSize: 14,
               cursor: "pointer", textDecoration: "underline",
               minHeight: 44, padding: "4px 4px",
             }}
@@ -946,8 +947,8 @@ const TemplatesPage = () => {
                           </h3>
                           {doc.legislation && (
                             <span style={{
-                              fontSize: 10, padding: "3px 10px", borderRadius: 100,
-                              background: `${c.accent}10`, color: c.accent,
+                              fontSize: 12, padding: "3px 10px", borderRadius: 100,
+                              background: `${c.accent}10`, color: "var(--text-secondary)",
                               fontWeight: 700, border: `1px solid ${c.accent}20`,
                               letterSpacing: "0.02em",
                             }}>
@@ -961,7 +962,7 @@ const TemplatesPage = () => {
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                           {doc.variants?.map((v) => (
                             <span key={v.id} style={{
-                              fontSize: 11, padding: "3px 12px", borderRadius: 100,
+                              fontSize: 12, padding: "3px 12px", borderRadius: 100,
                               background: "var(--surface-2)", color: "var(--text-dim)",
                               fontWeight: 500, display: "flex", alignItems: "center", gap: 4,
                             }}>
@@ -969,8 +970,8 @@ const TemplatesPage = () => {
                             </span>
                           ))}
                           <span style={{
-                            fontSize: 11, padding: "3px 12px", borderRadius: 100,
-                            background: `${c.accent}0C`, color: c.accent, fontWeight: 700,
+                            fontSize: 12, padding: "3px 12px", borderRadius: 100,
+                            background: `${c.accent}0C`, color: "var(--text-secondary)", fontWeight: 700,
                           }}>
                             {doc.spec?.sections?.length || 0} seções
                           </span>
@@ -1006,7 +1007,7 @@ const TemplatesPage = () => {
                           style={{
                             minHeight: 44, padding: "10px 22px", borderRadius: 10,
                             background: c.accent, border: "none",
-                            color: "#fff", fontSize: 13, fontWeight: 700,
+                            color: getContrastingTextColor(c.accent), fontSize: 14, fontWeight: 700,
                             cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
                             transition: "all 0.15s ease", outline: "none",
                           }}
@@ -1096,8 +1097,8 @@ const TemplatesPage = () => {
                 gap: 6,
                 padding: "9px 16px",
                 borderRadius: 10,
-                background: "#25D366",
-                color: "#fff",
+                background: "var(--action-whatsapp)",
+                color: "var(--on-action)",
                 fontFamily: "var(--font-body)",
                 fontWeight: 700,
                 fontSize: 12,

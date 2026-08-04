@@ -7,7 +7,7 @@ const colors = {
   coral: "#C93659", coralHover: "#A92545", coralMuted: "rgba(201,54,89,0.10)",
   gold: "#8A6510", goldMuted: "rgba(138,101,16,0.10)",
   teal: "#0F766E", tealMuted: "rgba(15,118,110,0.10)",
-  text: "#182230", textDim: "#475467", textMuted: "#667085", textFaint: "#98A2B3",
+  text: "#182230", textDim: "#475467", textMuted: "#5F697B", textFaint: "#5F697B",
   border: "#D0D5DD", borderHover: "#98A2B3",
   success: "#0F766E", warning: "#B54708", danger: "#B42318",
 };

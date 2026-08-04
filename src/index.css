@@ -14,8 +14,8 @@
   --color-teal: #0F766E;
   --color-text: #182230;
   --color-text-dim: #475467;
-  --color-text-muted: #667085;
-  --color-text-faint: #98A2B3;
+  --color-text-muted: #5F697B;
+  --color-text-faint: #5F697B;
   --color-border: #D0D5DD;
   --color-border-hover: #98A2B3;
   --color-success: #0F766E;
@@ -72,7 +72,7 @@
   --surface-elevated: #E4E9F0;
   --text-primary: #182230;
   --text-secondary: #475467;
-  --text-muted: #667085;
+  --text-muted: #5F697B;
   --text-disabled: #98A2B3;
   --border-default: #D0D5DD;
   --border-strong: #98A2B3;
@@ -81,6 +81,8 @@
   --action-primary-hover: #19324C;
   --action-accent: #C93659;
   --action-accent-hover: #A92545;
+  --text-accent: #A92545;
+  --action-whatsapp: #167D42;
   --status-success: #0F766E;
   --status-warning: #B54708;
   --status-danger: #B42318;
@@ -105,7 +107,7 @@
   --teal: #0F766E;
   --text: var(--text-primary);
   --text-dim: var(--text-secondary);
-  --text-faint: var(--text-disabled);
+  --text-faint: var(--text-muted);
   --border: var(--border-default);
   --border-hover: var(--border-strong);
   --success: var(--status-success);
@@ -141,7 +143,7 @@
   --color-text: #E8E8F0;
   --color-text-dim: #A0A0B8;
   --color-text-muted: #6B6B88;
-  --color-text-faint: #484866;
+  --color-text-faint: #A8B3C2;
   --color-border: #2A2A4D;
   --color-border-hover: #3D3D66;
   --color-success: #10B981;
@@ -163,11 +165,13 @@
   --action-primary-hover: #A3C2DF;
   --action-accent: #E35473;
   --action-accent-hover: #F27891;
+  --text-accent: #F27891;
+  --action-whatsapp: #3A9B66;
   --status-success: #3FB5A8;
   --status-warning: #F0A65A;
   --status-danger: #F97066;
   --focus-ring: #84CAFF;
-  --on-action: #FFFFFF;
+  --on-action: #0B1220;
   --header-bg: #0B1220;
   --header-text: #F2F4F7;
   --header-text-secondary: #A8B3C2;
@@ -183,7 +187,7 @@
   --teal: var(--status-success);
   --text: var(--text-primary);
   --text-dim: var(--text-secondary);
-  --text-faint: var(--text-disabled);
+  --text-faint: var(--text-muted);
   --border: var(--border-default);
   --border-hover: var(--border-strong);
   --success: var(--status-success);

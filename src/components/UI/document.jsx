@@ -421,7 +421,7 @@ export const DocumentCard = ({
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
               minHeight: TOQUE, padding: "0 12px", borderRadius: 9,
-              border: `1px solid ${accent}45`, background: `${accent}14`, color: accent,
+              border: `1px solid ${accent}45`, background: `${accent}14`, color: "var(--text-accent)",
               display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
               fontSize: 12, fontWeight: 800, fontFamily: "var(--font-body)",
             }}
@@ -443,7 +443,7 @@ export const DocumentCard = ({
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
               style={{
                 minHeight: TOQUE, padding: "0 12px", borderRadius: 9, border: "none",
-                background: "var(--coral)", color: "#fff", display: "inline-flex",
+                background: "var(--coral)", color: "var(--on-action)", display: "inline-flex",
                 alignItems: "center", gap: 7, cursor: "pointer", fontSize: 12,
                 fontWeight: 800, fontFamily: "var(--font-body)",
               }}

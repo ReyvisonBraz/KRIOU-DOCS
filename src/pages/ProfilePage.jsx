@@ -423,7 +423,7 @@ const ProfilePage = () => {
                     padding: "3px 10px",
                     borderRadius: 9999,
                     background: "rgba(244,63,94,0.12)",
-                    color: "var(--coral)",
+                    color: "var(--text-accent)",
                     fontFamily: "var(--font-body)",
                     fontSize: 12,
                     fontWeight: 600,

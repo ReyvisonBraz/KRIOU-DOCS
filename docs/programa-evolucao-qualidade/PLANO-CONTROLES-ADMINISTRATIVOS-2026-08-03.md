@@ -154,8 +154,9 @@ Bloqueia todas as demais mutações.
 - [x] Criar `support`, `finance`, `admin` e `owner` com matriz versionada.
 - [ ] Exigir MFA/AAL2 para ação mutável ou acesso a conteúdo; helper backend e
   primeiro bloqueio negativo prontos, fluxo de cadastro e cobertura total pendentes.
-- [ ] Implementar helper transacional de auditoria append-only.
-- [ ] Adicionar `operation_id`, `request_id`, resultado e erro sanitizado à auditoria.
+- [ ] Implementar helper transacional de auditoria append-only; mudança de papel
+  já é atômica com auditoria, demais mutações futuras devem reutilizar o padrão.
+- [x] Adicionar `operation_id`, `request_id`, resultado e erro sanitizado à auditoria.
 - [x] Criar matriz de autorização backend com negação por padrão; exposição
   segura de capacidades ao frontend permanece pendente até a decomposição da rota.
 - [ ] Aplicar rate limit mais rígido a mutações, downloads e exportações.
@@ -165,6 +166,12 @@ Bloqueia todas as demais mutações.
 
 Aceite: usuário comum e papel insuficiente recebem 403; admin sem AAL2 não executa
 mutação; falha da auditoria impede ação crítica.
+
+Evidência local: migration `020` e função `admin-access` exigem `owner`, AAL2,
+motivo e UUID de operação. A transação altera o papel privado, sincroniza apenas
+o campo legado da interface e grava auditoria; repetição retorna o resultado sem
+duplicar evento. Autoalteração e qualquer promoção/revogação de `owner` são
+bloqueadas até existir fluxo de dupla aprovação.
 
 ## Fase A1 — Busca e detalhe operacional somente leitura
 

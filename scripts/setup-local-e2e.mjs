@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import postgres from "postgres";
 
 const accounts = [
   {
@@ -15,6 +16,12 @@ const accounts = [
     email: "admin.e2e@kriou.local",
     password: "Kriou-E2E-Admin-2026!",
     nome: "Admin",
+  },
+  {
+    role: "owner",
+    email: "owner.e2e@kriou.local",
+    password: "Kriou-E2E-Owner-2026!",
+    nome: "Owner",
   },
 ];
 
@@ -66,9 +73,16 @@ if (listError) throw listError;
 
 const authDirectory = path.resolve("e2e/.auth");
 await mkdir(authDirectory, { recursive: true });
+const accountIds = new Map();
 
 for (const account of accounts) {
   let user = usersData.users.find((candidate) => candidate.email === account.email);
+
+  if (user && account.role === "owner") {
+    const { error } = await adminClient.auth.admin.deleteUser(user.id);
+    if (error) throw error;
+    user = null;
+  }
 
   if (!user) {
     const { data, error } = await adminClient.auth.admin.createUser({
@@ -89,7 +103,7 @@ for (const account of accounts) {
   const { error: profileError } = await adminClient
     .from("profiles")
     .update({
-      role: account.role,
+      role: account.role === "user" ? "user" : "admin",
       nome: account.nome,
       sobrenome: "E2E",
       cpf: "00000000000",
@@ -97,8 +111,9 @@ for (const account of accounts) {
     })
     .eq("id", user.id);
   if (profileError) throw profileError;
+  accountIds.set(account.role, user.id);
 
-  if (account.role === "admin") {
+  if (account.role !== "user") {
     const { data: synced, error: syncError } = await adminClient.rpc(
       "kriou_admin_sync_legacy_assignment",
       { target_user_id: user.id },
@@ -124,4 +139,52 @@ for (const account of accounts) {
   );
 }
 
-console.log("[E2E] Sessões locais determinísticas criadas: user e admin.");
+const sql = postgres(status.DB_URL, { max: 1 });
+try {
+  await sql.begin(async (transaction) => {
+    await transaction`
+      DELETE FROM private.admin_role_assignments
+      WHERE user_id = ${accountIds.get("user")}::uuid
+    `;
+
+    await transaction`
+      INSERT INTO private.admin_role_assignments (
+        user_id, role, assigned_by, reason, created_at, updated_at
+      ) VALUES (
+        ${accountIds.get("admin")}::uuid,
+        'admin',
+        ${accountIds.get("owner")}::uuid,
+        'Admin determinístico exclusivo do ambiente local de testes',
+        now(),
+        now()
+      )
+      ON CONFLICT (user_id) DO UPDATE
+      SET role = 'admin',
+          assigned_by = excluded.assigned_by,
+          reason = excluded.reason,
+          updated_at = now()
+    `;
+
+    await transaction`
+      INSERT INTO private.admin_role_assignments (
+        user_id, role, assigned_by, reason, created_at, updated_at
+      ) VALUES (
+        ${accountIds.get("owner")}::uuid,
+        'owner',
+        ${accountIds.get("owner")}::uuid,
+        'Owner determinístico exclusivo do ambiente local de testes',
+        now(),
+        now()
+      )
+      ON CONFLICT (user_id) DO UPDATE
+      SET role = 'owner',
+          assigned_by = excluded.assigned_by,
+          reason = excluded.reason,
+          updated_at = now()
+    `;
+  });
+} finally {
+  await sql.end();
+}
+
+console.log("[E2E] Sessões locais determinísticas criadas: user, admin e owner.");

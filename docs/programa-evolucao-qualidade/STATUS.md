@@ -56,9 +56,9 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
 - testes reais de RLS e auditoria append-only estão ativos; MFA/AAL2 começou pelo
   helper backend e bloqueio de exceção de download, enquanto UX/cobertura total
   e rate limiting permanecem pendentes;
-- auditoria npm registra 3 alertas altos agrupados em 2 causas: uma transitiva de
-  desenvolvimento (`brace-expansion`) e uma cadeia direta do Router relacionada a
-  RSC Mode; remediação e prova de alcançabilidade detalhadas em S2.2;
+- auditoria npm de 04/08 registra 5 pacotes (4 altos, 1 moderado) em quatro
+  causas; com `--omit=dev`, restam apenas os 2 pacotes da mesma cadeia Router/RSC,
+  não usada pelo SPA atual; remediação detalhada em S2.2;
 - scripts de instalação pendentes de revisão: `core-js` e `fsevents`;
 - `admin-metrics`: migration `017` e função atualizada já estão no Supabase; o
   cliente GET está validado localmente e aguarda publicação do frontend;
@@ -101,7 +101,13 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
 - teste local comprova criação/cancelamento do fator e testes de componente
   cobrem cadastro, AAL2 e sessão AAL1 com fator existente;
 - próximo item executável: recuperação segura, teste manual do autenticador e
-  gestão de papéis exclusiva do owner.
+  desenho da segunda aprovação para mudanças de owner.
+- migration `020` e Edge Function `admin-access` implementam gestão transacional
+  de `support`, `finance` e `admin` exclusivamente por owner em AAL2;
+- motivo, `operation_id`, idempotência e auditoria são obrigatórios; admin comum,
+  owner AAL1, autoalteração e promoção a owner são rejeitados;
+- alterações de owner permanecem bloqueadas até existir segunda aprovação e
+  proteção formal do último proprietário.
 
 ## Controles administrativos
 

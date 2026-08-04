@@ -84,7 +84,8 @@ reuso, revisão ou desempenho.
 - [x] provar que `service_role` insere/lê auditoria, mas não altera ou apaga eventos;
 - [x] criar matriz de capacidades administrativas com negação por padrão;
 - [ ] exigir autenticação reforçada nas capacidades de maior risco;
-- [ ] padronizar idempotência, motivo e auditoria obrigatória nas mutações.
+- [ ] padronizar idempotência, motivo e auditoria obrigatória nas mutações;
+  mudança de papel já implementa o padrão transacional de referência.
 
 Aceite: ampliar o painel não permite elevar papel, atravessar contas, apagar
 auditoria nem executar duas vezes uma mutação repetida.

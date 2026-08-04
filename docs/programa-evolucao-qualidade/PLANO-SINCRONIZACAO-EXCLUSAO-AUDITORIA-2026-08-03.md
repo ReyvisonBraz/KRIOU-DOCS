@@ -45,9 +45,9 @@ Edge Function e banco para separar latência de rede, cold start e consulta SQL.
 
 Prioridade: crítica.
 
-- [ ] Renomear temporariamente “Excluir meus dados” para “Limpar dados deste
+- [x] Renomear temporariamente “Excluir meus dados” para “Limpar dados deste
   dispositivo e sair”, descrevendo exatamente seu efeito atual.
-- [ ] Separar os conceitos `limpar dispositivo`, `excluir documento` e
+- [x] Separar os conceitos `limpar dispositivo`, `excluir documento` e
   `excluir conta e dados do servidor`.
 - [ ] Definir contrato de resposta comum: `success`, `operationId`, `deletedId`,
   `completedAt` e erro público com código estável.

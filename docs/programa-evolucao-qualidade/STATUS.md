@@ -70,7 +70,12 @@ Plano ativo: [PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md](./PLANO-SINC
 - painel receberá botão, idade dos dados e refresh por foco;
 - polling será opcional e econômico; Realtime foi adiado até existir evidência;
 - exclusão real de conta dependerá de backend auditado e política de retenção;
-- implementação ainda não iniciada.
+- implementação iniciada por D0; demais fases permanecem planejadas.
+
+Evidência D0 na branch `feat/admin-security-foundation`: limpeza local extraída
+para feature/componentes próprios, linguagem corrigida e testes de alcance,
+cancelamento, falha e confirmação adicionados. Conta e dados do servidor não são
+mais apresentados como excluídos por essa ação.
 
 ## Controles administrativos
 

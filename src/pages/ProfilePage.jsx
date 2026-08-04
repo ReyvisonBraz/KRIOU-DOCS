@@ -12,9 +12,10 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { DocumentService } from "../services/DocumentService";
-import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 import { validateCpf } from "../utils/validation";
+import LocalDataCleanupCard from "../features/account/LocalDataCleanupCard";
+import { clearLocalAccountData } from "../features/account/localDataCleanup";
 
 // ─── CSS Variables Reference ─────────────────────────────────────────────────
 // --navy, --surface, --surface-2, --surface-3, --coral, --gold, --teal,
@@ -23,7 +24,6 @@ import { validateCpf } from "../utils/validation";
 
 const ProfilePage = () => {
   const { navigate, logout, profile, setProfile, email, userId, userDocuments } = useApp();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -93,12 +93,14 @@ const ProfilePage = () => {
     logout();
   };
 
-  const handleDeleteData = () => {
-    if (userId) {
-      StorageService.clearUserData(userId);
-      localStorage.removeItem(`kriou_onboarding_${userId}_seen`);
+  const handleClearLocalData = async () => {
+    if (!clearLocalAccountData({ userId })) {
+      showToast.error("Não foi possível limpar os dados deste dispositivo.");
+      return;
     }
-    logout();
+
+    showToast.success("Dados deste dispositivo removidos.");
+    await logout();
   };
 
   const docCount = userDocuments?.length ?? 0;
@@ -537,137 +539,7 @@ const ProfilePage = () => {
           Sair da Conta
         </button>
 
-        {/* ─── Delete Data ─── */}
-        {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            style={{
-              minWidth: 44,
-              minHeight: 44,
-              padding: "12px 16px",
-              margin: "16px auto 0",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--text-muted)",
-              fontFamily: "var(--font-body)",
-              fontSize: 12,
-              fontWeight: 500,
-              display: "block",
-              textAlign: "center",
-              textDecoration: "underline",
-              textUnderlineOffset: 3,
-              transition: "color 0.2s ease",
-            }}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)] rounded-xl"
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--danger)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
-          >
-            Apagar meus dados
-          </button>
-        ) : (
-          <Card
-            style={{
-              marginTop: 16,
-              padding: 20,
-              border: "1.5px solid rgba(244,63,94,0.35)",
-              background: "rgba(244,63,94,0.04)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  background: "rgba(244,63,94,0.12)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--coral)",
-                }}
-              >
-                <Icon name="Shield" className="w-5 h-5" />
-              </div>
-              <p
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  color: "var(--text-dim)",
-                  letterSpacing: "-0.005em",
-                  margin: 0,
-                }}
-              >
-                Isso vai apagar <strong style={{ color: "var(--text)" }}>todos os seus documentos e dados salvos</strong> localmente e desconectar sua conta. Esta ação não pode ser desfeita.
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                style={{
-                  flex: 1,
-                  minHeight: 48,
-                  padding: "12px 20px",
-                  borderRadius: 13,
-                  border: "1.5px solid var(--border)",
-                  background: "transparent",
-                  color: "var(--text-dim)",
-                  fontFamily: "var(--font-body)",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  letterSpacing: "-0.005em",
-                  transition: "all 0.2s ease",
-                }}
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--surface-2)";
-                  e.currentTarget.style.color = "var(--text)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--text-dim)";
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDeleteData}
-                style={{
-                  flex: 1,
-                  minHeight: 48,
-                  padding: "12px 20px",
-                  borderRadius: 13,
-                  border: "none",
-                  background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
-                  color: "#fff",
-                  fontFamily: "var(--font-body)",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  letterSpacing: "-0.005em",
-                  boxShadow: "0 4px 18px rgba(244,63,94,0.30)",
-                  transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)";
-                  e.currentTarget.style.boxShadow = "0 8px 28px rgba(244,63,94,0.45)";
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)";
-                  e.currentTarget.style.boxShadow = "0 4px 18px rgba(244,63,94,0.30)";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
-              >
-                Confirmar exclusão
-              </button>
-            </div>
-          </Card>
-        )}
+        <LocalDataCleanupCard onConfirm={handleClearLocalData} />
 
         <div style={{ height: 48 }} />
       </div>

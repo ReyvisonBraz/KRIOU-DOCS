@@ -14,13 +14,38 @@ export function createAdminClient() {
 }
 
 export async function authenticate(req: Request, supabase: ReturnType<typeof createAdminClient>) {
-  const authHeader = req.headers.get("Authorization") || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  const token = accessToken(req);
 
   if (!token) return null;
 
   const { data: { user }, error } = await supabase.auth.getUser(token);
   return error ? null : user;
+}
+
+export function accessToken(req: Request) {
+  const authHeader = req.headers.get("Authorization") || "";
+  return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+}
+
+export async function getAuthenticatorAssuranceLevel(
+  req: Request,
+  supabase: ReturnType<typeof createAdminClient>,
+) {
+  const token = accessToken(req);
+  if (!token) return null;
+
+  const { data, error } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel(token);
+  if (error) throw new Error("Falha ao validar nível de autenticação");
+
+  return data.currentLevel === "aal2" ? "aal2" : "aal1";
+}
+
+export async function hasAal2(
+  req: Request,
+  supabase: ReturnType<typeof createAdminClient>,
+) {
+  return (await getAuthenticatorAssuranceLevel(req, supabase)) === "aal2";
 }
 
 export type AdminRole = "support" | "finance" | "admin" | "owner";

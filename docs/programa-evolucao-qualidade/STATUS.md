@@ -53,7 +53,9 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURANCA-2026-08-03.md).
 
 - vulnerabilidade crítica de autoelevação corrigida;
-- testes reais de RLS, auditoria efetiva, MFA/AAL2 e rate limiting permanecem pendentes;
+- testes reais de RLS e auditoria append-only estão ativos; MFA/AAL2 começou pelo
+  helper backend e bloqueio de exceção de download, enquanto UX/cobertura total
+  e rate limiting permanecem pendentes;
 - auditoria npm registra 3 alertas altos agrupados em 2 causas: uma transitiva de
   desenvolvimento (`brace-expansion`) e uma cadeia direta do Router relacionada a
   RSC Mode; remediação e prova de alcançabilidade detalhadas em S2.2;
@@ -93,7 +95,8 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
   sem acesso direto pelo cliente ou `service_role`;
 - `admin` e `admin-metrics` autorizam por capacidade; integração local comprova
   respostas 401/403/200 para visitante, usuário comum e administrador;
-- próximo item executável: MFA/AAL2 e gestão de papéis exclusiva do owner.
+- admin AAL1 não usa mais bypass de download não pago: recebe `403 mfa_required`;
+- próximo item executável: UX de MFA e gestão de papéis exclusiva do owner.
 
 ## Controles administrativos
 

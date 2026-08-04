@@ -53,7 +53,11 @@ outro usuário ou adquirir privilégio administrativo.
 
 #### S0.2 — Autenticação reforçada do administrador
 
-- exigir MFA/AAL2 para ações administrativas mutáveis;
+- [x] criar helper backend que valida AAL pela API MFA do Supabase e falha fechado;
+- [x] remover bypass de download não pago baseado apenas em `profiles.role`;
+- [x] comprovar que admin AAL1 recebe `403 mfa_required` na exceção protegida;
+- [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
+- [ ] criar fluxo de cadastro, desafio, recuperação e remoção segura do fator;
 - reautenticar antes de mudança de papel, suspensão, exportação ou reprocessamento;
 - definir duração máxima da sessão administrativa e comportamento de revogação;
 - impedir uso administrativo com provedor/conta não verificada.

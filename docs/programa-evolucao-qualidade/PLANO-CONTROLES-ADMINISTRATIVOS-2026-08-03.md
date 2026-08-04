@@ -152,7 +152,8 @@ Bloqueia todas as demais mutações.
 - [x] Migrar a autorização backend de leitura para estrutura privada com permissões;
   `profiles.role` permanece somente como compatibilidade temporária da interface.
 - [x] Criar `support`, `finance`, `admin` e `owner` com matriz versionada.
-- [ ] Exigir MFA/AAL2 para ação mutável ou acesso a conteúdo.
+- [ ] Exigir MFA/AAL2 para ação mutável ou acesso a conteúdo; helper backend e
+  primeiro bloqueio negativo prontos, fluxo de cadastro e cobertura total pendentes.
 - [ ] Implementar helper transacional de auditoria append-only.
 - [ ] Adicionar `operation_id`, `request_id`, resultado e erro sanitizado à auditoria.
 - [x] Criar matriz de autorização backend com negação por padrão; exposição

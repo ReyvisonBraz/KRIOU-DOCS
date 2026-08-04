@@ -86,6 +86,19 @@ Plano ativo: [PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md](./PLANO-CONTROLES-A
   bloqueios, atualização e auditoria;
 - implementação ainda não iniciada; A0 é bloqueador obrigatório.
 
+## Dashboard e templates
+
+Plano ativo: [PLANO-DASHBOARD-E-TEMPLATES-2026-08-03.md](./PLANO-DASHBOARD-E-TEMPLATES-2026-08-03.md).
+
+- dashboard será orientado a saúde, filas, drill-down, SLA e ações, não apenas KPIs;
+- catálogo separará layouts de currículo e conteúdo jurídico;
+- templates publicados serão imutáveis e documentos guardarão a versão utilizada;
+- rollback afetará somente novos usos, preservando documentos existentes;
+- editor usará schema declarativo validado, nunca HTML/JS arbitrário;
+- jurídico exigirá revisão técnica, de conteúdo e jurídica antes da publicação;
+- migração será híbrida e gradual, começando por inventário/registry somente leitura;
+- implementação ainda não iniciada.
+
 ## Planos históricos
 
 Planos concluídos ou substituídos foram preservados em [historico/](./historico/README.md).

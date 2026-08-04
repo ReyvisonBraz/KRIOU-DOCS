@@ -240,7 +240,7 @@ const PreviewPage = () => {
                   alignSelf: "center",
                 }}>
                   <span style={{
-                    color: "#fff",
+                    color: "var(--on-action)",
                     fontSize: 22,
                     fontWeight: 700,
                     fontFamily: "var(--font-display)",

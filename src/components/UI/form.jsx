@@ -49,15 +49,15 @@ const ensureFormStyles = () => {
       border-color: var(--border-hover);
     }
     .kriou-input-wrap:focus-within {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.15);
+      border-color: var(--focus-ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 18%, transparent);
     }
     .kriou-input-wrap.has-error {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.1);
+      border-color: var(--status-danger);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 12%, transparent);
     }
     .kriou-input-wrap.has-error:focus-within {
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.22);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 18%, transparent);
     }
 
     .kriou-input-el {
@@ -115,16 +115,16 @@ const ensureFormStyles = () => {
       border-color: var(--border-hover);
     }
     .kriou-textarea-el:focus {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.15);
+      border-color: var(--focus-ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 18%, transparent);
       outline: none;
     }
     .kriou-textarea-el.has-error {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.1);
+      border-color: var(--status-danger);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 12%, transparent);
     }
     .kriou-textarea-el.has-error:focus {
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.22);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 18%, transparent);
     }
     .kriou-textarea-el::placeholder {
       color: var(--text-faint);
@@ -159,16 +159,16 @@ const ensureFormStyles = () => {
       border-color: var(--border-hover);
     }
     .kriou-select-el:focus {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.15);
+      border-color: var(--focus-ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 18%, transparent);
       outline: none;
     }
     .kriou-select-el.has-error {
-      border-color: var(--coral);
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.1);
+      border-color: var(--status-danger);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 12%, transparent);
     }
     .kriou-select-el.has-error:focus {
-      box-shadow: 0 0 0 3px rgba(244,63,94,0.22);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 18%, transparent);
     }
     /* Cor do texto do placeholder/opção selecionada */
     .kriou-select-el option {
@@ -214,7 +214,7 @@ const ensureFormStyles = () => {
       margin-top: 6px;
       font-size: 12px;
       font-weight: 500;
-      color: var(--coral);
+      color: var(--status-danger);
       font-family: ${T.body};
     }
   `;

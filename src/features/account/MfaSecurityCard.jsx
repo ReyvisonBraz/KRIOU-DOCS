@@ -166,5 +166,5 @@ function CodeField({ value, onChange, disabled }) {
   );
 }
 
-const primaryButtonStyle = { minHeight: 44, padding: "10px 16px", border: 0, borderRadius: 12, background: "var(--teal)", color: "#041713", fontWeight: 700, cursor: "pointer", marginTop: 14 };
+const primaryButtonStyle = { minHeight: 44, padding: "10px 16px", border: 0, borderRadius: 12, background: "var(--action-primary)", color: "var(--on-action)", fontWeight: 700, cursor: "pointer", marginTop: 14 };
 const secondaryButtonStyle = { ...primaryButtonStyle, background: "transparent", border: "1px solid var(--border)", color: "var(--text-dim)", flex: 1 };

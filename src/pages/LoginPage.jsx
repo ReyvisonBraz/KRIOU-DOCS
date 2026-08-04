@@ -63,11 +63,11 @@ const LoginPage = () => {
           transform: rotate(-2deg);
         }
         .login-panel {
-          border: 1px solid rgba(255,255,255,0.11);
-          background: rgba(26,26,54,0.88);
+          border: 1px solid var(--border-default);
+          background: color-mix(in srgb, var(--surface) 92%, transparent);
           border-radius: 18px;
           padding: 18px;
-          box-shadow: 0 24px 70px rgba(0,0,0,0.32);
+          box-shadow: var(--shadow-elevated);
         }
         .login-form-wrap {
           display: flex;

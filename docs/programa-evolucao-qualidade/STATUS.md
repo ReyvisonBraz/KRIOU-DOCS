@@ -48,6 +48,20 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   OAuth completo continua pendente por depender do provedor externo;
 - branch local de trabalho: `chore/modernizacao-m00`.
 
+### Sistema visual e temas
+
+- tema claro definido como padrão e tema escuro preservado como preferência opcional;
+- paleta profissional adotada: azul tinta para estrutura, rubi para marca/CTA,
+  verde petróleo para sucesso e dourado sóbrio para privilégios;
+- tokens semânticos de fundo, superfície, texto, borda, ação, estado e foco criados;
+- aliases antigos permanecem temporariamente para permitir migração incremental;
+- preferência de tema persiste no navegador e possui testes próprios;
+- componentes-base, navegação, formulários, feedback, onboarding, login, editor
+  jurídico, preview e checkout receberam a primeira correção de contraste;
+- inspeção visual em claro/escuro e suíte de 343 testes aprovadas;
+- migração visual continua aberta para estados menos comuns, responsividade e
+  remoção definitiva das cores fixas antigas antes de publicação na `main`.
+
 ## Segurança
 
 Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURANCA-2026-08-03.md).

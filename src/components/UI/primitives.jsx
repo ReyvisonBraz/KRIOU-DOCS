@@ -30,7 +30,7 @@ const injetaEstilos = () => {
     // Keyframes do spinner
     "@keyframes kriou-spin{to{transform:rotate(360deg)}}",
     // Anel de foco via teclado — aplicado em elementos interativos
-    ".kf:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(244,63,94,.38)}",
+    ".kf:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}",
   ].join("");
   document.head.appendChild(el);
   estilosInjetados = true;
@@ -68,12 +68,12 @@ export const Button = ({
   // Mapa de estilos base por variante
   const mapaVariante = {
     primary: {
-      background: hover && !disabled ? "#e63950" : "var(--coral)",
-      color: "#fff",
+      background: hover && !disabled ? "var(--action-accent-hover)" : "var(--action-accent)",
+      color: "var(--on-action)",
       fontWeight: 700,
       boxShadow: hover && !disabled
-        ? "0 6px 24px rgba(244,63,94,0.42)"
-        : "0 4px 16px rgba(244,63,94,0.32)",
+        ? "0 8px 24px rgba(201,54,89,0.24)"
+        : "0 4px 14px rgba(201,54,89,0.18)",
       transform: hover && !disabled ? "translateY(-1px)" : "translateY(0)",
     },
     secondary: {
@@ -89,7 +89,7 @@ export const Button = ({
     },
     danger: {
       background: "var(--danger)",
-      color: "#fff",
+      color: "var(--on-action)",
       fontWeight: 700,
       filter: hover && !disabled ? "brightness(1.12)" : "none",
     },
@@ -189,8 +189,8 @@ export const Card = ({
         cursor: interativo ? "pointer" : "default",
         transition: EASE,
         boxShadow: hover && interativo
-          ? "0 6px 28px rgba(0,0,0,0.28)"
-          : "none",
+          ? "var(--shadow-elevated)"
+          : "var(--shadow-card)",
         ...style,
       }}
       {...props}
@@ -214,9 +214,9 @@ export const Badge = ({
 
   // Mapa de cores por variante — fundo translúcido + cor do texto
   const mapaBadge = {
-    coral:   { background: "rgba(244,63,94,0.14)",  color: "var(--coral)" },
-    teal:    { background: "rgba(20,184,166,0.14)",  color: "var(--teal)" },
-    gold:    { background: "rgba(212,175,55,0.14)",  color: "var(--gold)" },
+    coral:   { background: "rgba(201,54,89,0.10)",  color: "var(--action-accent)" },
+    teal:    { background: "rgba(15,118,110,0.10)",  color: "var(--status-success)" },
+    gold:    { background: "rgba(138,101,16,0.10)",  color: "var(--gold)" },
     default: { background: "var(--surface-3)",         color: "var(--text-muted)" },
   };
 

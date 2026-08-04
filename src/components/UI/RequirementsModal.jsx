@@ -1155,7 +1155,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               outline: "none",
               border: "none",
               background: active.color === "var(--text-muted)" ? "var(--surface-3)" : active.color,
-              color: active.color === "var(--text-muted)" ? "var(--text-dim)" : "#fff",
+              color: active.color === "var(--text-muted)" ? "var(--text-dim)" : "var(--on-action)",
               minHeight: TOQUE,
               boxShadow:
                 active.color === "var(--text-muted)"

@@ -19,7 +19,7 @@ import { Icon } from "../Icons";
    ─────────────────────────────────────────── */
 export const Navbar = ({ children, className = "", style = {}, ...props }) => (
   <nav
-    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04] ${className}`}
+    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)] ${className}`}
     style={style}
     {...props}
   >
@@ -32,7 +32,7 @@ export const Navbar = ({ children, className = "", style = {}, ...props }) => (
    ─────────────────────────────────────────── */
 export const GlassPanel = ({ children, className = "", style = {}, ...props }) => (
   <div
-    className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.18)] ${className}`}
+    className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-card)] ${className}`}
     style={{ padding: 24, ...style }}
     {...props}
   >
@@ -51,7 +51,7 @@ export const GlassPanel = ({ children, className = "", style = {}, ...props }) =
    ─────────────────────────────────────────── */
 export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
   <div
-    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04]"
+    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)]"
     style={style}
   >
     {/* Linha principal: ação esquerda | título | ação direita */}
@@ -171,7 +171,7 @@ export const AppStepper = ({
             background: isActive
               ? "rgba(244,63,94,0.10)"
               : isReached
-                ? "rgba(255,255,255,0.02)"
+                ? "var(--soft-fill)"
                 : "transparent",
             transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
             minWidth: 44,
@@ -196,8 +196,8 @@ export const AppStepper = ({
                 ? "var(--coral)"
                 : isCompleted
                   ? "var(--success)"
-                  : "rgba(255,255,255,0.06)",
-              color: isActive || isCompleted ? "#fff" : "var(--text-muted)",
+                  : "var(--soft-fill-hover)",
+              color: isActive || isCompleted ? "var(--on-action)" : "var(--text-muted)",
               boxShadow: isActive
                 ? "0 0 18px rgba(244,63,94,0.35)"
                 : isCompleted
@@ -298,10 +298,9 @@ export const BottomNavigation = ({
         zIndex: 50,
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        background: "rgba(9,9,20,0.94)",
-        borderTop: "1px solid rgba(212,175,55,0.08)",
-        boxShadow:
-          "0 -8px 40px rgba(0,0,0,0.5), 0 -1px 0 rgba(212,175,55,0.04)",
+        background: "var(--page-overlay)",
+        borderTop: "1px solid var(--border-default)",
+        boxShadow: "0 -10px 32px rgba(15,23,42,0.10)",
         padding: "10px 16px calc(10px + env(safe-area-inset-bottom, 0px))",
         ...style,
       }}
@@ -343,7 +342,7 @@ export const BottomNavigation = ({
               border: `1.5px solid ${
                 hovered === "back"
                   ? "rgba(212,175,55,0.40)"
-                  : "rgba(255,255,255,0.10)"
+                  : "var(--border-default)"
               }`,
               background:
                 hovered === "back"
@@ -423,15 +422,12 @@ export const BottomNavigation = ({
             fontWeight: 700,
             fontSize: "0.9375rem",
             letterSpacing: "-0.005em",
-            background:
-              hovered === "next"
-                ? "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)"
-                : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
-            color: "#fff",
+            background: hovered === "next" ? "var(--action-accent-hover)" : "var(--action-accent)",
+            color: "var(--on-action)",
             boxShadow:
               hovered === "next"
-                ? "0 8px 32px rgba(244,63,94,0.45)"
-                : "0 4px 16px rgba(244,63,94,0.30)",
+                ? "0 8px 24px rgba(201,54,89,0.24)"
+                : "0 4px 14px rgba(201,54,89,0.18)",
             transform: hovered === "next" ? "scale(1.01)" : "scale(1)",
           }}
         >

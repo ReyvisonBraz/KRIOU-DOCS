@@ -20,6 +20,7 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./components/Theme";
+import ThemeToggle from "./components/ThemeToggle";
 import { Spinner } from "./components/UI";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AdminRoute from "./components/AdminRoute";
@@ -93,6 +94,7 @@ const App = () => {
         <BrowserRouter>
           <AppProvider>
             <AppRoutes />
+            <ThemeToggle />
             <Toaster
               position="bottom-center"
               toastOptions={{

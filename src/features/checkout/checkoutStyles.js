@@ -172,7 +172,7 @@ export const checkoutStyles = {
     fontFamily: "var(--font-body)",
     fontWeight: 700,
     background: "var(--coral)",
-    color: "#fff",
+    color: "var(--on-action)",
     border: "none",
     borderRadius: 16,
     cursor: "pointer",
@@ -331,7 +331,7 @@ export const checkoutStyles = {
     cursor: "pointer",
     border: "none",
     background: "var(--coral)",
-    color: "#fff",
+    color: "var(--on-action)",
     minHeight: 52,
     transition: "all 0.2s ease",
     boxShadow: "0 4px 16px rgba(244,63,94,0.25)",
@@ -371,4 +371,3 @@ export const checkoutKeyframes = `
   to { opacity: 1; transform: translateY(0); }
 }
 `;
-

@@ -89,7 +89,7 @@ const AdminMfaGate = ({ children, mfaService = MfaService, onOpenProfile }) => {
                 style={{ display: "block", boxSizing: "border-box", width: "100%", marginTop: 7, padding: "13px 14px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", fontSize: 20, letterSpacing: "0.25em" }}
               />
             </label>
-            <button type="submit" disabled={busy || normalizedCode.length !== 6} className={focusClass} style={{ width: "100%", minHeight: 46, marginTop: 14, border: 0, borderRadius: 12, background: "var(--teal)", color: "#041713", fontWeight: 800, cursor: "pointer" }}>
+            <button type="submit" disabled={busy || normalizedCode.length !== 6} className={focusClass} style={{ width: "100%", minHeight: 46, marginTop: 14, border: 0, borderRadius: 12, background: "var(--action-primary)", color: "var(--on-action)", fontWeight: 800, cursor: "pointer" }}>
               {busy ? "Confirmando…" : "Entrar no painel"}
             </button>
           </form>
@@ -98,7 +98,7 @@ const AdminMfaGate = ({ children, mfaService = MfaService, onOpenProfile }) => {
             <p style={{ color: "var(--text-dim)", fontSize: 13, lineHeight: 1.6 }}>
               Esta conta administrativa ainda não possui um autenticador cadastrado. Configure-o no perfil antes de acessar o painel.
             </p>
-            <button type="button" onClick={onOpenProfile} className={focusClass} style={{ width: "100%", minHeight: 46, border: 0, borderRadius: 12, background: "var(--teal)", color: "#041713", fontWeight: 800, cursor: "pointer" }}>
+            <button type="button" onClick={onOpenProfile} className={focusClass} style={{ width: "100%", minHeight: 46, border: 0, borderRadius: 12, background: "var(--action-primary)", color: "var(--on-action)", fontWeight: 800, cursor: "pointer" }}>
               Configurar no perfil
             </button>
           </div>

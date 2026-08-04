@@ -50,7 +50,7 @@ const ensureGlobalStyles = () => {
 
     /* -- Padrão de foco visível -- */
     .kriou-focus-ring:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
 
@@ -71,10 +71,10 @@ const ensureGlobalStyles = () => {
     }
     .kriou-retry-btn:hover {
       background: var(--coral);
-      color: #fff;
+      color: var(--on-action);
     }
     .kriou-retry-btn:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
     .kriou-retry-btn:active {
@@ -95,7 +95,7 @@ const ensureGlobalStyles = () => {
       transition: all 0.15s ease;
     }
     .kriou-dialog-btn:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
     .kriou-dialog-btn:active {
@@ -112,15 +112,15 @@ const ensureGlobalStyles = () => {
       border-color: var(--border-hover);
     }
     .kriou-dialog-btn-confirm {
-      background: var(--teal);
-      color: #090914;
+      background: var(--action-primary);
+      color: var(--on-action);
     }
     .kriou-dialog-btn-confirm:hover {
       filter: brightness(1.12);
     }
     .kriou-dialog-btn-danger {
-      background: var(--coral);
-      color: #fff;
+      background: var(--status-danger);
+      color: var(--on-action);
     }
     .kriou-dialog-btn-danger:hover {
       filter: brightness(1.12);
@@ -540,7 +540,7 @@ export const ConfirmDialog = ({
           padding: 28,
           maxWidth: 420,
           width: "100%",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset",
+          boxShadow: "var(--shadow-elevated)",
         }}
       >
         {/* Ícone de alerta para variante danger */}

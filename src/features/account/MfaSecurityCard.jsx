@@ -69,6 +69,7 @@ export default function MfaSecurityCard({ mfaService = MfaService }) {
 
   const isAal2 = status?.currentLevel === "aal2";
   const hasFactor = Boolean(status?.factor);
+  const factorCount = status?.factors?.length || (hasFactor ? 1 : 0);
   const normalizedCode = code.replace(/\D/g, "").slice(0, 6);
   const qrSource = qrImageSource(enrollment?.qrCode);
 
@@ -89,7 +90,7 @@ export default function MfaSecurityCard({ mfaService = MfaService }) {
         </div>
         {status && (
           <span style={{ fontSize: 11, fontWeight: 700, color: isAal2 ? "var(--teal)" : "var(--text-muted)" }}>
-            {isAal2 ? "Proteção ativa" : hasFactor ? "Confirmação necessária" : "Não configurada"}
+            {isAal2 ? `${factorCount} fator${factorCount === 1 ? "" : "es"}` : hasFactor ? "Confirmação necessária" : "Não configurada"}
           </span>
         )}
       </div>
@@ -135,10 +136,22 @@ export default function MfaSecurityCard({ mfaService = MfaService }) {
         </div>
       )}
 
-      {status && hasFactor && isAal2 && (
-        <p style={{ margin: "14px 0 0", color: "var(--teal)", fontSize: 13 }}>
-          Esta sessão está pronta para operações protegidas. O fator só poderá ser removido por um fluxo seguro de recuperação.
-        </p>
+      {status && hasFactor && isAal2 && !enrollment && (
+        <div style={{ marginTop: 14 }}>
+          <p style={{ margin: 0, color: "var(--teal)", fontSize: 13 }}>
+            Esta sessão está pronta para operações protegidas.
+          </p>
+          <p style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 1.55 }}>
+            {factorCount < 2
+              ? "Cadastre um segundo autenticador como reserva antes de depender desta conta para administrar o sistema."
+              : "Você possui um autenticador de reserva. A remoção continua bloqueada até existir recuperação administrativa auditada."}
+          </p>
+          {factorCount < 2 && (
+            <button type="button" onClick={startEnrollment} disabled={busy} className={focusClass} style={secondaryButtonStyle}>
+              Adicionar autenticador reserva
+            </button>
+          )}
+        </div>
       )}
     </Card>
   );

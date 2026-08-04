@@ -17,12 +17,13 @@ export const MfaService = {
     if (factorsResult.error) throw factorsResult.error;
     if (assuranceResult.error) throw assuranceResult.error;
 
-    const verifiedFactor = (factorsResult.data.totp || []).find(
+    const verifiedFactors = (factorsResult.data.totp || []).filter(
       (factor) => factor.status === "verified",
     );
 
     return {
-      factor: verifiedFactor || null,
+      factor: verifiedFactors[0] || null,
+      factors: verifiedFactors,
       currentLevel: assuranceResult.data.currentLevel || "aal1",
       nextLevel: assuranceResult.data.nextLevel || "aal1",
     };

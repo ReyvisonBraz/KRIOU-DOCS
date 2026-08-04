@@ -5,7 +5,7 @@ import MfaSecurityCard from "./MfaSecurityCard";
 
 const noFactor = { factor: null, currentLevel: "aal1", nextLevel: "aal1" };
 const aal1Factor = { factor: { id: "factor-1" }, currentLevel: "aal1", nextLevel: "aal2" };
-const aal2Factor = { factor: { id: "factor-1" }, currentLevel: "aal2", nextLevel: "aal2" };
+const aal2Factor = { factor: { id: "factor-1" }, factors: [{ id: "factor-1" }], currentLevel: "aal2", nextLevel: "aal2" };
 
 describe("MfaSecurityCard", () => {
   it("cadastra o autenticador sem confundir o QR com o documento", async () => {
@@ -38,7 +38,7 @@ describe("MfaSecurityCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Confirmar código" }));
 
     await waitFor(() => expect(service.verifyCode).toHaveBeenCalledWith("new-factor", "123456"));
-    expect(await screen.findByText("Proteção ativa")).toBeVisible();
+    expect(await screen.findByText("1 fator")).toBeVisible();
   });
 
   it("reforça uma sessão AAL1 que já possui fator", async () => {
@@ -51,6 +51,20 @@ describe("MfaSecurityCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reforçar sessão" }));
 
     await waitFor(() => expect(service.verifyCode).toHaveBeenCalledWith("factor-1", "654321"));
-    expect(await screen.findByText("Proteção ativa")).toBeVisible();
+    expect(await screen.findByText("1 fator")).toBeVisible();
+  });
+
+  it("oferece um segundo autenticador como recuperação", async () => {
+    const service = {
+      getStatus: vi.fn().mockResolvedValue(aal2Factor),
+      beginEnrollment: vi.fn().mockResolvedValue({ factorId: "backup", qrCode: "<svg></svg>", secret: "BACKUPSECRET" }),
+      verifyCode: vi.fn(), cancelEnrollment: vi.fn(),
+    };
+    render(<MfaSecurityCard mfaService={service} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Adicionar autenticador reserva" }));
+
+    expect(await screen.findByAltText(/QR secreto/i)).toBeVisible();
+    expect(service.beginEnrollment).toHaveBeenCalledOnce();
   });
 });

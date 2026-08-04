@@ -59,8 +59,10 @@ outro usuário ou adquirir privilégio administrativo.
 - [x] criar UI isolada para cadastro TOTP, QR secreto, chave manual, confirmação
   e reforço de sessão já cadastrada;
 - [x] testar localmente criação e cancelamento do fator sem deixar cadastro órfão;
+- [x] permitir segundo autenticador TOTP como fator de recuperação/reserva;
 - [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
-- [ ] concluir recuperação e remoção segura do fator;
+- [ ] documentar recuperação assistida e remoção auditada sem permitir a perda
+  do último fator administrativo;
 - [ ] executar cadastro manual com autenticador real na conta administrativa;
 - reautenticar antes de mudança de papel, suspensão, exportação ou reprocessamento;
 - definir duração máxima da sessão administrativa e comportamento de revogação;

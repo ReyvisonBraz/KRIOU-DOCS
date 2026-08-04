@@ -53,9 +53,14 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURANCA-2026-08-03.md).
 
 - vulnerabilidade crítica de autoelevação corrigida;
-- testes reais de RLS e auditoria append-only estão ativos; MFA/AAL2 começou pelo
-  helper backend e bloqueio de exceção de download, enquanto UX/cobertura total
-  e rate limiting permanecem pendentes;
+- testes reais de RLS e auditoria append-only estão ativos;
+- migrations `018` a `020` aplicadas no Supabase remoto em 04/08/2026;
+- Edge Functions `admin`, `admin-metrics`, `authorize-download` e `admin-access`
+  publicadas após as migrations; chamadas sem autenticação continuam bloqueadas;
+- cadastro TOTP e elevação AAL2 foram comprovados manualmente na conta proprietária
+  real, seguidos de acesso bem-sucedido ao painel protegido no ambiente local;
+- cobertura de todas as mutações, recuperação de MFA, rate limiting e teste do
+  fluxo OAuth no Preview permanecem pendentes;
 - auditoria npm de 04/08 registra 5 pacotes (4 altos, 1 moderado) em quatro
   causas; com `--omit=dev`, restam apenas os 2 pacotes da mesma cadeia Router/RSC,
   não usada pelo SPA atual; remediação detalhada em S2.2;
@@ -100,8 +105,8 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
   reforço de sessão, isolada em `features/account`;
 - teste local comprova criação/cancelamento do fator e testes de componente
   cobrem cadastro, AAL2 e sessão AAL1 com fator existente;
-- próximo item executável: recuperação segura, teste manual do autenticador e
-  desenho da segunda aprovação para mudanças de owner.
+- próximo item executável: recuperação segura e desenho da segunda aprovação
+  para mudanças de owner;
 - migration `020` e Edge Function `admin-access` implementam gestão transacional
   de `support`, `finance` e `admin` exclusivamente por owner em AAL2;
 - motivo, `operation_id`, idempotência e auditoria são obrigatórios; admin comum,

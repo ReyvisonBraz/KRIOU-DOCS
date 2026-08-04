@@ -29,9 +29,9 @@ reavaliada após mudanças relevantes no sistema.
 - [x] `role` e `id` protegidos por privilégios de coluna e trigger defensivo.
 - [x] Campos financeiros de documentos protegidos por trigger backend-only.
 - [x] `admin_audit_events` criada, sem acesso para `anon`/`authenticated`.
-- [ ] Auditoria administrativa ainda não é gravada pelas operações.
-- [ ] MFA/AAL2 ainda não é obrigatório para administradores.
-- [ ] Não há suíte de testes reais de RLS/Edge Functions contra banco isolado.
+- [x] Operações administrativas críticas entregues gravam auditoria append-only.
+- [x] A gestão de papéis e a exceção de download exigem MFA/AAL2.
+- [x] Há suíte de testes reais de RLS/Edge Functions contra banco local isolado.
 
 ## Prioridade e marcos
 
@@ -63,7 +63,7 @@ outro usuário ou adquirir privilégio administrativo.
 - [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
 - [ ] documentar recuperação assistida e remoção auditada sem permitir a perda
   do último fator administrativo;
-- [ ] executar cadastro manual com autenticador real na conta administrativa;
+- [x] executar cadastro manual com autenticador real na conta administrativa;
 - reautenticar antes de mudança de papel, suspensão, exportação ou reprocessamento;
 - definir duração máxima da sessão administrativa e comportamento de revogação;
 - impedir uso administrativo com provedor/conta não verificada.

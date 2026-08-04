@@ -449,7 +449,7 @@ const DashboardPage = () => {
                 color: "var(--text-muted)",
                 fontFamily: "var(--font-body)",
                 fontWeight: 600,
-                fontSize: "0.8125rem",
+                fontSize: "0.875rem",
                 transition: "all 0.2s ease",
               }}
               className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
@@ -474,7 +474,7 @@ const DashboardPage = () => {
             <div>
               <p style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "0.6875rem",
+                fontSize: "0.75rem",
                 fontWeight: 600,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -577,13 +577,13 @@ const DashboardPage = () => {
               </div>
               <div style={{ minWidth: 0 }}>
                 <h3 style={{
-                  fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700,
+                  fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700,
                   color: "var(--text)", margin: "0 0 3px", letterSpacing: "-0.02em",
                 }}>
                   Precisa de um contrato personalizado?
                 </h3>
                 <p style={{
-                  fontFamily: "var(--font-body)", fontSize: 12,
+                  fontFamily: "var(--font-body)", fontSize: 14,
                   color: "var(--text-dim)", margin: 0, lineHeight: 1.5,
                 }}>
                   Receba um documento sob medida via WhatsApp.
@@ -594,7 +594,7 @@ const DashboardPage = () => {
               display: "flex", alignItems: "center", gap: 6, padding: "10px 16px",
               borderRadius: 12, background: "#25D366", color: "#fff",
               fontFamily: "var(--font-body)", fontWeight: 700,
-              fontSize: 13, whiteSpace: "nowrap", flexShrink: 0, border: "none",
+              fontSize: 14, whiteSpace: "nowrap", flexShrink: 0, border: "none",
             }}>
               <Icon name="WhatsApp" className="w-4 h-4" />
               Falar no WhatsApp
@@ -633,7 +633,7 @@ const DashboardPage = () => {
                 style={{
                   width: "100%",
                   background: "var(--surface)",
-                  border: "1px solid var(--border)",
+                  border: "1px solid var(--control-border)",
                   borderRadius: 16,
                   padding: "14px 16px 14px 48px",
                   fontSize: "1rem", /* 16px previne zoom no iOS */
@@ -649,7 +649,7 @@ const DashboardPage = () => {
                   e.currentTarget.style.boxShadow = "0 0 0 4px rgba(244,63,94,0.08)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.borderColor = "var(--control-border)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
@@ -746,7 +746,7 @@ const DashboardPage = () => {
               marginTop: 10,
             }}>
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Arquivo
                 </span>
                 <select
@@ -756,7 +756,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -771,7 +771,7 @@ const DashboardPage = () => {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Status
                 </span>
                 <select
@@ -781,7 +781,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -798,7 +798,7 @@ const DashboardPage = () => {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Ordenar
                 </span>
                 <select
@@ -808,7 +808,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -858,7 +858,7 @@ const DashboardPage = () => {
                     color: isActive ? "#fff" : "var(--text-muted)",
                     fontFamily: "var(--font-body)",
                     fontWeight: isActive ? 700 : 600,
-                    fontSize: "0.8125rem",
+                    fontSize: "0.875rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     boxShadow: isActive ? "0 4px 16px rgba(244,63,94,0.25)" : "none",
@@ -893,7 +893,7 @@ const DashboardPage = () => {
                     color: isActive ? "#fff" : "var(--text-muted)",
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: "0.6875rem",
+                    fontSize: "0.75rem",
                     lineHeight: 1,
                   }}>
                     {count}
@@ -1025,7 +1025,7 @@ const DashboardPage = () => {
                     color: "#fff",
                     fontFamily: "var(--font-body)",
                     fontWeight: 700,
-                    fontSize: "0.9375rem",
+                    fontSize: "1rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
                     boxShadow: "0 4px 16px rgba(244,63,94,0.3)",
@@ -1063,7 +1063,7 @@ const DashboardPage = () => {
                     color: "var(--gold)",
                     fontFamily: "var(--font-body)",
                     fontWeight: 700,
-                    fontSize: "0.9375rem",
+                    fontSize: "1rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
@@ -1166,7 +1166,7 @@ const DashboardPage = () => {
           >
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 18 }}>
               <div>
-                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 800, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 800, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
                   Documento
                 </p>
                 <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 900, color: "var(--text)" }}>
@@ -1184,7 +1184,7 @@ const DashboardPage = () => {
             </div>
 
             <label style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-dim)" }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-dim)" }}>
                 Novo nome
               </span>
               <input

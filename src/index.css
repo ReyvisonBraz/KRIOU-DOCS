@@ -76,6 +76,7 @@
   --text-disabled: #98A2B3;
   --border-default: #D0D5DD;
   --border-strong: #98A2B3;
+  --control-border: #7A8699;
   --action-primary: #24405F;
   --action-primary-hover: #19324C;
   --action-accent: #C93659;
@@ -118,6 +119,11 @@
   --shadow-elevated: 0 12px 40px rgba(15,23,42,0.12);
   --page-accent-one: rgba(225,29,72,0.045);
   --page-accent-two: rgba(15,118,110,0.04);
+  --font-size-caption: 0.75rem;
+  --font-size-small: 0.875rem;
+  --font-size-body: 1rem;
+  --font-size-lead: 1.125rem;
+  --line-height-body: 1.6;
 }
 
 :root[data-theme="dark"] {
@@ -152,6 +158,7 @@
   --text-disabled: #718096;
   --border-default: #344054;
   --border-strong: #526174;
+  --control-border: #66758A;
   --action-primary: #7EA6CE;
   --action-primary-hover: #A3C2DF;
   --action-accent: #E35473;
@@ -195,6 +202,8 @@
 @layer base {
   body {
     @apply bg-navy text-text font-body antialiased;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
     background-image: radial-gradient(circle at 15% -10%, var(--page-accent-one), transparent 34%),
       radial-gradient(circle at 90% 0%, var(--page-accent-two), transparent 28%);
     background-attachment: fixed;
@@ -222,9 +231,10 @@
   /* ─── Input Fields ─── */
   .input-field {
     @apply w-full bg-surface-2 border border-border rounded-xl px-4 py-3.5
-           text-text text-[15px] outline-none transition-all duration-200
+           text-text text-[16px] outline-none transition-all duration-200
            placeholder:text-text-muted/50
            focus:border-coral focus:ring-4 focus:ring-coral/10;
+    border-color: var(--control-border);
   }
 
   .input-field-error {
@@ -234,7 +244,7 @@
   /* ─── Buttons ─── */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
-           bg-coral text-white font-bold text-[15px]
+           bg-coral text-white font-bold text-[16px]
            px-6 py-3.5 rounded-xl border-none cursor-pointer
            transition-all duration-200
            shadow-[0_2px_8px_rgba(244,63,94,0.25)]
@@ -247,7 +257,7 @@
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2
            bg-surface-2 text-text-dim border border-border
-           rounded-xl px-6 py-3.5 font-semibold text-[15px]
+           rounded-xl px-6 py-3.5 font-semibold text-[16px]
            cursor-pointer transition-all duration-200
            hover:bg-surface-3 hover:border-border-hover hover:text-text
            hover:shadow-sm
@@ -256,7 +266,7 @@
   }
 
   .btn-small {
-    @apply px-4 py-2.5 text-[13px] rounded-lg;
+    @apply px-4 py-2.5 text-[14px] rounded-lg;
   }
 
   .btn-ghost {

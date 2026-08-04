@@ -40,7 +40,7 @@ const ensureFormStyles = () => {
       align-items: center;
       min-height: 44px;
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--control-border);
       border-radius: 12px;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
       overflow: hidden;
@@ -67,7 +67,7 @@ const ensureFormStyles = () => {
       background: transparent;
       border: none;
       outline: none;
-      font-size: 14px;
+      font-size: var(--font-size-body);
       font-family: ${T.body};
       color: var(--text);
       width: 100%;
@@ -100,10 +100,10 @@ const ensureFormStyles = () => {
       min-height: 44px;
       padding: 12px 14px;
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--control-border);
       border-radius: 12px;
       outline: none;
-      font-size: 14px;
+      font-size: var(--font-size-body);
       font-family: ${T.body};
       color: var(--text);
       resize: vertical;
@@ -142,10 +142,10 @@ const ensureFormStyles = () => {
       min-height: 44px;
       padding: 10px 44px 10px 14px;
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--control-border);
       border-radius: 12px;
       outline: none;
-      font-size: 14px;
+      font-size: var(--font-size-body);
       font-family: ${T.body};
       color: var(--text);
       cursor: pointer;
@@ -196,7 +196,7 @@ const ensureFormStyles = () => {
        ================================================================ */
     .kriou-label {
       display: block;
-      font-size: 13px;
+      font-size: var(--font-size-small);
       font-weight: 600;
       color: var(--text-dim);
       margin-bottom: 6px;
@@ -212,7 +212,7 @@ const ensureFormStyles = () => {
       align-items: center;
       gap: 5px;
       margin-top: 6px;
-      font-size: 12px;
+      font-size: var(--font-size-caption);
       font-weight: 500;
       color: var(--status-danger);
       font-family: ${T.body};

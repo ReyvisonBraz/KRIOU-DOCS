@@ -212,7 +212,7 @@ const ProfilePage = () => {
           {displayEmail && (
             <p style={{
               fontFamily: "var(--font-body)",
-              fontSize: 14,
+              fontSize: 16,
               color: "var(--text-muted)",
               letterSpacing: "-0.005em",
             }}>
@@ -255,7 +255,7 @@ const ProfilePage = () => {
           <h3
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: 700,
               letterSpacing: "-0.01em",
               color: "var(--text)",
@@ -302,7 +302,7 @@ const ProfilePage = () => {
                       background: "transparent",
                       color: "var(--text-dim)",
                       fontFamily: "var(--font-body)",
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: 600,
                       cursor: "pointer",
                       letterSpacing: "-0.005em",
@@ -325,7 +325,7 @@ const ProfilePage = () => {
                       background: saving ? "var(--text-muted)" : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
                       color: "#fff",
                       fontFamily: "var(--font-body)",
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: 700,
                       cursor: saving ? "not-allowed" : "pointer",
                       letterSpacing: "-0.005em",
@@ -392,7 +392,7 @@ const ProfilePage = () => {
             <h3
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: 700,
                 letterSpacing: "-0.01em",
                 color: "var(--text)",
@@ -425,7 +425,7 @@ const ProfilePage = () => {
                     background: "rgba(244,63,94,0.12)",
                     color: "var(--coral)",
                     fontFamily: "var(--font-body)",
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 600,
                     letterSpacing: "0.01em",
                     lineHeight: 1.4,
@@ -437,7 +437,7 @@ const ProfilePage = () => {
               <div
                 style={{
                   fontFamily: "var(--font-body)",
-                  fontSize: 13,
+                  fontSize: 14,
                   color: "var(--text-muted)",
                 }}
               >
@@ -454,7 +454,7 @@ const ProfilePage = () => {
                 background: "rgba(212,175,55,0.06)",
                 color: "var(--gold)",
                 fontFamily: "var(--font-body)",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
                 transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -485,7 +485,7 @@ const ProfilePage = () => {
           <h3
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: 700,
               letterSpacing: "-0.01em",
               color: "var(--text)",
@@ -515,7 +515,7 @@ const ProfilePage = () => {
             background: "var(--surface-2)",
             color: "var(--text-dim)",
             fontFamily: "var(--font-body)",
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: 600,
             letterSpacing: "-0.005em",
             cursor: "pointer",
@@ -581,7 +581,7 @@ const ProfileStat = ({ value, label, accent, divider }) => (
     <span
       style={{
         fontFamily: "var(--font-body)",
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         color: "var(--text-muted)",
         letterSpacing: "0.02em",
@@ -622,7 +622,7 @@ const InfoRow = ({ icon, label, value, last }) => (
       <div
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 500,
           color: "var(--text-muted)",
           letterSpacing: "0.01em",
@@ -634,7 +634,7 @@ const InfoRow = ({ icon, label, value, last }) => (
       <div
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: 600,
           color: "var(--text)",
           letterSpacing: "-0.005em",
@@ -678,7 +678,7 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
       <div
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 500,
           color: "var(--text-muted)",
           letterSpacing: "0.01em",
@@ -705,11 +705,11 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
           width: "100%",
           padding: "10px 14px",
           borderRadius: 10,
-          border: "1.5px solid var(--border)",
+          border: "1.5px solid var(--control-border)",
           background: "var(--surface)",
           color: "var(--text)",
           fontFamily: "var(--font-body)",
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: 600,
           outline: "none",
           letterSpacing: "-0.005em",
@@ -763,7 +763,7 @@ const SettingsRow = ({ icon, label, last, accent = "var(--text-muted)" }) => (
       style={{
         flex: 1,
         fontFamily: "var(--font-body)",
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 500,
         color: "var(--text)",
         letterSpacing: "-0.005em",

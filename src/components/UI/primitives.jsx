@@ -80,7 +80,7 @@ export const Button = ({
       background: hover && !disabled ? "var(--surface-3)" : "var(--surface-2)",
       color: hover && !disabled ? "var(--text)" : "var(--text-dim)",
       border: `1px solid ${
-        hover && !disabled ? "var(--text-muted)" : "var(--border)"
+        hover && !disabled ? "var(--text-muted)" : "var(--control-border)"
       }`,
     },
     ghost: {
@@ -97,8 +97,8 @@ export const Button = ({
 
   // Mapa de estilos por tamanho
   const mapaTamanho = {
-    small:  { padding: "8px 18px", fontSize: 13, minHeight: TOQUE },
-    medium: { padding: "12px 28px", fontSize: 15, minHeight: 48 },
+    small:  { padding: "8px 18px", fontSize: 14, minHeight: TOQUE },
+    medium: { padding: "12px 28px", fontSize: 16, minHeight: 48 },
   };
 
   const sv = mapaVariante[variant] || mapaVariante.primary;
@@ -228,7 +228,7 @@ export const Badge = ({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 700,
         padding: "4px 12px",
         borderRadius: "100px",
@@ -273,11 +273,11 @@ export const Tag = ({
         background: hover ? "var(--surface-3)" : "var(--surface-2)",
         color: "var(--text-dim)",
         border: `1px solid ${
-          hover ? "var(--border-hover)" : "var(--border)"
+          hover ? "var(--border-hover)" : "var(--control-border)"
         }`,
         borderRadius: "100px",
         padding: "6px 14px",
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 500,
         fontFamily: "var(--font-body)",
         transition: EASE,

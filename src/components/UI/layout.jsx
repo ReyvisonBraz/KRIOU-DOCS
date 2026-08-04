@@ -85,7 +85,7 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
         style={{
           fontFamily: "var(--font-display)",
           fontWeight: 700,
-          fontSize: "0.9375rem",
+          fontSize: "var(--font-size-body)",
           letterSpacing: "-0.01em",
           color: "var(--text)",
           textAlign: "center",
@@ -216,7 +216,7 @@ export const AppStepper = ({
           {/* Label da etapa */}
           <span
             style={{
-              fontSize: "0.6875rem",
+              fontSize: "var(--font-size-caption)",
               fontWeight: isActive ? 600 : 500,
               fontFamily: "var(--font-body)",
               letterSpacing: "-0.005em",
@@ -283,7 +283,7 @@ export const BottomNavigation = ({
     borderRadius: 14,
     fontFamily: "var(--font-body)",
     fontWeight: 600,
-    fontSize: "0.8125rem",
+    fontSize: "var(--font-size-small)",
     letterSpacing: "-0.01em",
     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
   };
@@ -309,7 +309,7 @@ export const BottomNavigation = ({
         @media (max-width: 480px) {
           .bottom-nav-back, .bottom-nav-save { padding: 10px 12px !important; }
           .bottom-nav-save span { display: none !important; }
-          .bottom-nav-next { padding: 12px 16px !important; font-size: 0.875rem !important; }
+          .bottom-nav-next { padding: 12px 16px !important; font-size: 1rem !important; }
         }
         @media (max-width: 360px) {
           .bottom-nav-back span { display: none !important; }
@@ -420,7 +420,7 @@ export const BottomNavigation = ({
             border: "none",
             fontFamily: "var(--font-body)",
             fontWeight: 700,
-            fontSize: "0.9375rem",
+            fontSize: "var(--font-size-body)",
             letterSpacing: "-0.005em",
             background: hovered === "next" ? "var(--action-accent-hover)" : "var(--action-accent)",
             color: "var(--on-action)",

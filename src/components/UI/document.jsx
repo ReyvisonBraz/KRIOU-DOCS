@@ -160,7 +160,7 @@ export const DocumentCard = ({
       {isPaid && (
         <div style={{
           padding: "7px 14px", background: "rgba(20,184,166,0.12)", color: "var(--teal)",
-          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Icon name="Check" className="w-3.5 h-3.5" /> Documento pago · edição liberada
@@ -169,7 +169,7 @@ export const DocumentCard = ({
       {!isPaid && unlimitedAccess && (
         <div style={{
           padding: "7px 14px", background: "rgba(212,175,55,0.12)", color: "var(--gold)",
-          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Icon name="Shield" className="w-3.5 h-3.5" /> Conta admin · download ilimitado
@@ -219,7 +219,7 @@ export const DocumentCard = ({
             <span
               style={{
                 fontFamily: "'Plus Jakarta Sans', monospace",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 800,
                 letterSpacing: "0.06em",
                 color: "var(--text-dim)",
@@ -235,7 +235,7 @@ export const DocumentCard = ({
           ) : (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
@@ -310,7 +310,7 @@ export const DocumentCard = ({
                   alignItems: "center",
                   gap: 8,
                   marginTop: 6,
-                  fontSize: 11,
+                  fontSize: 12,
                   color: "var(--text-muted)",
                 }}
               >
@@ -353,7 +353,7 @@ export const DocumentCard = ({
         {doc.template && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: 14,
               color: "var(--text-muted)",
               margin: "6px 0 0 0",
               whiteSpace: "nowrap",
@@ -375,10 +375,10 @@ export const DocumentCard = ({
             gap: 12,
           }}
         >
-          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>
+          <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
             {doc.date}
           </span>
-          <Badge variant={statusVariant} style={{ fontSize: 10, padding: "4px 10px" }}>
+          <Badge variant={statusVariant} style={{ fontSize: 12, padding: "4px 10px" }}>
             {statusLabel}
           </Badge>
         </div>
@@ -394,7 +394,7 @@ export const DocumentCard = ({
             background: "rgba(212,175,55,0.10)",
             border: "1px solid rgba(212,175,55,0.20)",
             color: "var(--gold)",
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.04em",
@@ -423,7 +423,7 @@ export const DocumentCard = ({
               minHeight: TOQUE, padding: "0 12px", borderRadius: 9,
               border: `1px solid ${accent}45`, background: `${accent}14`, color: accent,
               display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
-              fontSize: 11, fontWeight: 800, fontFamily: "var(--font-body)",
+              fontSize: 12, fontWeight: 800, fontFamily: "var(--font-body)",
             }}
             title="Editar o conteúdo deste documento"
           >
@@ -444,7 +444,7 @@ export const DocumentCard = ({
               style={{
                 minHeight: TOQUE, padding: "0 12px", borderRadius: 9, border: "none",
                 background: "var(--coral)", color: "#fff", display: "inline-flex",
-                alignItems: "center", gap: 7, cursor: "pointer", fontSize: 11,
+                alignItems: "center", gap: 7, cursor: "pointer", fontSize: 12,
                 fontWeight: 800, fontFamily: "var(--font-body)",
               }}
               title="Finalizar o pagamento e liberar o PDF"

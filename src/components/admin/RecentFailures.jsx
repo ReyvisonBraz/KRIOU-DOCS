@@ -108,7 +108,7 @@ const RecentFailures = ({ failures = [], isLoading = false }) => {
                 borderRadius: 9999,
                 fontSize: 10,
                 fontWeight: 600,
-                background: "rgba(255,255,255,0.06)",
+                background: "var(--soft-fill)",
                 color: meta.color,
                 flexShrink: 0,
               }}

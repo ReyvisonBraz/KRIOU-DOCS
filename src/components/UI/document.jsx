@@ -144,7 +144,7 @@ export const DocumentCard = ({
       style={{
         position: "relative",
         cursor: "pointer",
-        background: hover ? "#14142B" : "var(--surface)",
+        background: hover ? "var(--surface-subtle)" : "var(--surface)",
         border: `1px solid ${isPaid ? "rgba(20,184,166,0.55)" : hover ? "var(--border-hover)" : "var(--border)"}`,
         borderRadius: RAD_LG,
         overflow: "hidden",

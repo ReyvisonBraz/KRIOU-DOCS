@@ -12,7 +12,7 @@ const ThemeToggle = () => {
       aria-label={`Ativar tema ${nextTheme}`}
       title={`Ativar tema ${nextTheme}`}
       style={{
-        position: "fixed", right: 16, bottom: "calc(18px + env(safe-area-inset-bottom, 0px))", zIndex: 250,
+        position: "fixed", right: 16, bottom: "calc(88px + env(safe-area-inset-bottom, 0px))", zIndex: 250,
         width: 44, height: 44, display: "grid", placeItems: "center", borderRadius: 14,
         border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)",
         boxShadow: "var(--shadow-elevated)", cursor: "pointer", fontSize: 19,

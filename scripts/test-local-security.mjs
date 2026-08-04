@@ -203,6 +203,41 @@ assert.equal(
   "Validar imutabilidade append-only no ambiente local",
 );
 
+const { data: userAuthorization, error: userAuthorizationError } =
+  await backend.rpc("kriou_admin_authorization", { actor_id: users[0].id });
+assert.ifError(userAuthorizationError);
+assert.equal(userAuthorization, null, "Usuário comum recebeu capacidades administrativas.");
+
+const { error: promoteLegacyError } = await backend
+  .from("profiles")
+  .update({ role: "admin" })
+  .eq("id", users[1].id);
+assert.ifError(promoteLegacyError);
+
+const { data: synced, error: syncError } = await backend.rpc(
+  "kriou_admin_sync_legacy_assignment",
+  { target_user_id: users[1].id },
+);
+assert.ifError(syncError);
+assert.equal(synced, true);
+
+const { data: adminAuthorization, error: adminAuthorizationError } =
+  await backend.rpc("kriou_admin_authorization", { actor_id: users[1].id });
+assert.ifError(adminAuthorizationError);
+assert.equal(adminAuthorization.role, "admin");
+assert(adminAuthorization.capabilities.includes("admin.dashboard.read"));
+assert(adminAuthorization.capabilities.includes("admin.legacy.read"));
+assert(!adminAuthorization.capabilities.includes("roles.manage"));
+
+const { error: exposedAuthorizationError } = await clientA.rpc(
+  "kriou_admin_authorization",
+  { actor_id: users[1].id },
+);
+assert(
+  exposedAuthorizationError,
+  "Cliente autenticado conseguiu consultar capacidades administrativas.",
+);
+
 console.log(
-  "[Security] RLS de profiles/documents/drafts, autoelevação e auditoria append-only comprovadas.",
+  "[Security] RLS, capacidades privadas, autoelevação e auditoria append-only comprovadas.",
 );

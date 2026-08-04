@@ -2,8 +2,8 @@
  * ============================================
  * KRIOU DOCS — Admin Metrics API
  * ============================================
- * Edge Function protegida: exige usuário autenticado
- * com role === "admin" (equivalente a app/api/admin/metrics/route.ts).
+ * Edge Function protegida: exige usuário autenticado com a capacidade privada
+ * admin.dashboard.read.
  *
  * GET /admin-metrics?period=30d
  *
@@ -11,13 +11,18 @@
  * Respostas:
  *   200 — métricas do período
  *   401 — não autenticado
- *   403 — autenticado, mas não é admin
+ *   403 — autenticado, mas sem capacidade suficiente
  *   400 — período inválido
  * ============================================
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authenticate, createAdminClient } from "../_shared/auth.ts";
+import {
+  authenticate,
+  createAdminClient,
+  getAdminAuthorization,
+  hasAdminCapability,
+} from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
 import { calculateMetrics, isMetricsPeriod } from "../_shared/metrics.ts";
 
@@ -50,15 +55,9 @@ serve(async (req) => {
     const user = await authenticate(req, supabase);
     if (!user) return json({ error: "Não autorizado" }, 401);
 
-    // ── Autorização: apenas ADMIN ──
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      return json({ error: "Acesso restrito a administradores" }, 403);
+    const authorization = await getAdminAuthorization(supabase, user.id);
+    if (!hasAdminCapability(authorization, "admin.dashboard.read")) {
+      return json({ error: "Capacidade administrativa insuficiente" }, 403);
     }
 
     // ── Período via query parameter ──

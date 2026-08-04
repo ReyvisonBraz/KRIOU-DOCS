@@ -19,6 +19,7 @@
     "test:e2e:setup": "playwright test e2e/auth.setup.js --project=setup",
     "test:e2e:public": "playwright test e2e/landing.spec.js e2e/navigation.spec.js",
     "test:security:local": "node scripts/test-local-security.mjs",
+    "test:admin-functions:local": "node scripts/test-local-admin-functions.mjs",
     "quality": "npm run lint && npm run typecheck && npm run test:ci && npm run build"
   },
   "engines": {

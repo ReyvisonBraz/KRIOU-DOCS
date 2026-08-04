@@ -2,9 +2,9 @@
  * ============================================
  * KRIOU DOCS — Admin API
  * ============================================
- * Supabase Edge Function protegida por service_role.
+ * Supabase Edge Function com autenticação do usuário e consultas backend.
  *
- * Requer que o usuario seja admin (profile.role === 'admin').
+ * Requer a capacidade privada admin.legacy.read (admin/owner).
  *
  * GET /admin?action=stats
  * GET /admin?action=users
@@ -13,35 +13,28 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  authenticate,
+  createAdminClient,
+  getAdminAuthorization,
+  hasAdminCapability,
+} from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 serve(async (req) => {
   const preflight = handlePreflight(req);
   if (preflight) return preflight;
 
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace("Bearer ", "");
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
+    const supabase = createAdminClient();
+    const user = await authenticate(req, supabase);
+    if (!user) {
       return json({ error: "Nao autorizado" }, 401);
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      return json({ error: "Acesso restrito a administradores" }, 403);
+    const authorization = await getAdminAuthorization(supabase, user.id);
+    if (!hasAdminCapability(authorization, "admin.legacy.read")) {
+      return json({ error: "Capacidade administrativa insuficiente" }, 403);
     }
 
     const url = new URL(req.url);

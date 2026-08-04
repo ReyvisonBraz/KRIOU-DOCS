@@ -89,7 +89,11 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
 - migration `018` e helper compartilhado criam a base append-only de auditoria;
 - `npm run test:security:local` comprova RLS entre duas contas reais em perfis,
   documentos e rascunhos, bloqueia autoelevação e valida auditoria append-only;
-- próximo item executável: capacidades/papéis privados e matriz de autorização admin.
+- migration `019` cria `support`, `finance`, `admin` e `owner` em schema privado,
+  sem acesso direto pelo cliente ou `service_role`;
+- `admin` e `admin-metrics` autorizam por capacidade; integração local comprova
+  respostas 401/403/200 para visitante, usuário comum e administrador;
+- próximo item executável: MFA/AAL2 e gestão de papéis exclusiva do owner.
 
 ## Controles administrativos
 

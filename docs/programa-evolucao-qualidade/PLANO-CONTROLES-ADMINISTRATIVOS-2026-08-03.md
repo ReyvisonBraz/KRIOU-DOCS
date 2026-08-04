@@ -149,12 +149,14 @@ diferentes e precisam permanecer distinguíveis nas métricas.
 
 Bloqueia todas as demais mutações.
 
-- [ ] Migrar papéis de `profiles.role` para estrutura privada com permissões.
-- [ ] Criar `support`, `finance`, `admin` e `owner`.
+- [x] Migrar a autorização backend de leitura para estrutura privada com permissões;
+  `profiles.role` permanece somente como compatibilidade temporária da interface.
+- [x] Criar `support`, `finance`, `admin` e `owner` com matriz versionada.
 - [ ] Exigir MFA/AAL2 para ação mutável ou acesso a conteúdo.
 - [ ] Implementar helper transacional de auditoria append-only.
 - [ ] Adicionar `operation_id`, `request_id`, resultado e erro sanitizado à auditoria.
-- [ ] Criar matriz de autorização backend; frontend apenas exibe capacidades retornadas.
+- [x] Criar matriz de autorização backend com negação por padrão; exposição
+  segura de capacidades ao frontend permanece pendente até a decomposição da rota.
 - [ ] Aplicar rate limit mais rígido a mutações, downloads e exportações.
 - [ ] Definir confirmação padrão, motivo obrigatório e códigos de motivo.
 - [ ] Separar ambientes e exibir produção/teste de forma inequívoca.

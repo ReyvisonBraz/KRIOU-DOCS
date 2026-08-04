@@ -55,8 +55,8 @@ reuso, revisão ou desempenho.
 
 | ID | Dívida / risco | Prioridade | Dependência | Resultado verificável | Estado |
 |---|---|---|---|---|---|
-| DT-01 | autorização/RLS sem matriz real automatizada | crítica | Supabase local | testes provam usuário A/B, admin e backend | parcial: isolamento A/B e backend comprovados |
-| DT-02 | capacidades administrativas ainda baseadas em papel amplo | crítica | DT-01, auditoria | capacidades privadas, negação padrão e MFA nos atos sensíveis | planejado |
+| DT-01 | autorização/RLS sem matriz real automatizada | crítica | Supabase local | testes provam usuário A/B, admin e backend | parcial: usuário/admin/backend comprovados; owner pendente |
+| DT-02 | capacidades administrativas ainda baseadas em papel amplo | crítica | DT-01, auditoria | capacidades privadas, negação padrão e MFA nos atos sensíveis | parcial: matriz privada/leitura prontas; MFA e gestão pendentes |
 | DT-03 | exclusão/sincronização com confirmação e recuperação incompletas | alta | contratos de serviço | UI só remove após confirmação e restaura em falha | planejado |
 | DT-04 | erros e logs sem correlação/monitoramento externo | alta | política de PII | falha possui código, referência e evento sanitizado | planejado |
 | DT-05 | respostas de serviços e Edge Functions sem schema validado | alta | decisão de schema | payload inválido falha na fronteira, não na UI | planejado |
@@ -81,7 +81,7 @@ reuso, revisão ou desempenho.
 - [x] criar teste de integração local que use usuários reais e prove políticas
   de perfil, documentos, rascunhos e auditoria;
 - [x] provar que `service_role` insere/lê auditoria, mas não altera ou apaga eventos;
-- [ ] criar matriz de capacidades administrativas com negação por padrão;
+- [x] criar matriz de capacidades administrativas com negação por padrão;
 - [ ] exigir autenticação reforçada nas capacidades de maior risco;
 - [ ] padronizar idempotência, motivo e auditoria obrigatória nas mutações.
 
@@ -206,7 +206,9 @@ paralelo, preparar TD1 para que os novos fluxos já nasçam observáveis.
 Evidência inicial: `npm run test:security:local` cria duas identidades locais e
 comprova isolamento de `profiles`, `documents` e `document_drafts`, bloqueio de
 autoelevação, invisibilidade da auditoria para o cliente e permissões append-only
-do `service_role`. Ainda faltam as capacidades/papéis privados e a matriz admin.
+do `service_role`. A migration `019` cria papéis/capacidades privados; o RPC é
+restrito ao backend e `npm run test:admin-functions:local` comprova 401/403/200
+nas Edge Functions. Ainda faltam MFA/AAL2, gestão segura de papéis e teste owner.
 
 ## Critério de encerramento deste programa
 

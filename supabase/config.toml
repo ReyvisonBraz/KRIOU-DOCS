@@ -7,8 +7,8 @@ verify_jwt = false
 [functions.verify-payment]
 verify_jwt = false
 
-# admin-metrics usa o mesmo padrao: autenticacao e papel ADMIN validados
-# internamente (authenticate + profiles.role). Evita falsos 401 por clock skew;
+# admin-metrics usa o mesmo padrao: autenticacao e capacidade privada validadas
+# internamente. Evita falsos 401 por clock skew;
 # requisicoes sem usuario valido continuam recebendo 401/403 na funcao.
 [functions.admin-metrics]
 verify_jwt = false

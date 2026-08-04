@@ -98,6 +98,16 @@ for (const account of accounts) {
     .eq("id", user.id);
   if (profileError) throw profileError;
 
+  if (account.role === "admin") {
+    const { data: synced, error: syncError } = await adminClient.rpc(
+      "kriou_admin_sync_legacy_assignment",
+      { target_user_id: user.id },
+    );
+    if (syncError || !synced) {
+      throw syncError || new Error("Papel administrativo privado não sincronizado");
+    }
+  }
+
   const { data: authData, error: authError } =
     await publicClient.auth.signInWithPassword({
       email: account.email,

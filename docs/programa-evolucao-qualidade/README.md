@@ -12,6 +12,7 @@ Esta é a entrada única para planejamento técnico do projeto.
 | 4 | [Sincronização, exclusão e auditoria](./PLANO-SINCRONIZACAO-EXCLUSAO-AUDITORIA-2026-08-03.md) | garantir exclusões confirmadas, atualização econômica do admin e trilha backend | planejado; executar D0 antes das demais fases |
 | 5 | [Controles administrativos](./PLANO-CONTROLES-ADMINISTRATIVOS-2026-08-03.md) | ampliar operação de usuários, documentos, pagamentos e acesso excepcional | planejado; A0 bloqueia todas as mutações novas |
 | 6 | [Dashboard e templates](./PLANO-DASHBOARD-E-TEMPLATES-2026-08-03.md) | criar centro operacional e catálogo versionado de documentos | planejado; iniciar por B0/B1 e T0/T1 |
+| 7 | [Dívida técnica](./PLANO-DIVIDA-TECNICA-2026-08-03.md) | manter inventário priorizado e executar a modernização por risco | em execução; TD0 é o marco atual |
 
 O acompanhamento resumido fica em [STATUS.md](./STATUS.md). Decisões
 arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
@@ -19,12 +20,12 @@ arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 ## Ordem de trabalho atual
 
 1. M00 concluído; preservar seus gates como baseline obrigatória;
-2. tratar a auditoria de dependências descrita em S2.2, sem correção automática forçada;
-3. executar D0 antes de novas telas de exclusão, corrigindo linguagem e contratos;
-4. concluir as funcionalidades remanescentes do painel administrativo;
-5. iniciar M01 (erros e observabilidade);
-6. executar segurança S0/S1 em paralelo conforme risco e dependências;
-7. avançar D1/D2/D4/D5 quando esta frente for priorizada; D3 Realtime permanece condicional;
+2. concluir TD0: testes reais de autorização/RLS, capacidades e bloqueios;
+3. tratar a auditoria de dependências descrita em S2.2, sem correção automática forçada;
+4. concluir D0/D1 de exclusão e sincronização antes de ampliar ações destrutivas;
+5. iniciar TD1/M01 (erros, contratos e observabilidade);
+6. ampliar controles administrativos somente sobre esses guardrails;
+7. avançar decomposição estrutural por feature, começando pelas áreas tocadas;
 8. iniciar dashboard por B0/B1 e templates por T0/T1; editor/publicação somente após os gates.
 
 ## Documentos de apoio

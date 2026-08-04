@@ -2,8 +2,9 @@
 
 ## Foco atual
 
-Executar M00 (governança e baseline) e tratar riscos de dependências antes de
-prosseguir com refatorações estruturais amplas, mantendo o hardening S0 em paralelo.
+Concluir TD0 na branch `feat/admin-security-foundation`: testes reais de
+autorização/RLS, capacidades administrativas e bloqueios de segurança. Depois,
+iniciar erros/contratos/observabilidade antes das refatorações estruturais amplas.
 
 ## Painel administrativo
 
@@ -76,6 +77,19 @@ Evidência D0 na branch `feat/admin-security-foundation`: limpeza local extraíd
 para feature/componentes próprios, linguagem corrigida e testes de alcance,
 cancelamento, falha e confirmação adicionados. Conta e dados do servidor não são
 mais apresentados como excluídos por essa ação.
+
+## Dívida técnica
+
+Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08-03.md).
+
+- inventário único criado com prioridade por risco, dependências e aceite mensurável;
+- reescrita total rejeitada em favor de mudanças incrementais e reversíveis;
+- TD0 concentra autorização/RLS, auditoria append-only, capacidades e MFA;
+- primeira dívida paga: a limpeza local não promete mais excluir conta/dados do servidor;
+- migration `018` e helper compartilhado criam a base append-only de auditoria;
+- `npm run test:security:local` comprova RLS entre duas contas reais em perfis,
+  documentos e rascunhos, bloqueia autoelevação e valida auditoria append-only;
+- próximo item executável: capacidades/papéis privados e matriz de autorização admin.
 
 ## Controles administrativos
 

@@ -59,6 +59,9 @@ Plano ativo: [PLANO-HARDENING-SEGURANCA-2026-08-03.md](./PLANO-HARDENING-SEGURAN
   publicadas após as migrations; chamadas sem autenticação continuam bloqueadas;
 - cadastro TOTP e elevação AAL2 foram comprovados manualmente na conta proprietária
   real, seguidos de acesso bem-sucedido ao painel protegido no ambiente local;
+- a rota `/admin` agora monta o painel e inicia suas consultas somente após AAL2;
+  logout, novo login Google, desafio TOTP e liberação do painel foram validados
+  manualmente na conta proprietária real;
 - cobertura de todas as mutações, recuperação de MFA, rate limiting e teste do
   fluxo OAuth no Preview permanecem pendentes;
 - auditoria npm de 04/08 registra 5 pacotes (4 altos, 1 moderado) em quatro
@@ -105,8 +108,8 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
   reforço de sessão, isolada em `features/account`;
 - teste local comprova criação/cancelamento do fator e testes de componente
   cobrem cadastro, AAL2 e sessão AAL1 com fator existente;
-- próximo item executável: recuperação segura e desenho da segunda aprovação
-  para mudanças de owner;
+- próximo item executável: conectar a gestão segura de papéis à interface,
+  implementar recuperação segura e desenhar a segunda aprovação para owner;
 - migration `020` e Edge Function `admin-access` implementam gestão transacional
   de `support`, `finance` e `admin` exclusivamente por owner em AAL2;
 - motivo, `operation_id`, idempotência e auditoria são obrigatórios; admin comum,

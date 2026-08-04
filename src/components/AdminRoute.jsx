@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Spinner } from "./UI";
+import AdminMfaGate from "./AdminMfaGate";
 
 const AdminRoute = ({ children }) => {
   const { profile, isLoading, navigate } = useApp();
@@ -28,7 +29,11 @@ const AdminRoute = ({ children }) => {
     return null;
   }
 
-  return children;
+  return (
+    <AdminMfaGate onOpenProfile={() => navigate("profile")}>
+      {children}
+    </AdminMfaGate>
+  );
 };
 
 export default AdminRoute;

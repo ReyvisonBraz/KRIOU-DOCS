@@ -60,6 +60,7 @@ outro usuário ou adquirir privilégio administrativo.
   e reforço de sessão já cadastrada;
 - [x] testar localmente criação e cancelamento do fator sem deixar cadastro órfão;
 - [x] permitir segundo autenticador TOTP como fator de recuperação/reserva;
+- [x] exigir desafio AAL2 antes de montar a rota e carregar dados do painel;
 - [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
 - [ ] documentar recuperação assistida e remoção auditada sem permitir a perda
   do último fator administrativo;

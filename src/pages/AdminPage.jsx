@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { AppNavbar } from "../components/UI";
-import AdminRoute from "../components/AdminRoute";
 import {
   PeriodFilter,
   MetricsCards,
@@ -131,8 +130,7 @@ const AdminPage = () => {
   );
 
   return (
-    <AdminRoute>
-      <div style={s.page}>
+    <div style={s.page}>
         <AppNavbar
           title="Admin"
           leftAction={
@@ -311,8 +309,7 @@ const AdminPage = () => {
             </div>
           )}
         </div>
-      </div>
-    </AdminRoute>
+    </div>
   );
 };
 

@@ -22,6 +22,7 @@ import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./components/Theme";
 import { Spinner } from "./components/UI";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AdminRoute from "./components/AdminRoute";
 import { Toaster } from "sonner";
 
 // Rotas eager (sempre no bundle inicial)
@@ -77,7 +78,7 @@ const AppRoutes = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/legal-editor" element={<LegalEditorPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

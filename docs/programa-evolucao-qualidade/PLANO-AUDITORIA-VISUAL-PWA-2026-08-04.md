@@ -311,6 +311,12 @@ semânticos, variantes compatíveis com temas claro/escuro e testes de
 acessibilidade. O erro do checkout já utiliza o `Alert` compartilhado. O item
 permanece aberto até concluir `Card`, `MetricCard` e `Toast`.
 
+A auditoria subsequente encontrou e corrigiu um card de modelo que ainda
+combinava `role="button"` com botões descendentes. Os cards agora são artigos
+nomeados com ações independentes, e a faixa de filtros ficou contida com rolagem
+horizontal em telas estreitas. A matriz dedicada comprova temas claro/escuro em
+desktop, tablet, Android e iPhone.
+
 ### V4 — Jornada pública e autenticação
 
 - [ ] refinar landing, cabeçalho, hero, demonstração de documento e rodapé;

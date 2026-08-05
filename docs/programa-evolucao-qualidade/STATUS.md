@@ -121,6 +121,16 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - tokens suaves de status agora possuem paridade explícita entre temas claro e
   escuro;
 - baseline em validação final: 385 testes.
+- card de currículo deixou de aninhar botões dentro de um elemento com papel de
+  botão; as ações “Ver ficha” e “Usar” agora são independentes e alcançáveis por
+  teclado;
+- corrigido overflow horizontal de 609 px em viewport Android de 360 px causado
+  pelos filtros de modelos; a faixa agora rola internamente;
+- entrada direta em modelos não perde mais a categoria quando o React executa o
+  inicializador duas vezes no modo estrito de desenvolvimento;
+- nova matriz de modelos: 8 cenários em desktop, tablet, Android e iPhone, nos
+  temas claro/escuro, com Axe e verificação de overflow;
+- baseline em validação final: 387 testes.
 
 ## Segurança
 

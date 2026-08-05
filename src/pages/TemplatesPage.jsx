@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
@@ -31,7 +31,6 @@ const LEGAL_CATEGORIES = [
 
 const getInitialTemplateEntry = () => {
   const cat = sessionStorage.getItem("kriou_template_category");
-  sessionStorage.removeItem("kriou_template_category");
   return resolveTemplateEntry(cat);
 };
 
@@ -77,20 +76,18 @@ const ResumeMiniPreview = ({ template }) => (
 );
 
 // ─── TemplateCard ───────────────────────────────────────────────────────────
-const TemplateCard = ({ template, onClick, onViewSpec }) => {
+export const TemplateCard = ({ template, onClick, onViewSpec }) => {
   const [hovered, setHovered] = useState(false);
+  const titleId = React.useId();
 
   return (
-    <div
+    <article
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
-      tabIndex={0}
-      role="button"
-      aria-label={`Modelo ${template.name} — ${template.desc}`}
+      aria-labelledby={titleId}
       style={{
         cursor: "pointer",
         background: "var(--surface)",
@@ -153,6 +150,8 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
           pointerEvents: hovered ? "auto" : "none",
         }}>
           <button
+            type="button"
+            aria-label={`Ver ficha do modelo ${template.name}`}
             onClick={(e) => { e.stopPropagation(); onViewSpec(template); }}
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
@@ -167,6 +166,8 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             <Icon name="Eye" className="w-4 h-4" /> Ver Ficha
           </button>
           <button
+            type="button"
+            aria-label={`Usar modelo ${template.name}`}
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
@@ -186,7 +187,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
       {/* Info */}
       <div style={{ padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h3 className="font-display" style={{ fontWeight: 800, fontSize: 15, color: "var(--text)", marginBottom: 3, letterSpacing: "-0.3px" }}>
+          <h3 id={titleId} className="font-display" style={{ fontWeight: 800, fontSize: 15, color: "var(--text)", marginBottom: 3, letterSpacing: "-0.3px" }}>
             {template.name}
           </h3>
           <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.3 }}>{template.desc}</p>
@@ -196,7 +197,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
           flexShrink: 0, boxShadow: `0 0 10px ${template.accent}40`,
         }} />
       </div>
-    </div>
+    </article>
   );
 };
 
@@ -530,6 +531,10 @@ const TemplatesPage = () => {
   const [specTemplate, setSpecTemplate] = useState(null);
   const [specLegalDoc, setSpecLegalDoc] = useState(null);
 
+  useEffect(() => {
+    sessionStorage.removeItem("kriou_template_category");
+  }, []);
+
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template);
     setCurrentStep(0);
@@ -753,7 +758,8 @@ const TemplatesPage = () => {
       <style>{`
         @media (max-width: 768px) {
           .tpl-resume-header { flex-direction: column !important; align-items: flex-start !important; }
-          .tpl-resume-pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+          .tpl-resume-pills { width: 100%; max-width: 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+          .tpl-resume-pills > button { flex: 0 0 auto; }
           .tpl-resume-pills::-webkit-scrollbar { display: none; }
           .tpl-resume-grid { grid-template-columns: 1fr !important; }
           .tpl-resume-grid > div { grid-column: span 1 !important; }

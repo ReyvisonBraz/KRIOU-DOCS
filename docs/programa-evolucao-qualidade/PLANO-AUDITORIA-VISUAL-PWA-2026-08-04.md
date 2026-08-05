@@ -233,6 +233,14 @@ acessível, ícone decorativo, alvo mínimo de 44 px, foco, hover, disabled e
 variantes semânticas. Perfil e fechamento do diálogo de renomear no dashboard
 já usam o contrato, eliminando estilos manuais duplicados.
 
+Em 05/08/2026, `Input`, `Textarea` e `Select` receberam IDs únicos por instância,
+`required`/`disabled` nativos, descrição e erro combináveis em
+`aria-describedby` e estados visuais consistentes. O diálogo de renomear adotou
+o novo `Input`. A inspeção no navegador revelou também que o menu do card era
+recortado e permitia que o clique atingisse a aba atrás dele; o menu passou a
+ser renderizado em portal com posicionamento fixo, limite de viewport e camada
+própria. Renomear foi comprovado no desktop e em 390 px sem salvar alterações.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual

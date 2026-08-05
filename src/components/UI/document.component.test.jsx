@@ -71,4 +71,13 @@ describe("DocumentCard", () => {
     expect(screen.queryByRole("button", { name: "Renomear" })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
+
+  it("renderiza o menu fora do card para não recortar nem interceptar ações", () => {
+    renderCard();
+    fireEvent.click(screen.getByRole("button", { name: "Mais ações para Ana Souza" }));
+
+    const actions = screen.getByLabelText("Ações para Ana Souza");
+    expect(actions.parentElement).toBe(document.body);
+    expect(actions).toHaveStyle({ position: "fixed", zIndex: "1000" });
+  });
 });

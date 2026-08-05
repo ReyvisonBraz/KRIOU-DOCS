@@ -11,7 +11,7 @@
  * @module components/ui/form
  */
 
-import React from "react";
+import React, { useId } from "react";
 import { Icon } from "../Icons";
 
 // -- Tokens de design tipográfico --
@@ -45,7 +45,7 @@ const ensureFormStyles = () => {
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
       overflow: hidden;
     }
-    .kriou-input-wrap:hover {
+    .kriou-input-wrap:not(.is-disabled):hover {
       border-color: var(--border-hover);
     }
     .kriou-input-wrap:focus-within {
@@ -58,6 +58,11 @@ const ensureFormStyles = () => {
     }
     .kriou-input-wrap.has-error:focus-within {
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-danger) 18%, transparent);
+    }
+    .kriou-input-wrap.is-disabled {
+      background: var(--surface-2);
+      border-color: var(--border);
+      opacity: 0.72;
     }
 
     .kriou-input-el {
@@ -75,6 +80,9 @@ const ensureFormStyles = () => {
     }
     .kriou-input-el::placeholder {
       color: var(--text-faint);
+    }
+    .kriou-input-el:disabled {
+      cursor: not-allowed;
     }
     .kriou-input-wrap.has-icon .kriou-input-el {
       padding-left: 0;
@@ -111,7 +119,7 @@ const ensureFormStyles = () => {
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
       line-height: 1.5;
     }
-    .kriou-textarea-el:hover {
+    .kriou-textarea-el:not(:disabled):hover {
       border-color: var(--border-hover);
     }
     .kriou-textarea-el:focus {
@@ -128,6 +136,14 @@ const ensureFormStyles = () => {
     }
     .kriou-textarea-el::placeholder {
       color: var(--text-faint);
+    }
+    .kriou-textarea-el:disabled,
+    .kriou-select-el:disabled {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      opacity: 0.72;
     }
 
     /* ================================================================
@@ -155,7 +171,7 @@ const ensureFormStyles = () => {
       -webkit-appearance: none;
       -moz-appearance: none;
     }
-    .kriou-select-el:hover {
+    .kriou-select-el:not(:disabled):hover {
       border-color: var(--border-hover);
     }
     .kriou-select-el:focus {
@@ -217,6 +233,13 @@ const ensureFormStyles = () => {
       color: var(--status-danger);
       font-family: ${T.body};
     }
+    .kriou-field-description {
+      margin: 6px 0 0;
+      font-size: var(--font-size-caption);
+      line-height: 1.5;
+      color: var(--text-muted);
+      font-family: ${T.body};
+    }
   `;
   document.head.appendChild(el);
 };
@@ -230,28 +253,38 @@ const FieldLabel = ({ htmlFor, label, required }) => {
     <label htmlFor={htmlFor} className="kriou-label">
       {label}
       {required && (
-        <>
-          <span aria-hidden="true" style={{ color: "var(--coral)", marginLeft: 2 }}>
-            *
-          </span>
-          <span
-            style={{
-              position: "absolute",
-              width: 1,
-              height: 1,
-              overflow: "hidden",
-              clip: "rect(0,0,0,0)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {" "}
-            (obrigatório)
-          </span>
-        </>
+        <span aria-hidden="true" style={{ color: "var(--coral)", marginLeft: 2 }}>
+          *
+        </span>
       )}
     </label>
   );
 };
+
+const describedByIds = (...ids) => ids.filter(Boolean).join(" ") || undefined;
+
+const controlId = (prefix, explicitId, generatedId) =>
+  explicitId || `${prefix}-${generatedId.replace(/:/g, "")}`;
+
+const FieldMessages = ({ description, descriptionId, error, errorId }) => (
+  <>
+    {description && (
+      <p id={descriptionId} className="kriou-field-description">
+        {description}
+      </p>
+    )}
+    {error && (
+      <p id={errorId} className="kriou-field-error" role="alert">
+        <Icon
+          name="AlertCircle"
+          aria-hidden="true"
+          style={{ width: 13, height: 13, flexShrink: 0 }}
+        />
+        {error}
+      </p>
+    )}
+  </>
+);
 
 /* ====================== Input ====================== */
 export const Input = ({
@@ -266,17 +299,24 @@ export const Input = ({
   value,
   onChange,
   required = false,
+  disabled = false,
+  description,
+  containerClassName = "",
+  containerStyle,
+  "aria-describedby": externalDescribedBy,
   ...props
 }) => {
   ensureFormStyles();
 
-  const inputId =
-    id || (label ? `input-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
+  const generatedId = useId();
+  const inputId = controlId("input", id, generatedId);
   const hasError = Boolean(error);
   const hasIcon = Boolean(icon);
+  const descriptionId = `${inputId}-description`;
+  const errorId = `${inputId}-error`;
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div className={containerClassName} style={{ marginBottom: 16, ...containerStyle }}>
       <FieldLabel htmlFor={inputId} label={label} required={required} />
 
       {/* Container do input */}
@@ -285,6 +325,7 @@ export const Input = ({
           "kriou-input-wrap",
           hasError && "has-error",
           hasIcon && "has-icon",
+          disabled && "is-disabled",
           className,
         ]
           .filter(Boolean)
@@ -292,7 +333,7 @@ export const Input = ({
         style={style}
       >
         {hasIcon && (
-          <span className="kriou-input-icon">
+          <span className="kriou-input-icon" aria-hidden="true">
             <Icon name={icon} style={{ width: 18, height: 18 }} />
           </span>
         )}
@@ -303,23 +344,25 @@ export const Input = ({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          required={required}
+          disabled={disabled}
           aria-required={required || undefined}
           aria-invalid={hasError || undefined}
-          aria-describedby={hasError ? `${inputId}-error` : undefined}
+          aria-describedby={describedByIds(
+            externalDescribedBy,
+            description && descriptionId,
+            hasError && errorId,
+          )}
           {...props}
         />
       </div>
 
-      {/* Mensagem de erro */}
-      {hasError && (
-        <p id={`${inputId}-error`} className="kriou-field-error" role="alert">
-          <Icon
-            name="AlertCircle"
-            style={{ width: 13, height: 13, flexShrink: 0 }}
-          />
-          {error}
-        </p>
-      )}
+      <FieldMessages
+        description={description}
+        descriptionId={descriptionId}
+        error={error}
+        errorId={errorId}
+      />
     </div>
   );
 };
@@ -336,16 +379,23 @@ export const Textarea = ({
   onChange,
   rows = 4,
   required = false,
+  disabled = false,
+  description,
+  containerClassName = "",
+  containerStyle,
+  "aria-describedby": externalDescribedBy,
   ...props
 }) => {
   ensureFormStyles();
 
-  const textareaId =
-    id || (label ? `textarea-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
+  const generatedId = useId();
+  const textareaId = controlId("textarea", id, generatedId);
   const hasError = Boolean(error);
+  const descriptionId = `${textareaId}-description`;
+  const errorId = `${textareaId}-error`;
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div className={containerClassName} style={{ marginBottom: 16, ...containerStyle }}>
       <FieldLabel htmlFor={textareaId} label={label} required={required} />
 
       <textarea
@@ -356,21 +406,24 @@ export const Textarea = ({
         onChange={onChange}
         rows={rows}
         style={style}
+        required={required}
+        disabled={disabled}
         aria-required={required || undefined}
         aria-invalid={hasError || undefined}
-        aria-describedby={hasError ? `${textareaId}-error` : undefined}
+        aria-describedby={describedByIds(
+          externalDescribedBy,
+          description && descriptionId,
+          hasError && errorId,
+        )}
         {...props}
       />
 
-      {hasError && (
-        <p id={`${textareaId}-error`} className="kriou-field-error" role="alert">
-          <Icon
-            name="AlertCircle"
-            style={{ width: 13, height: 13, flexShrink: 0 }}
-          />
-          {error}
-        </p>
-      )}
+      <FieldMessages
+        description={description}
+        descriptionId={descriptionId}
+        error={error}
+        errorId={errorId}
+      />
     </div>
   );
 };
@@ -386,16 +439,23 @@ export const Select = ({
   value,
   onChange,
   required = false,
+  disabled = false,
+  description,
+  containerClassName = "",
+  containerStyle,
+  "aria-describedby": externalDescribedBy,
   ...props
 }) => {
   ensureFormStyles();
 
-  const selectId =
-    id || (label ? `select-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined);
+  const generatedId = useId();
+  const selectId = controlId("select", id, generatedId);
   const hasError = Boolean(error);
+  const descriptionId = `${selectId}-description`;
+  const errorId = `${selectId}-error`;
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div className={containerClassName} style={{ marginBottom: 16, ...containerStyle }}>
       <FieldLabel htmlFor={selectId} label={label} required={required} />
 
       <div className="kriou-select-wrap">
@@ -405,9 +465,15 @@ export const Select = ({
           value={value}
           onChange={onChange}
           style={style}
+          required={required}
+          disabled={disabled}
           aria-required={required || undefined}
           aria-invalid={hasError || undefined}
-          aria-describedby={hasError ? `${selectId}-error` : undefined}
+          aria-describedby={describedByIds(
+            externalDescribedBy,
+            description && descriptionId,
+            hasError && errorId,
+          )}
           {...props}
         >
           {options.map((opt, index) => {
@@ -429,15 +495,12 @@ export const Select = ({
         </span>
       </div>
 
-      {hasError && (
-        <p id={`${selectId}-error`} className="kriou-field-error" role="alert">
-          <Icon
-            name="AlertCircle"
-            style={{ width: 13, height: 13, flexShrink: 0 }}
-          />
-          {error}
-        </p>
-      )}
+      <FieldMessages
+        description={description}
+        descriptionId={descriptionId}
+        error={error}
+        errorId={errorId}
+      />
     </div>
   );
 };

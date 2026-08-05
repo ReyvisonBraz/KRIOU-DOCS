@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, IconButton, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, IconButton, Input, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -1164,18 +1164,14 @@ const DashboardPage = () => {
               />
             </div>
 
-            <label style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-dim)" }}>
-                Novo nome
-              </span>
-              <input
-                autoFocus
-                value={renameTitle}
-                onChange={(e) => setRenameTitle(e.target.value)}
-                className="input-field"
-                style={{ fontSize: 16 }}
-              />
-            </label>
+            <Input
+              label="Novo nome"
+              autoFocus
+              required
+              value={renameTitle}
+              onChange={(e) => setRenameTitle(e.target.value)}
+              containerStyle={{ marginBottom: 0 }}
+            />
 
             <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
               <button type="button" onClick={closeRenameDialog} className="btn-secondary" style={{ flex: 1 }}>

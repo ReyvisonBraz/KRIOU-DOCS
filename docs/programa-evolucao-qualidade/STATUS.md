@@ -97,6 +97,14 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - dashboard migrou as ações de perfil e fechamento do diálogo para o novo
   contrato; matriz responsiva autenticada permaneceu 8/8 aprovada;
 - baseline em validação final: 364 testes após as regressões do novo primitive.
+- `Input`, `Textarea` e `Select` agora usam IDs únicos, validação HTML nativa,
+  descrição/erro associados e estados desabilitados consistentes;
+- diálogo de renomear migrou para o novo controle e foi inspecionado no navegador
+  em desktop e 390 px;
+- menu “Mais ações” deixou de ser recortado pelo card: agora usa portal e camada
+  própria, impedindo que Renomear acione a aba posicionada atrás do menu;
+- baseline em validação final: 369 testes, incluindo regressões de formulário e
+  posicionamento do menu.
 
 ## Segurança
 

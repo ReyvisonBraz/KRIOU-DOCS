@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "../Icons";
 
 const TOUCH_SIZE = 44;
@@ -6,16 +7,20 @@ const TOUCH_SIZE = 44;
 export const DocumentActionsMenu = ({ documentTitle, items }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const menuRef = useRef(null);
   const triggerRef = useRef(null);
   const firstItemRef = useRef(null);
   const menuId = useId();
   const availableItems = items.filter((item) => item && item.onSelect);
+  const [position, setPosition] = useState(null);
 
   useEffect(() => {
     if (!open) return undefined;
 
     const handlePointerDown = (event) => {
-      if (!containerRef.current?.contains(event.target)) setOpen(false);
+      const insideTrigger = containerRef.current?.contains(event.target);
+      const insideMenu = menuRef.current?.contains(event.target);
+      if (!insideTrigger && !insideMenu) setOpen(false);
     };
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -23,17 +28,47 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
         triggerRef.current?.focus();
       }
     };
+    const handleViewportChange = () => setOpen(false);
 
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
     const focusFrame = window.requestAnimationFrame(() => firstItemRef.current?.focus());
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
       window.cancelAnimationFrame(focusFrame);
     };
   }, [open]);
+
+  const closeMenu = () => setOpen(false);
+
+  const toggleMenu = () => {
+    if (open) {
+      closeMenu();
+      return;
+    }
+
+    const triggerRect = triggerRef.current?.getBoundingClientRect();
+    if (!triggerRect) return;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const estimatedHeight = Math.min(availableItems.length * TOUCH_SIZE + 12, 280);
+    const opensAbove = triggerRect.top >= estimatedHeight + 16;
+
+    setPosition({
+      left: Math.max(8, Math.min(triggerRect.right - 220, viewportWidth - 228)),
+      top: opensAbove ? triggerRect.top - 8 : triggerRect.bottom + 8,
+      transform: opensAbove ? "translateY(-100%)" : "none",
+      maxHeight: Math.max(132, opensAbove ? triggerRect.top - 24 : viewportHeight - triggerRect.bottom - 24),
+    });
+    setOpen(true);
+  };
 
   if (availableItems.length === 0) return null;
 
@@ -46,7 +81,7 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
         aria-controls={menuId}
         aria-label={`Mais ações para ${documentTitle}`}
         title="Mais ações"
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggleMenu}
         className="focus-ring"
         style={{
           display: "inline-flex",
@@ -64,16 +99,21 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
         <Icon name="MoreHorizontal" className="w-5 h-5" />
       </button>
 
-      {open && (
+      {open && position && createPortal(
         <div
+          ref={menuRef}
           id={menuId}
           aria-label={`Ações para ${documentTitle}`}
           style={{
-            position: "absolute",
-            right: 0,
-            bottom: 52,
-            zIndex: 5,
+            position: "fixed",
+            left: position.left,
+            top: position.top,
+            transform: position.transform,
+            zIndex: 1000,
             width: 220,
+            maxWidth: "calc(100vw - 16px)",
+            maxHeight: position.maxHeight,
+            overflowY: "auto",
             padding: 6,
             border: "1px solid var(--border-strong)",
             borderRadius: 12,
@@ -88,7 +128,7 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
               type="button"
               className="focus-ring"
               onClick={() => {
-                setOpen(false);
+                closeMenu();
                 item.onSelect();
               }}
               style={{
@@ -123,7 +163,8 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
               {item.label}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

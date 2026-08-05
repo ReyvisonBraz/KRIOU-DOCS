@@ -51,6 +51,7 @@ export {
 
 export { MetricCard } from "./UI/metrics";
 export { AppToaster } from "./UI/AppToaster";
+export { DataTable } from "./UI/data";
 
 export {
   HelpTooltip,

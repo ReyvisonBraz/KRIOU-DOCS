@@ -325,6 +325,12 @@ nomeados com ações independentes, e a faixa de filtros ficou contida com rolag
 horizontal em telas estreitas. A matriz dedicada comprova temas claro/escuro em
 desktop, tablet, Android e iPhone.
 
+Progresso em 05/08/2026: `DataTable` compartilhada criada com tabela semântica
+no desktop e reorganização em cartões no mobile, sem duplicar células ou ações
+no DOM. O contrato inclui legenda, rótulos móveis, colunas de ação, vazio,
+carregamento e foco. O item permanece aberto até migrar e validar a lista real
+de usuários do painel, que está isolada junto ao WIP de papéis administrativos.
+
 ### V4 — Jornada pública e autenticação
 
 - [ ] refinar landing, cabeçalho, hero, demonstração de documento e rodapé;

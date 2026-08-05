@@ -141,6 +141,13 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - matriz autenticada do dashboard permaneceu verde nos 8 cenários responsivos e
   nos temas claro/escuro após a migração;
 - baseline em validação final: 397 testes.
+- fundação de `DataTable` responsiva criada em arquivos independentes: preserva
+  semântica de tabela no desktop e assume leitura de cartões abaixo de 768 px,
+  com uma única árvore de conteúdo;
+- estados vazio/carregando, legenda, rótulos móveis, colunas de ação e foco já
+  possuem contrato e testes; migração do painel aguarda isolamento do WIP de
+  papéis administrativos;
+- baseline em validação final: 401 testes.
 
 ## Segurança
 

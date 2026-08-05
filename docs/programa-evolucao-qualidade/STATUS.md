@@ -79,6 +79,11 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   semântico, abertura nativa e ações independentes foram cobertos por regressão;
 - baseline após o ajuste: lint, typecheck, 358 testes, build e quatro E2E
   autenticados locais aprovados.
+- hierarquia de ações do card refinada: editar e baixar/pagar ficam diretos;
+  renomear, copiar, imprimir, arquivar, compartilhar e excluir ficam em menu
+  acessível com Escape e devolução de foco;
+- baseline atual: lint, typecheck, 359 testes, build e quatro E2E autenticados
+  locais aprovados.
 
 ## Segurança
 

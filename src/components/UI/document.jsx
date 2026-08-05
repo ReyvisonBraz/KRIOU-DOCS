@@ -13,6 +13,7 @@
 
 import React, { useId, useState } from "react";
 import { Badge } from "./primitives";
+import DocumentActionsMenu from "./DocumentActionsMenu";
 import { Icon } from "../Icons";
 import { extractPersonData } from "../../utils/documentCode";
 import {
@@ -262,43 +263,6 @@ export const DocumentCard = ({
           )}
         </div>
 
-        {/* Botão de excluir */}
-        <button
-          aria-label={`Excluir ${doc.title}`}
-          className="kf"
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: TOQUE,
-            height: TOQUE,
-            borderRadius: RAD_SM,
-            border: "none",
-            background: "transparent",
-            color: "var(--text-faint)",
-            cursor: "pointer",
-            opacity: hover ? 1 : 0.55,
-            transition: EASE,
-            flexShrink: 0,
-            position: "relative",
-            zIndex: 2,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--danger)";
-            e.currentTarget.style.background = "rgba(244,63,94,0.12)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--text-faint)";
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <Icon name="Trash2" className="w-4 h-4" />
-        </button>
       </div>
 
       {/* ── Corpo: nome / título ── */}
@@ -451,14 +415,8 @@ export const DocumentCard = ({
           >
             <Icon name="Edit" className="w-4 h-4" /> Editar documento
           </button>
-          {onRename && (
-            <ActionBtn icon="Edit" label="Renomear" onClick={(e) => { e.stopPropagation(); onRename(doc); }} accent={accent} />
-          )}
-          {onDuplicate && (
-            <ActionBtn icon="Copy" label="Copiar" onClick={(e) => { e.stopPropagation(); onDuplicate(doc); }} accent={accent} />
-          )}
           {onDownload && hasDownloadAccess && (
-            <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
+            <DirectActionButton icon="Download" label="Baixar PDF" onClick={() => onDownload(doc)} accent={accent} />
           )}
           {onPay && !hasDownloadAccess && accessStatus !== "draft" && (
             <button
@@ -475,26 +433,27 @@ export const DocumentCard = ({
               <Icon name="CreditCard" className="w-4 h-4" /> Pagar e liberar PDF
             </button>
           )}
-          {onPrint && hasDownloadAccess && (
-            <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />
-          )}
-          {onArchive && (
-            <ActionBtn
-              icon={doc.archived ? "RefreshCw" : "Archive"}
-              label={doc.archived ? "Restaurar" : "Arquivar"}
-              onClick={(e) => { e.stopPropagation(); onArchive(doc); }}
-              accent={accent}
-            />
-          )}
-          <ActionBtn
-            icon="WhatsApp"
-            label="WhatsApp"
-            onClick={(e) => {
-              e.stopPropagation();
-              const text = encodeURIComponent(`*${doc.title || "Documento"}* - Kriou Docs\nCódigo: ${doc.code || ""}`);
-              window.open(`https://wa.me/?text=${text}`, "_blank");
-            }}
-            accent="#25D366"
+          <DocumentActionsMenu
+            documentTitle={accessibleTitle}
+            items={[
+              onRename && { icon: "Edit", label: "Renomear", onSelect: () => onRename(doc) },
+              onDuplicate && { icon: "Copy", label: "Criar uma cópia", onSelect: () => onDuplicate(doc) },
+              onPrint && hasDownloadAccess && { icon: "Printer", label: "Imprimir", onSelect: () => onPrint(doc) },
+              onArchive && {
+                icon: doc.archived ? "RefreshCw" : "Archive",
+                label: doc.archived ? "Restaurar" : "Arquivar",
+                onSelect: () => onArchive(doc),
+              },
+              {
+                icon: "WhatsApp",
+                label: "Compartilhar no WhatsApp",
+                onSelect: () => {
+                  const text = encodeURIComponent(`*${doc.title || "Documento"}* - Kriou Docs\nCódigo: ${doc.code || ""}`);
+                  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+                },
+              },
+              onDelete && { icon: "Trash2", label: "Excluir", onSelect: onDelete, danger: true },
+            ]}
           />
         </div>
       </div>
@@ -502,29 +461,29 @@ export const DocumentCard = ({
   );
 };
 
-const ActionBtn = ({ icon, label, onClick, accent }) => (
+const DirectActionButton = ({ icon, label, onClick, accent }) => (
   <button
     type="button"
     onClick={onClick}
-    title={label}
-    aria-label={label}
     style={{
-      display: "flex",
+      display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      width: TOQUE,
-      height: TOQUE,
-      borderRadius: 8,
-      border: "none",
-      background: "transparent",
-      color: "var(--text-faint)",
+      gap: 7,
+      minHeight: TOQUE,
+      padding: "0 12px",
+      borderRadius: 9,
+      border: `1px solid ${accent}45`,
+      background: `${accent}14`,
+      color: "var(--text-accent)",
       cursor: "pointer",
       transition: EASE,
-      flexShrink: 0,
+      fontFamily: "var(--font-body)",
+      fontSize: 12,
+      fontWeight: 800,
     }}
-    onMouseEnter={(e) => { e.currentTarget.style.color = accent; e.currentTarget.style.background = `${accent}15`; }}
-    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.background = "transparent"; }}
   >
     <Icon name={icon} className="w-4 h-4" />
+    {label}
   </button>
 );

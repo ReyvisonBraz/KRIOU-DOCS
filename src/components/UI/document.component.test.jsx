@@ -34,7 +34,7 @@ describe("DocumentCard", () => {
 
     const article = screen.getByRole("article", { name: "Ana Souza" });
     expect(within(article).getByRole("button", { name: "Abrir Ana Souza" })).toBeVisible();
-    expect(within(article).getByRole("button", { name: "Excluir Currículo de Ana" })).toBeVisible();
+    expect(within(article).getByRole("button", { name: "Mais ações para Ana Souza" })).toBeVisible();
     expect(article.querySelector("button button")).toBeNull();
     expect(article.querySelector('[role="button"] button')).toBeNull();
   });
@@ -53,9 +53,22 @@ describe("DocumentCard", () => {
   it("excluir não dispara a abertura do documento", () => {
     const { onClick, onDelete } = renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: "Excluir Currículo de Ana" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mais ações para Ana Souza" }));
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     expect(onDelete).toHaveBeenCalledOnce();
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("fecha o menu com Escape e devolve o foco ao gatilho", () => {
+    renderCard();
+    const trigger = screen.getByRole("button", { name: "Mais ações para Ana Souza" });
+
+    fireEvent.click(trigger);
+    expect(screen.getByRole("button", { name: "Renomear" })).toBeVisible();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(screen.queryByRole("button", { name: "Renomear" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 });

@@ -217,6 +217,10 @@ Resolvido localmente em 04/08/2026: o container passou a ser um `article`, a
 permanecem como irmãos. Testes impedem o retorno de `button` ou `[role=button]`
 aninhado.
 
+Refinamento seguinte: editar e baixar/pagar permanecem visíveis; ações
+secundárias foram agrupadas em “Mais ações”. O menu possui alvo de 44 px, foco
+inicial, fechamento por Escape, retorno do foco e tratamento visual destrutivo.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual
@@ -265,6 +269,7 @@ sem busca e substituição espalhada por páginas.
 - [ ] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
 - [ ] criar Table/DataList responsiva para desktop e mobile;
 - [x] substituir cards clicáveis com botões aninhados por semântica válida;
+- [x] reduzir a sobrecarga visual dos cards sem remover capacidades;
 - [ ] padronizar Modal/Drawer/Confirm com foco e teclado corretos;
 - [ ] criar AppShell, cabeçalho, navegação lateral e navegação móvel;
 - [ ] criar Skeleton e estados de erro com ação de recuperação;

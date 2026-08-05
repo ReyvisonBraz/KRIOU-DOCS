@@ -209,14 +209,18 @@ Plano ativo: [PLANO-DIVIDA-TECNICA-2026-08-03.md](./PLANO-DIVIDA-TECNICA-2026-08
   reforço de sessão, isolada em `features/account`;
 - teste local comprova criação/cancelamento do fator e testes de componente
   cobrem cadastro, AAL2 e sessão AAL1 com fator existente;
-- próximo item executável: conectar a gestão segura de papéis à interface,
-  implementar recuperação segura e desenhar a segunda aprovação para owner;
+- gestão segura de papéis foi conectada à interface para `owner` em AAL2;
+  recuperação segura e segunda aprovação para mudanças de `owner` continuam
+  pendentes;
 - migration `020` e Edge Function `admin-access` implementam gestão transacional
   de `support`, `finance` e `admin` exclusivamente por owner em AAL2;
 - motivo, `operation_id`, idempotência e auditoria são obrigatórios; admin comum,
   owner AAL1, autoalteração e promoção a owner são rejeitados;
 - alterações de owner permanecem bloqueadas até existir segunda aprovação e
   proteção formal do último proprietário.
+- migration `021` restringe a leitura dos papéis privados ao backend
+  `service_role`; UI, RLS e Edge Functions passaram nos testes locais em
+  05/08/2026, mas a migration ainda não foi aplicada no Supabase remoto.
 
 ## Controles administrativos
 

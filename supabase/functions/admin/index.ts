@@ -9,6 +9,7 @@
  * GET /admin?action=stats
  * GET /admin?action=users
  * GET /admin?action=user-docs&userId=xxx
+ * GET /admin?action=authorization
  * ============================================
  */
 
@@ -41,6 +42,9 @@ serve(async (req) => {
     const action = url.searchParams.get("action");
 
     switch (action) {
+      case "authorization":
+        return json(authorization);
+
       case "stats": {
         const { count: totalUsers } = await supabase
           .from("profiles")
@@ -81,20 +85,24 @@ serve(async (req) => {
 
         if (usersError) throw usersError;
 
-        const [{ data: documents, error: documentsError }, authUsersResult] = await Promise.all([
+        const [{ data: documents, error: documentsError }, authUsersResult, rolesResult] = await Promise.all([
           supabase.from("documents").select("user_id"),
           supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+          supabase.rpc("kriou_admin_list_role_assignments"),
         ]);
         if (documentsError) throw documentsError;
         if (authUsersResult.error) throw authUsersResult.error;
+        if (rolesResult.error) throw rolesResult.error;
 
         const counts = (documents || []).reduce((result, document) => {
           result[document.user_id] = (result[document.user_id] || 0) + 1;
           return result;
         }, {} as Record<string, number>);
         const emails = new Map(authUsersResult.data.users.map((authUser) => [authUser.id, authUser.email || null]));
+        const adminRoles = new Map((rolesResult.data || []).map((assignment) => [assignment.user_id, assignment.role]));
         const usersWithCounts = (users || []).map((profile) => ({
           ...profile,
+          adminRole: adminRoles.get(profile.id) || null,
           email: emails.get(profile.id) || null,
           docCount: counts[profile.id] || 0,
         }));

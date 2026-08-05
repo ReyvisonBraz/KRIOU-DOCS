@@ -8,16 +8,19 @@ import {
   MiniChart,
   RecentFailures,
   AdminEnvironmentBadge,
+  AdminRoleManager,
 } from "../components/admin";
 import { MetricsService } from "../services/MetricsService";
 import { formatCurrency } from "../utils/formatting";
 
 const AdminPage = () => {
-  const { navigate, profile } = useApp();
+  const { navigate, profile, userId } = useApp();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDocs, setUserDocs] = useState([]);
+  const [accessUser, setAccessUser] = useState(null);
+  const [authorization, setAuthorization] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
 
@@ -57,7 +60,8 @@ const AdminPage = () => {
   useEffect(() => {
     loadStats();
     loadUsers();
-  }, [loadStats, loadUsers]);
+    callAdmin("authorization").then(setAuthorization).catch((err) => setError(err.message));
+  }, [callAdmin, loadStats, loadUsers]);
 
   const loadMetrics = useCallback(async (targetPeriod) => {
     setError(null);
@@ -246,24 +250,57 @@ const AdminPage = () => {
                           <td style={s.td}>
                             <span style={{
                               ...s.pill,
-                              background: u.role === "admin" ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
-                              color: u.role === "admin" ? "var(--gold)" : "var(--text-muted)",
+                              background: u.adminRole ? "rgba(138,101,16,0.10)" : "var(--soft-fill)",
+                              color: u.adminRole ? "var(--gold)" : "var(--text-muted)",
                             }}>
-                              {u.role || "user"}
+                              {u.adminRole || "cliente"}
                             </span>
                           </td>
                           <td style={{ ...s.td, fontWeight: 700, color: "var(--text)" }}>{u.docCount}</td>
                           <td style={s.td}>{u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "—"}</td>
                           <td style={s.td}>
+                            <div style={{ display: "flex", gap: 6 }}>
                             <button onClick={() => loadUserDocs(u.id)}
                               style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid var(--border)", background: "transparent", color: "var(--text-dim)", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "inherit" }}>
                               Documentos
                             </button>
+                            {authorization?.capabilities?.includes("roles.manage") && (
+                              <button onClick={() => setAccessUser(u)}
+                                style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(212,175,55,0.35)", background: "rgba(212,175,55,0.08)", color: "var(--gold)", cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }}>
+                                Acesso
+                              </button>
+                            )}
+                            </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+
+              {accessUser && authorization?.capabilities?.includes("roles.manage") && (
+                <div style={{ marginTop: 24, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div>
+                      <h4 style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 700, margin: 0 }}>
+                        Permissões de {accessUser.nome || accessUser.email || "usuário"}
+                      </h4>
+                      <p style={{ margin: "4px 0 0", color: "var(--text-muted)", fontSize: 12 }}>{accessUser.email || "E-mail indisponível"}</p>
+                    </div>
+                    <button onClick={() => setAccessUser(null)} style={{ padding: "4px 12px", borderRadius: 8, border: "none", background: "var(--surface-2)", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                      Fechar
+                    </button>
+                  </div>
+                  <AdminRoleManager
+                    key={`${accessUser.id}:${accessUser.adminRole || "none"}`}
+                    user={accessUser}
+                    currentUserId={userId}
+                    onChanged={async () => {
+                      await loadUsers();
+                      setAccessUser(null);
+                    }}
+                  />
                 </div>
               )}
 

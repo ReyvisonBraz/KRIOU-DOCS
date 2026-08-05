@@ -157,8 +157,8 @@ Bloqueia todas as demais mutações.
 - [ ] Implementar helper transacional de auditoria append-only; mudança de papel
   já é atômica com auditoria, demais mutações futuras devem reutilizar o padrão.
 - [x] Adicionar `operation_id`, `request_id`, resultado e erro sanitizado à auditoria.
-- [x] Criar matriz de autorização backend com negação por padrão; exposição
-  segura de capacidades ao frontend permanece pendente até a decomposição da rota.
+- [x] Criar matriz de autorização backend com negação por padrão e expor ao
+  frontend somente a autorização do operador autenticado pela rota protegida.
 - [ ] Aplicar rate limit mais rígido a mutações, downloads e exportações.
 - [ ] Definir confirmação padrão, motivo obrigatório e códigos de motivo.
 - [ ] Separar ambientes e exibir produção/teste de forma inequívoca.
@@ -172,6 +172,13 @@ motivo e UUID de operação. A transação altera o papel privado, sincroniza ap
 o campo legado da interface e grava auditoria; repetição retorna o resultado sem
 duplicar evento. Autoalteração e qualquer promoção/revogação de `owner` são
 bloqueadas até existir fluxo de dupla aprovação.
+
+Evidência de interface em 05/08/2026: migration `021` fornece ao backend uma
+listagem de papéis restrita ao `service_role`; a Edge Function `admin` associa
+esses papéis aos usuários sem expor o schema privado ao navegador. A interface
+permite que `owner` em AAL2 altere `support`, `finance` e `admin`, exige motivo e
+mantém autoalteração e qualquer mudança de `owner` bloqueadas. RLS e funções
+foram comprovadas localmente; a migration `021` ainda não foi aplicada no remoto.
 
 ## Fase A1 — Busca e detalhe operacional somente leitura
 

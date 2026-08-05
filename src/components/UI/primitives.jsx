@@ -323,12 +323,17 @@ export const Badge = ({
 }) => {
   injetaEstilos();
 
-  // Mapa de cores por variante — fundo translúcido + cor do texto
+  // Variantes semânticas; aliases antigos preservam compatibilidade durante a migração.
   const mapaBadge = {
-    coral:   { background: "rgba(201,54,89,0.10)",  color: "var(--action-accent)" },
-    teal:    { background: "rgba(15,118,110,0.10)",  color: "var(--status-success)" },
-    gold:    { background: "rgba(138,101,16,0.10)",  color: "var(--gold)" },
-    default: { background: "var(--surface-3)",         color: "var(--text-muted)" },
+    accent:  { background: "var(--coral-light)", color: "var(--text-accent)" },
+    info:    { background: "var(--status-info-soft)", color: "var(--status-info)" },
+    success: { background: "var(--status-success-soft)", color: "var(--status-success)" },
+    warning: { background: "var(--status-warning-soft)", color: "var(--status-warning)" },
+    danger:  { background: "var(--status-danger-soft)", color: "var(--status-danger)" },
+    coral:   { background: "var(--coral-light)", color: "var(--text-accent)" },
+    teal:    { background: "var(--status-success-soft)", color: "var(--status-success)" },
+    gold:    { background: "var(--status-warning-soft)", color: "var(--gold)" },
+    default: { background: "var(--surface-3)", color: "var(--text-dim)" },
   };
 
   const s = mapaBadge[variant] || mapaBadge.default;
@@ -347,6 +352,7 @@ export const Badge = ({
         letterSpacing: "0.03em",
         textTransform: "uppercase",
         lineHeight: 1.4,
+        border: "1px solid color-mix(in srgb, currentColor 18%, transparent)",
         ...s,
         ...style,
       }}

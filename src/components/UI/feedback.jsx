@@ -2,7 +2,7 @@
  * ============================================
  * KRIOU DOCS - Componentes de Feedback
  * ============================================
- * EmptyState, ErrorMessage, SaveIndicator, SkeletonCard, ConfirmDialog
+ * Alert, EmptyState, ErrorMessage, SaveIndicator, SkeletonCard, ConfirmDialog
  *
  * Design: Luxury Refined + Bold Editorial
  * Fundo navy profundo (#090914 → #14142B),
@@ -156,70 +156,164 @@ const ensureGlobalStyles = () => {
   document.head.appendChild(el);
 };
 
-/* ====================== EmptyState ====================== */
-export const EmptyState = ({ icon, title, description, action, className }) => (
-  <div
-    className={className}
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      textAlign: "center",
-      padding: "64px 16px",
-      fontFamily: T.body,
-    }}
-  >
-    {icon && (
-      <div
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          background: "var(--surface-2)",
-          border: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 24,
-          color: "var(--coral)",
-        }}
-      >
-        <Icon name={icon} style={{ width: 32, height: 32 }} />
-      </div>
-    )}
+/* ====================== Alert ====================== */
+export const Alert = ({
+  variant = "info",
+  title,
+  message,
+  children,
+  action,
+  icon,
+  role,
+  className,
+  style,
+  ...props
+}) => {
+  const titleId = React.useId();
+  const contentId = React.useId();
+  const variants = {
+    info: { color: "var(--status-info)", background: "var(--status-info-soft)", icon: "Info" },
+    success: { color: "var(--status-success)", background: "var(--status-success-soft)", icon: "CheckCircle" },
+    warning: { color: "var(--status-warning)", background: "var(--status-warning-soft)", icon: "AlertTriangle" },
+    danger: { color: "var(--status-danger)", background: "var(--status-danger-soft)", icon: "AlertCircle" },
+  };
+  const visual = variants[variant] || variants.info;
+  const content = children ?? message;
+  const semanticRole = role || (variant === "danger" ? "alert" : "status");
 
-    {title && (
-      <p
-        style={{
+  if (!title && !content) return null;
+
+  return (
+    <div
+      role={semanticRole}
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={content ? contentId : undefined}
+      className={className}
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: "12px 14px",
+        border: `1px solid color-mix(in srgb, ${visual.color} 32%, transparent)`,
+        borderRadius: "var(--radius-control)",
+        background: visual.background,
+        color: "var(--text)",
+        fontFamily: T.body,
+        ...style,
+      }}
+      {...props}
+    >
+      <span aria-hidden="true" style={{ display: "flex", flexShrink: 0, color: visual.color, marginTop: 2 }}>
+        <Icon name={icon || visual.icon} style={{ width: 18, height: 18 }} />
+      </span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        {title && (
+          <div id={titleId} style={{ color: visual.color, fontSize: 14, fontWeight: 700, lineHeight: 1.45 }}>
+            {title}
+          </div>
+        )}
+        {content && (
+          <div
+            id={contentId}
+            style={{
+              color: "var(--text-dim)",
+              fontSize: 14,
+              lineHeight: 1.55,
+              marginTop: title ? 2 : 0,
+              overflowWrap: "anywhere",
+            }}
+          >
+            {content}
+          </div>
+        )}
+        {action && <div style={{ marginTop: 10 }}>{action}</div>}
+      </div>
+    </div>
+  );
+};
+
+/* ====================== EmptyState ====================== */
+export const EmptyState = ({
+  icon,
+  title,
+  description,
+  action,
+  headingLevel = 2,
+  className,
+  style,
+  ...props
+}) => {
+  const titleId = React.useId();
+  const descriptionId = React.useId();
+  const headingTag = `h${Math.min(6, Math.max(1, headingLevel))}`;
+
+  return (
+    <section
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={description ? descriptionId : undefined}
+      className={className}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        padding: "64px 16px",
+        fontFamily: T.body,
+        ...style,
+      }}
+      {...props}
+    >
+      {icon && (
+        <div
+          aria-hidden="true"
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 20,
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 24,
+            color: "var(--coral)",
+          }}
+        >
+          <Icon name={icon} style={{ width: 32, height: 32 }} />
+        </div>
+      )}
+
+      {title && React.createElement(headingTag, {
+        id: titleId,
+        style: {
           fontFamily: T.display,
           fontSize: 20,
           fontWeight: 700,
           color: "var(--text)",
           margin: "0 0 8px",
           letterSpacing: "-0.02em",
-        }}
-      >
-        {title}
-      </p>
-    )}
+        },
+      }, title)}
 
-    {description && (
-      <p
-        style={{
-          fontSize: 14,
-          lineHeight: 1.6,
-          color: "var(--text-muted)",
-          maxWidth: 420,
-          margin: 0,
-        }}
-      >
-        {description}
-      </p>
-    )}
+      {description && (
+        <p
+          id={descriptionId}
+          style={{
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: "var(--text-muted)",
+            maxWidth: 420,
+            margin: 0,
+          }}
+        >
+          {description}
+        </p>
+      )}
 
-    {action && <div style={{ marginTop: 28 }}>{action}</div>}
-  </div>
-);
+      {action && <div style={{ marginTop: 28 }}>{action}</div>}
+    </section>
+  );
+};
 
 /* ====================== ErrorMessage ====================== */
 export const ErrorMessage = ({ message, onRetry, className, style }) => {

@@ -37,6 +37,7 @@ export {
 } from "./UI/layout";
 
 export {
+  Alert,
   EmptyState,
   ErrorMessage,
   SaveIndicator,

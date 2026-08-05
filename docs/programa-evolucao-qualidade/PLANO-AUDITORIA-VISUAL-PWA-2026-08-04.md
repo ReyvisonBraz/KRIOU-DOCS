@@ -306,6 +306,11 @@ sem busca e substituição espalhada por páginas.
 Aceite: estados e variantes são previsíveis, acessíveis e cobertos por testes de
 interação representativos.
 
+Progresso em 05/08/2026: `Badge`, `Alert` e `EmptyState` possuem contratos
+semânticos, variantes compatíveis com temas claro/escuro e testes de
+acessibilidade. O erro do checkout já utiliza o `Alert` compartilhado. O item
+permanece aberto até concluir `Card`, `MetricCard` e `Toast`.
+
 ### V4 — Jornada pública e autenticação
 
 - [ ] refinar landing, cabeçalho, hero, demonstração de documento e rodapé;

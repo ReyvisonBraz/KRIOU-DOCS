@@ -2,7 +2,39 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ConfirmDialog } from "./feedback";
+import { Alert, ConfirmDialog, EmptyState } from "./feedback";
+
+describe("Alert", () => {
+  it("anuncia erros imediatamente e associa o conteúdo", () => {
+    render(<Alert variant="danger" title="Pagamento não concluído">Tente novamente.</Alert>);
+
+    const alert = screen.getByRole("alert", { name: "Pagamento não concluído" });
+    expect(alert).toHaveTextContent("Tente novamente.");
+    expect(alert).toHaveAttribute("aria-describedby");
+  });
+
+  it("usa anúncio não intrusivo para informações", () => {
+    render(<Alert message="Documento salvo." />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Documento salvo.");
+  });
+});
+
+describe("EmptyState", () => {
+  it("expõe título e descrição como região nomeada", () => {
+    render(<EmptyState title="Nenhum documento" description="Crie seu primeiro documento." />);
+
+    const region = screen.getByRole("region", { name: "Nenhum documento" });
+    expect(screen.getByRole("heading", { level: 2, name: "Nenhum documento" })).toBeVisible();
+    expect(region).toHaveAccessibleDescription("Crie seu primeiro documento.");
+  });
+
+  it("permite ajustar corretamente o nível do título", () => {
+    render(<EmptyState title="Sem resultados" headingLevel={3} />);
+
+    expect(screen.getByRole("heading", { level: 3, name: "Sem resultados" })).toBeVisible();
+  });
+});
 
 describe("ConfirmDialog", () => {
   it("foca a confirmação em ações comuns", async () => {

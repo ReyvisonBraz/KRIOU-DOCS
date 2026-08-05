@@ -113,6 +113,14 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   foco e processamento bloqueado; exclusão foi aberta e cancelada no navegador
   em desktop e 390 px sem remover documento;
 - baseline em validação final: 376 testes.
+- feedback visual começou a ser consolidado em contratos reutilizáveis: `Alert`
+  cobre informação, sucesso, aviso e erro; `Badge` ganhou variantes semânticas e
+  `EmptyState` agora expõe região, título e descrição corretamente para leitores
+  de tela;
+- erro do checkout migrou de estilos e cores locais para o `Alert` compartilhado;
+- tokens suaves de status agora possuem paridade explícita entre temas claro e
+  escuro;
+- baseline em validação final: 385 testes.
 
 ## Segurança
 

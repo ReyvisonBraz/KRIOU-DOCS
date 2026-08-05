@@ -75,6 +75,10 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - matriz Playwright/axe cobre desktop, Android 360 px, iPhone 390 px e tablet em
   claro/escuro; 14 verificações passaram e 2 foram ignoradas por viewport;
 - lint, typecheck, 355 testes unitários e build permanecem aprovados.
+- cards de documentos não possuem mais botões interativos aninhados: container
+  semântico, abertura nativa e ações independentes foram cobertos por regressão;
+- baseline após o ajuste: lint, typecheck, 358 testes, build e quatro E2E
+  autenticados locais aprovados.
 
 ## Segurança
 

@@ -212,6 +212,11 @@ O card deve virar uma região/artigo com link ou ação principal independente; 
 menu de ações deve ser um agrupamento irmão, com nomes acessíveis e foco previsível.
 Esse ajuste entra em V3 antes do refinamento visual do dashboard.
 
+Resolvido localmente em 04/08/2026: o container passou a ser um `article`, a
+área de abertura virou um botão nativo independente e excluir/editar/demais ações
+permanecem como irmãos. Testes impedem o retorno de `button` ou `[role=button]`
+aninhado.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual
@@ -259,7 +264,7 @@ sem busca e substituição espalhada por páginas.
 - [ ] revisar Button, IconButton, Input, Select, Textarea e Checkbox;
 - [ ] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
 - [ ] criar Table/DataList responsiva para desktop e mobile;
-- [ ] substituir cards clicáveis com botões aninhados por semântica válida;
+- [x] substituir cards clicáveis com botões aninhados por semântica válida;
 - [ ] padronizar Modal/Drawer/Confirm com foco e teclado corretos;
 - [ ] criar AppShell, cabeçalho, navegação lateral e navegação móvel;
 - [ ] criar Skeleton e estados de erro com ação de recuperação;

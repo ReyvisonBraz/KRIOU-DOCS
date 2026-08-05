@@ -11,7 +11,7 @@
  * @module components/ui/document
  */
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { Badge } from "./primitives";
 import { Icon } from "../Icons";
 import { extractPersonData } from "../../utils/documentCode";
@@ -101,6 +101,7 @@ export const DocumentCard = ({
   animationDelay = 0,
 }) => {
   const [hover, setHover] = useState(false);
+  const titleId = useId();
 
   if (!doc) return null;
 
@@ -126,19 +127,12 @@ export const DocumentCard = ({
     unpaid: "Não pago",
   }[accessStatus];
   const person = extractPersonData(doc);
+  const accessibleTitle = person.nome || doc.title || typeLabel || "documento";
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <article
+      aria-labelledby={titleId}
       className="kf animate-fadeUp break-inside-avoid"
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -154,11 +148,27 @@ export const DocumentCard = ({
           : "0 1px 3px rgba(0,0,0,0.2)",
         transform: hover ? "translateY(-2px)" : "translateY(0)",
         animationDelay: `${animationDelay}s`,
-        outline: "none",
       }}
     >
+      <button
+        type="button"
+        aria-label={`Abrir ${accessibleTitle}`}
+        className="document-card-primary"
+        onClick={onClick}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          border: 0,
+          borderRadius: RAD_LG,
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      />
       {isPaid && (
-        <div style={{
+        <div style={{ position: "relative", zIndex: 0,
           padding: "7px 14px", background: "rgba(20,184,166,0.12)", color: "var(--teal)",
           fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
@@ -167,7 +177,7 @@ export const DocumentCard = ({
         </div>
       )}
       {!isPaid && unlimitedAccess && (
-        <div style={{
+        <div style={{ position: "relative", zIndex: 0,
           padding: "7px 14px", background: "rgba(212,175,55,0.12)", color: "var(--gold)",
           fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
@@ -178,6 +188,10 @@ export const DocumentCard = ({
       <style>{`
         .doc-action-bar {
           opacity: 1;
+        }
+        .document-card-primary:focus-visible {
+          outline: 3px solid var(--focus-ring);
+          outline-offset: -3px;
         }
         @media (hover: hover) and (pointer: fine) {
           .doc-action-bar {
@@ -218,7 +232,7 @@ export const DocumentCard = ({
           {doc.code ? (
             <span
               style={{
-                fontFamily: "'Plus Jakarta Sans', monospace",
+                fontFamily: "'Plus Jakarta Sans Variable', monospace",
                 fontSize: 12,
                 fontWeight: 800,
                 letterSpacing: "0.06em",
@@ -252,6 +266,7 @@ export const DocumentCard = ({
         <button
           aria-label={`Excluir ${doc.title}`}
           className="kf"
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
@@ -270,6 +285,8 @@ export const DocumentCard = ({
             opacity: hover ? 1 : 0.55,
             transition: EASE,
             flexShrink: 0,
+            position: "relative",
+            zIndex: 2,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--danger)";
@@ -289,6 +306,7 @@ export const DocumentCard = ({
         {person.nome ? (
           <>
             <p
+              id={titleId}
               style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 800,
@@ -332,6 +350,7 @@ export const DocumentCard = ({
           </>
         ) : (
           <h3
+            id={titleId}
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
@@ -408,6 +427,8 @@ export const DocumentCard = ({
         <div
           className="doc-action-bar"
           style={{
+            position: "relative",
+            zIndex: 2,
             display: "flex",
             gap: 5,
             flexWrap: "wrap",
@@ -418,6 +439,7 @@ export const DocumentCard = ({
           }}
         >
           <button
+            type="button"
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
               minHeight: TOQUE, padding: "0 12px", borderRadius: 9,
@@ -440,6 +462,7 @@ export const DocumentCard = ({
           )}
           {onPay && !hasDownloadAccess && accessStatus !== "draft" && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
               style={{
                 minHeight: TOQUE, padding: "0 12px", borderRadius: 9, border: "none",
@@ -475,12 +498,13 @@ export const DocumentCard = ({
           />
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
 const ActionBtn = ({ icon, label, onClick, accent }) => (
   <button
+    type="button"
     onClick={onClick}
     title={label}
     aria-label={label}

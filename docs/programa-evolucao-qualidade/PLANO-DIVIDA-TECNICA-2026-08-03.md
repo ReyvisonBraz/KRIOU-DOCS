@@ -63,7 +63,7 @@ reuso, revisão ou desempenho.
 | DT-06 | cobertura baixa nos fluxos de auth, pagamento, documento e admin | alta | DT-01/05 | matriz de risco coberta; thresholds por módulo crítico | em execução |
 | DT-07 | autenticação/CORS/erros repetidos nas Edge Functions | alta | DT-04/05 | shared backend testado, sem cópias divergentes | planejado |
 | DT-08 | estado dividido entre Supabase e storages do navegador | alta | inventário de entidades | fonte de verdade e invalidação documentadas/testadas | planejado |
-| DT-09 | páginas e modais monolíticos | média-alta | testes de caracterização | seções, hooks e domínio extraídos sem regressão | em execução: overlays/Templates avançaram; Requirements detalhado em R0–R7 |
+| DT-09 | páginas e modais monolíticos | média-alta | testes de caracterização | seções, hooks e domínio extraídos sem regressão | em execução: overlays/Templates avançaram; Requirements com R0 concluída e R1 iniciada |
 | DT-10 | estilos, acessibilidade e responsividade inconsistentes | média | tokens/componentes base | componentes comuns e auditoria de teclado/contraste | planejado |
 | DT-11 | catálogo de templates codificado junto da apresentação | média-alta | schema/versionamento | registry somente leitura e versões imutáveis | planejado |
 | DT-12 | bundles pesados de PDF/editor sem orçamento formal | média | medição de navegação | orçamento por rota e dependências pesadas sob demanda | planejado |

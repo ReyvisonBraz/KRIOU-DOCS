@@ -58,6 +58,24 @@ const icons = {
     </svg>
   ),
 
+  Scale: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3v18" />
+      <path d="M3 7h18" />
+      <path d="M5 7l-3 9h6L5 7z" />
+      <path d="M19 7l-3 9h6l-3-9z" />
+      <path d="M7 21h10" />
+    </svg>
+  ),
+
   GraduationCap: (props) => (
     <svg
       {...props}

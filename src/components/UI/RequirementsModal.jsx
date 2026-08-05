@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../Icons";
 import { useOverlayFocus } from "../../hooks/useOverlayFocus";
+import { getRequirementsByLevel } from "../../features/requirements/domain/requirements";
 import { IconButton } from "./primitives";
 
 // ── Design tokens ──
@@ -93,58 +94,6 @@ const RequirementItem = ({ label, color }) => (
     </span>
   </div>
 );
-
-// ============================================================
-// getRequirementsByLevel
-// ============================================================
-function getRequirementsByLevel(doc, level) {
-  const sections = doc.commonSections || [];
-  const variantSections = doc.variantSections || {};
-  const allVariantSections = Object.values(variantSections).flat();
-
-  const allFields = [
-    ...sections.flatMap((s) => s.fields || []),
-    ...allVariantSections.flatMap((s) => s.fields || []),
-  ];
-
-  const obrigatorios = allFields
-    .filter((f) => f.required)
-    .map((f) => `${f.label}`);
-
-  const opcionais = allFields
-    .filter((f) => !f.required && !f.disableable)
-    .map((f) => `${f.label}`);
-
-  const extras = allFields
-    .filter((f) => f.disableable)
-    .map((f) => `${f.label}`);
-
-  switch (level) {
-    case "minimo":
-      return {
-        obrigatorios: obrigatorios.slice(0, Math.ceil(obrigatorios.length * 0.5)),
-        opcionais: [],
-        extras: [],
-        count: Math.ceil(obrigatorios.length * 0.5),
-      };
-    case "essencial":
-      return {
-        obrigatorios,
-        opcionais: opcionais.slice(0, Math.ceil(opcionais.length * 0.6)),
-        extras: [],
-        count: obrigatorios.length + Math.ceil(opcionais.length * 0.6),
-      };
-    case "completo":
-      return {
-        obrigatorios,
-        opcionais,
-        extras,
-        count: obrigatorios.length + opcionais.length + extras.length,
-      };
-    default:
-      return { obrigatorios, opcionais: [], extras: [], count: obrigatorios.length };
-  }
-}
 
 // ============================================================
 // RequirementsModal
@@ -696,6 +645,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
+                    minWidth: 0,
                     gap: 4,
                     padding: "14px 16px",
                     borderRadius: RAD,
@@ -755,7 +705,9 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
         {/* ── Body scrollable ── */}
         <div
-          className="print-body"
+          className="print-body kf"
+          tabIndex={0}
+          aria-label="Lista de requisitos"
           style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}
         >
           {/* Count bar */}
@@ -881,8 +833,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(244,63,94,0.18)",
-                    color: "var(--coral)",
+                    background: "var(--status-danger-soft)",
+                    color: "var(--danger)",
                   }}
                 >
                   OBRIGATÓRIO
@@ -926,8 +878,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(20,184,166,0.16)",
-                    color: "var(--teal)",
+                    background: "var(--status-success-soft)",
+                    color: "var(--success)",
                   }}
                 >
                   OPCIONAL
@@ -973,8 +925,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(212,175,55,0.16)",
-                    color: "var(--gold)",
+                    background: "var(--status-warning-soft)",
+                    color: "var(--warning)",
                   }}
                 >
                   EXTRAS

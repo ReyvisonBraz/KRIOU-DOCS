@@ -2,7 +2,7 @@
 
 Data-base: 2026-08-05
 
-Estado: planejado; iniciar por baseline e testes de caracterização
+Estado: em execução; R0 concluída e R1 iniciada com domínio puro extraído
 
 Responsável inicial: proprietário do produto + implementação assistida
 
@@ -55,6 +55,30 @@ O componente mistura responsabilidades que mudam por motivos diferentes:
 Tela e impressão renderizam separadamente os mesmos grupos, documentos e dicas,
 o que permite divergência. A data depende diretamente do relógio do navegador,
 dificultando snapshots e previsibilidade de fuso.
+
+### Evidências da execução R0 — 05/08/2026
+
+- baseline inicial: 1.253 linhas; após retirar somente a regra pura, a fachada
+  permanece com 1.205 linhas e o domínio possui 48 linhas;
+- consumidores confirmados: barrel `components/UI.jsx` e `LegalEditorPage`;
+- 14 testes de caracterização cobrem regra, níveis, fallback, imutabilidade,
+  tela, impressão, fechamento, foco, scroll lock e CSS A4;
+- E2E local percorre modelos → editor → requisitos em Chromium desktop,
+  Android 360 px, iPhone e tablet;
+- o E2E mede os limites de cada seletor, executa Axe, emula `media: print` e
+  gera um PDF A4 real nos projetos Chromium;
+- screenshots foram inspecionadas nos temas claro/escuro e em 390 px; a
+  proteção persistente usa medidas de layout, Axe e contrato de impressão para
+  evitar snapshots frágeis por fonte/plataforma;
+- baseline de produção: `LegalEditorPage` 49,27 kB/13,56 kB gzip e chunk `UI`
+  94,08 kB/20,72 kB gzip;
+- achados corrigidos antes da extração: seletor “Completo” cortado no mobile,
+  contraste do badge obrigatório, região rolável sem foco e ícone `Scale`
+  ausente;
+- a execução real não produz mais aviso de ícone ausente; o E2E bloqueia sua
+  reintrodução;
+- a duplicação `required && disableable` e as demais decisões da seção 10
+  continuam congeladas, não corrigidas.
 
 ## 4. Escopo e não objetivos
 
@@ -191,22 +215,23 @@ Cada fase deve ser um commit pequeno e revertível. Só avançar com gate verde.
 
 ### R0 — Congelar baseline
 
-- [ ] registrar tamanho, imports, consumidores e bundle;
-- [ ] criar fixtures literais para vazio, comum, variantes, flags ambíguas,
+- [x] registrar tamanho, imports, consumidores e bundle;
+- [x] criar fixtures literais para vazio, comum, variantes, flags ambíguas,
       spec completa, coleções ausentes e conteúdo longo;
-- [ ] caracterizar algoritmo, DOM acessível, teclado e fechamento;
-- [ ] registrar screenshots de tela e baseline de PDF/print;
-- [ ] comprovar a suíte atual verde.
+- [x] caracterizar algoritmo, DOM acessível, teclado e fechamento;
+- [x] registrar screenshots de tela e baseline de PDF/print;
+- [x] comprovar a suíte atual verde.
 
 Gate: testes detectam mudança de ordem, percentual, duplicação, visibilidade,
 contagem, fechamento e conteúdo impresso.
 
 ### R1 — Extrair domínio puro
 
-- [ ] mover regra e metadados estáveis sem alterar JSX;
-- [ ] comparar saída antiga e nova nas fixtures antes de apagar a cópia;
-- [ ] testar bordas, fallback e ausência de mutação da entrada;
-- [ ] executar qualidade e interações.
+- [x] mover a regra pura sem alterar seu resultado;
+- [ ] mover os metadados estáveis dos níveis após definir seu contrato;
+- [x] comparar saída antiga e nova nas fixtures antes de apagar a cópia;
+- [x] testar bordas, fallback e ausência de mutação da entrada;
+- [x] executar qualidade e interações.
 
 Gate: nenhuma mudança visual/DOM; uma única regra ativa e testada.
 

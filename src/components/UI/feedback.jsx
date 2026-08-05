@@ -13,6 +13,7 @@
 
 import React from "react";
 import { Icon } from "../Icons";
+import { useOverlayFocus } from "../../hooks/useOverlayFocus";
 
 // -- Tokens de design tipográfico --
 const T = {
@@ -601,72 +602,17 @@ export const ConfirmDialog = ({
   const panelRef = React.useRef(null);
   const cancelButtonRef = React.useRef(null);
   const confirmButtonRef = React.useRef(null);
-  const onCancelRef = React.useRef(onCancel);
-  const busyRef = React.useRef(busy);
+  const preferredFocusRef = (initialFocus || (danger ? "cancel" : "confirm")) === "cancel"
+    ? cancelButtonRef
+    : confirmButtonRef;
 
-  React.useEffect(() => {
-    onCancelRef.current = onCancel;
-    busyRef.current = busy;
-  }, [busy, onCancel]);
-
-  // Trava scroll do body enquanto o diálogo está aberto
-  React.useEffect(() => {
-    if (!isOpen) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [isOpen]);
-
-  React.useEffect(() => {
-    if (!isOpen) return undefined;
-
-    const previouslyFocused = document.activeElement;
-    const focusFrame = window.requestAnimationFrame(() => {
-      const focusTarget = initialFocus || (danger ? "cancel" : "confirm");
-      if (focusTarget === "cancel") cancelButtonRef.current?.focus();
-      else confirmButtonRef.current?.focus();
-    });
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape" && !busyRef.current) {
-        event.preventDefault();
-        onCancelRef.current?.();
-        return;
-      }
-      if (event.key !== "Tab") return;
-
-      const focusable = Array.from(
-        panelRef.current?.querySelectorAll(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ) || [],
-      );
-      if (focusable.length === 0) {
-        event.preventDefault();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && (document.activeElement === first || !panelRef.current?.contains(document.activeElement))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (document.activeElement === last || !panelRef.current?.contains(document.activeElement))) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.removeEventListener("keydown", handleKeyDown);
-      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, [danger, initialFocus, isOpen]);
+  useOverlayFocus({
+    open: isOpen,
+    containerRef: panelRef,
+    initialFocusRef: preferredFocusRef,
+    onClose: onCancel,
+    closeDisabled: busy,
+  });
 
   if (!isOpen) return null;
 

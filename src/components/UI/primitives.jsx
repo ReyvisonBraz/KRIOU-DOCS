@@ -125,7 +125,7 @@ export const Button = ({
         justifyContent: "center",
         gap: 10,
         borderRadius: size === "small" ? RAD_SM : RAD,
-        cursor: inactive ? "wait" : "pointer",
+        cursor: loading ? "wait" : disabled ? "not-allowed" : "pointer",
         fontFamily: "var(--font-body)",
         letterSpacing: "0.01em",
         opacity: inactive ? 0.62 : 1,
@@ -163,7 +163,7 @@ export const Button = ({
 // ============================================================
 // ICON BUTTON
 // ============================================================
-export const IconButton = ({
+export const IconButton = React.forwardRef(({
   icon,
   label,
   variant = "ghost",
@@ -176,7 +176,7 @@ export const IconButton = ({
   title,
   type = "button",
   ...props
-}) => {
+}, ref) => {
   injetaEstilos();
   const [hover, setHover] = useState(false);
   const accessibleLabel = label || props["aria-label"];
@@ -207,6 +207,7 @@ export const IconButton = ({
 
   return (
     <button
+      ref={ref}
       {...props}
       type={type}
       aria-label={accessibleLabel}
@@ -248,7 +249,9 @@ export const IconButton = ({
       />
     </button>
   );
-};
+});
+
+IconButton.displayName = "IconButton";
 
 // ============================================================
 // CARD

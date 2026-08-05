@@ -36,11 +36,27 @@ test.describe("Lista administrativa responsiva", () => {
         expect(layout.rowDisplay).toBe("table-row");
       }
 
+      const documentsButton = page.getByRole("button", { name: "Documentos" }).first();
+      await documentsButton.focus();
+      await documentsButton.press("Enter");
+      const drawer = page.getByRole("dialog", { name: /^Documentos de / });
+      await expect(drawer).toBeVisible();
+      await expect(page.getByRole("button", { name: "Fechar painel" })).toBeFocused();
+      const drawerLayout = await page.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        content: document.documentElement.scrollWidth,
+      }));
+      expect(drawerLayout.content).toBeLessThanOrEqual(drawerLayout.viewport);
+
       const results = await new AxeBuilder({ page }).analyze();
       const blockingViolations = results.violations
         .filter(({ impact }) => impact === "serious" || impact === "critical")
         .map(({ id, impact, nodes }) => ({ id, impact, targets: nodes.map((node) => node.target.join(" ")) }));
       expect(blockingViolations).toEqual([]);
+
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+      await expect(documentsButton).toBeFocused();
     });
   }
 });

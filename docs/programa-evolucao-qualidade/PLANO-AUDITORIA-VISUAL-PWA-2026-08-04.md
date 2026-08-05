@@ -312,6 +312,17 @@ acessibilidade. O erro do checkout já utiliza o `Alert` compartilhado. O item
 continuou aberto naquela entrega porque ainda restavam `Card`, `MetricCard` e
 `Toast`.
 
+Progresso adicional em 05/08/2026: foi criado um `Drawer` compartilhado com
+portal, título e descrição associados, foco inicial, contenção do Tab, Escape,
+restauração do foco, bloqueio de rolagem com suporte a overlays empilhados e
+comportamento responsivo. O mesmo mecanismo passou a atender também o
+`ConfirmDialog`, evitando duas implementações concorrentes de acessibilidade.
+No admin, documentos e gestão de acesso foram extraídos da página para drawers
+reutilizáveis; carregamento, vazio, erro com nova tentativa e estados dos
+documentos ficaram explícitos. O item Modal/Drawer/Confirm permanece aberto até
+que os modais legados de templates, requisitos e renomeação também sejam
+migrados.
+
 Conclusão em 05/08/2026: `Card` ganhou variantes, espaçamento e interação de
 teclado composta; `MetricCard` passou a ser compartilhado pelo dashboard e pelo
 painel, com modo compacto e carregamento acessível; `Toast` agora possui região

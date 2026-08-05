@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { AppNavbar, IconButton } from "../components/UI";
+import { AppNavbar, Drawer, IconButton } from "../components/UI";
 import {
   PeriodFilter,
   MetricsCards,
@@ -9,6 +9,7 @@ import {
   RecentFailures,
   AdminEnvironmentBadge,
   AdminRoleManager,
+  AdminUserDocumentsDrawer,
   AdminUsersTable,
 } from "../components/admin";
 import { MetricsService } from "../services/MetricsService";
@@ -21,7 +22,10 @@ const AdminPage = () => {
   const [usersLoading, setUsersLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDocs, setUserDocs] = useState([]);
+  const [userDocsLoading, setUserDocsLoading] = useState(false);
+  const [userDocsError, setUserDocsError] = useState("");
   const [accessUser, setAccessUser] = useState(null);
+  const [accessBusy, setAccessBusy] = useState(false);
   const [authorization, setAuthorization] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
@@ -93,15 +97,27 @@ const AdminPage = () => {
       !Array.isArray(metrics.recentFailures) ||
       metrics.recentFailures.length === 0);
 
-  const loadUserDocs = async (userId) => {
-    setError(null);
-    setSelectedUser(userId);
+  const loadUserDocs = async (selectedUserId) => {
+    const user = users.find(({ id }) => id === selectedUserId);
+    if (!user) return;
+    setSelectedUser(user);
+    setUserDocs([]);
+    setUserDocsError("");
+    setUserDocsLoading(true);
     try {
-      const data = await callAdmin("user-docs", { userId });
+      const data = await callAdmin("user-docs", { userId: selectedUserId });
       setUserDocs(data);
     } catch (err) {
-      setError(err.message);
+      setUserDocsError(err.message || "Erro inesperado ao consultar os documentos.");
+    } finally {
+      setUserDocsLoading(false);
     }
+  };
+
+  const closeUserDocuments = () => {
+    setSelectedUser(null);
+    setUserDocs([]);
+    setUserDocsError("");
   };
 
   const s = {
@@ -111,7 +127,6 @@ const AdminPage = () => {
     statCard: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px 20px", textAlign: "center" },
     statValue: { fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 900, color: "var(--coral)", lineHeight: 1 },
     statLabel: { fontSize: 12, color: "var(--text-muted)", marginTop: 8 },
-    pill: { display: "inline-flex", padding: "2px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600 },
     tabBtn: (active) => ({
       padding: "8px 18px", borderRadius: 10, border: "none", cursor: "pointer",
       fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600,
@@ -230,73 +245,39 @@ const AdminPage = () => {
                 onManageAccess={setAccessUser}
               />
 
-              {accessUser && authorization?.capabilities?.includes("roles.manage") && (
-                <div style={{ marginTop: 24, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <div>
-                      <h4 style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 700, margin: 0 }}>
-                        Permissões de {accessUser.nome || accessUser.email || "usuário"}
-                      </h4>
-                      <p style={{ margin: "4px 0 0", color: "var(--text-muted)", fontSize: 12 }}>{accessUser.email || "E-mail indisponível"}</p>
-                    </div>
-                    <button onClick={() => setAccessUser(null)} style={{ padding: "4px 12px", borderRadius: 8, border: "none", background: "var(--surface-2)", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
-                      Fechar
-                    </button>
-                  </div>
-                  <AdminRoleManager
-                    key={`${accessUser.id}:${accessUser.adminRole || "none"}`}
-                    user={accessUser}
-                    currentUserId={userId}
-                    onChanged={async () => {
-                      await loadUsers();
-                      setAccessUser(null);
-                    }}
-                  />
-                </div>
-              )}
-
-              {selectedUser && (
-                <div style={{ marginTop: 24, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <h4 style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 700, margin: 0 }}>
-                      Documentos do Usuário ({userDocs.length})
-                    </h4>
-                    <button onClick={() => { setSelectedUser(null); setUserDocs([]); }}
-                      style={{ padding: "4px 12px", borderRadius: 8, border: "none", background: "var(--surface-2)", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
-                      Fechar
-                    </button>
-                  </div>
-                  {userDocs.length === 0 ? (
-                    <p style={{ color: "var(--text-faint)", fontSize: 13 }}>Nenhum documento.</p>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {userDocs.map((d) => (
-                        <div key={d.id} style={{ padding: "12px 16px", borderRadius: 12, background: "var(--surface-2)", fontSize: 13 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div>
-                              <span style={{ fontWeight: 600, color: "var(--text)" }}>{d.title}</span>
-                              <span style={{ marginLeft: 8, fontSize: 11, color: "var(--text-faint)" }}>{d.code || "—"}</span>
-                            </div>
-                            <span style={{
-                              ...s.pill,
-                              background: d.status === "finalizado" ? "rgba(20,184,166,0.12)" : "rgba(244,63,94,0.12)",
-                              color: d.status === "finalizado" ? "var(--teal)" : "var(--coral)",
-                            }}>
-                              {d.status || "draft"}
-                            </span>
-                          </div>
-                          <div style={{ marginTop: 4, fontSize: 11, color: "var(--text-faint)" }}>
-                            {d.document_type_name || d.type} — {d.created_at ? new Date(d.created_at).toLocaleDateString("pt-BR") : ""}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </div>
+
+        <AdminUserDocumentsDrawer
+          user={selectedUser}
+          documents={userDocs}
+          loading={userDocsLoading}
+          error={userDocsError}
+          onRetry={() => selectedUser && loadUserDocs(selectedUser.id)}
+          onClose={closeUserDocuments}
+        />
+
+        <Drawer
+          open={Boolean(accessUser && authorization?.capabilities?.includes("roles.manage"))}
+          title={`Permissões de ${accessUser?.nome || accessUser?.email || "usuário"}`}
+          description={accessUser?.email || "E-mail indisponível"}
+          onClose={() => setAccessUser(null)}
+          busy={accessBusy}
+        >
+          {accessUser && (
+            <AdminRoleManager
+              key={`${accessUser.id}:${accessUser.adminRole || "none"}`}
+              user={accessUser}
+              currentUserId={userId}
+              onBusyChange={setAccessBusy}
+              onChanged={async () => {
+                await loadUsers();
+                setAccessUser(null);
+              }}
+            />
+          )}
+        </Drawer>
     </div>
   );
 };

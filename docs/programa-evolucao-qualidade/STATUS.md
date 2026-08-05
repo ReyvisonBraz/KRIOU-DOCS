@@ -105,6 +105,14 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   própria, impedindo que Renomear acione a aba posicionada atrás do menu;
 - baseline em validação final: 369 testes, incluindo regressões de formulário e
   posicionamento do menu.
+- revisão base de Button, IconButton, Input, Select, Textarea e Checkbox concluída;
+- Button agora evita submit implícito e expõe loading acessível sem clique duplo;
+- Checkbox nativo reutilizável criado com alvo de 44 px, foco, ajuda, erro e
+  estados required/disabled;
+- ConfirmDialog ganhou IDs únicos, foco seguro, Tab cíclico, Escape, retorno de
+  foco e processamento bloqueado; exclusão foi aberta e cancelada no navegador
+  em desktop e 390 px sem remover documento;
+- baseline em validação final: 376 testes.
 
 ## Segurança
 

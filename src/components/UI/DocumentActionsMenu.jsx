@@ -129,6 +129,7 @@ export const DocumentActionsMenu = ({ documentTitle, items }) => {
               className="focus-ring"
               onClick={() => {
                 closeMenu();
+                triggerRef.current?.focus();
                 item.onSelect();
               }}
               style={{

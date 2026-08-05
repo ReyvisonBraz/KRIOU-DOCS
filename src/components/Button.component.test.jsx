@@ -79,6 +79,26 @@ describe("Button", () => {
     render(<Button aria-label="ação especial">Acessível</Button>);
     expect(screen.getByRole("button", { name: "ação especial" })).toBeInTheDocument();
   });
+
+  it("não envia formulários implicitamente", () => {
+    render(<Button>Continuar</Button>);
+    expect(screen.getByRole("button", { name: "Continuar" })).toHaveAttribute("type", "button");
+  });
+
+  it("expõe carregamento e bloqueia cliques duplicados", () => {
+    const onClick = vi.fn();
+    render(
+      <Button loading loadingLabel="Salvando" onClick={onClick}>
+        Salvar
+      </Button>,
+    );
+
+    const button = screen.getByRole("button", { name: "Salvando" });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    fireEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+  });
 });
 
 describe("IconButton", () => {

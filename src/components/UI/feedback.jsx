@@ -101,6 +101,11 @@ const ensureGlobalStyles = () => {
     .kriou-dialog-btn:active {
       transform: scale(0.97);
     }
+    .kriou-dialog-btn:disabled {
+      cursor: wait;
+      opacity: 0.68;
+      filter: none;
+    }
     .kriou-dialog-btn-cancel {
       background: var(--surface-2);
       color: var(--text-dim);
@@ -489,10 +494,27 @@ export const ConfirmDialog = ({
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   danger = false,
+  busy = false,
+  busyLabel = "Processando",
+  initialFocus,
   onConfirm,
   onCancel,
 }) => {
   const isOpen = visible ?? open ?? false;
+  const generatedId = React.useId().replace(/:/g, "");
+  const titleId = `kriou-dialog-title-${generatedId}`;
+  const messageId = `kriou-dialog-message-${generatedId}`;
+  const panelRef = React.useRef(null);
+  const cancelButtonRef = React.useRef(null);
+  const confirmButtonRef = React.useRef(null);
+  const onCancelRef = React.useRef(onCancel);
+  const busyRef = React.useRef(busy);
+
+  React.useEffect(() => {
+    onCancelRef.current = onCancel;
+    busyRef.current = busy;
+  }, [busy, onCancel]);
+
   // Trava scroll do body enquanto o diálogo está aberto
   React.useEffect(() => {
     if (!isOpen) return undefined;
@@ -503,6 +525,55 @@ export const ConfirmDialog = ({
     };
   }, [isOpen]);
 
+  React.useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previouslyFocused = document.activeElement;
+    const focusFrame = window.requestAnimationFrame(() => {
+      const focusTarget = initialFocus || (danger ? "cancel" : "confirm");
+      if (focusTarget === "cancel") cancelButtonRef.current?.focus();
+      else confirmButtonRef.current?.focus();
+    });
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !busyRef.current) {
+        event.preventDefault();
+        onCancelRef.current?.();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const focusable = Array.from(
+        panelRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) || [],
+      );
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !panelRef.current?.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !panelRef.current?.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+        previouslyFocused.focus();
+      }
+    };
+  }, [danger, initialFocus, isOpen]);
+
   if (!isOpen) return null;
 
   ensureGlobalStyles();
@@ -511,8 +582,8 @@ export const ConfirmDialog = ({
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="kriou-dialog-title"
-      aria-describedby="kriou-dialog-message"
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
       className="kriou-dialog-overlay"
       style={{
         position: "fixed",
@@ -527,11 +598,12 @@ export const ConfirmDialog = ({
         WebkitBackdropFilter: "blur(6px)",
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel?.();
+        if (e.target === e.currentTarget && !busy) onCancel?.();
       }}
     >
       {/* Painel do diálogo */}
       <div
+        ref={panelRef}
         className="kriou-dialog-panel"
         style={{
           background: "var(--surface)",
@@ -559,6 +631,7 @@ export const ConfirmDialog = ({
           >
             <Icon
               name="AlertTriangle"
+              aria-hidden="true"
               style={{ width: 22, height: 22, color: "var(--coral)" }}
             />
           </div>
@@ -566,7 +639,7 @@ export const ConfirmDialog = ({
 
         {/* Título */}
         <h2
-          id="kriou-dialog-title"
+          id={titleId}
           style={{
             fontFamily: T.display,
             fontSize: 18,
@@ -581,7 +654,7 @@ export const ConfirmDialog = ({
 
         {/* Mensagem */}
         <p
-          id="kriou-dialog-message"
+          id={messageId}
           style={{
             fontSize: 14,
             lineHeight: 1.6,
@@ -596,19 +669,24 @@ export const ConfirmDialog = ({
         {/* Botões de ação */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button
+            ref={cancelButtonRef}
+            type="button"
             onClick={onCancel}
             className="kriou-dialog-btn kriou-dialog-btn-cancel"
           >
             {cancelLabel}
           </button>
           <button
+            ref={confirmButtonRef}
+            type="button"
             onClick={onConfirm}
-            autoFocus
+            disabled={busy}
+            aria-busy={busy || undefined}
             className={`kriou-dialog-btn ${
               danger ? "kriou-dialog-btn-danger" : "kriou-dialog-btn-confirm"
             }`}
           >
-            {confirmLabel}
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

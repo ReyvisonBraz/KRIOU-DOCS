@@ -240,6 +240,74 @@ const ensureFormStyles = () => {
       color: var(--text-muted);
       font-family: ${T.body};
     }
+
+    /* ================================================================
+       Checkbox
+       ================================================================ */
+    .kriou-checkbox-label {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--control-border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text-dim);
+      font-family: ${T.body};
+      font-size: var(--font-size-small);
+      font-weight: 600;
+      line-height: 1.5;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .kriou-checkbox-label:hover {
+      border-color: var(--border-hover);
+      background: var(--surface-2);
+    }
+    .kriou-checkbox-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .kriou-checkbox-control {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      margin-top: 1px;
+      border: 2px solid var(--control-border);
+      border-radius: 6px;
+      background: var(--surface);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+    }
+    .kriou-checkbox-input:checked + .kriou-checkbox-control {
+      background: var(--action-primary);
+      border-color: var(--action-primary);
+      color: var(--on-action);
+    }
+    .kriou-checkbox-input:focus-visible + .kriou-checkbox-control {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+    .kriou-checkbox-label.is-disabled {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      opacity: 0.72;
+    }
+    .kriou-checkbox-label.has-error {
+      border-color: var(--status-danger);
+    }
   `;
   document.head.appendChild(el);
 };
@@ -495,6 +563,70 @@ export const Select = ({
         </span>
       </div>
 
+      <FieldMessages
+        description={description}
+        descriptionId={descriptionId}
+        error={error}
+        errorId={errorId}
+      />
+    </div>
+  );
+};
+
+/* ====================== Checkbox ====================== */
+export const Checkbox = ({
+  label,
+  description,
+  error,
+  id,
+  required = false,
+  disabled = false,
+  containerClassName = "",
+  containerStyle,
+  "aria-describedby": externalDescribedBy,
+  ...props
+}) => {
+  ensureFormStyles();
+
+  const generatedId = useId();
+  const checkboxId = controlId("checkbox", id, generatedId);
+  const hasError = Boolean(error);
+  const descriptionId = `${checkboxId}-description`;
+  const errorId = `${checkboxId}-error`;
+
+  return (
+    <div className={containerClassName} style={{ marginBottom: 16, ...containerStyle }}>
+      <label
+        htmlFor={checkboxId}
+        className={[
+          "kriou-checkbox-label",
+          disabled && "is-disabled",
+          hasError && "has-error",
+        ].filter(Boolean).join(" ")}
+      >
+        <input
+          {...props}
+          id={checkboxId}
+          type="checkbox"
+          required={required}
+          disabled={disabled}
+          className="kriou-checkbox-input"
+          aria-required={required || undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={describedByIds(
+            externalDescribedBy,
+            description && descriptionId,
+            hasError && errorId,
+          )}
+        />
+        <span className="kriou-checkbox-control" aria-hidden="true">
+          <Icon name="Check" style={{ width: 14, height: 14 }} />
+        </span>
+        <span>
+          {label}
+          {required && <span aria-hidden="true" style={{ color: "var(--coral)", marginLeft: 2 }}>*</span>}
+        </span>
+      </label>
       <FieldMessages
         description={description}
         descriptionId={descriptionId}

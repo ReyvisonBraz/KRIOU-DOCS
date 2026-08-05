@@ -55,43 +55,48 @@ export const Button = ({
   icon,
   iconPosition = "left",
   disabled = false,
+  loading = false,
+  loadingLabel = "Carregando",
+  type = "button",
   onClick,
   className = "",
   style = {},
   onMouseEnter: userMouseEnter,
   onMouseLeave: userMouseLeave,
+  "aria-label": ariaLabel,
   ...props
 }) => {
   injetaEstilos();
   const [hover, setHover] = useState(false);
+  const inactive = disabled || loading;
 
   // Mapa de estilos base por variante
   const mapaVariante = {
     primary: {
-      background: hover && !disabled ? "var(--action-accent-hover)" : "var(--action-accent)",
+      background: hover && !inactive ? "var(--action-accent-hover)" : "var(--action-accent)",
       color: "var(--on-action)",
       fontWeight: 700,
-      boxShadow: hover && !disabled
+      boxShadow: hover && !inactive
         ? "0 8px 24px rgba(201,54,89,0.24)"
         : "0 4px 14px rgba(201,54,89,0.18)",
-      transform: hover && !disabled ? "translateY(-1px)" : "translateY(0)",
+      transform: hover && !inactive ? "translateY(-1px)" : "translateY(0)",
     },
     secondary: {
-      background: hover && !disabled ? "var(--surface-3)" : "var(--surface-2)",
-      color: hover && !disabled ? "var(--text)" : "var(--text-dim)",
+      background: hover && !inactive ? "var(--surface-3)" : "var(--surface-2)",
+      color: hover && !inactive ? "var(--text)" : "var(--text-dim)",
       border: `1px solid ${
-        hover && !disabled ? "var(--text-muted)" : "var(--control-border)"
+        hover && !inactive ? "var(--text-muted)" : "var(--control-border)"
       }`,
     },
     ghost: {
-      background: hover && !disabled ? "var(--surface-2)" : "transparent",
-      color: hover && !disabled ? "var(--text)" : "var(--text-muted)",
+      background: hover && !inactive ? "var(--surface-2)" : "transparent",
+      color: hover && !inactive ? "var(--text)" : "var(--text-muted)",
     },
     danger: {
       background: "var(--danger)",
       color: "var(--on-action)",
       fontWeight: 700,
-      filter: hover && !disabled ? "brightness(1.12)" : "none",
+      filter: hover && !inactive ? "brightness(1.12)" : "none",
     },
   };
 
@@ -106,8 +111,11 @@ export const Button = ({
 
   return (
     <button
+      type={type}
       className={["kf", className].filter(Boolean).join(" ")}
-      disabled={disabled}
+      disabled={inactive}
+      aria-busy={loading || undefined}
+      aria-label={loading ? loadingLabel : ariaLabel}
       onClick={onClick}
       onMouseEnter={(e) => { setHover(true); userMouseEnter?.(e); }}
       onMouseLeave={(e) => { setHover(false); userMouseLeave?.(e); }}
@@ -117,24 +125,37 @@ export const Button = ({
         justifyContent: "center",
         gap: 10,
         borderRadius: size === "small" ? RAD_SM : RAD,
-        cursor: disabled ? "not-allowed" : "pointer",
+        cursor: inactive ? "wait" : "pointer",
         fontFamily: "var(--font-body)",
         letterSpacing: "0.01em",
-        opacity: disabled ? 0.42 : 1,
+        opacity: inactive ? 0.62 : 1,
         transition: EASE,
         outline: "none",
         border: "none",
         minWidth: TOQUE,
-        pointerEvents: disabled ? "none" : "auto",
         ...sv,
         ...st,
         ...style,
       }}
       {...props}
     >
-      {icon && iconPosition === "left"  && <Icon name={icon} className="w-4 h-4" />}
+      {loading && (
+        <span
+          aria-hidden="true"
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: "50%",
+            border: "2px solid currentColor",
+            borderRightColor: "transparent",
+            animation: "kriou-spin 0.7s linear infinite",
+            flexShrink: 0,
+          }}
+        />
+      )}
+      {!loading && icon && iconPosition === "left"  && <Icon name={icon} className="w-4 h-4" aria-hidden="true" />}
       {children}
-      {icon && iconPosition === "right" && <Icon name={icon} className="w-4 h-4" />}
+      {!loading && icon && iconPosition === "right" && <Icon name={icon} className="w-4 h-4" aria-hidden="true" />}
     </button>
   );
 };

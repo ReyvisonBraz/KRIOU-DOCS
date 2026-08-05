@@ -241,6 +241,14 @@ recortado e permitia que o clique atingisse a aba atrás dele; o menu passou a
 ser renderizado em portal com posicionamento fixo, limite de viewport e camada
 própria. Renomear foi comprovado no desktop e em 390 px sem salvar alterações.
 
+No lote seguinte, `Button` recebeu `type="button"` seguro por padrão e estado
+`loading` com `aria-busy` e bloqueio de clique duplo. O novo `Checkbox` mantém
+controle HTML nativo, alvo de 44 px, foco, descrição, erro, required e disabled.
+`ConfirmDialog` passou a usar IDs únicos, foco inicial seguro (Cancelar em ações
+destrutivas), ciclo de Tab, Escape, restauração do foco e estado busy. O fluxo
+real de exclusão foi aberto e cancelado em desktop/mobile; nenhum documento foi
+excluído, e o foco retornou a “Mais ações”.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual
@@ -285,7 +293,7 @@ sem busca e substituição espalhada por páginas.
 
 ### V3 — Componentes fundamentais
 
-- [ ] revisar Button, IconButton, Input, Select, Textarea e Checkbox;
+- [x] revisar Button, IconButton, Input, Select, Textarea e Checkbox;
 - [ ] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
 - [ ] criar Table/DataList responsiva para desktop e mobile;
 - [x] substituir cards clicáveis com botões aninhados por semântica válida;

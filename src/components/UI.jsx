@@ -23,6 +23,7 @@ export {
   Input,
   Textarea,
   Select,
+  Checkbox,
 } from "./UI/form";
 
 export {

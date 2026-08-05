@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Input, Select, Textarea } from "./form";
+import { Checkbox, Input, Select, Textarea } from "./form";
 
 describe("controles de formulário", () => {
   it("gera ids únicos mesmo quando os rótulos se repetem", () => {
@@ -65,5 +65,25 @@ describe("controles de formulário", () => {
 
     expect(screen.getByRole("option", { name: "Currículo" })).toHaveValue("Currículo");
     expect(screen.getByRole("option", { name: "Contrato" })).toHaveValue("contrato");
+  });
+
+  it("fornece checkbox nativo com área de toque, ajuda e erro associados", () => {
+    render(
+      <Checkbox
+        label="Aceito os termos"
+        description="Leia antes de continuar."
+        error="Confirmação obrigatória."
+        required
+      />,
+    );
+
+    const checkbox = screen.getByRole("checkbox", { name: "Aceito os termos" });
+    const describedBy = checkbox.getAttribute("aria-describedby").split(" ");
+
+    expect(checkbox).toBeRequired();
+    expect(checkbox).toHaveAttribute("aria-invalid", "true");
+    expect(getComputedStyle(checkbox.closest("label")).minHeight).toBe("44px");
+    expect(describedBy).toContain(`${checkbox.id}-description`);
+    expect(describedBy).toContain(`${checkbox.id}-error`);
   });
 });

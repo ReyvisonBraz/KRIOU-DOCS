@@ -52,12 +52,14 @@ describe("DocumentCard", () => {
 
   it("excluir não dispara a abertura do documento", () => {
     const { onClick, onDelete } = renderCard();
+    const trigger = screen.getByRole("button", { name: "Mais ações para Ana Souza" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Mais ações para Ana Souza" }));
+    fireEvent.click(trigger);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     expect(onDelete).toHaveBeenCalledOnce();
     expect(onClick).not.toHaveBeenCalled();
+    expect(trigger).toHaveFocus();
   });
 
   it("fecha o menu com Escape e devolve o foco ao gatilho", () => {

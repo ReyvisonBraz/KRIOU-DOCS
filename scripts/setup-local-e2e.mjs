@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHmac } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -24,6 +25,29 @@ const accounts = [
     nome: "Owner",
   },
 ];
+
+function decodeBase32(value) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bits = value.toUpperCase().replace(/=+$/g, "")
+    .split("")
+    .map((character) => alphabet.indexOf(character).toString(2).padStart(5, "0"))
+    .join("");
+  const bytes = [];
+  for (let index = 0; index + 8 <= bits.length; index += 8) {
+    bytes.push(Number.parseInt(bits.slice(index, index + 8), 2));
+  }
+  return Buffer.from(bytes);
+}
+
+function currentTotp(secret) {
+  const counter = BigInt(Math.floor(Date.now() / 1000 / 30));
+  const message = Buffer.alloc(8);
+  message.writeBigUInt64BE(counter);
+  const digest = createHmac("sha1", decodeBase32(secret)).update(message).digest();
+  const offset = digest[digest.length - 1] & 0x0f;
+  const binary = (digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000;
+  return String(binary).padStart(6, "0");
+}
 
 function localSupabaseStatus() {
   try {
@@ -78,7 +102,7 @@ const accountIds = new Map();
 for (const account of accounts) {
   let user = usersData.users.find((candidate) => candidate.email === account.email);
 
-  if (user && account.role === "owner") {
+  if (user && account.role !== "user") {
     const { error } = await adminClient.auth.admin.deleteUser(user.id);
     if (error) throw error;
     user = null;
@@ -132,9 +156,30 @@ for (const account of accounts) {
     throw authError || new Error(`Sessão E2E não criada para ${account.role}`);
   }
 
+  let storageSession = authData.session;
+  if (account.role !== "user") {
+    const { data: enrollment, error: enrollmentError } = await publicClient.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `${account.role} E2E local`,
+    });
+    if (enrollmentError) throw enrollmentError;
+
+    const { error: verifyError } = await publicClient.auth.mfa.challengeAndVerify({
+      factorId: enrollment.id,
+      code: currentTotp(enrollment.totp.secret),
+    });
+    if (verifyError) throw verifyError;
+
+    const { data: elevatedData, error: elevatedError } = await publicClient.auth.getSession();
+    if (elevatedError || !elevatedData.session) {
+      throw elevatedError || new Error(`Sessão AAL2 não criada para ${account.role}`);
+    }
+    storageSession = elevatedData.session;
+  }
+
   await writeFile(
     path.join(authDirectory, `${account.role}.json`),
-    `${JSON.stringify(storageState(status.API_URL, authData.session), null, 2)}\n`,
+    `${JSON.stringify(storageState(status.API_URL, storageSession), null, 2)}\n`,
     { mode: 0o600 },
   );
 }

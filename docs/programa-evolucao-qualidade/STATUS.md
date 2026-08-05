@@ -148,6 +148,16 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   possuem contrato e testes; migração do painel aguarda isolamento do WIP de
   papéis administrativos;
 - baseline em validação final: 401 testes.
+- lista de usuários do painel migrou para `AdminUsersTable`/`DataTable`: tabela
+  no desktop, cartões no mobile, badges de papel, ações com alvo de 44 px e
+  carregamento explícito;
+- botão de retorno do painel ganhou nome acessível e a aba ativa passou a usar
+  `--on-action`, corrigindo contraste no tema escuro;
+- setup E2E local agora recria apenas as contas administrativas de teste,
+  cadastra TOTP e salva sessões AAL2, testando o gate real sem bypass;
+- matriz administrativa aprovada nos 8 cenários de viewport/tema, sem overflow
+  ou violações Axe graves/críticas;
+- baseline em validação final: 404 testes.
 
 ## Segurança
 

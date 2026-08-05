@@ -295,7 +295,7 @@ sem busca e substituição espalhada por páginas.
 
 - [x] revisar Button, IconButton, Input, Select, Textarea e Checkbox;
 - [x] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
-- [ ] criar Table/DataList responsiva para desktop e mobile;
+- [x] criar Table/DataList responsiva para desktop e mobile;
 - [x] substituir cards clicáveis com botões aninhados por semântica válida;
 - [x] reduzir a sobrecarga visual dos cards sem remover capacidades;
 - [ ] padronizar Modal/Drawer/Confirm com foco e teclado corretos;
@@ -330,6 +330,12 @@ no desktop e reorganização em cartões no mobile, sem duplicar células ou aç
 no DOM. O contrato inclui legenda, rótulos móveis, colunas de ação, vazio,
 carregamento e foco. O item permanece aberto até migrar e validar a lista real
 de usuários do painel, que está isolada junto ao WIP de papéis administrativos.
+
+Conclusão em 05/08/2026: o WIP de papéis foi validado e isolado, e a lista real
+de usuários migrou para `DataTable` por meio de `AdminUsersTable`. Papéis usam
+`Badge`, ações usam `Button` com alvo adequado e o carregamento é explícito. A
+matriz autenticada com TOTP/AAL2 comprovou desktop, tablet, Android e iPhone nos
+temas claro/escuro, sem overflow ou violações Axe graves/críticas.
 
 ### V4 — Jornada pública e autenticação
 

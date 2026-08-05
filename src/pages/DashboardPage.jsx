@@ -184,18 +184,18 @@ const DashboardPage = () => {
     });
     if (!confirmed) return;
 
-    const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
-    setUserDocuments(updated);
-
     try {
-      StorageService.saveDocuments(updated, userId);
       if (!isLocalDraftDocument(doc)) {
-        await DocumentService.remove(doc.id);
+        await DocumentService.remove(doc.id, userId);
       }
+
+      const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
+      setUserDocuments(updated);
+      StorageService.saveDocuments(updated, userId);
       showToast.success("Documento excluído.");
     } catch (err) {
-      console.error("[DashboardPage][ERRO] saveDocuments falhou apos delecao:", err.message);
-      showToast.error("Documento removido da lista, mas pode não ter sido salvo no servidor.");
+      console.error("[DashboardPage][ERRO] exclusao nao confirmada:", err.message);
+      showToast.error("Não foi possível excluir o documento. Ele continua na sua lista.");
     }
   };
 

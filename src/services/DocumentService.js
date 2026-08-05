@@ -229,24 +229,40 @@ export const DocumentService = {
    * Remove um documento pelo ID.
    *
    * @param {string} documentId — UUID do documento
-   * @returns {Promise<boolean>} true se removido com sucesso
+   * @param {string} userId — ID do usuario dono do documento
+   * @returns {Promise<Object>} Identificacao do documento removido
    *
    * PONTO DE FALHA: Se documentId for invalido ou nao pertencer ao usuario,
    * o RLS retornara sucesso mas nada sera deletado (0 rows affected).
    * O Supabase nao retorna erro nesse caso — sempre verifique se o documento
    * sumiu da lista apos a delecao.
    */
-  async remove(documentId) {
-    const { error } = await supabase
+  async remove(documentId, userId) {
+    if (!documentId || !userId) {
+      const err = new Error("[DocumentService][ERRO] remove: documentId e userId sao obrigatorios");
+      console.error(err.message);
+      throw err;
+    }
+
+    const { data, error } = await supabase
       .from("documents")
       .delete()
-      .eq("id", documentId);
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .select("id");
 
     if (error) {
       console.error("[DocumentService][ERRO] remove:", error.message, { documentId });
       throw error;
     }
-    return true;
+
+    if (!Array.isArray(data) || data.length !== 1) {
+      const err = new Error("O servidor nao confirmou a exclusao do documento");
+      console.error("[DocumentService][ERRO] remove sem linha removida", { documentId, userId });
+      throw err;
+    }
+
+    return data[0];
   },
 
   /**

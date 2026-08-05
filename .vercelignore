@@ -1,0 +1,21 @@
+# Secrets and machine-local configuration
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Local Supabase state can contain database credentials and generated secrets
+supabase/.temp/
+supabase/.branches/
+
+# Test sessions, reports and generated artifacts
+e2e/.auth/
+test-results/
+playwright-report/
+blob-report/
+coverage/
+dist/
+
+# Local tooling
+.DS_Store
+*.log

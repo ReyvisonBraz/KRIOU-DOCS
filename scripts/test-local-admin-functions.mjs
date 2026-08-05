@@ -41,6 +41,30 @@ async function sessionFor(status, account) {
   return { supabase, token: data.session.access_token };
 }
 
+async function resetTestMfa(status, account) {
+  const backend = createClient(status.API_URL, status.SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: usersData, error: usersError } =
+    await backend.auth.admin.listUsers({ perPage: 1000 });
+  assert.ifError(usersError);
+
+  const user = usersData.users.find(({ email }) => email === account.email);
+  assert(user, `Conta local de teste ausente: ${account.email}`);
+
+  const { data: factorsData, error: factorsError } =
+    await backend.auth.admin.mfa.listFactors({ userId: user.id });
+  assert.ifError(factorsError);
+
+  for (const factor of factorsData.factors) {
+    const { error } = await backend.auth.admin.mfa.deleteFactor({
+      userId: user.id,
+      id: factor.id,
+    });
+    assert.ifError(error);
+  }
+}
+
 async function invoke(status, path, token, options = {}) {
   return fetch(`${status.API_URL}/functions/v1/${path}`, {
     method: options.method || "GET",
@@ -77,6 +101,7 @@ function currentTotp(secret) {
 }
 
 const status = localSupabaseStatus();
+await resetTestMfa(status, accounts.owner);
 const [userSession, adminSession, ownerSession] = await Promise.all([
   sessionFor(status, accounts.user),
   sessionFor(status, accounts.admin),

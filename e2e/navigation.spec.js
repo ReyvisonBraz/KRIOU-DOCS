@@ -12,6 +12,15 @@ const PROTECTED_PATHS = [
 ];
 
 test.describe("Navegação e proteção de rotas", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+  });
+
   test("landing não tenta persistir rascunho sem usuário", async ({ page }) => {
     const warnings = [];
     page.on("console", (message) => {

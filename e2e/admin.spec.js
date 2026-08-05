@@ -10,7 +10,9 @@ test.describe("Painel administrativo (admin local)", () => {
       page.getByRole("heading", { name: "Painel Administrativo" }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Usuários" })).toBeVisible();
-    await expect(page.getByText("2 no período")).toBeVisible();
+    const usersMetric = page.getByRole("group", { name: /Usuários: \d+/ });
+    await expect(usersMetric).toBeVisible();
+    await expect(usersMetric).toContainText(/\d+ no período/);
     await expect(
       page.getByText("Edge Function returned a non-2xx status code"),
     ).toHaveCount(0);

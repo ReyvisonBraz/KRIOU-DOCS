@@ -64,7 +64,7 @@ const WelcomePage = () => {
       {slide < TOTAL - 1 && (
         <button
           onClick={finish}
-          className="absolute top-5 right-5 z-20 flex items-center gap-1 text-text-muted text-sm font-semibold hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+          className="absolute top-5 right-5 z-20 flex items-center gap-1 text-text-muted text-sm font-semibold hover:text-text transition-colors bg-transparent border-none cursor-pointer"
         >
           Pular <Icon name="ChevronRight" className="w-4 h-4" />
         </button>
@@ -101,7 +101,7 @@ const WelcomePage = () => {
                     ? "var(--coral)"
                     : i < slide
                       ? "rgba(233,69,96,0.35)"
-                      : "rgba(255,255,255,0.12)",
+                      : "var(--soft-border)",
                   border: "none",
                   cursor: "pointer",
                   transition: "all 0.35s cubic-bezier(.4,0,.2,1)",
@@ -116,7 +116,7 @@ const WelcomePage = () => {
             {slide > 0 && (
               <button
                 onClick={prev}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border text-text-muted hover:text-white hover:border-white/30 transition-all text-sm font-semibold bg-transparent cursor-pointer"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border text-text-muted hover:text-text hover:border-border-hover transition-all text-sm font-semibold bg-transparent cursor-pointer"
               >
                 <Icon name="ChevronLeft" className="w-4 h-4" />
                 Voltar
@@ -186,7 +186,7 @@ const SlideWelcome = ({ firstName }) => (
 
     {/* Título */}
     <div>
-      <h1 className="font-display font-black text-white leading-tight mb-3" style={{ fontSize: "clamp(2rem, 8vw, 2.75rem)" }}>
+      <h1 className="font-display font-black text-text leading-tight mb-3" style={{ fontSize: "clamp(2rem, 8vw, 2.75rem)" }}>
         Bem-vindo,{" "}
         <span style={{ color: "var(--coral)" }}>{firstName}!</span>
       </h1>
@@ -204,9 +204,9 @@ const SlideWelcome = ({ firstName }) => (
           className="animate-fadeUp px-3 py-1 rounded-full text-xs font-semibold"
           style={{
             animationDelay: `${0.3 + i * 0.1}s`,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "rgba(255,255,255,0.6)",
+            background: "var(--soft-fill)",
+            border: "1px solid var(--soft-border)",
+            color: "var(--text-secondary)",
           }}
         >
           {f}
@@ -235,7 +235,7 @@ const SlideResume = () => (
     {/* Texto */}
     <div>
       <div className="flex items-center justify-center gap-2.5 flex-wrap mb-3">
-        <h2 className="font-display text-2xl font-black text-white">Currículo Profissional</h2>
+        <h2 className="font-display text-2xl font-black text-text">Currículo Profissional</h2>
         <span
           className="px-2.5 py-0.5 rounded-full text-xs font-bold"
           style={{ background: "rgba(233,69,96,0.1)", border: "1px solid rgba(233,69,96,0.2)", color: "var(--coral)" }}
@@ -307,7 +307,7 @@ const SlideLegal = () => (
     {/* Texto */}
     <div>
       <div className="flex items-center justify-center gap-2.5 flex-wrap mb-3">
-        <h2 className="font-display text-2xl font-black text-white">Documentos Jurídicos</h2>
+        <h2 className="font-display text-2xl font-black text-text">Documentos Jurídicos</h2>
         <span
           className="px-2.5 py-0.5 rounded-full text-xs font-bold"
           style={{ background: "rgba(83,52,131,0.15)", border: "1px solid rgba(83,52,131,0.35)", color: "#a78bfa" }}
@@ -328,12 +328,12 @@ const SlideLegal = () => (
           className="animate-scaleIn flex flex-col items-center gap-1.5 p-3.5 rounded-xl"
           style={{
             animationDelay: `${i * 0.07}s`,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background: "var(--soft-fill)",
+            border: "1px solid var(--soft-border)",
           }}
         >
           <Icon name={item.icon} className="w-5 h-5" style={{ color: item.color }} />
-          <span className="text-[10px] font-semibold leading-tight" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <span className="text-[10px] font-semibold leading-tight" style={{ color: "var(--text-muted)" }}>
             {item.label}
           </span>
         </div>
@@ -360,7 +360,7 @@ const SlideCheckout = () => (
 
     {/* Texto */}
     <div>
-      <h2 className="font-display text-2xl font-black text-white mb-3">Simples e Acessível</h2>
+      <h2 className="font-display text-2xl font-black text-text mb-3">Simples e Acessível</h2>
       <p className="text-text-muted leading-relaxed max-w-xs mx-auto" style={{ fontSize: 14 }}>
         Pague apenas pelo que usar. Sem mensalidade, sem surpresas — cada documento sai por:
       </p>
@@ -370,8 +370,8 @@ const SlideCheckout = () => (
     <div
       className="w-full max-w-xs animate-scaleIn"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
         borderRadius: 20,
         overflow: "hidden",
       }}
@@ -380,13 +380,13 @@ const SlideCheckout = () => (
       <div style={{ height: 2, background: "linear-gradient(90deg, var(--coral), #533483, transparent)" }} />
 
       <div style={{ padding: "24px 28px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 6 }}>
           Por documento
         </div>
         <div className="font-display font-black" style={{ fontSize: 52, lineHeight: 1, color: "var(--coral)", marginBottom: 4 }}>
           R$ 9,90
         </div>
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+        <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
           PDF gerado e liberado na hora
         </div>
 
@@ -437,7 +437,7 @@ const SlideReady = ({ firstName, onGo }) => (
 
     {/* Título */}
     <div>
-      <h2 className="font-display font-black text-white leading-tight mb-3" style={{ fontSize: "clamp(1.75rem, 7vw, 2.25rem)" }}>
+      <h2 className="font-display font-black text-text leading-tight mb-3" style={{ fontSize: "clamp(1.75rem, 7vw, 2.25rem)" }}>
         Tudo pronto,{" "}
         <span style={{ color: "var(--coral)" }}>{firstName}!</span>
       </h2>
@@ -466,7 +466,7 @@ const SlideReady = ({ firstName, onGo }) => (
       </button>
       <button
         onClick={onGo}
-        className="text-text-muted hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+        className="text-text-muted hover:text-text transition-colors bg-transparent border-none cursor-pointer"
         style={{ fontSize: 12 }}
       >
         Ver mais tarde

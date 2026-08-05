@@ -22,3 +22,6 @@ export { default as MetricsCards } from "./MetricsCards";
 export { default as MiniChart } from "./MiniChart";
 export { default as RecentFailures } from "./RecentFailures";
 export { default as AdminEnvironmentBadge } from "./AdminEnvironmentBadge";
+export { default as AdminRoleManager } from "./AdminRoleManager";
+export { default as AdminUsersTable } from "./AdminUsersTable";
+export { default as AdminUserDocumentsDrawer } from "./AdminUserDocumentsDrawer";

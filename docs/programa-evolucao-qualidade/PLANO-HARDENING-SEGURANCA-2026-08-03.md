@@ -29,9 +29,9 @@ reavaliada após mudanças relevantes no sistema.
 - [x] `role` e `id` protegidos por privilégios de coluna e trigger defensivo.
 - [x] Campos financeiros de documentos protegidos por trigger backend-only.
 - [x] `admin_audit_events` criada, sem acesso para `anon`/`authenticated`.
-- [ ] Auditoria administrativa ainda não é gravada pelas operações.
-- [ ] MFA/AAL2 ainda não é obrigatório para administradores.
-- [ ] Não há suíte de testes reais de RLS/Edge Functions contra banco isolado.
+- [x] Operações administrativas críticas entregues gravam auditoria append-only.
+- [x] A gestão de papéis e a exceção de download exigem MFA/AAL2.
+- [x] Há suíte de testes reais de RLS/Edge Functions contra banco local isolado.
 
 ## Prioridade e marcos
 
@@ -53,7 +53,18 @@ outro usuário ou adquirir privilégio administrativo.
 
 #### S0.2 — Autenticação reforçada do administrador
 
-- exigir MFA/AAL2 para ações administrativas mutáveis;
+- [x] criar helper backend que valida AAL pela API MFA do Supabase e falha fechado;
+- [x] remover bypass de download não pago baseado apenas em `profiles.role`;
+- [x] comprovar que admin AAL1 recebe `403 mfa_required` na exceção protegida;
+- [x] criar UI isolada para cadastro TOTP, QR secreto, chave manual, confirmação
+  e reforço de sessão já cadastrada;
+- [x] testar localmente criação e cancelamento do fator sem deixar cadastro órfão;
+- [x] permitir segundo autenticador TOTP como fator de recuperação/reserva;
+- [x] exigir desafio AAL2 antes de montar a rota e carregar dados do painel;
+- [ ] exigir MFA/AAL2 para todas as ações administrativas mutáveis;
+- [ ] documentar recuperação assistida e remoção auditada sem permitir a perda
+  do último fator administrativo;
+- [x] executar cadastro manual com autenticador real na conta administrativa;
 - reautenticar antes de mudança de papel, suspensão, exportação ou reprocessamento;
 - definir duração máxima da sessão administrativa e comportamento de revogação;
 - impedir uso administrativo com provedor/conta não verificada.
@@ -137,17 +148,22 @@ Aceite: nenhum segredo aparece no bundle, Git, logs ou arquivos entregáveis.
 
 #### S2.2 — Dependências e supply chain
 
-Diagnóstico reproduzível em 03/08/2026:
+Diagnóstico repetido em 04/08/2026 após adicionar somente o driver local
+`postgres@3.4.9` (que não participa das cadeias reportadas):
 
 | Cadeia | Uso no projeto | Risco reportado | Exposição preliminar | Tratamento |
 |---|---|---|---|---|
 | `eslint -> minimatch -> brace-expansion@1.1.13` | desenvolvimento/CI | DoS por expansão excessiva, dois advisories na mesma dependência | baixa para usuários do produto; ferramenta não processa padrões fornecidos pelo público | atualizar para `brace-expansion >=1.1.17` pela árvore suportada ou override temporário validado |
 | `react-router-dom@7.18.1 -> react-router@7.18.1` | runtime direto | bypass de CSRF em **RSC Mode** | aparentemente não alcançável no SPA atual, que usa `BrowserRouter` e não usa ações/RSC do framework; hipótese deve ser comprovada | acompanhar versão corrigida compatível ou downgrade planejado; não usar `--force` sem testes |
+| `vite@8.1.5 -> postcss@8.5.19` | desenvolvimento/build | leitura indevida de source map em entrada controlada | não participa do runtime publicado; build recebe somente código do repositório | atualizar pela cadeia oficial do Vite/PostCSS e validar build/source maps |
+| `jsdom@29.0.1 -> undici@7.28.0` | testes | múltiplos advisories de parsing/cache/cookies | não participa do runtime publicado; usado pelo ambiente de testes | atualizar jsdom/undici pela árvore suportada e repetir a suíte |
 
 Observações da auditoria:
 
-- o total de “3 altas” inclui `react-router` e o pacote direto
-  `react-router-dom` apontando para a mesma causa, além de `brace-expansion`;
+- a auditoria completa registra 5 pacotes afetados: 4 altos e 1 moderado,
+  agrupados em quatro causas (`brace-expansion`, Router/RSC, `undici` e `postcss`);
+- `npm audit --omit=dev` reduz o resultado a 2 altos, `react-router` e
+  `react-router-dom`, ambos referentes à mesma causa de RSC Mode;
 - `npm audit fix --dry-run` propôs `brace-expansion@1.1.18`, mas a própria saída
   continuou reportando a cadeia do Router e apresentou recomendações inconsistentes
   entre atualização patch e downgrade; o resultado precisa ser confirmado com nova auditoria;
@@ -210,9 +226,14 @@ Aceite: incidente pode ser investigado sem expor dados pessoais desnecessários.
 
 #### S3.1 — Modelo de papéis
 
-- migrar papel administrativo para estrutura privada dedicada;
-- separar `support`, `finance`, `admin` e `owner`;
-- impedir autoalteração e remoção do último `owner`;
+- [x] migrar papel administrativo para estrutura privada dedicada;
+- [x] separar `support`, `finance`, `admin` e `owner`;
+- [x] impedir autoalteração; alterações de `owner` permanecem totalmente
+  bloqueadas enquanto o fluxo de segunda aprovação não existir;
+- [x] exigir owner + AAL2 + motivo + idempotência para gerir os demais papéis;
+- [x] gravar alteração e auditoria na mesma transação;
+- [ ] implementar segunda aprovação para promover/revogar owner sem risco de
+  remover o último proprietário;
 - exigir dupla confirmação para promoção/revogação privilegiada;
 - criar processo de acesso emergencial auditado.
 

@@ -1,5 +1,9 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "../Icons";
+import { useOverlayFocus } from "../../hooks/useOverlayFocus";
+import { getRequirementsByLevel } from "../../features/requirements/domain/requirements";
+import { IconButton } from "./primitives";
 
 // ── Design tokens ──
 const EASE = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -42,14 +46,6 @@ const LEVELS = {
 const MinusIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" />
-  </svg>
-);
-
-// ── Ícone de fechar ──
-const XIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
@@ -100,62 +96,23 @@ const RequirementItem = ({ label, color }) => (
 );
 
 // ============================================================
-// getRequirementsByLevel
-// ============================================================
-function getRequirementsByLevel(doc, level) {
-  const sections = doc.commonSections || [];
-  const variantSections = doc.variantSections || {};
-  const allVariantSections = Object.values(variantSections).flat();
-
-  const allFields = [
-    ...sections.flatMap((s) => s.fields || []),
-    ...allVariantSections.flatMap((s) => s.fields || []),
-  ];
-
-  const obrigatorios = allFields
-    .filter((f) => f.required)
-    .map((f) => `${f.label}`);
-
-  const opcionais = allFields
-    .filter((f) => !f.required && !f.disableable)
-    .map((f) => `${f.label}`);
-
-  const extras = allFields
-    .filter((f) => f.disableable)
-    .map((f) => `${f.label}`);
-
-  switch (level) {
-    case "minimo":
-      return {
-        obrigatorios: obrigatorios.slice(0, Math.ceil(obrigatorios.length * 0.5)),
-        opcionais: [],
-        extras: [],
-        count: Math.ceil(obrigatorios.length * 0.5),
-      };
-    case "essencial":
-      return {
-        obrigatorios,
-        opcionais: opcionais.slice(0, Math.ceil(opcionais.length * 0.6)),
-        extras: [],
-        count: obrigatorios.length + Math.ceil(opcionais.length * 0.6),
-      };
-    case "completo":
-      return {
-        obrigatorios,
-        opcionais,
-        extras,
-        count: obrigatorios.length + opcionais.length + extras.length,
-      };
-    default:
-      return { obrigatorios, opcionais: [], extras: [], count: obrigatorios.length };
-  }
-}
-
-// ============================================================
 // RequirementsModal
 // ============================================================
 const RequirementsModal = ({ doc, variant, onClose }) => {
   const [selectedLevel, setSelectedLevel] = useState("essencial");
+  const panelRef = React.useRef(null);
+  const closeButtonRef = React.useRef(null);
+  const generatedId = React.useId().replace(/:/g, "");
+  const titleId = `requirements-title-${generatedId}`;
+  const descriptionId = `requirements-description-${generatedId}`;
+
+  useOverlayFocus({
+    open: Boolean(doc),
+    containerRef: panelRef,
+    initialFocusRef: closeButtonRef,
+    onClose,
+    inertRoot: true,
+  });
 
   if (!doc) return null;
 
@@ -164,10 +121,12 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
   const active = LEVELS[selectedLevel];
   const today = new Date().toLocaleDateString("pt-BR");
 
-  return (
+  return createPortal(
     <div
       className="print-overlay"
-      onClick={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose?.();
+      }}
       style={{
         position: "fixed",
         inset: 0,
@@ -570,7 +529,13 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
       {/* ── Modal card ── */}
       <div
+        ref={panelRef}
         className="print-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",
@@ -594,37 +559,19 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           }}
         >
           {/* Close button */}
-          <button
+          <IconButton
+            ref={closeButtonRef}
+            icon="X"
+            label="Fechar requisitos"
+            variant="secondary"
             onClick={onClose}
             className="kf print-hide"
-            aria-label="Fechar"
             style={{
               position: "absolute",
               top: 16,
               right: 16,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: TOQUE,
-              height: TOQUE,
-              borderRadius: RAD_SM,
-              border: "1px solid var(--border)",
-              background: "var(--surface-2)",
-              color: "var(--text-muted)",
-              cursor: "pointer",
-              transition: EASE,
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--surface-3)";
-              e.currentTarget.style.color = "var(--text)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--surface-2)";
-              e.currentTarget.style.color = "var(--text-muted)";
-            }}
-          >
-            <XIcon />
-          </button>
+          />
 
           {/* Doc info */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, paddingRight: 52 }}>
@@ -647,6 +594,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
             </div>
             <div style={{ minWidth: 0 }}>
               <h2
+                id={titleId}
                 className="print-doc-title"
                 style={{
                   fontFamily: "var(--font-display)",
@@ -662,6 +610,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 {doc.name || doc.title}
               </h2>
               <p
+                id={descriptionId}
                 className="print-subtitle"
                 style={{
                   fontSize: 13,
@@ -696,6 +645,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
+                    minWidth: 0,
                     gap: 4,
                     padding: "14px 16px",
                     borderRadius: RAD,
@@ -755,7 +705,9 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
         {/* ── Body scrollable ── */}
         <div
-          className="print-body"
+          className="print-body kf"
+          tabIndex={0}
+          aria-label="Lista de requisitos"
           style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}
         >
           {/* Count bar */}
@@ -881,8 +833,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(244,63,94,0.18)",
-                    color: "var(--coral)",
+                    background: "var(--status-danger-soft)",
+                    color: "var(--danger)",
                   }}
                 >
                   OBRIGATÓRIO
@@ -926,8 +878,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(20,184,166,0.16)",
-                    color: "var(--teal)",
+                    background: "var(--status-success-soft)",
+                    color: "var(--success)",
                   }}
                 >
                   OPCIONAL
@@ -973,8 +925,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                     fontFamily: "var(--font-body)",
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
-                    background: "rgba(212,175,55,0.16)",
-                    color: "var(--gold)",
+                    background: "var(--status-warning-soft)",
+                    color: "var(--warning)",
                   }}
                 >
                   EXTRAS
@@ -1155,7 +1107,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
               outline: "none",
               border: "none",
               background: active.color === "var(--text-muted)" ? "var(--surface-3)" : active.color,
-              color: active.color === "var(--text-muted)" ? "var(--text-dim)" : "#fff",
+              color: active.color === "var(--text-muted)" ? "var(--text-dim)" : "var(--on-action)",
               minHeight: TOQUE,
               boxShadow:
                 active.color === "var(--text-muted)"
@@ -1219,7 +1171,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           /* Show print document */
           .print-document {
             display: block !important;
-            font-family: 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Plus Jakarta Sans Variable', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             color: #1a1a1a !important;
           }
           .print-document * {
@@ -1245,7 +1197,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

@@ -7,11 +7,20 @@ verify_jwt = false
 [functions.verify-payment]
 verify_jwt = false
 
-# admin-metrics usa o mesmo padrao: autenticacao e papel ADMIN validados
-# internamente (authenticate + profiles.role). Evita falsos 401 por clock skew;
+# admin-metrics usa o mesmo padrao: autenticacao e capacidade privada validadas
+# internamente. Evita falsos 401 por clock skew;
 # requisicoes sem usuario valido continuam recebendo 401/403 na funcao.
 [functions.admin-metrics]
 verify_jwt = false
 
 [functions.admin]
 verify_jwt = false
+
+[functions.admin-access]
+verify_jwt = false
+
+# Segundo fator TOTP usado para elevar sessões administrativas de AAL1 para
+# AAL2. Cadastro e elevação foram comprovados na conta administrativa remota.
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true

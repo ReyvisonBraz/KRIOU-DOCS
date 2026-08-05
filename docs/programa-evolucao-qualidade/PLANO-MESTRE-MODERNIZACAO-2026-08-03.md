@@ -323,6 +323,11 @@ Ordem recomendada:
 6. `RequirementsModal`;
 7. `Icons` e UI compartilhada.
 
+A etapa 6 possui um plano de execução próprio:
+[Decomposição segura do `RequirementsModal`](./PLANO-DECOMPOSICAO-REQUIREMENTS-MODAL-2026-08-05.md).
+Ele preserva regras, API pública, acessibilidade e impressão por fases
+reversíveis R0–R7 e é a referência obrigatória antes de alterar esse hotspot.
+
 Para cada hotspot:
 
 - [ ] extrair regras puras para `domain/`;
@@ -360,6 +365,10 @@ Aceite: cada estado tem proprietário único e comportamento previsível após r
 ### M05 — Design system e consistência visual
 
 Objetivo: reduzir estilos duplicados e facilitar alterações de interface.
+
+Execução detalhada e baseline atual em
+`PLANO-AUDITORIA-VISUAL-PWA-2026-08-04.md`. O mesmo plano também detalha os
+itens mobile/PWA relacionados a M06 e M07.
 
 - [ ] escolher estratégia principal: classes utilitárias + tokens ou módulos por feature;
 - [ ] manter estilos inline somente quando realmente dinâmicos;

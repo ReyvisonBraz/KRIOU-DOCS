@@ -20,9 +20,11 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./components/Theme";
-import { Spinner } from "./components/UI";
+import ThemeToggle from "./components/ThemeToggle";
+import { Spinner } from "./components/UI/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { Toaster } from "sonner";
+import AdminRoute from "./components/AdminRoute";
+import AppToaster from "./components/UI/AppToaster";
 
 // Rotas eager (sempre no bundle inicial)
 import LandingPage from "./pages/LandingPage";
@@ -77,7 +79,7 @@ const AppRoutes = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/legal-editor" element={<LegalEditorPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
@@ -92,12 +94,8 @@ const App = () => {
         <BrowserRouter>
           <AppProvider>
             <AppRoutes />
-            <Toaster
-              position="bottom-center"
-              toastOptions={{
-                style: { fontFamily: "inherit", fontSize: 14 },
-              }}
-            />
+            <ThemeToggle />
+            <AppToaster />
           </AppProvider>
         </BrowserRouter>
       </ThemeProvider>

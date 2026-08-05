@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 
 const localSupabaseEnv = (() => {
@@ -34,6 +34,27 @@ export default defineConfig({
     {
       name: "chromium",
       use: { browserName: "chromium" },
+    },
+    {
+      name: "mobile-android",
+      testMatch: /.*\.responsive\.spec\.js/,
+      use: {
+        browserName: "chromium",
+        viewport: { width: 360, height: 800 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
+    {
+      name: "mobile-iphone",
+      testMatch: /.*\.responsive\.spec\.js/,
+      use: { ...devices["iPhone 14"] },
+    },
+    {
+      name: "tablet",
+      testMatch: /.*\.responsive\.spec\.js/,
+      use: { ...devices["iPad (gen 7)"] },
     },
   ],
   webServer: {

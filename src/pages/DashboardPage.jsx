@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useRef, useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, IconButton, Input, Modal, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, MetricCard, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -35,6 +35,8 @@ const DashboardPage = () => {
   const [sortBy, setSortBy] = useState("recentes");
   const [renameDoc, setRenameDoc] = useState(null);
   const [renameTitle, setRenameTitle] = useState("");
+  const [renameBusy, setRenameBusy] = useState(false);
+  const renameInputRef = useRef(null);
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
   const { generatePDF } = usePDF();
 
@@ -298,6 +300,7 @@ const DashboardPage = () => {
     event?.preventDefault();
     const nextTitle = renameTitle.trim();
     if (!renameDoc || !nextTitle) return;
+    setRenameBusy(true);
 
     const updated = (userDocuments || []).map((d) =>
       d.id === renameDoc.id ? { ...d, title: nextTitle, updatedAt: new Date().toISOString() } : d
@@ -310,10 +313,11 @@ const DashboardPage = () => {
         await DocumentService.rename(renameDoc.id, userId, nextTitle);
       }
       showToast.success("Documento renomeado.");
-      closeRenameDialog();
     } catch (err) {
       console.error("[DashboardPage][ERRO] Falha ao renomear:", err.message);
       showToast.error("Renomeado localmente, mas não sincronizou com o servidor.");
+    } finally {
+      setRenameBusy(false);
       closeRenameDialog();
     }
   };
@@ -399,39 +403,23 @@ const DashboardPage = () => {
   const logoTitle = (
     <span className="font-display text-2xl font-black tracking-tight">
       <span className="text-coral">Kriou</span>{" "}
-      <span className="text-white">Docs</span>
+      <span style={{ color: "var(--text)" }}>Docs</span>
     </span>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--navy)", display: "flex", flexDirection: "column" }}>
+    <AppShell>
 
       <AppNavbar
         title={logoTitle}
+        maxWidth="var(--layout-dashboard-max)"
         rightAction={
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <button
+            <IconButton
+              icon="User"
+              label="Perfil"
               onClick={() => navigate("profile")}
-              aria-label="Perfil"
-              style={{
-                minWidth: 44,
-                minHeight: 44,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 12,
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--text-muted)",
-                transition: "all 0.2s ease",
-              }}
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--surface-2)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
-            >
-              <Icon name="User" className="w-5 h-5" />
-            </button>
+            />
             <button
               onClick={logout}
               aria-label="Sair"
@@ -449,7 +437,7 @@ const DashboardPage = () => {
                 color: "var(--text-muted)",
                 fontFamily: "var(--font-body)",
                 fontWeight: 600,
-                fontSize: "0.8125rem",
+                fontSize: "0.875rem",
                 transition: "all 0.2s ease",
               }}
               className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60"
@@ -466,7 +454,7 @@ const DashboardPage = () => {
       {/* Global responsive style */}
       <style>{`.sm-dashboard-inline{display:inline!important}@media(max-width:639px){.sm-dashboard-inline{display:none!important}}`}</style>
 
-      <main style={{ flex: 1, width: "100%", maxWidth: 1024, margin: "0 auto", padding: "24px 16px calc(32px + env(safe-area-inset-bottom, 0px))" }}>
+      <PageContainer maxWidth="var(--layout-dashboard-max)">
 
         {/* ─── Welcome Section ─── */}
         <section style={{ marginBottom: 40 }}>
@@ -474,7 +462,7 @@ const DashboardPage = () => {
             <div>
               <p style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "0.6875rem",
+                fontSize: "0.75rem",
                 fontWeight: 600,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -512,23 +500,20 @@ const DashboardPage = () => {
 
             {allDocs.length > 0 && (
               <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
-                <StatTile
+                <MetricCard compact
                   value={paidCount}
                   label={`pago${paidCount !== 1 ? "s" : ""}`}
-                  accent="var(--success)"
-                  glow="rgba(20,184,166,0.45)"
+                  accent="success"
                 />
-                <StatTile
+                <MetricCard compact
                   value={pendingPaymentCount}
                   label={`pendente${pendingPaymentCount !== 1 ? "s" : ""}`}
-                  accent="var(--gold)"
-                  glow="rgba(212,175,55,0.40)"
+                  accent="warning"
                 />
-                <StatTile
+                <MetricCard compact
                   value={draftCount}
                   label={`rascunho${draftCount !== 1 ? "s" : ""}`}
-                  accent="var(--coral)"
-                  glow="rgba(244,63,94,0.35)"
+                  accent="accent"
                 />
               </div>
             )}
@@ -577,13 +562,13 @@ const DashboardPage = () => {
               </div>
               <div style={{ minWidth: 0 }}>
                 <h3 style={{
-                  fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700,
+                  fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700,
                   color: "var(--text)", margin: "0 0 3px", letterSpacing: "-0.02em",
                 }}>
                   Precisa de um contrato personalizado?
                 </h3>
                 <p style={{
-                  fontFamily: "var(--font-body)", fontSize: 12,
+                  fontFamily: "var(--font-body)", fontSize: 14,
                   color: "var(--text-dim)", margin: 0, lineHeight: 1.5,
                 }}>
                   Receba um documento sob medida via WhatsApp.
@@ -592,9 +577,9 @@ const DashboardPage = () => {
             </div>
             <div className="wa-cta-btn" style={{
               display: "flex", alignItems: "center", gap: 6, padding: "10px 16px",
-              borderRadius: 12, background: "#25D366", color: "#fff",
+              borderRadius: 12, background: "var(--action-whatsapp)", color: "var(--on-action)",
               fontFamily: "var(--font-body)", fontWeight: 700,
-              fontSize: 13, whiteSpace: "nowrap", flexShrink: 0, border: "none",
+              fontSize: 14, whiteSpace: "nowrap", flexShrink: 0, border: "none",
             }}>
               <Icon name="WhatsApp" className="w-4 h-4" />
               Falar no WhatsApp
@@ -633,7 +618,7 @@ const DashboardPage = () => {
                 style={{
                   width: "100%",
                   background: "var(--surface)",
-                  border: "1px solid var(--border)",
+                  border: "1px solid var(--control-border)",
                   borderRadius: 16,
                   padding: "14px 16px 14px 48px",
                   fontSize: "1rem", /* 16px previne zoom no iOS */
@@ -649,7 +634,7 @@ const DashboardPage = () => {
                   e.currentTarget.style.boxShadow = "0 0 0 4px rgba(244,63,94,0.08)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.borderColor = "var(--control-border)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               />
@@ -672,7 +657,7 @@ const DashboardPage = () => {
                   border: "none",
                   cursor: "pointer",
                   background: "var(--coral)",
-                  color: "#fff",
+                  color: "var(--on-action)",
                   fontFamily: "var(--font-body)",
                   fontWeight: 700,
                   fontSize: "0.875rem",
@@ -682,7 +667,7 @@ const DashboardPage = () => {
                 }}
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e63950";
+                  e.currentTarget.style.background = "var(--action-accent-hover)";
                   e.currentTarget.style.boxShadow = "0 6px 24px rgba(244,63,94,0.4)";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
@@ -746,7 +731,7 @@ const DashboardPage = () => {
               marginTop: 10,
             }}>
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Arquivo
                 </span>
                 <select
@@ -756,7 +741,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -771,7 +756,7 @@ const DashboardPage = () => {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Status
                 </span>
                 <select
@@ -781,7 +766,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -798,7 +783,7 @@ const DashboardPage = () => {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Ordenar
                 </span>
                 <select
@@ -808,7 +793,7 @@ const DashboardPage = () => {
                     width: "100%",
                     minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--control-border)",
                     background: "var(--surface)",
                     color: "var(--text)",
                     padding: "0 12px",
@@ -855,10 +840,10 @@ const DashboardPage = () => {
                     border: isActive ? "none" : "1px solid transparent",
                     cursor: "pointer",
                     background: isActive ? "var(--coral)" : "var(--surface)",
-                    color: isActive ? "#fff" : "var(--text-muted)",
+                    color: isActive ? "var(--on-action)" : "var(--text-muted)",
                     fontFamily: "var(--font-body)",
                     fontWeight: isActive ? 700 : 600,
-                    fontSize: "0.8125rem",
+                    fontSize: "0.875rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     boxShadow: isActive ? "0 4px 16px rgba(244,63,94,0.25)" : "none",
@@ -889,11 +874,11 @@ const DashboardPage = () => {
                     height: 22,
                     padding: "0 6px",
                     borderRadius: 8,
-                    background: isActive ? "rgba(255,255,255,0.2)" : "var(--surface-3)",
-                    color: isActive ? "#fff" : "var(--text-muted)",
+                    background: isActive ? "transparent" : "var(--surface-3)",
+                    color: isActive ? "var(--on-action)" : "var(--text-muted)",
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: "0.6875rem",
+                    fontSize: "0.75rem",
                     lineHeight: 1,
                   }}>
                     {count}
@@ -1022,17 +1007,17 @@ const DashboardPage = () => {
                     border: "none",
                     cursor: "pointer",
                     background: "var(--coral)",
-                    color: "#fff",
+                    color: "var(--on-action)",
                     fontFamily: "var(--font-body)",
                     fontWeight: 700,
-                    fontSize: "0.9375rem",
+                    fontSize: "1rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
                     boxShadow: "0 4px 16px rgba(244,63,94,0.3)",
                   }}
                   className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e63950";
+                    e.currentTarget.style.background = "var(--action-accent-hover)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                     e.currentTarget.style.boxShadow = "0 8px 24px rgba(244,63,94,0.4)";
                   }}
@@ -1063,7 +1048,7 @@ const DashboardPage = () => {
                     color: "var(--gold)",
                     fontFamily: "var(--font-body)",
                     fontWeight: 700,
-                    fontSize: "0.9375rem",
+                    fontSize: "1rem",
                     letterSpacing: "-0.005em",
                     transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
@@ -1132,138 +1117,45 @@ const DashboardPage = () => {
             )}
           </div>
         )}
-      </main>
+      </PageContainer>
 
-      {renameDoc && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Renomear documento"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 80,
-            background: "rgba(9,9,20,0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) closeRenameDialog();
-          }}
-        >
-          <form
-            onSubmit={handleRenameDocument}
-            className="surface-card animate-scale-in"
-            style={{
-              width: "100%",
-              maxWidth: 440,
-              padding: 24,
-              borderRadius: 18,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 18 }}>
-              <div>
-                <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 800, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-                  Documento
-                </p>
-                <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 900, color: "var(--text)" }}>
-                  Renomear arquivo
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={closeRenameDialog}
-                aria-label="Fechar"
-                className="btn-icon"
-              >
-                <Icon name="X" className="w-5 h-5" />
-              </button>
-            </div>
-
-            <label style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-dim)" }}>
-                Novo nome
-              </span>
-              <input
-                autoFocus
-                value={renameTitle}
-                onChange={(e) => setRenameTitle(e.target.value)}
-                className="input-field"
-                style={{ fontSize: 16 }}
-              />
-            </label>
-
-            <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-              <button type="button" onClick={closeRenameDialog} className="btn-secondary" style={{ flex: 1 }}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={!renameTitle.trim()}>
-                Salvar nome
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <Modal
+        open={Boolean(renameDoc)}
+        title="Renomear arquivo"
+        eyebrow="Documento"
+        description="Escolha um nome claro para localizar este documento com facilidade."
+        onClose={closeRenameDialog}
+        onSubmit={handleRenameDocument}
+        busy={renameBusy}
+        initialFocusRef={renameInputRef}
+        width={440}
+        footer={(
+          <>
+            <Button variant="secondary" onClick={closeRenameDialog} disabled={renameBusy}>Cancelar</Button>
+            <Button type="submit" disabled={!renameTitle.trim()} loading={renameBusy} loadingLabel="Salvando nome">
+              Salvar nome
+            </Button>
+          </>
+        )}
+      >
+        <Input
+          ref={renameInputRef}
+          label="Novo nome"
+          required
+          disabled={renameBusy}
+          value={renameTitle}
+          onChange={(event) => setRenameTitle(event.target.value)}
+          containerStyle={{ marginBottom: 0 }}
+        />
+      </Modal>
 
       <ConfirmDialog
         {...confirmState}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-    </div>
+    </AppShell>
   );
 };
-
-const StatTile = ({ value, label, accent, glow }) => (
-  <div
-    className="bento-stat"
-    style={{
-      "--stat-accent": accent,
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "10px 16px",
-      borderRadius: 14,
-      background: "var(--surface)",
-      border: "1px solid var(--border)",
-    }}
-  >
-    <span
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: accent,
-        boxShadow: `0 0 8px ${glow}`,
-        flexShrink: 0,
-      }}
-    />
-    <span
-      style={{
-        fontFamily: "var(--font-display)",
-        fontSize: "1rem",
-        fontWeight: 800,
-        color: "var(--text)",
-        letterSpacing: "-0.02em",
-        lineHeight: 1,
-      }}
-    >
-      {value}
-    </span>
-    <span
-      style={{
-        fontFamily: "var(--font-body)",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        color: "var(--text-dim)",
-      }}
-    >
-      {label}
-    </span>
-  </div>
-);
 
 export default DashboardPage;

@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Button } from "./UI";
+import { Button, IconButton } from "./UI";
 
 describe("Button", () => {
   it("renderiza o texto filho", () => {
@@ -78,5 +78,55 @@ describe("Button", () => {
   it("passa props extras para o elemento button", () => {
     render(<Button aria-label="ação especial">Acessível</Button>);
     expect(screen.getByRole("button", { name: "ação especial" })).toBeInTheDocument();
+  });
+
+  it("não envia formulários implicitamente", () => {
+    render(<Button>Continuar</Button>);
+    expect(screen.getByRole("button", { name: "Continuar" })).toHaveAttribute("type", "button");
+  });
+
+  it("expõe carregamento e bloqueia cliques duplicados", () => {
+    const onClick = vi.fn();
+    render(
+      <Button loading loadingLabel="Salvando" onClick={onClick}>
+        Salvar
+      </Button>,
+    );
+
+    const button = screen.getByRole("button", { name: "Salvando" });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    fireEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+describe("IconButton", () => {
+  it("cria um botão nativo acessível com ícone decorativo", () => {
+    render(<IconButton icon="User" label="Abrir perfil" />);
+    const button = screen.getByRole("button", { name: "Abrir perfil" });
+
+    expect(button).toHaveAttribute("type", "button");
+    expect(button).toHaveStyle({ minWidth: "44px", minHeight: "44px" });
+    expect(button.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("executa a ação e respeita o estado desabilitado", () => {
+    const onClick = vi.fn();
+    const { rerender } = render(
+      <IconButton icon="X" label="Fechar" onClick={onClick} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    expect(onClick).toHaveBeenCalledOnce();
+
+    rerender(<IconButton icon="X" label="Fechar" onClick={onClick} disabled />);
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("mantém aria-label explícito para compatibilidade", () => {
+    render(<IconButton icon="User" aria-label="Conta" variant="secondary" />);
+    expect(screen.getByRole("button", { name: "Conta" })).toBeVisible();
   });
 });

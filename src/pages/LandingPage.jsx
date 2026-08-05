@@ -56,6 +56,14 @@ const LandingPage = () => {
           position: relative;
           isolation: isolate;
         }
+        .landing-header .landing-brand,
+        .landing-header .btn-ghost {
+          color: var(--header-text-secondary);
+        }
+        .landing-header .landing-brand:hover,
+        .landing-header .btn-ghost:hover {
+          color: var(--header-text);
+        }
         .landing-shell::before {
           content: "";
           position: fixed;
@@ -91,7 +99,7 @@ const LandingPage = () => {
           border-radius: 8px;
           background: #fbfaf6;
           color: #15151f;
-          border: 1px solid rgba(255,255,255,0.24);
+          border: 1px solid var(--border-default);
           box-shadow: 0 30px 90px rgba(0,0,0,0.42);
           overflow: hidden;
         }
@@ -110,8 +118,8 @@ const LandingPage = () => {
           right: 0;
           bottom: 42px;
           width: min(340px, calc(100vw - 40px));
-          border: 1px solid rgba(255,255,255,0.11);
-          background: rgba(26,26,54,0.92);
+          border: 1px solid var(--border-default);
+          background: var(--surface);
           backdrop-filter: blur(18px);
           border-radius: 18px;
           box-shadow: 0 26px 70px rgba(0,0,0,0.32);
@@ -124,8 +132,8 @@ const LandingPage = () => {
           min-height: 38px;
           padding: 0 12px;
           border-radius: 12px;
-          background: rgba(255,255,255,0.055);
-          color: var(--text-dim);
+          background: var(--surface-subtle);
+          color: var(--text-secondary);
           font-size: 12px;
           font-weight: 700;
           white-space: nowrap;
@@ -176,16 +184,16 @@ const LandingPage = () => {
       `}</style>
 
       <div className="landing-shell">
-        <header className="sticky top-0 z-50 border-b border-border" style={{ background: "rgba(9,9,20,0.88)", backdropFilter: "blur(16px)" }}>
+        <header className="landing-header sticky top-0 z-50" style={{ background: "color-mix(in srgb, var(--header-bg) 94%, transparent)", color: "var(--header-text)", borderBottom: "1px solid var(--soft-border)", backdropFilter: "blur(16px)" }}>
           <div className="max-w-[1220px] mx-auto px-5 md:px-8 h-[68px] flex items-center justify-between">
             <button
               onClick={() => navigate("landing")}
-              className="font-display text-2xl font-black tracking-tight text-text bg-transparent border-none cursor-pointer touch-target px-2"
+              className="landing-brand font-display text-2xl font-black tracking-tight bg-transparent border-none cursor-pointer touch-target px-2"
             >
-              <span className="text-coral">Kriou</span>Docs
+              <span style={{ color: "var(--header-brand-accent)" }}>Kriou</span>Docs
             </button>
 
-            <nav className="hidden md:flex items-center gap-2 text-sm font-semibold text-text-dim">
+            <nav className="hidden md:flex items-center gap-2 text-sm font-semibold">
               <button onClick={() => document.getElementById("modelos")?.scrollIntoView({ behavior: "smooth" })} className="btn-ghost">
                 Modelos
               </button>
@@ -208,15 +216,16 @@ const LandingPage = () => {
 
             <button
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="md:hidden bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
+              className="md:hidden rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
+              style={{ background: "var(--soft-fill)", border: "1px solid var(--soft-border)" }}
               aria-label="Menu"
             >
-              <Icon name={mobileOpen ? "X" : "Grid"} className="w-5 h-5 text-text-dim" />
+              <Icon name={mobileOpen ? "X" : "Grid"} className="w-5 h-5" style={{ color: "var(--header-text)" }} />
             </button>
           </div>
 
           {mobileOpen && (
-            <div className="md:hidden border-t border-border bg-navy px-5 py-4 flex flex-col gap-3 animate-fade-up">
+            <div className="md:hidden px-5 py-4 flex flex-col gap-3 animate-fade-up" style={{ background: "var(--header-bg)", borderTop: "1px solid var(--soft-border)" }}>
               <button onClick={() => { navigate("login"); setMobileOpen(false); }} className="btn-primary w-full justify-center touch-target">
                 Começar agora
               </button>
@@ -284,7 +293,7 @@ const LandingPage = () => {
                     </div>
 
                     <div style={{ margin: "0 34px", padding: "13px 16px", borderLeft: "4px solid #a58737", background: "#faf7ee", border: "1px solid #e8e1cf" }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "#a58737", marginBottom: 6 }}>FUNDAMENTO LEGAL</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#6f500a", marginBottom: 6 }}>FUNDAMENTO LEGAL</div>
                       <div style={{ height: 7, width: "84%", background: "#1f2937", opacity: 0.18, borderRadius: 10 }} />
                     </div>
 
@@ -308,7 +317,7 @@ const LandingPage = () => {
                           <div key={label}>
                             <div style={{ borderTop: "1px dashed #2b2c35", height: 12 }} />
                             <div style={{ height: 6, width: "72%", margin: "0 auto 5px", background: "#252936", opacity: 0.14, borderRadius: 10 }} />
-                            <div style={{ fontSize: 8, fontWeight: 800, color: "#a58737", textAlign: "center" }}>{label}</div>
+                            <div style={{ fontSize: 10, fontWeight: 800, color: "#6f500a", textAlign: "center" }}>{label}</div>
                           </div>
                         ))}
                       </div>
@@ -439,7 +448,7 @@ const LandingPage = () => {
               {LEGAL_FLOW.map((item, index) => (
                 <div key={item} className="surface-card" style={{ padding: 18, borderRadius: 16 }}>
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-coral text-white flex items-center justify-center font-display font-black">
+                    <span className="w-9 h-9 rounded-xl bg-coral flex items-center justify-center font-display font-black" style={{ color: "var(--on-action)" }}>
                       {index + 1}
                     </span>
                     <span className="text-sm font-extrabold text-text">{item}</span>
@@ -471,7 +480,7 @@ const LandingPage = () => {
                   }}
                 >
                   {plan.highlight && (
-                    <span className="absolute top-4 right-4 text-[10px] uppercase tracking-wide font-black text-white bg-coral px-2 py-1 rounded-md">
+                    <span className="absolute top-4 right-4 text-xs uppercase tracking-wide font-black bg-coral px-2 py-1 rounded-md" style={{ color: "var(--on-action)" }}>
                       Popular
                     </span>
                   )}

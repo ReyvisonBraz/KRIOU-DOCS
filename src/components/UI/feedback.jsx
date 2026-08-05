@@ -2,7 +2,7 @@
  * ============================================
  * KRIOU DOCS - Componentes de Feedback
  * ============================================
- * EmptyState, ErrorMessage, SaveIndicator, SkeletonCard, ConfirmDialog
+ * Alert, EmptyState, ErrorMessage, SaveIndicator, SkeletonCard, ConfirmDialog
  *
  * Design: Luxury Refined + Bold Editorial
  * Fundo navy profundo (#090914 → #14142B),
@@ -13,6 +13,7 @@
 
 import React from "react";
 import { Icon } from "../Icons";
+import { useOverlayFocus } from "../../hooks/useOverlayFocus";
 
 // -- Tokens de design tipográfico --
 const T = {
@@ -50,7 +51,7 @@ const ensureGlobalStyles = () => {
 
     /* -- Padrão de foco visível -- */
     .kriou-focus-ring:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
 
@@ -71,10 +72,10 @@ const ensureGlobalStyles = () => {
     }
     .kriou-retry-btn:hover {
       background: var(--coral);
-      color: #fff;
+      color: var(--on-action);
     }
     .kriou-retry-btn:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
     .kriou-retry-btn:active {
@@ -95,11 +96,16 @@ const ensureGlobalStyles = () => {
       transition: all 0.15s ease;
     }
     .kriou-dialog-btn:focus-visible {
-      outline: 2px solid var(--coral);
+      outline: 2px solid var(--focus-ring);
       outline-offset: 2px;
     }
     .kriou-dialog-btn:active {
       transform: scale(0.97);
+    }
+    .kriou-dialog-btn:disabled {
+      cursor: wait;
+      opacity: 0.68;
+      filter: none;
     }
     .kriou-dialog-btn-cancel {
       background: var(--surface-2);
@@ -112,15 +118,15 @@ const ensureGlobalStyles = () => {
       border-color: var(--border-hover);
     }
     .kriou-dialog-btn-confirm {
-      background: var(--teal);
-      color: #090914;
+      background: var(--action-primary);
+      color: var(--on-action);
     }
     .kriou-dialog-btn-confirm:hover {
       filter: brightness(1.12);
     }
     .kriou-dialog-btn-danger {
-      background: var(--coral);
-      color: #fff;
+      background: var(--status-danger);
+      color: var(--on-action);
     }
     .kriou-dialog-btn-danger:hover {
       filter: brightness(1.12);
@@ -151,70 +157,164 @@ const ensureGlobalStyles = () => {
   document.head.appendChild(el);
 };
 
-/* ====================== EmptyState ====================== */
-export const EmptyState = ({ icon, title, description, action, className }) => (
-  <div
-    className={className}
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      textAlign: "center",
-      padding: "64px 16px",
-      fontFamily: T.body,
-    }}
-  >
-    {icon && (
-      <div
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          background: "var(--surface-2)",
-          border: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 24,
-          color: "var(--coral)",
-        }}
-      >
-        <Icon name={icon} style={{ width: 32, height: 32 }} />
-      </div>
-    )}
+/* ====================== Alert ====================== */
+export const Alert = ({
+  variant = "info",
+  title,
+  message,
+  children,
+  action,
+  icon,
+  role,
+  className,
+  style,
+  ...props
+}) => {
+  const titleId = React.useId();
+  const contentId = React.useId();
+  const variants = {
+    info: { color: "var(--status-info)", background: "var(--status-info-soft)", icon: "Info" },
+    success: { color: "var(--status-success)", background: "var(--status-success-soft)", icon: "CheckCircle" },
+    warning: { color: "var(--status-warning)", background: "var(--status-warning-soft)", icon: "AlertTriangle" },
+    danger: { color: "var(--status-danger)", background: "var(--status-danger-soft)", icon: "AlertCircle" },
+  };
+  const visual = variants[variant] || variants.info;
+  const content = children ?? message;
+  const semanticRole = role || (variant === "danger" ? "alert" : "status");
 
-    {title && (
-      <p
-        style={{
+  if (!title && !content) return null;
+
+  return (
+    <div
+      role={semanticRole}
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={content ? contentId : undefined}
+      className={className}
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: "12px 14px",
+        border: `1px solid color-mix(in srgb, ${visual.color} 32%, transparent)`,
+        borderRadius: "var(--radius-control)",
+        background: visual.background,
+        color: "var(--text)",
+        fontFamily: T.body,
+        ...style,
+      }}
+      {...props}
+    >
+      <span aria-hidden="true" style={{ display: "flex", flexShrink: 0, color: visual.color, marginTop: 2 }}>
+        <Icon name={icon || visual.icon} style={{ width: 18, height: 18 }} />
+      </span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        {title && (
+          <div id={titleId} style={{ color: visual.color, fontSize: 14, fontWeight: 700, lineHeight: 1.45 }}>
+            {title}
+          </div>
+        )}
+        {content && (
+          <div
+            id={contentId}
+            style={{
+              color: "var(--text-dim)",
+              fontSize: 14,
+              lineHeight: 1.55,
+              marginTop: title ? 2 : 0,
+              overflowWrap: "anywhere",
+            }}
+          >
+            {content}
+          </div>
+        )}
+        {action && <div style={{ marginTop: 10 }}>{action}</div>}
+      </div>
+    </div>
+  );
+};
+
+/* ====================== EmptyState ====================== */
+export const EmptyState = ({
+  icon,
+  title,
+  description,
+  action,
+  headingLevel = 2,
+  className,
+  style,
+  ...props
+}) => {
+  const titleId = React.useId();
+  const descriptionId = React.useId();
+  const headingTag = `h${Math.min(6, Math.max(1, headingLevel))}`;
+
+  return (
+    <section
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={description ? descriptionId : undefined}
+      className={className}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        padding: "64px 16px",
+        fontFamily: T.body,
+        ...style,
+      }}
+      {...props}
+    >
+      {icon && (
+        <div
+          aria-hidden="true"
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 20,
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 24,
+            color: "var(--coral)",
+          }}
+        >
+          <Icon name={icon} style={{ width: 32, height: 32 }} />
+        </div>
+      )}
+
+      {title && React.createElement(headingTag, {
+        id: titleId,
+        style: {
           fontFamily: T.display,
           fontSize: 20,
           fontWeight: 700,
           color: "var(--text)",
           margin: "0 0 8px",
           letterSpacing: "-0.02em",
-        }}
-      >
-        {title}
-      </p>
-    )}
+        },
+      }, title)}
 
-    {description && (
-      <p
-        style={{
-          fontSize: 14,
-          lineHeight: 1.6,
-          color: "var(--text-muted)",
-          maxWidth: 420,
-          margin: 0,
-        }}
-      >
-        {description}
-      </p>
-    )}
+      {description && (
+        <p
+          id={descriptionId}
+          style={{
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: "var(--text-muted)",
+            maxWidth: 420,
+            margin: 0,
+          }}
+        >
+          {description}
+        </p>
+      )}
 
-    {action && <div style={{ marginTop: 28 }}>{action}</div>}
-  </div>
-);
+      {action && <div style={{ marginTop: 28 }}>{action}</div>}
+    </section>
+  );
+};
 
 /* ====================== ErrorMessage ====================== */
 export const ErrorMessage = ({ message, onRetry, className, style }) => {
@@ -489,19 +589,30 @@ export const ConfirmDialog = ({
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   danger = false,
+  busy = false,
+  busyLabel = "Processando",
+  initialFocus,
   onConfirm,
   onCancel,
 }) => {
   const isOpen = visible ?? open ?? false;
-  // Trava scroll do body enquanto o diálogo está aberto
-  React.useEffect(() => {
-    if (!isOpen) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [isOpen]);
+  const generatedId = React.useId().replace(/:/g, "");
+  const titleId = `kriou-dialog-title-${generatedId}`;
+  const messageId = `kriou-dialog-message-${generatedId}`;
+  const panelRef = React.useRef(null);
+  const cancelButtonRef = React.useRef(null);
+  const confirmButtonRef = React.useRef(null);
+  const preferredFocusRef = (initialFocus || (danger ? "cancel" : "confirm")) === "cancel"
+    ? cancelButtonRef
+    : confirmButtonRef;
+
+  useOverlayFocus({
+    open: isOpen,
+    containerRef: panelRef,
+    initialFocusRef: preferredFocusRef,
+    onClose: onCancel,
+    closeDisabled: busy,
+  });
 
   if (!isOpen) return null;
 
@@ -511,8 +622,8 @@ export const ConfirmDialog = ({
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="kriou-dialog-title"
-      aria-describedby="kriou-dialog-message"
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
       className="kriou-dialog-overlay"
       style={{
         position: "fixed",
@@ -527,11 +638,12 @@ export const ConfirmDialog = ({
         WebkitBackdropFilter: "blur(6px)",
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel?.();
+        if (e.target === e.currentTarget && !busy) onCancel?.();
       }}
     >
       {/* Painel do diálogo */}
       <div
+        ref={panelRef}
         className="kriou-dialog-panel"
         style={{
           background: "var(--surface)",
@@ -540,7 +652,7 @@ export const ConfirmDialog = ({
           padding: 28,
           maxWidth: 420,
           width: "100%",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset",
+          boxShadow: "var(--shadow-elevated)",
         }}
       >
         {/* Ícone de alerta para variante danger */}
@@ -559,6 +671,7 @@ export const ConfirmDialog = ({
           >
             <Icon
               name="AlertTriangle"
+              aria-hidden="true"
               style={{ width: 22, height: 22, color: "var(--coral)" }}
             />
           </div>
@@ -566,7 +679,7 @@ export const ConfirmDialog = ({
 
         {/* Título */}
         <h2
-          id="kriou-dialog-title"
+          id={titleId}
           style={{
             fontFamily: T.display,
             fontSize: 18,
@@ -581,7 +694,7 @@ export const ConfirmDialog = ({
 
         {/* Mensagem */}
         <p
-          id="kriou-dialog-message"
+          id={messageId}
           style={{
             fontSize: 14,
             lineHeight: 1.6,
@@ -596,19 +709,24 @@ export const ConfirmDialog = ({
         {/* Botões de ação */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button
+            ref={cancelButtonRef}
+            type="button"
             onClick={onCancel}
             className="kriou-dialog-btn kriou-dialog-btn-cancel"
           >
             {cancelLabel}
           </button>
           <button
+            ref={confirmButtonRef}
+            type="button"
             onClick={onConfirm}
-            autoFocus
+            disabled={busy}
+            aria-busy={busy || undefined}
             className={`kriou-dialog-btn ${
               danger ? "kriou-dialog-btn-danger" : "kriou-dialog-btn-confirm"
             }`}
           >
-            {confirmLabel}
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

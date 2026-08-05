@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { RESUME_TEMPLATES } from "../data/constants";
 import { getAvailableDocuments } from "../data/legalDocuments";
+import { getContrastingTextColor } from "../utils/colorContrast";
+import { resolveTemplateBackAction, resolveTemplateEntry } from "../domain/templates/navigation";
+import { LegalDocSpecModal, TemplateSpecModal } from "../components/templates/TemplateDetailsDrawers";
 
 const TEMPLATE_CATEGORIES = [
   { id: "all", label: "Todos", icon: "Grid" },
@@ -27,10 +30,9 @@ const LEGAL_CATEGORIES = [
   { id: "financeiros", label: "Financeiros", icon: "CreditCard", docIds: ["recibo"] },
 ];
 
-const getInitialDocType = () => {
+const getInitialTemplateEntry = () => {
   const cat = sessionStorage.getItem("kriou_template_category");
-  sessionStorage.removeItem("kriou_template_category");
-  return cat === "resume" || cat === "legal" ? cat : null;
+  return resolveTemplateEntry(cat);
 };
 
 const LEGAL_DOC_COLORS = {
@@ -75,20 +77,18 @@ const ResumeMiniPreview = ({ template }) => (
 );
 
 // ─── TemplateCard ───────────────────────────────────────────────────────────
-const TemplateCard = ({ template, onClick, onViewSpec }) => {
+export const TemplateCard = ({ template, onClick, onViewSpec }) => {
   const [hovered, setHovered] = useState(false);
+  const titleId = React.useId();
 
   return (
-    <div
+    <article
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
-      tabIndex={0}
-      role="button"
-      aria-label={`Modelo ${template.name} — ${template.desc}`}
+      aria-labelledby={titleId}
       style={{
         cursor: "pointer",
         background: "var(--surface)",
@@ -115,7 +115,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             position: "absolute", top: 12, right: 12, padding: "4px 12px",
             borderRadius: 100, fontSize: 10, fontWeight: 800,
             background: template.accent,
-            color: template.id === "primeiro-emprego" ? "var(--navy)" : "#fff",
+            color: getContrastingTextColor(template.accent),
             zIndex: 2, letterSpacing: "0.04em", textTransform: "uppercase",
             boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
           }}>
@@ -151,6 +151,8 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
           pointerEvents: hovered ? "auto" : "none",
         }}>
           <button
+            type="button"
+            aria-label={`Ver ficha do modelo ${template.name}`}
             onClick={(e) => { e.stopPropagation(); onViewSpec(template); }}
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
@@ -165,11 +167,13 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             <Icon name="Eye" className="w-4 h-4" /> Ver Ficha
           </button>
           <button
+            type="button"
+            aria-label={`Usar modelo ${template.name}`}
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
               background: template.accent, border: "none",
-              color: template.id === "primeiro-emprego" ? "var(--navy)" : "#fff",
+              color: getContrastingTextColor(template.accent),
               fontSize: 13, fontWeight: 700, cursor: "pointer",
               display: "flex", alignItems: "center", gap: 7,
               transition: "all 0.15s ease",
@@ -184,7 +188,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
       {/* Info */}
       <div style={{ padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h3 className="font-display" style={{ fontWeight: 800, fontSize: 15, color: "var(--text)", marginBottom: 3, letterSpacing: "-0.3px" }}>
+          <h3 id={titleId} className="font-display" style={{ fontWeight: 800, fontSize: 15, color: "var(--text)", marginBottom: 3, letterSpacing: "-0.3px" }}>
             {template.name}
           </h3>
           <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.3 }}>{template.desc}</p>
@@ -194,338 +198,23 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
           flexShrink: 0, boxShadow: `0 0 10px ${template.accent}40`,
         }} />
       </div>
-    </div>
-  );
-};
-
-// ─── TemplateSpecModal ──────────────────────────────────────────────────────
-const DRW = 500;
-
-const TemplateSpecModal = ({ template, onClose, onSelect }) => {
-  if (!template) return null;
-  const spec = template.spec || {};
-
-  return (
-    <>
-      <div onClick={onClose} style={{
-        position: "fixed", inset: 0, zIndex: 999, background: "rgba(9,9,20,0.5)",
-        animation: "modalFadeIn 0.2s ease",
-      }} />
-      <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 1000,
-        width: "100%", maxWidth: DRW,
-        background: "var(--surface)", borderLeft: "1px solid var(--border)",
-        boxShadow: "-8px 0 48px rgba(0,0,0,0.3)",
-        display: "flex", flexDirection: "column",
-        animation: "drawerIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: "26px 28px",
-          background: `linear-gradient(155deg, ${template.color} 0%, ${template.color}DD 100%)`,
-          position: "sticky", top: 0, zIndex: 1, borderRadius: "18px 18px 0 0",
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <h2 className="font-display" style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 4, letterSpacing: "-0.5px" }}>
-                {template.name}
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 14 }}>{template.desc}</p>
-            </div>
-            <button
-              onClick={onClose}
-              aria-label="Fechar"
-              style={{
-                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 12,
-                background: "rgba(255,255,255,0.22)", border: "1.5px solid rgba(255,255,255,0.3)",
-                cursor: "pointer", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.35)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            >
-              <Icon name="X" className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: 28 }}>
-          {/* Target + Palette */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 26 }}>
-            <div style={{ padding: 18, background: "var(--surface-2)", borderRadius: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <Icon name="Target" className="w-4 h-4" style={{ color: "var(--coral)" }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Público-alvo
-                </span>
-              </div>
-              <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.5 }}>
-                {spec.target || "Não especificado"}
-              </p>
-            </div>
-            <div style={{ padding: 18, background: "var(--surface-2)", borderRadius: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  background: `linear-gradient(135deg, ${template.color}, ${template.accent})`,
-                }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Paleta
-                </span>
-              </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: 4, background: template.color }} />
-                  <span style={{ fontSize: 12, color: "var(--text-dim)", fontFamily: "monospace" }}>{template.color}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: 4, background: template.accent }} />
-                  <span style={{ fontSize: 12, color: "var(--text-dim)", fontFamily: "monospace" }}>{template.accent}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Best For */}
-          {spec.bestFor && (
-            <div style={{ marginBottom: 26 }}>
-              <h3 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-                <Icon name="Star" className="w-3.5 h-3.5" style={{ display: "inline", marginRight: 6, verticalAlign: -1 }} />
-                Melhores áreas
-              </h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {spec.bestFor.map((area, i) => (
-                  <span key={i} style={{
-                    padding: "8px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600,
-                    background: `${template.color}14`, color: template.color,
-                    border: `1px solid ${template.color}28`,
-                  }}>{area}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Sections */}
-          {spec.sections && (
-            <div style={{ marginBottom: 26 }}>
-              <h3 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-                <Icon name="Layers" className="w-3.5 h-3.5" style={{ display: "inline", marginRight: 6, verticalAlign: -1 }} />
-                Seções
-              </h3>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {spec.sections.map((s, i) => (
-                  <span key={i} style={{
-                    padding: "8px 16px", background: "var(--surface-2)",
-                    color: "var(--text)", borderRadius: 8, fontSize: 12, fontWeight: 500,
-                    border: "1px solid var(--surface-3)",
-                  }}>{s}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tips */}
-          {spec.tips && (
-            <div style={{ marginBottom: 26 }}>
-              <h3 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-                <Icon name="Lightbulb" className="w-3.5 h-3.5" style={{ display: "inline", marginRight: 6, verticalAlign: -1 }} />
-                Dicas
-              </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {spec.tips.map((tip, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "flex-start", gap: 10,
-                    padding: "12px 14px", background: "var(--surface-2)",
-                    borderRadius: 10, fontSize: 13, color: "var(--text)", lineHeight: 1.5,
-                  }}>
-                    <Icon name="CheckCircle" className="w-4 h-4" style={{ color: "var(--success)", flexShrink: 0, marginTop: 2 }} />
-                    {tip}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 12, paddingTop: 4 }}>
-            <Button variant="secondary" onClick={onClose} style={{ flex: 1, minHeight: 48, fontSize: 14, fontWeight: 700 }}>
-              Fechar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => { onSelect(template); onClose(); }}
-              icon="FileText"
-              style={{ flex: 1, minHeight: 48, fontSize: 14, fontWeight: 700 }}
-            >
-              Usar este modelo
-            </Button>
-          </div>
-        </div>
-      </div>
-      </>
-  );
-};
-
-// ─── LegalDocSpecModal (drawer) ─────────────────────────────────────────────
-const LegalDocSpecModal = ({ doc, onClose, onCreate }) => {
-  if (!doc) return null;
-  const colors = LEGAL_DOC_COLORS[doc.id] || { accent: "#3498DB", bg: "#1E3A5F" };
-  const spec = doc.spec || {};
-
-  return (
-    <>
-      <div onClick={onClose} style={{
-        position: "fixed", inset: 0, zIndex: 999, background: "rgba(9,9,20,0.5)",
-        animation: "modalFadeIn 0.2s ease",
-      }} />
-      <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 1000,
-        width: "100%", maxWidth: DRW,
-        background: "var(--surface)", borderLeft: "1px solid var(--border)",
-        boxShadow: "-8px 0 48px rgba(0,0,0,0.3)",
-        display: "flex", flexDirection: "column",
-        animation: "drawerIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-      }}>
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {/* Header */}
-          <div style={{
-            padding: "22px 26px",
-            background: `linear-gradient(155deg, ${colors.bg} 0%, ${colors.bg}DD 100%)`,
-            position: "sticky", top: 0, zIndex: 1,
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 12,
-                  background: "rgba(255,255,255,0.12)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon name={doc.icon} className="w-6 h-6" style={{ color: "#fff" }} />
-                </div>
-                <div>
-                  <h2 className="font-display" style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 2, letterSpacing: "-0.3px" }}>
-                    {doc.name}
-                  </h2>
-                  <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 12 }}>{doc.description}</p>
-                </div>
-              </div>
-              <button onClick={onClose} aria-label="Fechar" style={{
-                minWidth: 44, minHeight: 44, padding: 10, borderRadius: 12,
-                background: "rgba(255,255,255,0.22)", border: "1.5px solid rgba(255,255,255,0.3)",
-                cursor: "pointer", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.15s ease",
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.35)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              >
-                <Icon name="X" className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Body */}
-          <div style={{ padding: "22px 26px" }}>
-            {spec.whenUse && (
-              <div style={{
-                padding: 16, background: "var(--surface-2)", borderRadius: 12,
-                marginBottom: 18, borderLeft: `4px solid ${colors.accent}`,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <Icon name="Lightbulb" className="w-4 h-4" style={{ color: colors.accent }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Quando usar</span>
-                </div>
-                <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>{spec.whenUse}</p>
-              </div>
-            )}
-            {doc.legislation && (
-              <div style={{
-                padding: "12px 16px", borderRadius: 10, marginBottom: 18,
-                display: "flex", alignItems: "center", gap: 10,
-                background: `${colors.accent}0D`, border: `1px solid ${colors.accent}1A`,
-              }}>
-                <Icon name="Scale" className="w-4 h-4" style={{ color: colors.accent, flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: "var(--text-dim)", fontWeight: 500 }}>{doc.legislation}</span>
-              </div>
-            )}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
-              {spec.parties && (
-                <div style={{ padding: 16, background: "var(--surface-2)", borderRadius: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <Icon name="Users" className="w-4 h-4" style={{ color: colors.accent }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Partes</span>
-                  </div>
-                  {spec.parties.map((p, i) => (<p key={i} style={{ fontSize: 12, color: "var(--text)", marginBottom: 4 }}>{p}</p>))}
-                </div>
-              )}
-              <div style={{ padding: 16, background: "var(--surface-2)", borderRadius: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                  <Icon name="Layers" className="w-4 h-4" style={{ color: colors.accent }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Variantes</span>
-                </div>
-                {doc.variants?.map((v) => (
-                  <div key={v.id} style={{ fontSize: 12, color: "var(--text)", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span>{v.icon}</span><span style={{ fontWeight: 500 }}>{v.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {spec.sections && (
-              <div style={{ marginBottom: 18 }}>
-                <h3 style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Seções</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {spec.sections.map((s, i) => (
-                    <span key={i} style={{ padding: "6px 14px", background: `${colors.accent}10`, color: colors.accent, borderRadius: 6, fontSize: 11, fontWeight: 600, border: `1px solid ${colors.accent}22` }}>{s}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {spec.requiredDocs && (
-              <div style={{ marginBottom: 18 }}>
-                <h3 style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Documentos necessários</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {spec.requiredDocs.map((d, i) => (
-                    <span key={i} style={{ padding: "6px 14px", background: "var(--surface-2)", color: "var(--text)", borderRadius: 6, fontSize: 11, fontWeight: 500, border: "1px solid var(--surface-3)", display: "flex", alignItems: "center", gap: 5 }}>
-                      <Icon name="FileCheck" className="w-3 h-3" style={{ color: "var(--success)" }} />{d}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {spec.commonIssues && (
-              <div style={{ padding: 16, borderRadius: 10, marginBottom: 18, background: "rgba(244,63,94,0.06)", border: "1px solid rgba(244,63,94,0.12)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                  <Icon name="AlertTriangle" className="w-4 h-4" style={{ color: "var(--coral)" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--coral)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pontos de atenção</span>
-                </div>
-                {spec.commonIssues.map((issue, i) => (
-                  <div key={i} style={{ fontSize: 12, color: "var(--text)", display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--coral)", flexShrink: 0 }} />{issue}
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-              <Button variant="secondary" onClick={onClose} style={{ flex: 1, minHeight: 48, fontSize: 14, fontWeight: 700 }}>Voltar</Button>
-              <Button variant="primary" onClick={() => { onCreate(doc); onClose(); }} icon="ArrowRight" style={{ flex: 1, minHeight: 48, fontSize: 14, fontWeight: 700, background: `linear-gradient(135deg, ${colors.bg}, ${colors.accent})` }}>Criar Documento</Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    </article>
   );
 };
 
 // ─── TemplatesPage ──────────────────────────────────────────────────────────
 const TemplatesPage = () => {
   const { navigate, goBack, setSelectedTemplate, setCurrentStep, setLegalStep, setDocumentType, setSelectedVariant } = useApp();
-  const [docType, setDocType] = useState(getInitialDocType);
+  const [initialEntry] = useState(getInitialTemplateEntry);
+  const [docType, setDocType] = useState(initialEntry.docType);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLegalCategory, setSelectedLegalCategory] = useState("all");
   const [specTemplate, setSpecTemplate] = useState(null);
   const [specLegalDoc, setSpecLegalDoc] = useState(null);
+
+  useEffect(() => {
+    sessionStorage.removeItem("kriou_template_category");
+  }, []);
 
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template);
@@ -541,6 +230,14 @@ const TemplatesPage = () => {
   };
 
   const handleBack = () => {
+    const action = resolveTemplateBackAction({
+      docType,
+      openedDirectly: initialEntry.openedDirectly,
+    });
+    if (action === "dashboard") {
+      goBack("dashboard");
+      return;
+    }
     setDocType(null);
     setSelectedCategory("all");
     setSelectedLegalCategory("all");
@@ -603,7 +300,7 @@ const TemplatesPage = () => {
         <span style={{
           display: "inline-block", padding: "6px 18px", borderRadius: 100,
           background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.18)",
-          fontSize: 11, fontWeight: 700, color: "var(--coral)",
+          fontSize: 12, fontWeight: 700, color: "var(--text-accent)",
           letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 18,
         }}>
           Criar novo documento
@@ -670,7 +367,7 @@ const TemplatesPage = () => {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <span style={{
                 padding: "5px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700,
-                background: "rgba(244,63,94,0.12)", color: "var(--coral)",
+                background: "rgba(244,63,94,0.12)", color: "var(--text-accent)",
               }}>
                 {RESUME_TEMPLATES.length} modelos
               </span>
@@ -742,7 +439,8 @@ const TemplatesPage = () => {
       <style>{`
         @media (max-width: 768px) {
           .tpl-resume-header { flex-direction: column !important; align-items: flex-start !important; }
-          .tpl-resume-pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+          .tpl-resume-pills { width: 100%; max-width: 100%; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+          .tpl-resume-pills > button { flex: 0 0 auto; }
           .tpl-resume-pills::-webkit-scrollbar { display: none; }
           .tpl-resume-grid { grid-template-columns: 1fr !important; }
           .tpl-resume-grid > div { grid-column: span 1 !important; }
@@ -763,7 +461,7 @@ const TemplatesPage = () => {
               }}>
                 <Icon name="User" className="w-4 h-4" style={{ color: "var(--coral)" }} />
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "var(--coral)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                 Currículos
               </span>
             </div>
@@ -826,7 +524,7 @@ const TemplatesPage = () => {
             onClick={() => navigate("dashboard", { replace: true })}
             style={{
               background: "none", border: "none",
-              color: "var(--coral)", fontWeight: 700, fontSize: 14,
+              color: "var(--text-accent)", fontWeight: 700, fontSize: 14,
               cursor: "pointer", textDecoration: "underline",
               minHeight: 44, padding: "4px 4px",
             }}
@@ -946,8 +644,8 @@ const TemplatesPage = () => {
                           </h3>
                           {doc.legislation && (
                             <span style={{
-                              fontSize: 10, padding: "3px 10px", borderRadius: 100,
-                              background: `${c.accent}10`, color: c.accent,
+                              fontSize: 12, padding: "3px 10px", borderRadius: 100,
+                              background: `${c.accent}10`, color: "var(--text-secondary)",
                               fontWeight: 700, border: `1px solid ${c.accent}20`,
                               letterSpacing: "0.02em",
                             }}>
@@ -961,7 +659,7 @@ const TemplatesPage = () => {
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                           {doc.variants?.map((v) => (
                             <span key={v.id} style={{
-                              fontSize: 11, padding: "3px 12px", borderRadius: 100,
+                              fontSize: 12, padding: "3px 12px", borderRadius: 100,
                               background: "var(--surface-2)", color: "var(--text-dim)",
                               fontWeight: 500, display: "flex", alignItems: "center", gap: 4,
                             }}>
@@ -969,8 +667,8 @@ const TemplatesPage = () => {
                             </span>
                           ))}
                           <span style={{
-                            fontSize: 11, padding: "3px 12px", borderRadius: 100,
-                            background: `${c.accent}0C`, color: c.accent, fontWeight: 700,
+                            fontSize: 12, padding: "3px 12px", borderRadius: 100,
+                            background: `${c.accent}0C`, color: "var(--text-secondary)", fontWeight: 700,
                           }}>
                             {doc.spec?.sections?.length || 0} seções
                           </span>
@@ -1006,7 +704,7 @@ const TemplatesPage = () => {
                           style={{
                             minHeight: 44, padding: "10px 22px", borderRadius: 10,
                             background: c.accent, border: "none",
-                            color: "#fff", fontSize: 13, fontWeight: 700,
+                            color: getContrastingTextColor(c.accent), fontSize: 14, fontWeight: 700,
                             cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
                             transition: "all 0.15s ease", outline: "none",
                           }}
@@ -1096,8 +794,8 @@ const TemplatesPage = () => {
                 gap: 6,
                 padding: "9px 16px",
                 borderRadius: 10,
-                background: "#25D366",
-                color: "#fff",
+                background: "var(--action-whatsapp)",
+                color: "var(--on-action)",
                 fontFamily: "var(--font-body)",
                 fontWeight: 700,
                 fontSize: 12,
@@ -1192,6 +890,7 @@ const TemplatesPage = () => {
       {specLegalDoc && (
         <LegalDocSpecModal
           doc={specLegalDoc}
+          colors={LEGAL_DOC_COLORS[specLegalDoc.id]}
           onClose={() => setSpecLegalDoc(null)}
           onCreate={handleLegalDocSelect}
         />
@@ -1202,14 +901,6 @@ const TemplatesPage = () => {
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes modalFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes drawerIn {
-          from { transform: translateX(100%); }
-          to   { transform: translateX(0); }
         }
       `}</style>
     </div>

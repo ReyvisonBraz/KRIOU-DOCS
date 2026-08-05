@@ -58,6 +58,24 @@ const icons = {
     </svg>
   ),
 
+  Scale: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 3v18" />
+      <path d="M3 7h18" />
+      <path d="M5 7l-3 9h6L5 7z" />
+      <path d="M19 7l-3 9h6l-3-9z" />
+      <path d="M7 21h10" />
+    </svg>
+  ),
+
   GraduationCap: (props) => (
     <svg
       {...props}
@@ -115,6 +133,22 @@ const icons = {
     >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
+
+  MoreHorizontal: (props) => (
+    <svg
+      {...props}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="5" cy="12" r="1" fill="currentColor" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+      <circle cx="19" cy="12" r="1" fill="currentColor" />
     </svg>
   ),
 

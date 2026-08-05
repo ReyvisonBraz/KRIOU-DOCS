@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authenticate, createAdminClient } from "../_shared/auth.ts";
+import {
+  authenticate,
+  createAdminClient,
+  getAdminAuthorization,
+  hasAal2,
+  hasAdminCapability,
+} from "../_shared/auth.ts";
 import { handlePreflight, json } from "../_shared/http.ts";
 
 const AUTHORIZATION_TTL_SECONDS = 60;
@@ -13,14 +19,6 @@ serve(async (req) => {
     const supabase = createAdminClient();
     const user = await authenticate(req, supabase);
     if (!user) return json({ error: "Não autorizado" }, 401);
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    if (profileError || !profile) return json({ error: "Perfil não encontrado" }, 403);
-    const hasUnlimitedAccess = profile.role === "admin";
 
     const { documentId } = await req.json();
     if (!documentId || typeof documentId !== "string") {
@@ -38,14 +36,35 @@ serve(async (req) => {
       return json({ error: "Documento não encontrado" }, 404);
     }
 
-    if (!hasUnlimitedAccess && (document.status !== "finalizado" || document.payment_status !== "approved" || !document.payment_id)) {
-      return json({ error: "PDF liberado somente após pagamento aprovado" }, 409);
+    const paidAccess = document.status === "finalizado" &&
+      document.payment_status === "approved" && Boolean(document.payment_id);
+
+    let accessMode = "paid_document";
+    if (!paidAccess) {
+      const authorization = await getAdminAuthorization(supabase, user.id);
+      const canUseException = hasAdminCapability(
+        authorization,
+        "documents.download.exceptional",
+      );
+
+      if (!canUseException) {
+        return json({ error: "PDF liberado somente após pagamento aprovado" }, 409);
+      }
+
+      if (!(await hasAal2(req, supabase))) {
+        return json({
+          error: "Confirmação em duas etapas necessária",
+          code: "mfa_required",
+        }, 403);
+      }
+
+      accessMode = "admin_exceptional";
     }
 
     return json({
       authorized: true,
       documentId: document.id,
-      accessMode: hasUnlimitedAccess ? "admin_unlimited" : "paid_document",
+      accessMode,
       expiresAt: new Date(Date.now() + AUTHORIZATION_TTL_SECONDS * 1000).toISOString(),
     });
   } catch (error) {

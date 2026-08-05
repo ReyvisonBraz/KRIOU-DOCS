@@ -6,7 +6,8 @@
  * Cores: Navy (#090914), Coral (#F43F5E), Gold (#D4AF37), Teal (#14B8A6)
  * Tipografia: Outfit (display) + Plus Jakarta Sans (body)
  *
- * Componentes: Navbar, GlassPanel, AppNavbar, AppStepper, BottomNavigation
+ * Componentes: AppShell, PageContainer, Navbar, GlassPanel, AppNavbar,
+ * AppStepper, BottomNavigation
  *
  * @module components/ui/layout
  */
@@ -15,11 +16,56 @@ import React from "react";
 import { Icon } from "../Icons";
 
 /* ───────────────────────────────────────────
+   AppShell e PageContainer — contratos de página
+   ─────────────────────────────────────────── */
+export const AppShell = ({ children, className = "", style = {}, ...props }) => (
+  <div
+    className={className}
+    style={{
+      minHeight: "100dvh",
+      background: "var(--page-bg)",
+      color: "var(--text)",
+      display: "flex",
+      flexDirection: "column",
+      ...style,
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
+export const PageContainer = ({
+  as: Element = "main",
+  children,
+  className = "",
+  maxWidth = "var(--layout-content-max)",
+  style = {},
+  ...props
+}) => React.createElement(
+  Element,
+  {
+    className,
+    style: {
+      flex: 1,
+      width: "100%",
+      maxWidth,
+      marginInline: "auto",
+      padding: "var(--layout-page-top) var(--layout-page-gutter) var(--layout-page-bottom)",
+      boxSizing: "border-box",
+      ...style,
+    },
+    ...props,
+  },
+  children,
+);
+
+/* ───────────────────────────────────────────
    Navbar — Barra de navegação base
    ─────────────────────────────────────────── */
 export const Navbar = ({ children, className = "", style = {}, ...props }) => (
   <nav
-    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04] ${className}`}
+    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)] ${className}`}
     style={style}
     {...props}
   >
@@ -32,7 +78,7 @@ export const Navbar = ({ children, className = "", style = {}, ...props }) => (
    ─────────────────────────────────────────── */
 export const GlassPanel = ({ children, className = "", style = {}, ...props }) => (
   <div
-    className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.18)] ${className}`}
+    className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-card)] ${className}`}
     style={{ padding: 24, ...style }}
     {...props}
   >
@@ -49,9 +95,17 @@ export const GlassPanel = ({ children, className = "", style = {}, ...props }) =
    @param {ReactNode} children     - Conteúdo extra abaixo (ex: stepper)
    @param {object}    style        - Estilo inline extra no container
    ─────────────────────────────────────────── */
-export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
-  <div
-    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04]"
+export const AppNavbar = ({
+  title,
+  leftAction,
+  rightAction,
+  children,
+  className = "",
+  maxWidth = "var(--layout-reading-max)",
+  style,
+}) => (
+  <header
+    className={`sticky top-0 z-[100] backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)] ${className}`}
     style={style}
   >
     {/* Linha principal: ação esquerda | título | ação direita */}
@@ -61,7 +115,7 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
         alignItems: "center",
         justifyContent: "space-between",
         padding: "10px 12px 10px 12px",
-        maxWidth: 600,
+        maxWidth,
         margin: "0 auto",
         gap: 12,
         minHeight: 52,
@@ -85,7 +139,7 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
         style={{
           fontFamily: "var(--font-display)",
           fontWeight: 700,
-          fontSize: "0.9375rem",
+          fontSize: "var(--font-size-body)",
           letterSpacing: "-0.01em",
           color: "var(--text)",
           textAlign: "center",
@@ -114,11 +168,11 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
 
     {/* Conteúdo extra (ex: stepper de etapas) */}
     {children && (
-      <div style={{ padding: "0 16px 10px", maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ padding: "0 16px 10px", maxWidth, margin: "0 auto" }}>
         {children}
       </div>
     )}
-  </div>
+  </header>
 );
 
 /* ───────────────────────────────────────────
@@ -171,7 +225,7 @@ export const AppStepper = ({
             background: isActive
               ? "rgba(244,63,94,0.10)"
               : isReached
-                ? "rgba(255,255,255,0.02)"
+                ? "var(--soft-fill)"
                 : "transparent",
             transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
             minWidth: 44,
@@ -196,8 +250,8 @@ export const AppStepper = ({
                 ? "var(--coral)"
                 : isCompleted
                   ? "var(--success)"
-                  : "rgba(255,255,255,0.06)",
-              color: isActive || isCompleted ? "#fff" : "var(--text-muted)",
+                  : "var(--soft-fill-hover)",
+              color: isActive || isCompleted ? "var(--on-action)" : "var(--text-muted)",
               boxShadow: isActive
                 ? "0 0 18px rgba(244,63,94,0.35)"
                 : isCompleted
@@ -216,7 +270,7 @@ export const AppStepper = ({
           {/* Label da etapa */}
           <span
             style={{
-              fontSize: "0.6875rem",
+              fontSize: "var(--font-size-caption)",
               fontWeight: isActive ? 600 : 500,
               fontFamily: "var(--font-body)",
               letterSpacing: "-0.005em",
@@ -283,7 +337,7 @@ export const BottomNavigation = ({
     borderRadius: 14,
     fontFamily: "var(--font-body)",
     fontWeight: 600,
-    fontSize: "0.8125rem",
+    fontSize: "var(--font-size-small)",
     letterSpacing: "-0.01em",
     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
   };
@@ -298,10 +352,9 @@ export const BottomNavigation = ({
         zIndex: 50,
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        background: "rgba(9,9,20,0.94)",
-        borderTop: "1px solid rgba(212,175,55,0.08)",
-        boxShadow:
-          "0 -8px 40px rgba(0,0,0,0.5), 0 -1px 0 rgba(212,175,55,0.04)",
+        background: "var(--page-overlay)",
+        borderTop: "1px solid var(--border-default)",
+        boxShadow: "0 -10px 32px rgba(15,23,42,0.10)",
         padding: "10px 16px calc(10px + env(safe-area-inset-bottom, 0px))",
         ...style,
       }}
@@ -310,7 +363,7 @@ export const BottomNavigation = ({
         @media (max-width: 480px) {
           .bottom-nav-back, .bottom-nav-save { padding: 10px 12px !important; }
           .bottom-nav-save span { display: none !important; }
-          .bottom-nav-next { padding: 12px 16px !important; font-size: 0.875rem !important; }
+          .bottom-nav-next { padding: 12px 16px !important; font-size: 1rem !important; }
         }
         @media (max-width: 360px) {
           .bottom-nav-back span { display: none !important; }
@@ -343,7 +396,7 @@ export const BottomNavigation = ({
               border: `1.5px solid ${
                 hovered === "back"
                   ? "rgba(212,175,55,0.40)"
-                  : "rgba(255,255,255,0.10)"
+                  : "var(--border-default)"
               }`,
               background:
                 hovered === "back"
@@ -421,17 +474,14 @@ export const BottomNavigation = ({
             border: "none",
             fontFamily: "var(--font-body)",
             fontWeight: 700,
-            fontSize: "0.9375rem",
+            fontSize: "var(--font-size-body)",
             letterSpacing: "-0.005em",
-            background:
-              hovered === "next"
-                ? "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)"
-                : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
-            color: "#fff",
+            background: hovered === "next" ? "var(--action-accent-hover)" : "var(--action-accent)",
+            color: "var(--on-action)",
             boxShadow:
               hovered === "next"
-                ? "0 8px 32px rgba(244,63,94,0.45)"
-                : "0 4px 16px rgba(244,63,94,0.30)",
+                ? "0 8px 24px rgba(201,54,89,0.24)"
+                : "0 4px 14px rgba(201,54,89,0.18)",
             transform: hovered === "next" ? "scale(1.01)" : "scale(1)",
           }}
         >

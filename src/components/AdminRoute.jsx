@@ -1,22 +1,25 @@
 import React, { useEffect } from "react";
 import { useApp } from "../context/AppContext";
-import { Spinner } from "./UI";
+import { Spinner } from "./UI/primitives";
+import AdminMfaGate from "./AdminMfaGate";
 
 const AdminRoute = ({ children }) => {
-  const { profile, isLoading, navigate } = useApp();
+  const { profile, isLoading, isAuthLoading, userId, navigate } = useApp();
 
   const isAdmin = profile?.role === "admin";
+  const isResolvingAccess = isLoading || isAuthLoading;
 
   useEffect(() => {
-    // O perfil e carregado de forma assíncrona no bootstrap. Redirecionar
-    // enquanto `isLoading` ainda é true expulsava administradores legítimos
-    // de /admin antes de a role chegar do Supabase.
-    if (!isLoading && !isAdmin) {
+    if (isResolvingAccess) return;
+
+    if (!userId) {
+      navigate("landing", { replace: true });
+    } else if (!isAdmin) {
       navigate("dashboard", { replace: true });
     }
-  }, [isAdmin, isLoading, navigate]);
+  }, [isAdmin, isResolvingAccess, navigate, userId]);
 
-  if (isLoading) {
+  if (isResolvingAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-navy">
         <Spinner size={36} />
@@ -24,11 +27,15 @@ const AdminRoute = ({ children }) => {
     );
   }
 
-  if (!isAdmin) {
+  if (!userId || !isAdmin) {
     return null;
   }
 
-  return children;
+  return (
+    <AdminMfaGate onOpenProfile={() => navigate("profile")}>
+      {children}
+    </AdminMfaGate>
+  );
 };
 
 export default AdminRoute;

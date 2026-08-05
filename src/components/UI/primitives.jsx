@@ -30,7 +30,7 @@ const injetaEstilos = () => {
     // Keyframes do spinner
     "@keyframes kriou-spin{to{transform:rotate(360deg)}}",
     // Anel de foco via teclado — aplicado em elementos interativos
-    ".kf:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(244,63,94,.38)}",
+    ".kf:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}",
   ].join("");
   document.head.appendChild(el);
   estilosInjetados = true;
@@ -55,50 +55,55 @@ export const Button = ({
   icon,
   iconPosition = "left",
   disabled = false,
+  loading = false,
+  loadingLabel = "Carregando",
+  type = "button",
   onClick,
   className = "",
   style = {},
   onMouseEnter: userMouseEnter,
   onMouseLeave: userMouseLeave,
+  "aria-label": ariaLabel,
   ...props
 }) => {
   injetaEstilos();
   const [hover, setHover] = useState(false);
+  const inactive = disabled || loading;
 
   // Mapa de estilos base por variante
   const mapaVariante = {
     primary: {
-      background: hover && !disabled ? "#e63950" : "var(--coral)",
-      color: "#fff",
+      background: hover && !inactive ? "var(--action-accent-hover)" : "var(--action-accent)",
+      color: "var(--on-action)",
       fontWeight: 700,
-      boxShadow: hover && !disabled
-        ? "0 6px 24px rgba(244,63,94,0.42)"
-        : "0 4px 16px rgba(244,63,94,0.32)",
-      transform: hover && !disabled ? "translateY(-1px)" : "translateY(0)",
+      boxShadow: hover && !inactive
+        ? "0 8px 24px rgba(201,54,89,0.24)"
+        : "0 4px 14px rgba(201,54,89,0.18)",
+      transform: hover && !inactive ? "translateY(-1px)" : "translateY(0)",
     },
     secondary: {
-      background: hover && !disabled ? "var(--surface-3)" : "var(--surface-2)",
-      color: hover && !disabled ? "var(--text)" : "var(--text-dim)",
+      background: hover && !inactive ? "var(--surface-3)" : "var(--surface-2)",
+      color: hover && !inactive ? "var(--text)" : "var(--text-dim)",
       border: `1px solid ${
-        hover && !disabled ? "var(--text-muted)" : "var(--border)"
+        hover && !inactive ? "var(--text-muted)" : "var(--control-border)"
       }`,
     },
     ghost: {
-      background: hover && !disabled ? "var(--surface-2)" : "transparent",
-      color: hover && !disabled ? "var(--text)" : "var(--text-muted)",
+      background: hover && !inactive ? "var(--surface-2)" : "transparent",
+      color: hover && !inactive ? "var(--text)" : "var(--text-muted)",
     },
     danger: {
       background: "var(--danger)",
-      color: "#fff",
+      color: "var(--on-action)",
       fontWeight: 700,
-      filter: hover && !disabled ? "brightness(1.12)" : "none",
+      filter: hover && !inactive ? "brightness(1.12)" : "none",
     },
   };
 
   // Mapa de estilos por tamanho
   const mapaTamanho = {
-    small:  { padding: "8px 18px", fontSize: 13, minHeight: TOQUE },
-    medium: { padding: "12px 28px", fontSize: 15, minHeight: 48 },
+    small:  { padding: "8px 18px", fontSize: 14, minHeight: TOQUE },
+    medium: { padding: "12px 28px", fontSize: 16, minHeight: 48 },
   };
 
   const sv = mapaVariante[variant] || mapaVariante.primary;
@@ -106,8 +111,11 @@ export const Button = ({
 
   return (
     <button
+      type={type}
       className={["kf", className].filter(Boolean).join(" ")}
-      disabled={disabled}
+      disabled={inactive}
+      aria-busy={loading || undefined}
+      aria-label={loading ? loadingLabel : ariaLabel}
       onClick={onClick}
       onMouseEnter={(e) => { setHover(true); userMouseEnter?.(e); }}
       onMouseLeave={(e) => { setHover(false); userMouseLeave?.(e); }}
@@ -117,36 +125,146 @@ export const Button = ({
         justifyContent: "center",
         gap: 10,
         borderRadius: size === "small" ? RAD_SM : RAD,
-        cursor: disabled ? "not-allowed" : "pointer",
+        cursor: loading ? "wait" : disabled ? "not-allowed" : "pointer",
         fontFamily: "var(--font-body)",
         letterSpacing: "0.01em",
-        opacity: disabled ? 0.42 : 1,
+        opacity: inactive ? 0.62 : 1,
         transition: EASE,
         outline: "none",
         border: "none",
         minWidth: TOQUE,
-        pointerEvents: disabled ? "none" : "auto",
         ...sv,
         ...st,
         ...style,
       }}
       {...props}
     >
-      {icon && iconPosition === "left"  && <Icon name={icon} className="w-4 h-4" />}
+      {loading && (
+        <span
+          aria-hidden="true"
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: "50%",
+            border: "2px solid currentColor",
+            borderRightColor: "transparent",
+            animation: "kriou-spin 0.7s linear infinite",
+            flexShrink: 0,
+          }}
+        />
+      )}
+      {!loading && icon && iconPosition === "left"  && <Icon name={icon} className="w-4 h-4" aria-hidden="true" />}
       {children}
-      {icon && iconPosition === "right" && <Icon name={icon} className="w-4 h-4" />}
+      {!loading && icon && iconPosition === "right" && <Icon name={icon} className="w-4 h-4" aria-hidden="true" />}
     </button>
   );
 };
+
+// ============================================================
+// ICON BUTTON
+// ============================================================
+export const IconButton = React.forwardRef(({
+  icon,
+  label,
+  variant = "ghost",
+  size = "medium",
+  disabled = false,
+  className = "",
+  style = {},
+  onMouseEnter: userMouseEnter,
+  onMouseLeave: userMouseLeave,
+  title,
+  type = "button",
+  ...props
+}, ref) => {
+  injetaEstilos();
+  const [hover, setHover] = useState(false);
+  const accessibleLabel = label || props["aria-label"];
+  const dimension = size === "large" ? 48 : TOQUE;
+
+  const variants = {
+    ghost: {
+      background: hover && !disabled ? "var(--surface-2)" : "transparent",
+      color: hover && !disabled ? "var(--text)" : "var(--text-muted)",
+      border: "1px solid transparent",
+    },
+    secondary: {
+      background: hover && !disabled ? "var(--surface-3)" : "var(--surface-2)",
+      color: hover && !disabled ? "var(--text)" : "var(--text-dim)",
+      border: `1px solid ${hover && !disabled ? "var(--border-hover)" : "var(--control-border)"}`,
+    },
+    accent: {
+      background: hover && !disabled ? "var(--action-accent-hover)" : "var(--action-accent)",
+      color: "var(--on-action)",
+      border: "1px solid transparent",
+    },
+    danger: {
+      background: hover && !disabled ? "var(--danger-soft)" : "transparent",
+      color: "var(--danger)",
+      border: "1px solid transparent",
+    },
+  };
+
+  return (
+    <button
+      ref={ref}
+      {...props}
+      type={type}
+      aria-label={accessibleLabel}
+      title={title || label}
+      disabled={disabled}
+      className={["kf", className].filter(Boolean).join(" ")}
+      onMouseEnter={(event) => {
+        setHover(true);
+        userMouseEnter?.(event);
+      }}
+      onMouseLeave={(event) => {
+        setHover(false);
+        userMouseLeave?.(event);
+      }}
+      style={{
+        width: dimension,
+        height: dimension,
+        minWidth: dimension,
+        minHeight: dimension,
+        padding: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        borderRadius: "var(--radius-control)",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.42 : 1,
+        transition: EASE,
+        outline: "none",
+        ...(variants[variant] || variants.ghost),
+        ...style,
+      }}
+    >
+      <Icon
+        name={icon}
+        aria-hidden="true"
+        focusable="false"
+        style={{ width: size === "large" ? 22 : 20, height: size === "large" ? 22 : 20 }}
+      />
+    </button>
+  );
+});
+
+IconButton.displayName = "IconButton";
 
 // ============================================================
 // CARD
 // ============================================================
 export const Card = ({
   children,
+  variant = "default",
+  padding = "none",
+  disabled = false,
   className = "",
   style = {},
   onClick,
+  onKeyDown: userKeyDown,
   onMouseEnter,
   onMouseLeave,
   ...props
@@ -154,10 +272,19 @@ export const Card = ({
   injetaEstilos();
   const [hover, setHover] = useState(false);
   const interativo = typeof onClick === "function";
+  const canInteract = interativo && !disabled;
+  const variants = {
+    default: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" },
+    flat: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "none" },
+    subtle: { background: "var(--surface-2)", border: "1px solid var(--border)", boxShadow: "none" },
+    elevated: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-elevated)" },
+  };
+  const paddings = { none: 0, small: 12, medium: 20, large: 28 };
+  const visual = variants[variant] || variants.default;
 
   // handlers compostos — preservam callbacks do usuário
   const handleMouseEnter = (e) => {
-    setHover(true);
+    setHover(canInteract);
     onMouseEnter?.(e);
   };
   const handleMouseLeave = (e) => {
@@ -165,7 +292,9 @@ export const Card = ({
     onMouseLeave?.(e);
   };
   const handleKeyDown = (e) => {
-    if ((e.key === "Enter" || e.key === " ") && interativo) {
+    userKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    if ((e.key === "Enter" || e.key === " ") && canInteract) {
       e.preventDefault();
       onClick(e);
     }
@@ -173,24 +302,26 @@ export const Card = ({
 
   return (
     <div
-      className={[interativo ? "kf" : "", className].filter(Boolean).join(" ")}
-      onClick={onClick}
+      className={[canInteract ? "kf" : "", className].filter(Boolean).join(" ")}
+      onClick={canInteract ? onClick : undefined}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       role={interativo ? "button" : undefined}
       tabIndex={interativo ? 0 : undefined}
+      aria-disabled={interativo && disabled ? true : undefined}
       onKeyDown={interativo ? handleKeyDown : undefined}
       style={{
-        background: hover && interativo ? "var(--surface-2)" : "var(--surface)",
-        border: `1px solid ${
-          hover && interativo ? "var(--border-hover)" : "var(--border)"
-        }`,
+        ...visual,
+        background: hover && canInteract ? "var(--surface-2)" : visual.background,
+        border: hover && canInteract ? "1px solid var(--border-hover)" : visual.border,
         borderRadius: RAD_LG,
-        cursor: interativo ? "pointer" : "default",
+        padding: paddings[padding] ?? paddings.none,
+        cursor: disabled ? "not-allowed" : interativo ? "pointer" : "default",
+        opacity: disabled ? 0.62 : 1,
         transition: EASE,
-        boxShadow: hover && interativo
-          ? "0 6px 28px rgba(0,0,0,0.28)"
-          : "none",
+        boxShadow: hover && canInteract
+          ? "var(--shadow-elevated)"
+          : visual.boxShadow,
         ...style,
       }}
       {...props}
@@ -212,12 +343,17 @@ export const Badge = ({
 }) => {
   injetaEstilos();
 
-  // Mapa de cores por variante — fundo translúcido + cor do texto
+  // Variantes semânticas; aliases antigos preservam compatibilidade durante a migração.
   const mapaBadge = {
-    coral:   { background: "rgba(244,63,94,0.14)",  color: "var(--coral)" },
-    teal:    { background: "rgba(20,184,166,0.14)",  color: "var(--teal)" },
-    gold:    { background: "rgba(212,175,55,0.14)",  color: "var(--gold)" },
-    default: { background: "var(--surface-3)",         color: "var(--text-muted)" },
+    accent:  { background: "var(--coral-light)", color: "var(--text-accent)" },
+    info:    { background: "var(--status-info-soft)", color: "var(--status-info)" },
+    success: { background: "var(--status-success-soft)", color: "var(--status-success)" },
+    warning: { background: "var(--status-warning-soft)", color: "var(--status-warning)" },
+    danger:  { background: "var(--status-danger-soft)", color: "var(--status-danger)" },
+    coral:   { background: "var(--coral-light)", color: "var(--text-accent)" },
+    teal:    { background: "var(--status-success-soft)", color: "var(--status-success)" },
+    gold:    { background: "var(--status-warning-soft)", color: "var(--gold)" },
+    default: { background: "var(--surface-3)", color: "var(--text-dim)" },
   };
 
   const s = mapaBadge[variant] || mapaBadge.default;
@@ -228,7 +364,7 @@ export const Badge = ({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 700,
         padding: "4px 12px",
         borderRadius: "100px",
@@ -236,6 +372,7 @@ export const Badge = ({
         letterSpacing: "0.03em",
         textTransform: "uppercase",
         lineHeight: 1.4,
+        border: "1px solid color-mix(in srgb, currentColor 18%, transparent)",
         ...s,
         ...style,
       }}
@@ -273,11 +410,11 @@ export const Tag = ({
         background: hover ? "var(--surface-3)" : "var(--surface-2)",
         color: "var(--text-dim)",
         border: `1px solid ${
-          hover ? "var(--border-hover)" : "var(--border)"
+          hover ? "var(--border-hover)" : "var(--control-border)"
         }`,
         borderRadius: "100px",
         padding: "6px 14px",
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 500,
         fontFamily: "var(--font-body)",
         transition: EASE,

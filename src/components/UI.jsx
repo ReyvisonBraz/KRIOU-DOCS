@@ -12,6 +12,7 @@
 
 export {
   Button,
+  IconButton,
   Card,
   Badge,
   Tag,
@@ -22,9 +23,12 @@ export {
   Input,
   Textarea,
   Select,
+  Checkbox,
 } from "./UI/form";
 
 export {
+  AppShell,
+  PageContainer,
   Navbar,
   GlassPanel,
   AppNavbar,
@@ -33,6 +37,7 @@ export {
 } from "./UI/layout";
 
 export {
+  Alert,
   EmptyState,
   ErrorMessage,
   SaveIndicator,
@@ -43,6 +48,11 @@ export {
   SkeletonPage,
   ConfirmDialog,
 } from "./UI/feedback";
+
+export { MetricCard } from "./UI/metrics";
+export { AppToaster } from "./UI/AppToaster";
+export { DataTable } from "./UI/data";
+export { Drawer, Modal } from "./UI/overlays";
 
 export {
   HelpTooltip,

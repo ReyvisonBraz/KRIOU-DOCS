@@ -11,8 +11,9 @@
  * @module components/ui/document
  */
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { Badge } from "./primitives";
+import DocumentActionsMenu from "./DocumentActionsMenu";
 import { Icon } from "../Icons";
 import { extractPersonData } from "../../utils/documentCode";
 import {
@@ -101,6 +102,7 @@ export const DocumentCard = ({
   animationDelay = 0,
 }) => {
   const [hover, setHover] = useState(false);
+  const titleId = useId();
 
   if (!doc) return null;
 
@@ -126,25 +128,18 @@ export const DocumentCard = ({
     unpaid: "Não pago",
   }[accessStatus];
   const person = extractPersonData(doc);
+  const accessibleTitle = person.nome || doc.title || typeLabel || "documento";
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <article
+      aria-labelledby={titleId}
       className="kf animate-fadeUp break-inside-avoid"
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
         position: "relative",
         cursor: "pointer",
-        background: hover ? "#14142B" : "var(--surface)",
+        background: hover ? "var(--surface-subtle)" : "var(--surface)",
         border: `1px solid ${isPaid ? "rgba(20,184,166,0.55)" : hover ? "var(--border-hover)" : "var(--border)"}`,
         borderRadius: RAD_LG,
         overflow: "hidden",
@@ -154,22 +149,38 @@ export const DocumentCard = ({
           : "0 1px 3px rgba(0,0,0,0.2)",
         transform: hover ? "translateY(-2px)" : "translateY(0)",
         animationDelay: `${animationDelay}s`,
-        outline: "none",
       }}
     >
+      <button
+        type="button"
+        aria-label={`Abrir ${accessibleTitle}`}
+        className="document-card-primary"
+        onClick={onClick}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          border: 0,
+          borderRadius: RAD_LG,
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      />
       {isPaid && (
-        <div style={{
+        <div style={{ position: "relative", zIndex: 0,
           padding: "7px 14px", background: "rgba(20,184,166,0.12)", color: "var(--teal)",
-          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Icon name="Check" className="w-3.5 h-3.5" /> Documento pago · edição liberada
         </div>
       )}
       {!isPaid && unlimitedAccess && (
-        <div style={{
+        <div style={{ position: "relative", zIndex: 0,
           padding: "7px 14px", background: "rgba(212,175,55,0.12)", color: "var(--gold)",
-          fontSize: 10, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
+          fontSize: 12, fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
           <Icon name="Shield" className="w-3.5 h-3.5" /> Conta admin · download ilimitado
@@ -178,6 +189,10 @@ export const DocumentCard = ({
       <style>{`
         .doc-action-bar {
           opacity: 1;
+        }
+        .document-card-primary:focus-visible {
+          outline: 3px solid var(--focus-ring);
+          outline-offset: -3px;
         }
         @media (hover: hover) and (pointer: fine) {
           .doc-action-bar {
@@ -218,8 +233,8 @@ export const DocumentCard = ({
           {doc.code ? (
             <span
               style={{
-                fontFamily: "'Plus Jakarta Sans', monospace",
-                fontSize: 11,
+                fontFamily: "'Plus Jakarta Sans Variable', monospace",
+                fontSize: 12,
                 fontWeight: 800,
                 letterSpacing: "0.06em",
                 color: "var(--text-dim)",
@@ -235,7 +250,7 @@ export const DocumentCard = ({
           ) : (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
@@ -248,40 +263,6 @@ export const DocumentCard = ({
           )}
         </div>
 
-        {/* Botão de excluir */}
-        <button
-          aria-label={`Excluir ${doc.title}`}
-          className="kf"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: TOQUE,
-            height: TOQUE,
-            borderRadius: RAD_SM,
-            border: "none",
-            background: "transparent",
-            color: "var(--text-faint)",
-            cursor: "pointer",
-            opacity: hover ? 1 : 0.55,
-            transition: EASE,
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--danger)";
-            e.currentTarget.style.background = "rgba(244,63,94,0.12)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--text-faint)";
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <Icon name="Trash2" className="w-4 h-4" />
-        </button>
       </div>
 
       {/* ── Corpo: nome / título ── */}
@@ -289,6 +270,7 @@ export const DocumentCard = ({
         {person.nome ? (
           <>
             <p
+              id={titleId}
               style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 800,
@@ -310,7 +292,7 @@ export const DocumentCard = ({
                   alignItems: "center",
                   gap: 8,
                   marginTop: 6,
-                  fontSize: 11,
+                  fontSize: 12,
                   color: "var(--text-muted)",
                 }}
               >
@@ -332,6 +314,7 @@ export const DocumentCard = ({
           </>
         ) : (
           <h3
+            id={titleId}
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
@@ -353,7 +336,7 @@ export const DocumentCard = ({
         {doc.template && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: 14,
               color: "var(--text-muted)",
               margin: "6px 0 0 0",
               whiteSpace: "nowrap",
@@ -375,10 +358,10 @@ export const DocumentCard = ({
             gap: 12,
           }}
         >
-          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>
+          <span style={{ fontSize: 12, color: "var(--text-faint)" }}>
             {doc.date}
           </span>
-          <Badge variant={statusVariant} style={{ fontSize: 10, padding: "4px 10px" }}>
+          <Badge variant={statusVariant} style={{ fontSize: 12, padding: "4px 10px" }}>
             {statusLabel}
           </Badge>
         </div>
@@ -394,7 +377,7 @@ export const DocumentCard = ({
             background: "rgba(212,175,55,0.10)",
             border: "1px solid rgba(212,175,55,0.20)",
             color: "var(--gold)",
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.04em",
@@ -408,6 +391,8 @@ export const DocumentCard = ({
         <div
           className="doc-action-bar"
           style={{
+            position: "relative",
+            zIndex: 2,
             display: "flex",
             gap: 5,
             flexWrap: "wrap",
@@ -418,33 +403,29 @@ export const DocumentCard = ({
           }}
         >
           <button
+            type="button"
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
               minHeight: TOQUE, padding: "0 12px", borderRadius: 9,
-              border: `1px solid ${accent}45`, background: `${accent}14`, color: accent,
+              border: `1px solid ${accent}45`, background: `${accent}14`, color: "var(--text-accent)",
               display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
-              fontSize: 11, fontWeight: 800, fontFamily: "var(--font-body)",
+              fontSize: 12, fontWeight: 800, fontFamily: "var(--font-body)",
             }}
             title="Editar o conteúdo deste documento"
           >
             <Icon name="Edit" className="w-4 h-4" /> Editar documento
           </button>
-          {onRename && (
-            <ActionBtn icon="Edit" label="Renomear" onClick={(e) => { e.stopPropagation(); onRename(doc); }} accent={accent} />
-          )}
-          {onDuplicate && (
-            <ActionBtn icon="Copy" label="Copiar" onClick={(e) => { e.stopPropagation(); onDuplicate(doc); }} accent={accent} />
-          )}
           {onDownload && hasDownloadAccess && (
-            <ActionBtn icon="Download" label="Baixar PDF" onClick={(e) => { e.stopPropagation(); onDownload(doc); }} accent={accent} />
+            <DirectActionButton icon="Download" label="Baixar PDF" onClick={() => onDownload(doc)} accent={accent} />
           )}
           {onPay && !hasDownloadAccess && accessStatus !== "draft" && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
               style={{
                 minHeight: TOQUE, padding: "0 12px", borderRadius: 9, border: "none",
-                background: "var(--coral)", color: "#fff", display: "inline-flex",
-                alignItems: "center", gap: 7, cursor: "pointer", fontSize: 11,
+                background: "var(--coral)", color: "var(--on-action)", display: "inline-flex",
+                alignItems: "center", gap: 7, cursor: "pointer", fontSize: 12,
                 fontWeight: 800, fontFamily: "var(--font-body)",
               }}
               title="Finalizar o pagamento e liberar o PDF"
@@ -452,55 +433,57 @@ export const DocumentCard = ({
               <Icon name="CreditCard" className="w-4 h-4" /> Pagar e liberar PDF
             </button>
           )}
-          {onPrint && hasDownloadAccess && (
-            <ActionBtn icon="Printer" label="Imprimir" onClick={(e) => { e.stopPropagation(); onPrint(doc); }} accent={accent} />
-          )}
-          {onArchive && (
-            <ActionBtn
-              icon={doc.archived ? "RefreshCw" : "Archive"}
-              label={doc.archived ? "Restaurar" : "Arquivar"}
-              onClick={(e) => { e.stopPropagation(); onArchive(doc); }}
-              accent={accent}
-            />
-          )}
-          <ActionBtn
-            icon="WhatsApp"
-            label="WhatsApp"
-            onClick={(e) => {
-              e.stopPropagation();
-              const text = encodeURIComponent(`*${doc.title || "Documento"}* - Kriou Docs\nCódigo: ${doc.code || ""}`);
-              window.open(`https://wa.me/?text=${text}`, "_blank");
-            }}
-            accent="#25D366"
+          <DocumentActionsMenu
+            documentTitle={accessibleTitle}
+            items={[
+              onRename && { icon: "Edit", label: "Renomear", onSelect: () => onRename(doc) },
+              onDuplicate && { icon: "Copy", label: "Criar uma cópia", onSelect: () => onDuplicate(doc) },
+              onPrint && hasDownloadAccess && { icon: "Printer", label: "Imprimir", onSelect: () => onPrint(doc) },
+              onArchive && {
+                icon: doc.archived ? "RefreshCw" : "Archive",
+                label: doc.archived ? "Restaurar" : "Arquivar",
+                onSelect: () => onArchive(doc),
+              },
+              {
+                icon: "WhatsApp",
+                label: "Compartilhar no WhatsApp",
+                onSelect: () => {
+                  const text = encodeURIComponent(`*${doc.title || "Documento"}* - Kriou Docs\nCódigo: ${doc.code || ""}`);
+                  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+                },
+              },
+              onDelete && { icon: "Trash2", label: "Excluir", onSelect: onDelete, danger: true },
+            ]}
           />
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
-const ActionBtn = ({ icon, label, onClick, accent }) => (
+const DirectActionButton = ({ icon, label, onClick, accent }) => (
   <button
+    type="button"
     onClick={onClick}
-    title={label}
-    aria-label={label}
     style={{
-      display: "flex",
+      display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      width: TOQUE,
-      height: TOQUE,
-      borderRadius: 8,
-      border: "none",
-      background: "transparent",
-      color: "var(--text-faint)",
+      gap: 7,
+      minHeight: TOQUE,
+      padding: "0 12px",
+      borderRadius: 9,
+      border: `1px solid ${accent}45`,
+      background: `${accent}14`,
+      color: "var(--text-accent)",
       cursor: "pointer",
       transition: EASE,
-      flexShrink: 0,
+      fontFamily: "var(--font-body)",
+      fontSize: 12,
+      fontWeight: 800,
     }}
-    onMouseEnter={(e) => { e.currentTarget.style.color = accent; e.currentTarget.style.background = `${accent}15`; }}
-    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.background = "transparent"; }}
   >
     <Icon name={icon} className="w-4 h-4" />
+    {label}
   </button>
 );

@@ -9,7 +9,7 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "./Icons";
-import { Button } from "./UI";
+import { Button, Input, Modal } from "./UI";
 
 const DOCUMENT_TYPES = [
   { id: "curriculo", label: "Currículo", icon: "FileText" },
@@ -84,44 +84,22 @@ export const DocConfigModal = () => {
   const PapeisDisponiveis = PARTES_PAPEL[currentDocument.tipo] || ["Parte"];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(0,0,0,0.8)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-        padding: 20,
-      }}
+    <Modal
+      open
+      title="Configurar novo documento"
+      eyebrow="Novo documento"
+      description={`ID: ${currentDocument.id || "Gerando…"}`}
+      dismissible={false}
+      width={620}
+      footer={(
+        <Button variant="primary" onClick={handleSave} icon="ArrowRight" iconPosition="right">
+          Continuar para o editor
+        </Button>
+      )}
     >
-      <div
-        style={{
-          background: "var(--surface)",
-          borderRadius: 16,
-          padding: 28,
-          maxWidth: 560,
-          width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
-        }}
-      >
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>
-            NOVO DOCUMENTO
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>
-            ID: {currentDocument.id || "GERANDO..."}
-          </div>
-        </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div>
-            <label
+          <fieldset style={{ margin: 0, padding: 0, border: 0 }}>
+            <legend
               style={{
                 fontSize: 12,
                 fontWeight: 600,
@@ -132,11 +110,13 @@ export const DocConfigModal = () => {
               }}
             >
               Tipo de Documento
-            </label>
+            </legend>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {DOCUMENT_TYPES.map((t) => (
                 <button
+                  type="button"
                   key={t.id}
+                  aria-pressed={currentDocument.tipo === t.id}
                   onClick={() => {
                     updateCurrentDocument("tipo", t.id);
                     updateCurrentDocument("partes", []);
@@ -146,7 +126,7 @@ export const DocConfigModal = () => {
                     borderRadius: 8,
                     border: "1px solid var(--border)",
                     background: currentDocument.tipo === t.id ? "var(--coral)" : "var(--surface-2)",
-                    color: currentDocument.tipo === t.id ? "white" : "var(--text)",
+                    color: currentDocument.tipo === t.id ? "var(--on-action)" : "var(--text)",
                     fontSize: 13,
                     cursor: "pointer",
                   }}
@@ -155,23 +135,11 @@ export const DocConfigModal = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <label
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "var(--text-muted)",
-                marginBottom: 6,
-                display: "block",
-                textTransform: "uppercase",
-              }}
-            >
-              Título do Documento *
-            </label>
-            <input
-              className="input-field"
+          <Input
+              label="Título do documento"
+              required
               placeholder={
                 currentDocument.tipo === "curriculo"
                   ? "Ex: Currículo - Desenvolvedor Backend"
@@ -182,14 +150,9 @@ export const DocConfigModal = () => {
                 updateCurrentDocument("titulo", e.target.value);
                 setErrors((prev) => ({ ...prev, titulo: null }));
               }}
-              style={errors.titulo ? { borderColor: "var(--coral)" } : {}}
+              error={errors.titulo}
+              containerStyle={{ marginBottom: 0 }}
             />
-            {errors.titulo && (
-              <div style={{ fontSize: 11, color: "var(--coral)", marginTop: 4 }}>
-                {errors.titulo}
-              </div>
-            )}
-          </div>
 
           <div>
             <div
@@ -200,17 +163,19 @@ export const DocConfigModal = () => {
                 marginBottom: 12,
               }}
             >
-              <label
+              <h3
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
                   color: "var(--text-muted)",
                   textTransform: "uppercase",
+                  margin: 0,
                 }}
               >
                 Partes Envolvidas *
-              </label>
+              </h3>
               <button
+                type="button"
                 onClick={handleAddParte}
                 style={{
                   background: "none",
@@ -265,6 +230,7 @@ export const DocConfigModal = () => {
                         {parte.papel}
                       </div>
                       <button
+                        type="button"
                         onClick={() => removeParte(parte.id)}
                         style={{
                           background: "none",
@@ -280,10 +246,11 @@ export const DocConfigModal = () => {
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
+                        <label htmlFor={`parte-${parte.id}-nome`} style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
                           Nome Completo
                         </label>
                         <input
+                          id={`parte-${parte.id}-nome`}
                           className="input-field"
                           placeholder="Nome da parte"
                           value={parte.nome}
@@ -291,10 +258,11 @@ export const DocConfigModal = () => {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
+                        <label htmlFor={`parte-${parte.id}-cpf`} style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
                           CPF
                         </label>
                         <input
+                          id={`parte-${parte.id}-cpf`}
                           className="input-field"
                           placeholder="000.000.000-00"
                           value={parte.cpf}
@@ -302,10 +270,11 @@ export const DocConfigModal = () => {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
+                        <label htmlFor={`parte-${parte.id}-rg`} style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
                           RG
                         </label>
                         <input
+                          id={`parte-${parte.id}-rg`}
                           className="input-field"
                           placeholder="00.000.000-0"
                           value={parte.rg}
@@ -313,10 +282,11 @@ export const DocConfigModal = () => {
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
+                        <label htmlFor={`parte-${parte.id}-endereco`} style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
                           Endereço
                         </label>
                         <input
+                          id={`parte-${parte.id}-endereco`}
                           className="input-field"
                           placeholder="Rua, número, bairro, cidade"
                           value={parte.endereco}
@@ -324,10 +294,11 @@ export const DocConfigModal = () => {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
+                        <label htmlFor={`parte-${parte.id}-telefone`} style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, display: "block" }}>
                           Telefone
                         </label>
                         <input
+                          id={`parte-${parte.id}-telefone`}
                           className="input-field"
                           placeholder="(00) 00000-0000"
                           value={parte.telefone}
@@ -341,21 +312,14 @@ export const DocConfigModal = () => {
             )}
 
             {errors.partes && (
-              <div style={{ fontSize: 11, color: "var(--coral)", marginTop: 8 }}>
+              <div role="alert" style={{ fontSize: 11, color: "var(--coral)", marginTop: 8 }}>
                 {errors.partes}
               </div>
             )}
           </div>
         </div>
 
-        <div style={{ marginTop: 28, display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Button variant="primary" onClick={handleSave}>
-            Continuar para o Editor
-            <Icon name="ArrowRight" className="w-4 h-4" style={{ marginLeft: 8 }} />
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

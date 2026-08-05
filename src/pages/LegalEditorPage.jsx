@@ -422,7 +422,7 @@ const LegalEditorPage = () => {
             minHeight: 34,
             padding: "4px 12px",
             borderRadius: 100,
-            border: "1px solid rgba(255,255,255,0.08)",
+            border: "1px solid var(--soft-border)",
             background: "transparent",
             color: "var(--text-faint)",
             fontSize: 11,
@@ -434,7 +434,7 @@ const LegalEditorPage = () => {
             transition: "all 0.15s ease",
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20,184,166,0.12)"; e.currentTarget.style.color = "var(--teal)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-faint)"; e.currentTarget.style.borderColor = "var(--soft-border)"; }}
         >
           <Icon name="Wand2" className="w-3.5 h-3.5" />
           <span className="le-step-label">Demo</span>
@@ -529,7 +529,7 @@ const LegalEditorPage = () => {
                     color: stepColor.accent, minHeight: 52,
                     transition: "all 0.2s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--soft-fill)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = stepColor.bg; }}
                 >
                   <Icon name="Plus" className="w-5 h-5" />
@@ -750,7 +750,7 @@ const LegalEditorPage = () => {
             role="switch"
             aria-checked={legalFormData._signatureAtRequestEnabled === "yes"}
             onClick={() => handleUpdateField("_signatureAtRequestEnabled", legalFormData._signatureAtRequestEnabled === "yes" ? "no" : "yes")}
-            style={{ border: "none", borderRadius: 999, padding: "10px 16px", minHeight: 42, cursor: "pointer", fontWeight: 700, fontSize: 13, background: legalFormData._signatureAtRequestEnabled === "yes" ? "var(--gold)" : "var(--surface-2)", color: legalFormData._signatureAtRequestEnabled === "yes" ? "#fff" : "var(--text-dim)", boxShadow: "inset 0 0 0 1px var(--border)" }}
+            style={{ border: "none", borderRadius: 999, padding: "10px 16px", minHeight: 42, cursor: "pointer", fontWeight: 700, fontSize: 13, background: legalFormData._signatureAtRequestEnabled === "yes" ? "var(--gold)" : "var(--surface-2)", color: legalFormData._signatureAtRequestEnabled === "yes" ? "var(--on-action)" : "var(--text-dim)", boxShadow: "inset 0 0 0 1px var(--border)" }}
           >
             {legalFormData._signatureAtRequestEnabled === "yes" ? "Ativada" : "Adicionar"}
           </button>
@@ -922,7 +922,7 @@ const LegalEditorPage = () => {
           <button
             onClick={handleFinalize}
             disabled={isFinalizing}
-            style={{ padding: "16px 36px", fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", borderRadius: 14, background: "var(--coral)", border: "none", color: "#fff", cursor: isFinalizing ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 10, minHeight: 52, transition: "all 0.2s ease", boxShadow: "0 2px 12px rgba(244,63,94,0.3)", opacity: isFinalizing ? 0.7 : 1 }}
+            style={{ padding: "16px 36px", fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", borderRadius: 14, background: "var(--action-accent)", border: "none", color: "var(--on-action)", cursor: isFinalizing ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 10, minHeight: 52, transition: "all 0.2s ease", boxShadow: "0 4px 14px rgba(201,54,89,0.18)", opacity: isFinalizing ? 0.7 : 1 }}
             onMouseEnter={(e) => { if (!isFinalizing) { e.currentTarget.style.background = "var(--coral-hover)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(244,63,94,0.45)"; }}}
             onMouseLeave={(e) => { if (!isFinalizing) { e.currentTarget.style.background = "var(--coral)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(244,63,94,0.3)"; }}}
           >

@@ -29,6 +29,11 @@ test.describe("Modelos de currículo responsivos", () => {
       await expect(useButton).toBeFocused();
       await specButton.focus();
       await expect(specButton).toBeFocused();
+      await specButton.press("Enter");
+
+      const detailsDrawer = page.getByRole("dialog", { name: "Executivo" });
+      await expect(detailsDrawer).toBeVisible();
+      await expect(page.getByRole("button", { name: "Fechar painel" })).toBeFocused();
 
       const structure = await page.evaluate(() => ({
         invalidNestedActions: document.querySelectorAll(
@@ -50,6 +55,10 @@ test.describe("Modelos de currículo responsivos", () => {
         }));
 
       expect(blockingViolations).toEqual([]);
+
+      await page.keyboard.press("Escape");
+      await expect(detailsDrawer).toBeHidden();
+      await expect(specButton).toBeFocused();
     });
   }
 });

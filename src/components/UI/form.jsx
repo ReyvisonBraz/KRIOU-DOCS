@@ -355,7 +355,7 @@ const FieldMessages = ({ description, descriptionId, error, errorId }) => (
 );
 
 /* ====================== Input ====================== */
-export const Input = ({
+export const Input = React.forwardRef(({
   label,
   error,
   icon,
@@ -373,7 +373,7 @@ export const Input = ({
   containerStyle,
   "aria-describedby": externalDescribedBy,
   ...props
-}) => {
+}, ref) => {
   ensureFormStyles();
 
   const generatedId = useId();
@@ -406,6 +406,7 @@ export const Input = ({
           </span>
         )}
         <input
+          ref={ref}
           id={inputId}
           type={type}
           className="kriou-input-el"
@@ -433,7 +434,9 @@ export const Input = ({
       />
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 /* ====================== Textarea ====================== */
 export const Textarea = ({

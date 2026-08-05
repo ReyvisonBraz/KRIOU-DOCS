@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "../Icons";
+import { useOverlayFocus } from "../../hooks/useOverlayFocus";
+import { IconButton } from "./primitives";
 
 // ── Design tokens ──
 const EASE = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -42,14 +45,6 @@ const LEVELS = {
 const MinusIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" />
-  </svg>
-);
-
-// ── Ícone de fechar ──
-const XIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
@@ -156,6 +151,19 @@ function getRequirementsByLevel(doc, level) {
 // ============================================================
 const RequirementsModal = ({ doc, variant, onClose }) => {
   const [selectedLevel, setSelectedLevel] = useState("essencial");
+  const panelRef = React.useRef(null);
+  const closeButtonRef = React.useRef(null);
+  const generatedId = React.useId().replace(/:/g, "");
+  const titleId = `requirements-title-${generatedId}`;
+  const descriptionId = `requirements-description-${generatedId}`;
+
+  useOverlayFocus({
+    open: Boolean(doc),
+    containerRef: panelRef,
+    initialFocusRef: closeButtonRef,
+    onClose,
+    inertRoot: true,
+  });
 
   if (!doc) return null;
 
@@ -164,10 +172,12 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
   const active = LEVELS[selectedLevel];
   const today = new Date().toLocaleDateString("pt-BR");
 
-  return (
+  return createPortal(
     <div
       className="print-overlay"
-      onClick={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose?.();
+      }}
       style={{
         position: "fixed",
         inset: 0,
@@ -570,7 +580,13 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
 
       {/* ── Modal card ── */}
       <div
+        ref={panelRef}
         className="print-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",
@@ -594,37 +610,19 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           }}
         >
           {/* Close button */}
-          <button
+          <IconButton
+            ref={closeButtonRef}
+            icon="X"
+            label="Fechar requisitos"
+            variant="secondary"
             onClick={onClose}
             className="kf print-hide"
-            aria-label="Fechar"
             style={{
               position: "absolute",
               top: 16,
               right: 16,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: TOQUE,
-              height: TOQUE,
-              borderRadius: RAD_SM,
-              border: "1px solid var(--border)",
-              background: "var(--surface-2)",
-              color: "var(--text-muted)",
-              cursor: "pointer",
-              transition: EASE,
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--surface-3)";
-              e.currentTarget.style.color = "var(--text)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--surface-2)";
-              e.currentTarget.style.color = "var(--text-muted)";
-            }}
-          >
-            <XIcon />
-          </button>
+          />
 
           {/* Doc info */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, paddingRight: 52 }}>
@@ -647,6 +645,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
             </div>
             <div style={{ minWidth: 0 }}>
               <h2
+                id={titleId}
                 className="print-doc-title"
                 style={{
                   fontFamily: "var(--font-display)",
@@ -662,6 +661,7 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
                 {doc.name || doc.title}
               </h2>
               <p
+                id={descriptionId}
                 className="print-subtitle"
                 style={{
                   fontSize: 13,
@@ -1245,7 +1245,8 @@ const RequirementsModal = ({ doc, variant, onClose }) => {
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

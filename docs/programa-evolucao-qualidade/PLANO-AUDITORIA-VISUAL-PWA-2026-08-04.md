@@ -298,7 +298,7 @@ sem busca e substituição espalhada por páginas.
 - [x] criar Table/DataList responsiva para desktop e mobile;
 - [x] substituir cards clicáveis com botões aninhados por semântica válida;
 - [x] reduzir a sobrecarga visual dos cards sem remover capacidades;
-- [ ] padronizar Modal/Drawer/Confirm com foco e teclado corretos;
+- [x] padronizar Modal/Drawer/Confirm com foco e teclado corretos;
 - [ ] criar AppShell, cabeçalho, navegação lateral e navegação móvel;
 - [ ] criar Skeleton e estados de erro com ação de recuperação;
 - [ ] evitar barrels que tragam código pesado para rotas públicas.
@@ -322,6 +322,19 @@ reutilizáveis; carregamento, vazio, erro com nova tentativa e estados dos
 documentos ficaram explícitos. O item Modal/Drawer/Confirm permanece aberto até
 que os modais legados de templates, requisitos e renomeação também sejam
 migrados.
+
+Conclusão em 05/08/2026: a fundação passou a oferecer `Modal` e `Drawer` em
+portal com fundo inerte, bloqueio de rolagem empilhável, foco inicial, ciclo de
+Tab, Escape, devolução do foco e região rolável acessível por teclado. O modal
+de renomeação do Dashboard usa formulário e bloqueio de envio duplicado; o
+configurador de documento usa uma variante obrigatória não dispensável; os
+drawers de currículo e documento jurídico saíram de `TemplatesPage` para um
+módulo próprio com seções reutilizáveis. `RequirementsModal`, por possuir uma
+árvore A4 exclusiva para impressão, preservou sua estrutura especializada, mas
+passou a usar o mesmo portal e controlador de foco. A matriz Playwright validou
+os fluxos de Templates e renomeação em desktop, tablet, Android e iPhone, com
+Axe sem violações graves. Como efeito estrutural, o chunk não comprimido de
+Templates caiu de aproximadamente 41,2 kB para 32,2 kB.
 
 Conclusão em 05/08/2026: `Card` ganhou variantes, espaçamento e interação de
 teclado composta; `MetricCard` passou a ser compartilhado pelo dashboard e pelo

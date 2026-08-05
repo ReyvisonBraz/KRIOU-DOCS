@@ -52,7 +52,7 @@ export {
 export { MetricCard } from "./UI/metrics";
 export { AppToaster } from "./UI/AppToaster";
 export { DataTable } from "./UI/data";
-export { Drawer } from "./UI/overlays";
+export { Drawer, Modal } from "./UI/overlays";
 
 export {
   HelpTooltip,

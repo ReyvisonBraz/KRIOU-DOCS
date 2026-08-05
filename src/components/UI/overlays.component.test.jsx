@@ -2,7 +2,51 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { Drawer } from "./overlays";
+import { Drawer, Modal } from "./overlays";
+
+describe("Modal", () => {
+  it("associa conteúdo e envia o formulário pelo rodapé", async () => {
+    const onSubmit = vi.fn((event) => event.preventDefault());
+    const inputRef = React.createRef();
+    render(
+      <Modal
+        open
+        title="Renomear arquivo"
+        description="Informe o novo nome."
+        initialFocusRef={inputRef}
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        footer={<button type="submit">Salvar nome</button>}
+      >
+        <input ref={inputRef} aria-label="Novo nome" />
+      </Modal>,
+    );
+
+    const modal = screen.getByRole("dialog", { name: "Renomear arquivo" });
+    expect(modal).toHaveAccessibleDescription("Informe o novo nome.");
+    expect(screen.getByLabelText("Conteúdo de Renomear arquivo")).toHaveAttribute("tabindex", "0");
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Novo nome" })).toHaveFocus());
+    fireEvent.click(screen.getByRole("button", { name: "Salvar nome" }));
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
+  it("fecha pelo backdrop quando permitido", () => {
+    const onClose = vi.fn();
+    render(<Modal open title="Ajuda" onClose={onClose}>Conteúdo</Modal>);
+
+    fireEvent.mouseDown(document.querySelector(".kriou-modal-backdrop"));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("permite etapas obrigatórias sem ação de fechamento", () => {
+    const onClose = vi.fn();
+    render(<Modal open dismissible={false} title="Etapa obrigatória" onClose={onClose}><button type="button">Continuar</button></Modal>);
+
+    expect(screen.queryByRole("button", { name: "Fechar modal" })).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
 
 describe("Drawer", () => {
   it("expõe título e descrição e recebe foco ao abrir", async () => {
@@ -14,6 +58,7 @@ describe("Drawer", () => {
 
     const drawer = screen.getByRole("dialog", { name: "Documentos de Ana" });
     expect(drawer).toHaveAccessibleDescription("ana@example.com");
+    expect(screen.getByLabelText("Conteúdo de Documentos de Ana")).toHaveAttribute("tabindex", "0");
     await waitFor(() => expect(screen.getByRole("button", { name: "Fechar painel" })).toHaveFocus());
   });
 

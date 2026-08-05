@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useRef, useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, IconButton, Input, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, MetricCard, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, IconButton, Input, Modal, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, MetricCard, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -35,6 +35,8 @@ const DashboardPage = () => {
   const [sortBy, setSortBy] = useState("recentes");
   const [renameDoc, setRenameDoc] = useState(null);
   const [renameTitle, setRenameTitle] = useState("");
+  const [renameBusy, setRenameBusy] = useState(false);
+  const renameInputRef = useRef(null);
   const { confirmState, requestConfirm, handleConfirm, handleCancel } = useConfirm();
   const { generatePDF } = usePDF();
 
@@ -298,6 +300,7 @@ const DashboardPage = () => {
     event?.preventDefault();
     const nextTitle = renameTitle.trim();
     if (!renameDoc || !nextTitle) return;
+    setRenameBusy(true);
 
     const updated = (userDocuments || []).map((d) =>
       d.id === renameDoc.id ? { ...d, title: nextTitle, updatedAt: new Date().toISOString() } : d
@@ -310,10 +313,11 @@ const DashboardPage = () => {
         await DocumentService.rename(renameDoc.id, userId, nextTitle);
       }
       showToast.success("Documento renomeado.");
-      closeRenameDialog();
     } catch (err) {
       console.error("[DashboardPage][ERRO] Falha ao renomear:", err.message);
       showToast.error("Renomeado localmente, mas não sincronizou com o servidor.");
+    } finally {
+      setRenameBusy(false);
       closeRenameDialog();
     }
   };
@@ -1115,72 +1119,35 @@ const DashboardPage = () => {
         )}
       </PageContainer>
 
-      {renameDoc && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Renomear documento"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 80,
-            background: "rgba(9,9,20,0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) closeRenameDialog();
-          }}
-        >
-          <form
-            onSubmit={handleRenameDocument}
-            className="surface-card animate-scale-in"
-            style={{
-              width: "100%",
-              maxWidth: 440,
-              padding: 24,
-              borderRadius: 18,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 18 }}>
-              <div>
-                <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 800, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-                  Documento
-                </p>
-                <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 900, color: "var(--text)" }}>
-                  Renomear arquivo
-                </h2>
-              </div>
-              <IconButton
-                icon="X"
-                label="Fechar"
-                onClick={closeRenameDialog}
-              />
-            </div>
-
-            <Input
-              label="Novo nome"
-              autoFocus
-              required
-              value={renameTitle}
-              onChange={(e) => setRenameTitle(e.target.value)}
-              containerStyle={{ marginBottom: 0 }}
-            />
-
-            <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
-              <button type="button" onClick={closeRenameDialog} className="btn-secondary" style={{ flex: 1 }}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={!renameTitle.trim()}>
-                Salvar nome
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <Modal
+        open={Boolean(renameDoc)}
+        title="Renomear arquivo"
+        eyebrow="Documento"
+        description="Escolha um nome claro para localizar este documento com facilidade."
+        onClose={closeRenameDialog}
+        onSubmit={handleRenameDocument}
+        busy={renameBusy}
+        initialFocusRef={renameInputRef}
+        width={440}
+        footer={(
+          <>
+            <Button variant="secondary" onClick={closeRenameDialog} disabled={renameBusy}>Cancelar</Button>
+            <Button type="submit" disabled={!renameTitle.trim()} loading={renameBusy} loadingLabel="Salvando nome">
+              Salvar nome
+            </Button>
+          </>
+        )}
+      >
+        <Input
+          ref={renameInputRef}
+          label="Novo nome"
+          required
+          disabled={renameBusy}
+          value={renameTitle}
+          onChange={(event) => setRenameTitle(event.target.value)}
+          containerStyle={{ marginBottom: 0 }}
+        />
+      </Modal>
 
       <ConfirmDialog
         {...confirmState}

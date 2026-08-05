@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, AppNavbar, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -399,15 +399,16 @@ const DashboardPage = () => {
   const logoTitle = (
     <span className="font-display text-2xl font-black tracking-tight">
       <span className="text-coral">Kriou</span>{" "}
-      <span className="text-white">Docs</span>
+      <span style={{ color: "var(--text)" }}>Docs</span>
     </span>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--navy)", display: "flex", flexDirection: "column" }}>
+    <AppShell>
 
       <AppNavbar
         title={logoTitle}
+        maxWidth="var(--layout-dashboard-max)"
         rightAction={
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <button
@@ -466,7 +467,7 @@ const DashboardPage = () => {
       {/* Global responsive style */}
       <style>{`.sm-dashboard-inline{display:inline!important}@media(max-width:639px){.sm-dashboard-inline{display:none!important}}`}</style>
 
-      <main style={{ flex: 1, width: "100%", maxWidth: 1024, margin: "0 auto", padding: "24px 16px calc(32px + env(safe-area-inset-bottom, 0px))" }}>
+      <PageContainer maxWidth="var(--layout-dashboard-max)">
 
         {/* ─── Welcome Section ─── */}
         <section style={{ marginBottom: 40 }}>
@@ -1132,7 +1133,7 @@ const DashboardPage = () => {
             )}
           </div>
         )}
-      </main>
+      </PageContainer>
 
       {renameDoc && (
         <div
@@ -1213,7 +1214,7 @@ const DashboardPage = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-    </div>
+    </AppShell>
   );
 };
 

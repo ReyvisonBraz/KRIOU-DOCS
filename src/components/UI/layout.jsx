@@ -6,13 +6,59 @@
  * Cores: Navy (#090914), Coral (#F43F5E), Gold (#D4AF37), Teal (#14B8A6)
  * Tipografia: Outfit (display) + Plus Jakarta Sans (body)
  *
- * Componentes: Navbar, GlassPanel, AppNavbar, AppStepper, BottomNavigation
+ * Componentes: AppShell, PageContainer, Navbar, GlassPanel, AppNavbar,
+ * AppStepper, BottomNavigation
  *
  * @module components/ui/layout
  */
 
 import React from "react";
 import { Icon } from "../Icons";
+
+/* ───────────────────────────────────────────
+   AppShell e PageContainer — contratos de página
+   ─────────────────────────────────────────── */
+export const AppShell = ({ children, className = "", style = {}, ...props }) => (
+  <div
+    className={className}
+    style={{
+      minHeight: "100dvh",
+      background: "var(--page-bg)",
+      color: "var(--text)",
+      display: "flex",
+      flexDirection: "column",
+      ...style,
+    }}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
+export const PageContainer = ({
+  as: Element = "main",
+  children,
+  className = "",
+  maxWidth = "var(--layout-content-max)",
+  style = {},
+  ...props
+}) => React.createElement(
+  Element,
+  {
+    className,
+    style: {
+      flex: 1,
+      width: "100%",
+      maxWidth,
+      marginInline: "auto",
+      padding: "var(--layout-page-top) var(--layout-page-gutter) var(--layout-page-bottom)",
+      boxSizing: "border-box",
+      ...style,
+    },
+    ...props,
+  },
+  children,
+);
 
 /* ───────────────────────────────────────────
    Navbar — Barra de navegação base
@@ -49,9 +95,17 @@ export const GlassPanel = ({ children, className = "", style = {}, ...props }) =
    @param {ReactNode} children     - Conteúdo extra abaixo (ex: stepper)
    @param {object}    style        - Estilo inline extra no container
    ─────────────────────────────────────────── */
-export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
-  <div
-    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)]"
+export const AppNavbar = ({
+  title,
+  leftAction,
+  rightAction,
+  children,
+  className = "",
+  maxWidth = "var(--layout-reading-max)",
+  style,
+}) => (
+  <header
+    className={`sticky top-0 z-[100] backdrop-blur-xl bg-[var(--page-overlay)] border-b border-[var(--soft-border)] ${className}`}
     style={style}
   >
     {/* Linha principal: ação esquerda | título | ação direita */}
@@ -61,7 +115,7 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
         alignItems: "center",
         justifyContent: "space-between",
         padding: "10px 12px 10px 12px",
-        maxWidth: 600,
+        maxWidth,
         margin: "0 auto",
         gap: 12,
         minHeight: 52,
@@ -114,11 +168,11 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
 
     {/* Conteúdo extra (ex: stepper de etapas) */}
     {children && (
-      <div style={{ padding: "0 16px 10px", maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ padding: "0 16px 10px", maxWidth, margin: "0 auto" }}>
         {children}
       </div>
     )}
-  </div>
+  </header>
 );
 
 /* ───────────────────────────────────────────

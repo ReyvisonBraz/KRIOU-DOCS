@@ -25,6 +25,8 @@ export {
 } from "./UI/form";
 
 export {
+  AppShell,
+  PageContainer,
   Navbar,
   GlassPanel,
   AppNavbar,

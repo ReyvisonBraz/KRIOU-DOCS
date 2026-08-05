@@ -221,6 +221,13 @@ Refinamento seguinte: editar e baixar/pagar permanecem visíveis; ações
 secundárias foram agrupadas em “Mais ações”. O menu possui alvo de 44 px, foco
 inicial, fechamento por Escape, retorno do foco e tratamento visual destrutivo.
 
+Fundação seguinte em 04/08/2026: `AppShell` e `PageContainer` passaram a definir
+altura dinâmica, fundo, largura, gutters fluidos, safe area e região principal.
+O dashboard adotou esses contratos e o `AppNavbar` ganhou largura configurável,
+sem alterar as telas estreitas existentes. Uma matriz autenticada adicional cobre
+dashboard claro/escuro em desktop, Android 360 px, iPhone e tablet, bloqueando
+overflow horizontal e violações axe sérias/críticas.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual

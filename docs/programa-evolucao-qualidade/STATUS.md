@@ -84,6 +84,14 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   acessível com Escape e devolução de foco;
 - baseline atual: lint, typecheck, 359 testes, build e quatro E2E autenticados
   locais aprovados.
+- primeiros contratos responsivos de página implementados em `AppShell` e
+  `PageContainer`, com largura, gutters fluidos, `100dvh` e safe area reutilizáveis;
+- dashboard migrou para essa fundação, recebeu cabeçalho amplo configurável e a
+  marca mantém contraste correto no tema claro;
+- matriz autenticada do dashboard cobre claro/escuro em desktop, Android 360 px,
+  iPhone e tablet: 8/8 sem overflow horizontal ou violações axe sérias/críticas;
+- baseline atualizada: lint, typecheck, 361 testes e os 8 E2E responsivos
+  autenticados aprovados; build de produção permanece como portão final do lote.
 
 ## Segurança
 

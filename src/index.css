@@ -127,6 +127,15 @@
   --font-size-body: 1rem;
   --font-size-lead: 1.125rem;
   --line-height-body: 1.6;
+  --layout-reading-max: 37.5rem;
+  --layout-content-max: 70rem;
+  --layout-dashboard-max: 72rem;
+  --layout-page-gutter: clamp(1rem, 3vw, 2rem);
+  --layout-page-top: clamp(1.25rem, 3vw, 2rem);
+  --layout-page-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
 }
 
 :root[data-theme="dark"] {

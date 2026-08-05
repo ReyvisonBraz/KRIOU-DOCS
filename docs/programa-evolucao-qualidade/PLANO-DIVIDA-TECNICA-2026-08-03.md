@@ -63,7 +63,7 @@ reuso, revisão ou desempenho.
 | DT-06 | cobertura baixa nos fluxos de auth, pagamento, documento e admin | alta | DT-01/05 | matriz de risco coberta; thresholds por módulo crítico | em execução |
 | DT-07 | autenticação/CORS/erros repetidos nas Edge Functions | alta | DT-04/05 | shared backend testado, sem cópias divergentes | planejado |
 | DT-08 | estado dividido entre Supabase e storages do navegador | alta | inventário de entidades | fonte de verdade e invalidação documentadas/testadas | planejado |
-| DT-09 | páginas e modais monolíticos | média-alta | testes de caracterização | seções, hooks e domínio extraídos sem regressão | planejado |
+| DT-09 | páginas e modais monolíticos | média-alta | testes de caracterização | seções, hooks e domínio extraídos sem regressão | em execução: overlays/Templates avançaram; Requirements detalhado em R0–R7 |
 | DT-10 | estilos, acessibilidade e responsividade inconsistentes | média | tokens/componentes base | componentes comuns e auditoria de teclado/contraste | planejado |
 | DT-11 | catálogo de templates codificado junto da apresentação | média-alta | schema/versionamento | registry somente leitura e versões imutáveis | planejado |
 | DT-12 | bundles pesados de PDF/editor sem orçamento formal | média | medição de navegação | orçamento por rota e dependências pesadas sob demanda | planejado |
@@ -122,6 +122,11 @@ uma regressão de autorização bloqueia a integração.
 
 Ordem: `AdminPage`/backend administrativo, `DashboardPage`, `ProfilePage`,
 `TemplatesPage`, `LegalEditorPage`, `RequirementsModal` e `Icons`.
+
+A execução segura de `RequirementsModal` está detalhada no
+[plano de decomposição R0–R7](./PLANO-DECOMPOSICAO-REQUIREMENTS-MODAL-2026-08-05.md),
+incluindo contratos congelados, impressão, matriz de testes e rollback. Esse
+componente não deve ser dividido apenas por tamanho sem seguir aqueles gates.
 
 Para cada área:
 

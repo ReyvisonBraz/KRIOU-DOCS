@@ -323,6 +323,11 @@ Ordem recomendada:
 6. `RequirementsModal`;
 7. `Icons` e UI compartilhada.
 
+A etapa 6 possui um plano de execução próprio:
+[Decomposição segura do `RequirementsModal`](./PLANO-DECOMPOSICAO-REQUIREMENTS-MODAL-2026-08-05.md).
+Ele preserva regras, API pública, acessibilidade e impressão por fases
+reversíveis R0–R7 e é a referência obrigatória antes de alterar esse hotspot.
+
 Para cada hotspot:
 
 - [ ] extrair regras puras para `domain/`;

@@ -336,6 +336,11 @@ os fluxos de Templates e renomeação em desktop, tablet, Android e iPhone, com
 Axe sem violações graves. Como efeito estrutural, o chunk não comprimido de
 Templates caiu de aproximadamente 41,2 kB para 32,2 kB.
 
+A separação posterior de domínio, tela e árvore A4 está especificada no
+[plano de decomposição segura do `RequirementsModal`](./PLANO-DECOMPOSICAO-REQUIREMENTS-MODAL-2026-08-05.md).
+Qualquer refinamento visual desse componente deve aguardar os testes de
+caracterização R0 e preservar os gates de impressão definidos naquele plano.
+
 Conclusão em 05/08/2026: `Card` ganhou variantes, espaçamento e interação de
 teclado composta; `MetricCard` passou a ser compartilhado pelo dashboard e pelo
 painel, com modo compacto e carregamento acessível; `Toast` agora possui região

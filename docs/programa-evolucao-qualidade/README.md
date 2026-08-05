@@ -15,6 +15,7 @@ Esta é a entrada única para planejamento técnico do projeto.
 | 7 | [Dívida técnica](./PLANO-DIVIDA-TECNICA-2026-08-03.md) | manter inventário priorizado e executar a modernização por risco | em execução; TD0 é o marco atual |
 | 8 | [Autenticidade e QR de documentos](./PLANO-AUTENTICIDADE-QR-DOCUMENTOS-2026-08-03.md) | vincular QR público a versões imutáveis e recuperação autenticada | planejado; Q0–Q3 bloqueiam promessa de autenticidade |
 | 9 | [Auditoria visual, responsividade e PWA](./PLANO-AUDITORIA-VISUAL-PWA-2026-08-04.md) | elevar acabamento, acessibilidade, performance mobile e instalação | em execução; V0 iniciado antes da reformulação do admin |
+| 10 | [Decomposição segura do RequirementsModal](./PLANO-DECOMPOSICAO-REQUIREMENTS-MODAL-2026-08-05.md) | separar domínio, tela e impressão sem alterar regras ou contratos | planejado; iniciar por baseline e caracterização R0 |
 
 O acompanhamento resumido fica em [STATUS.md](./STATUS.md). Decisões
 arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
@@ -32,6 +33,8 @@ arquiteturais permanentes ficam em [DECISOES.md](./DECISOES.md).
 9. após a fundação MFA, executar Q0/Q1 do QR; publicar verificador e PDF vinculado somente juntos.
 10. executar V0/V1 da auditoria visual antes da reformulação ampla do admin e
     tratar a instalação PWA somente com política segura de cache e atualização.
+11. decompor `RequirementsModal` pelas fases R0–R7 antes de redesenhar seus
+    requisitos ou alterar regras jurídicas e de impressão.
 
 ## Documentos de apoio
 

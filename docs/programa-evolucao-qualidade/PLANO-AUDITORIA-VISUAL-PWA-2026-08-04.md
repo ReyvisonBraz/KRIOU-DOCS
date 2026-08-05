@@ -228,6 +228,11 @@ sem alterar as telas estreitas existentes. Uma matriz autenticada adicional cobr
 dashboard claro/escuro em desktop, Android 360 px, iPhone e tablet, bloqueando
 overflow horizontal e violações axe sérias/críticas.
 
+O primeiro primitive de ação revisado foi `IconButton`: ele centraliza rótulo
+acessível, ícone decorativo, alvo mínimo de 44 px, foco, hover, disabled e
+variantes semânticas. Perfil e fechamento do diálogo de renomear no dashboard
+já usam o contrato, eliminando estilos manuais duplicados.
+
 ## Fases de execução
 
 ### V0 — Inventário e matriz visual

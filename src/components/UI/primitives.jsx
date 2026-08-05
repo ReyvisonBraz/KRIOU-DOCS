@@ -140,6 +140,96 @@ export const Button = ({
 };
 
 // ============================================================
+// ICON BUTTON
+// ============================================================
+export const IconButton = ({
+  icon,
+  label,
+  variant = "ghost",
+  size = "medium",
+  disabled = false,
+  className = "",
+  style = {},
+  onMouseEnter: userMouseEnter,
+  onMouseLeave: userMouseLeave,
+  title,
+  type = "button",
+  ...props
+}) => {
+  injetaEstilos();
+  const [hover, setHover] = useState(false);
+  const accessibleLabel = label || props["aria-label"];
+  const dimension = size === "large" ? 48 : TOQUE;
+
+  const variants = {
+    ghost: {
+      background: hover && !disabled ? "var(--surface-2)" : "transparent",
+      color: hover && !disabled ? "var(--text)" : "var(--text-muted)",
+      border: "1px solid transparent",
+    },
+    secondary: {
+      background: hover && !disabled ? "var(--surface-3)" : "var(--surface-2)",
+      color: hover && !disabled ? "var(--text)" : "var(--text-dim)",
+      border: `1px solid ${hover && !disabled ? "var(--border-hover)" : "var(--control-border)"}`,
+    },
+    accent: {
+      background: hover && !disabled ? "var(--action-accent-hover)" : "var(--action-accent)",
+      color: "var(--on-action)",
+      border: "1px solid transparent",
+    },
+    danger: {
+      background: hover && !disabled ? "var(--danger-soft)" : "transparent",
+      color: "var(--danger)",
+      border: "1px solid transparent",
+    },
+  };
+
+  return (
+    <button
+      {...props}
+      type={type}
+      aria-label={accessibleLabel}
+      title={title || label}
+      disabled={disabled}
+      className={["kf", className].filter(Boolean).join(" ")}
+      onMouseEnter={(event) => {
+        setHover(true);
+        userMouseEnter?.(event);
+      }}
+      onMouseLeave={(event) => {
+        setHover(false);
+        userMouseLeave?.(event);
+      }}
+      style={{
+        width: dimension,
+        height: dimension,
+        minWidth: dimension,
+        minHeight: dimension,
+        padding: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        borderRadius: "var(--radius-control)",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.42 : 1,
+        transition: EASE,
+        outline: "none",
+        ...(variants[variant] || variants.ghost),
+        ...style,
+      }}
+    >
+      <Icon
+        name={icon}
+        aria-hidden="true"
+        focusable="false"
+        style={{ width: size === "large" ? 22 : 20, height: size === "large" ? 22 : 20 }}
+      />
+    </button>
+  );
+};
+
+// ============================================================
 // CARD
 // ============================================================
 export const Card = ({

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, IconButton, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -411,28 +411,11 @@ const DashboardPage = () => {
         maxWidth="var(--layout-dashboard-max)"
         rightAction={
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <button
+            <IconButton
+              icon="User"
+              label="Perfil"
               onClick={() => navigate("profile")}
-              aria-label="Perfil"
-              style={{
-                minWidth: 44,
-                minHeight: 44,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 12,
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--text-muted)",
-                transition: "all 0.2s ease",
-              }}
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.background = "var(--surface-2)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; }}
-            >
-              <Icon name="User" className="w-5 h-5" />
-            </button>
+            />
             <button
               onClick={logout}
               aria-label="Sair"
@@ -1174,14 +1157,11 @@ const DashboardPage = () => {
                   Renomear arquivo
                 </h2>
               </div>
-              <button
-                type="button"
+              <IconButton
+                icon="X"
+                label="Fechar"
                 onClick={closeRenameDialog}
-                aria-label="Fechar"
-                className="btn-icon"
-              >
-                <Icon name="X" className="w-5 h-5" />
-              </button>
+              />
             </div>
 
             <label style={{ display: "grid", gap: 8 }}>

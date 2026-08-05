@@ -12,6 +12,7 @@
 
 export {
   Button,
+  IconButton,
   Card,
   Badge,
   Tag,

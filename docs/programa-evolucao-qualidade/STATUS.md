@@ -92,6 +92,11 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
   iPhone e tablet: 8/8 sem overflow horizontal ou violações axe sérias/críticas;
 - baseline atualizada: lint, typecheck, 361 testes e os 8 E2E responsivos
   autenticados aprovados; build de produção permanece como portão final do lote.
+- `IconButton` acessível introduzido como primitive reutilizável, com alvo de
+  44 px, foco, hover, disabled e variantes para ambos os temas;
+- dashboard migrou as ações de perfil e fechamento do diálogo para o novo
+  contrato; matriz responsiva autenticada permaneceu 8/8 aprovada;
+- baseline em validação final: 364 testes após as regressões do novo primitive.
 
 ## Segurança
 

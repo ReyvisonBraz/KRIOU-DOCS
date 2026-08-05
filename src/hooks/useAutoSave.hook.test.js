@@ -112,4 +112,21 @@ describe("useAutoSave", () => {
     await act(async () => { vi.advanceTimersByTime(1); });
     expect(saveFn).toHaveBeenCalledOnce();
   });
+
+  it("descarta o timer pendente e nao recria o rascunho durante o reset", () => {
+    const saveFn = vi.fn().mockResolvedValue(undefined);
+    let data = "preenchido";
+    const { result, rerender } = renderHook(() => useAutoSave(data, saveFn, 1500));
+
+    act(() => { data = "alterado"; rerender(); });
+    act(() => {
+      result.current.discardPendingSave();
+      data = "estado inicial";
+      rerender();
+      vi.runAllTimers();
+    });
+
+    expect(saveFn).not.toHaveBeenCalled();
+    expect(result.current.saveStatus).toBe("idle");
+  });
 });

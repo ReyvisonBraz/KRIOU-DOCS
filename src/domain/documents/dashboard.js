@@ -74,8 +74,13 @@ export function selectDashboardDocuments(documents, options = {}) {
   const filterType = tabFilterType[activeTab] || "all";
   let selected = [...(documents || [])];
 
-  if (archiveFilter === "ativos") selected = selected.filter((doc) => !doc.archived);
-  if (archiveFilter === "arquivados") selected = selected.filter((doc) => doc.archived);
+  if (archiveFilter === "lixeira") {
+    selected = selected.filter((doc) => Boolean(doc.deletedAt));
+  } else {
+    selected = selected.filter((doc) => !doc.deletedAt);
+    if (archiveFilter === "ativos") selected = selected.filter((doc) => !doc.archived);
+    if (archiveFilter === "arquivados") selected = selected.filter((doc) => doc.archived);
+  }
   selected = selected.filter((doc) => matchesDocumentPaymentFilter(doc, statusFilter));
 
   if (filterType === "type") selected = selected.filter((doc) => doc.type === activeTab);

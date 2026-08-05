@@ -50,16 +50,34 @@ describe("DocumentCard", () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it("excluir não dispara a abertura do documento", () => {
+  it("mover para a lixeira não dispara a abertura do documento", () => {
     const { onClick, onDelete } = renderCard();
     const trigger = screen.getByRole("button", { name: "Mais ações para Ana Souza" });
 
     fireEvent.click(trigger);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mover para a lixeira" }));
 
     expect(onDelete).toHaveBeenCalledOnce();
     expect(onClick).not.toHaveBeenCalled();
     expect(trigger).toHaveFocus();
+  });
+
+  it("na lixeira oferece apenas restauracao e exclusao definitiva", () => {
+    const onRestore = vi.fn();
+    const onPermanentDelete = vi.fn();
+    render(
+      <DocumentCard
+        doc={{ ...documentFixture, deletedAt: "2026-08-05T12:00:00.000Z" }}
+        onClick={vi.fn()}
+        onRestore={onRestore}
+        onPermanentDelete={onPermanentDelete}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Ana Souza está na lixeira" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Mais ações para Ana Souza" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restaurar documento" }));
+    expect(onRestore).toHaveBeenCalledOnce();
   });
 
   it("fecha o menu com Escape e devolve o foco ao gatilho", () => {

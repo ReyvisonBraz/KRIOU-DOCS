@@ -55,16 +55,26 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
   }, [isLoading]);
 
   // Funcao de auto-save — persiste localmente e sincroniza com nuvem
-  const saveFn = useCallback((data) => {
+  const saveFn = useCallback(async (data) => {
     // Providers existem também nas páginas públicas. Sem usuário autenticado,
     // não há dono válido para o rascunho e nenhuma persistência deve ocorrer.
     if (!isReadyRef.current || !userId) return;
     const sanitized = sanitizeFormData(data);
     StorageService.saveDraft(sanitized, userId, "resume");
-    DocumentService.saveDraft(userId, "resume", sanitized, currentStep).catch(() => {});
+    const synced = await DocumentService.saveDraft(userId, "resume", sanitized, currentStep);
+    if (!synced) throw new Error("Rascunho salvo neste dispositivo, mas não sincronizado com a nuvem");
   }, [userId, currentStep]);
 
-  const { saveStatus, lastSaved, triggerSave } = useAutoSave(formData, saveFn);
+  const { saveStatus, lastSaved, triggerSave, discardPendingSave } = useAutoSave(formData, saveFn);
+
+  const discardResumeDraft = useCallback(async () => {
+    discardPendingSave();
+    setFormData(INITIAL_FORM_DATA);
+    setCurrentStep(0);
+    setSelectedTemplate(null);
+    StorageService.clearDraft(userId, "resume");
+    await DocumentService.clearDraft(userId, "resume");
+  }, [discardPendingSave, userId]);
 
   const updateForm = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -110,6 +120,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
       const newDoc = await DocumentService.insert(docPayload, userId);
       setUserDocuments((prev) => [...prev, newDoc]);
       StorageService.clearDraft(userId, docType);
+      await DocumentService.clearDraft(userId, docType);
 
       return newDoc;
     } catch (err) {
@@ -150,6 +161,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
         doc.id === documentId ? { ...doc, ...docPayload } : doc
       ));
       StorageService.clearDraft(userId, docType);
+      await DocumentService.clearDraft(userId, docType);
       setEditingDocId(null);
     } catch (err) {
       console.error("[ResumeContext][ERRO] updateDocument:", err.message);
@@ -165,7 +177,7 @@ export const ResumeProvider = ({ children, userId, isLoading }) => {
     saveStatus, lastSaved, triggerSave,
     userDocuments, setUserDocuments, saveDocument, updateDocument,
     editingDocId, setEditingDocId,
-    filter, setFilter,
+    filter, setFilter, discardResumeDraft,
   };
 
   return <ResumeContext.Provider value={value}>{children}</ResumeContext.Provider>;

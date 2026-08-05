@@ -39,6 +39,8 @@ function mapDocumentRow(row) {
     variantName:      row.variant_name,
     variant:         row.variant,
     archived:         row.archived || false,
+    deletedAt:        row.deleted_at || null,
+    deletedBy:        row.deleted_by || null,
     paymentStatus:    row.payment_status || "pending",
     paymentId:        row.payment_id || null,
     paymentAmount:    row.payment_amount || null,
@@ -55,7 +57,8 @@ function mapDocumentRow(row) {
 
 export const DocumentService = {
   /**
-   * Busca documentos visiveis do usuario: finalizados e pagamentos em andamento.
+   * Busca documentos do usuario, incluindo os que estao na lixeira. A camada
+   * de dominio decide quais aparecem em cada visao do dashboard.
    *
    * @param {string} userId — ID do usuario para filtrar (defesa em profundidade)
    * @returns {Promise<Array>} Lista de documentos mapeados
@@ -263,6 +266,45 @@ export const DocumentService = {
     }
 
     return data[0];
+  },
+
+  /** Move um documento para a lixeira sem apagar seus dados. */
+  async moveToTrash(documentId, userId) {
+    if (!documentId || !userId) {
+      throw new Error("[DocumentService][ERRO] moveToTrash: documentId e userId sao obrigatorios");
+    }
+
+    const deletedAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ deleted_at: deletedAt, deleted_by: userId })
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .select("id, deleted_at, deleted_by")
+      .single();
+
+    if (error) throw error;
+    return { id: data.id, deletedAt: data.deleted_at, deletedBy: data.deleted_by };
+  },
+
+  /** Restaura um documento que estava na lixeira. */
+  async restoreFromTrash(documentId, userId) {
+    if (!documentId || !userId) {
+      throw new Error("[DocumentService][ERRO] restoreFromTrash: documentId e userId sao obrigatorios");
+    }
+
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ deleted_at: null, deleted_by: null })
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .not("deleted_at", "is", null)
+      .select("id")
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
   /**
@@ -474,7 +516,7 @@ export const DocumentService = {
 
     const { data, error } = await supabase
       .from("document_drafts")
-      .select("data, current_step")
+      .select("data, current_step, updated_at")
       .eq("user_id", userId)
       .eq("type", draftType)
       .maybeSingle();
@@ -484,7 +526,24 @@ export const DocumentService = {
     return {
       data: data.data,
       currentStep: data.current_step || 0,
+      updatedAt: data.updated_at,
     };
+  },
+
+  subscribeToUserDocuments(userId, onChange) {
+    if (!userId || typeof onChange !== "function") return () => {};
+
+    const channel = supabase
+      .channel(`documents:${userId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "documents", filter: `user_id=eq.${userId}`,
+      }, onChange)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "document_drafts", filter: `user_id=eq.${userId}`,
+      }, onChange)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   },
 
   /**

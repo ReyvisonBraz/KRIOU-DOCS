@@ -35,6 +35,7 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
   const isFirstRender = useRef(true);
   const saveFnRef = useRef(saveFn);
   const dataRef = useRef(data);
+  const skipNextChangeRef = useRef(false);
 
   // Manter referencias sempre atualizadas
   useEffect(() => {
@@ -58,10 +59,26 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
     }
   }, []);
 
+  // Usado ao descartar um rascunho: cancela a gravacao agendada e impede que
+  // o reset do formulario recrie o rascunho logo depois da exclusao.
+  const discardPendingSave = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    skipNextChangeRef.current = true;
+    setSaveStatus("idle");
+  }, []);
+
   // ─── Auto-save com debounce ──────────────────────────────────────────────
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      return;
+    }
+
+    if (skipNextChangeRef.current) {
+      skipNextChangeRef.current = false;
       return;
     }
 
@@ -87,7 +104,7 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
     };
   }, [data, delayMs]);
 
-  return { saveStatus, lastSaved, triggerSave };
+  return { saveStatus, lastSaved, triggerSave, discardPendingSave };
 }
 
 export default useAutoSave;

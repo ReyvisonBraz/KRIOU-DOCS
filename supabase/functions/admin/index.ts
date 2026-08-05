@@ -52,16 +52,24 @@ serve(async (req) => {
 
         const { count: totalDocs } = await supabase
           .from("documents")
-          .select("*", { count: "exact", head: true });
+          .select("*", { count: "exact", head: true })
+          .is("deleted_at", null);
+
+        const { count: trashedDocs } = await supabase
+          .from("documents")
+          .select("*", { count: "exact", head: true })
+          .not("deleted_at", "is", null);
 
         const { count: finalizedDocs } = await supabase
           .from("documents")
           .select("*", { count: "exact", head: true })
+          .is("deleted_at", null)
           .eq("status", "finalizado");
 
         const { data: docsByType } = await supabase
           .from("documents")
-          .select("type, document_type");
+          .select("type, document_type")
+          .is("deleted_at", null);
 
         const typeCount = {};
         (docsByType || []).forEach((d) => {
@@ -72,6 +80,7 @@ serve(async (req) => {
         return json({
           totalUsers: totalUsers || 0,
           totalDocs: totalDocs || 0,
+          trashedDocs: trashedDocs || 0,
           finalizedDocs: finalizedDocs || 0,
           docsByType: typeCount,
         });
@@ -86,7 +95,7 @@ serve(async (req) => {
         if (usersError) throw usersError;
 
         const [{ data: documents, error: documentsError }, authUsersResult, rolesResult] = await Promise.all([
-          supabase.from("documents").select("user_id"),
+          supabase.from("documents").select("user_id, deleted_at"),
           supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
           supabase.rpc("kriou_admin_list_role_assignments"),
         ]);
@@ -95,16 +104,20 @@ serve(async (req) => {
         if (rolesResult.error) throw rolesResult.error;
 
         const counts = (documents || []).reduce((result, document) => {
-          result[document.user_id] = (result[document.user_id] || 0) + 1;
+          const bucket = result[document.user_id] || { active: 0, trashed: 0 };
+          if (document.deleted_at) bucket.trashed += 1;
+          else bucket.active += 1;
+          result[document.user_id] = bucket;
           return result;
-        }, {} as Record<string, number>);
+        }, {} as Record<string, { active: number; trashed: number }>);
         const emails = new Map(authUsersResult.data.users.map((authUser) => [authUser.id, authUser.email || null]));
         const adminRoles = new Map((rolesResult.data || []).map((assignment) => [assignment.user_id, assignment.role]));
         const usersWithCounts = (users || []).map((profile) => ({
           ...profile,
           adminRole: adminRoles.get(profile.id) || null,
           email: emails.get(profile.id) || null,
-          docCount: counts[profile.id] || 0,
+          docCount: counts[profile.id]?.active || 0,
+          trashCount: counts[profile.id]?.trashed || 0,
         }));
 
         return json(usersWithCounts);
@@ -118,7 +131,7 @@ serve(async (req) => {
 
         const { data: docs, error: docsError } = await supabase
           .from("documents")
-          .select("id, title, code, type, document_type, document_type_name, status, payment_status, created_at, updated_at")
+          .select("id, title, code, type, document_type, document_type_name, status, payment_status, deleted_at, created_at, updated_at")
           .eq("user_id", targetUserId)
           .order("created_at", { ascending: false });
 

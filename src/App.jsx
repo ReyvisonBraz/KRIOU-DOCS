@@ -24,7 +24,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import { Spinner } from "./components/UI/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AdminRoute from "./components/AdminRoute";
-import { Toaster } from "sonner";
+import AppToaster from "./components/UI/AppToaster";
 
 // Rotas eager (sempre no bundle inicial)
 import LandingPage from "./pages/LandingPage";
@@ -95,12 +95,7 @@ const App = () => {
           <AppProvider>
             <AppRoutes />
             <ThemeToggle />
-            <Toaster
-              position="bottom-center"
-              toastOptions={{
-                style: { fontFamily: "inherit", fontSize: 14 },
-              }}
-            />
+            <AppToaster />
           </AppProvider>
         </BrowserRouter>
       </ThemeProvider>

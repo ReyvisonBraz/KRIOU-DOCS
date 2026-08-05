@@ -255,9 +255,13 @@ export const IconButton = ({
 // ============================================================
 export const Card = ({
   children,
+  variant = "default",
+  padding = "none",
+  disabled = false,
   className = "",
   style = {},
   onClick,
+  onKeyDown: userKeyDown,
   onMouseEnter,
   onMouseLeave,
   ...props
@@ -265,10 +269,19 @@ export const Card = ({
   injetaEstilos();
   const [hover, setHover] = useState(false);
   const interativo = typeof onClick === "function";
+  const canInteract = interativo && !disabled;
+  const variants = {
+    default: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-card)" },
+    flat: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "none" },
+    subtle: { background: "var(--surface-2)", border: "1px solid var(--border)", boxShadow: "none" },
+    elevated: { background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-elevated)" },
+  };
+  const paddings = { none: 0, small: 12, medium: 20, large: 28 };
+  const visual = variants[variant] || variants.default;
 
   // handlers compostos — preservam callbacks do usuário
   const handleMouseEnter = (e) => {
-    setHover(true);
+    setHover(canInteract);
     onMouseEnter?.(e);
   };
   const handleMouseLeave = (e) => {
@@ -276,7 +289,9 @@ export const Card = ({
     onMouseLeave?.(e);
   };
   const handleKeyDown = (e) => {
-    if ((e.key === "Enter" || e.key === " ") && interativo) {
+    userKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    if ((e.key === "Enter" || e.key === " ") && canInteract) {
       e.preventDefault();
       onClick(e);
     }
@@ -284,24 +299,26 @@ export const Card = ({
 
   return (
     <div
-      className={[interativo ? "kf" : "", className].filter(Boolean).join(" ")}
-      onClick={onClick}
+      className={[canInteract ? "kf" : "", className].filter(Boolean).join(" ")}
+      onClick={canInteract ? onClick : undefined}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       role={interativo ? "button" : undefined}
       tabIndex={interativo ? 0 : undefined}
+      aria-disabled={interativo && disabled ? true : undefined}
       onKeyDown={interativo ? handleKeyDown : undefined}
       style={{
-        background: hover && interativo ? "var(--surface-2)" : "var(--surface)",
-        border: `1px solid ${
-          hover && interativo ? "var(--border-hover)" : "var(--border)"
-        }`,
+        ...visual,
+        background: hover && canInteract ? "var(--surface-2)" : visual.background,
+        border: hover && canInteract ? "1px solid var(--border-hover)" : visual.border,
         borderRadius: RAD_LG,
-        cursor: interativo ? "pointer" : "default",
+        padding: paddings[padding] ?? paddings.none,
+        cursor: disabled ? "not-allowed" : interativo ? "pointer" : "default",
+        opacity: disabled ? 0.62 : 1,
         transition: EASE,
-        boxShadow: hover && interativo
+        boxShadow: hover && canInteract
           ? "var(--shadow-elevated)"
-          : "var(--shadow-card)",
+          : visual.boxShadow,
         ...style,
       }}
       {...props}

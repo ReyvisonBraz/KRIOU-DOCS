@@ -49,6 +49,9 @@ export {
   ConfirmDialog,
 } from "./UI/feedback";
 
+export { MetricCard } from "./UI/metrics";
+export { AppToaster } from "./UI/AppToaster";
+
 export {
   HelpTooltip,
   FieldWithHelp,

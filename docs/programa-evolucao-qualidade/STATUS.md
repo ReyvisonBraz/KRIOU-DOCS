@@ -131,6 +131,16 @@ Plano ativo: [PLANO-MESTRE-MODERNIZACAO-2026-08-03.md](./PLANO-MESTRE-MODERNIZAC
 - nova matriz de modelos: 8 cenários em desktop, tablet, Android e iPhone, nos
   temas claro/escuro, com Axe e verificação de overflow;
 - baseline em validação final: 387 testes.
+- `Card` possui variantes de superfície, espaçamento padronizado, composição de
+  teclado e bloqueio acessível de interação;
+- `MetricCard` foi extraído para a UI compartilhada e substituiu tanto o padrão
+  local do dashboard quanto a implementação duplicada do painel;
+- notificações Sonner agora acompanham o tema, respeitam a navegação móvel,
+  limitam acúmulo e oferecem contratos de sucesso, informação, aviso, erro,
+  carregamento e promessa;
+- matriz autenticada do dashboard permaneceu verde nos 8 cenários responsivos e
+  nos temas claro/escuro após a migração;
+- baseline em validação final: 397 testes.
 
 ## Segurança
 

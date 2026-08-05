@@ -294,7 +294,7 @@ sem busca e substituição espalhada por páginas.
 ### V3 — Componentes fundamentais
 
 - [x] revisar Button, IconButton, Input, Select, Textarea e Checkbox;
-- [ ] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
+- [x] revisar Card, MetricCard, Badge, Alert, Toast e EmptyState;
 - [ ] criar Table/DataList responsiva para desktop e mobile;
 - [x] substituir cards clicáveis com botões aninhados por semântica válida;
 - [x] reduzir a sobrecarga visual dos cards sem remover capacidades;
@@ -309,7 +309,15 @@ interação representativos.
 Progresso em 05/08/2026: `Badge`, `Alert` e `EmptyState` possuem contratos
 semânticos, variantes compatíveis com temas claro/escuro e testes de
 acessibilidade. O erro do checkout já utiliza o `Alert` compartilhado. O item
-permanece aberto até concluir `Card`, `MetricCard` e `Toast`.
+continuou aberto naquela entrega porque ainda restavam `Card`, `MetricCard` e
+`Toast`.
+
+Conclusão em 05/08/2026: `Card` ganhou variantes, espaçamento e interação de
+teclado composta; `MetricCard` passou a ser compartilhado pelo dashboard e pelo
+painel, com modo compacto e carregamento acessível; `Toast` agora possui região
+global sensível ao tema, limite de notificações, fechamento, posicionamento
+seguro no mobile e contratos para aviso e operações assíncronas. O conjunto
+fundamental deste item está concluído.
 
 A auditoria subsequente encontrou e corrigiu um card de modelo que ainda
 combinava `role="button"` com botões descendentes. Os cards agora são artigos

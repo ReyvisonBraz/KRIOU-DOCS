@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
-import { Button, IconButton, Input, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
+import { Button, IconButton, Input, AppNavbar, AppShell, PageContainer, DocumentCard, EmptyState, MetricCard, SkeletonCard, Skeleton, ConfirmDialog } from "../components/UI";
 import { useConfirm } from "../hooks/useConfirm";
 import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
@@ -496,23 +496,20 @@ const DashboardPage = () => {
 
             {allDocs.length > 0 && (
               <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
-                <StatTile
+                <MetricCard compact
                   value={paidCount}
                   label={`pago${paidCount !== 1 ? "s" : ""}`}
-                  accent="var(--success)"
-                  glow="rgba(20,184,166,0.45)"
+                  accent="success"
                 />
-                <StatTile
+                <MetricCard compact
                   value={pendingPaymentCount}
                   label={`pendente${pendingPaymentCount !== 1 ? "s" : ""}`}
-                  accent="var(--gold)"
-                  glow="rgba(212,175,55,0.40)"
+                  accent="warning"
                 />
-                <StatTile
+                <MetricCard compact
                   value={draftCount}
                   label={`rascunho${draftCount !== 1 ? "s" : ""}`}
-                  accent="var(--coral)"
-                  glow="rgba(244,63,94,0.35)"
+                  accent="accent"
                 />
               </div>
             )}
@@ -1193,54 +1190,5 @@ const DashboardPage = () => {
     </AppShell>
   );
 };
-
-const StatTile = ({ value, label, accent, glow }) => (
-  <div
-    className="bento-stat"
-    style={{
-      "--stat-accent": accent,
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "10px 16px",
-      borderRadius: 14,
-      background: "var(--surface)",
-      border: "1px solid var(--border)",
-    }}
-  >
-    <span
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: accent,
-        boxShadow: `0 0 8px ${glow}`,
-        flexShrink: 0,
-      }}
-    />
-    <span
-      style={{
-        fontFamily: "var(--font-display)",
-        fontSize: "1rem",
-        fontWeight: 800,
-        color: "var(--text)",
-        letterSpacing: "-0.02em",
-        lineHeight: 1,
-      }}
-    >
-      {value}
-    </span>
-    <span
-      style={{
-        fontFamily: "var(--font-body)",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        color: "var(--text-dim)",
-      }}
-    >
-      {label}
-    </span>
-  </div>
-);
 
 export default DashboardPage;

@@ -449,6 +449,7 @@ const DashboardPage = () => {
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
   const activeDocs = allDocs.filter((doc) => !doc.deletedAt);
   const trashCount = allDocs.filter((doc) => doc.deletedAt).length;
+  const isTrashView = archiveFilter === "lixeira";
   const paidCount = activeDocs.filter(isDocumentPaid).length;
   const pendingPaymentCount = activeDocs.filter(isDocumentPaymentPending).length;
   const draftCount = activeDocs.filter(isLocalDraftDocument).length;
@@ -693,7 +694,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Action buttons row */}
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 onClick={handleCreateResume}
                 style={{
@@ -770,6 +771,39 @@ const DashboardPage = () => {
               >
                 <Icon name="FileText" className="w-4 h-4" />
                 Novo Documento
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setArchiveFilter("lixeira");
+                  setActiveTab("todos");
+                  setStatusFilter("todos");
+                  setSearchQuery("");
+                }}
+                aria-pressed={archiveFilter === "lixeira"}
+                style={{
+                  flex: "1 1 160px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  minWidth: 44,
+                  minHeight: 48,
+                  padding: "13px 18px",
+                  borderRadius: 14,
+                  border: archiveFilter === "lixeira" ? "1.5px solid var(--danger)" : "1px solid var(--control-border)",
+                  cursor: "pointer",
+                  background: archiveFilter === "lixeira"
+                    ? "color-mix(in srgb, var(--danger) 12%, var(--surface))"
+                    : "var(--surface)",
+                  color: archiveFilter === "lixeira" ? "var(--danger)" : "var(--text-dim)",
+                  fontFamily: "var(--font-body)",
+                  fontWeight: 800,
+                  fontSize: "0.875rem",
+                }}
+              >
+                <Icon name="Trash2" className="w-4 h-4" />
+                Lixeira{trashCount > 0 ? ` (${trashCount})` : ""}
               </button>
             </div>
           </div>
@@ -1016,8 +1050,8 @@ const DashboardPage = () => {
               marginBottom: 28,
             }}>
               <Icon
-                name={searchQuery.trim() ? "Search" : "FileText"}
-                style={{ width: 34, height: 34, color: searchQuery.trim() ? "var(--text-muted)" : "var(--coral)" }}
+                name={searchQuery.trim() ? "Search" : isTrashView ? "Trash2" : "FileText"}
+                style={{ width: 34, height: 34, color: searchQuery.trim() ? "var(--text-muted)" : isTrashView ? "var(--danger)" : "var(--coral)" }}
               />
             </div>
 
@@ -1031,7 +1065,7 @@ const DashboardPage = () => {
             }}>
               {searchQuery.trim()
                 ? "Nenhum documento encontrado"
-                : "Ainda não há documentos"}
+                : isTrashView ? "Sua lixeira está vazia" : "Ainda não há documentos"}
             </h2>
 
             <p style={{
@@ -1044,10 +1078,28 @@ const DashboardPage = () => {
             }}>
               {searchQuery.trim()
                 ? `Nenhum resultado para "${searchQuery}" em ${activeTabLabel.toLowerCase()}. Tente outro termo de busca.`
-                : "Seu workspace está pronto. Crie seu primeiro currículo profissional ou documento jurídico agora mesmo."}
+                : isTrashView
+                  ? "Documentos movidos para a lixeira aparecem aqui e podem ser restaurados."
+                  : "Seu workspace está pronto. Crie seu primeiro currículo profissional ou documento jurídico agora mesmo."}
             </p>
 
-            {!searchQuery.trim() && (
+            {!searchQuery.trim() && isTrashView && (
+              <button
+                type="button"
+                onClick={() => setArchiveFilter("ativos")}
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  minWidth: 44, minHeight: 48, padding: "12px 20px", borderRadius: 14,
+                  border: "1px solid var(--control-border)", cursor: "pointer",
+                  background: "var(--surface)", color: "var(--text)",
+                  fontFamily: "var(--font-body)", fontWeight: 800, fontSize: "0.875rem",
+                }}
+              >
+                <Icon name="ArrowLeft" className="w-4 h-4" /> Voltar aos documentos
+              </button>
+            )}
+
+            {!searchQuery.trim() && !isTrashView && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 320 }}>
                 <button
                   onClick={handleCreateResume}

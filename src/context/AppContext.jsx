@@ -69,6 +69,7 @@ import {
   resolveInitialPage,
 } from "../domain/navigation";
 import { reconcileDocuments, selectLatestDraft } from "../domain/documents/synchronization";
+import { logger } from "../utils/logger";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONTEXTOS
@@ -190,7 +191,7 @@ const AppBootstrap = ({ children }) => {
     if (!userId || isAuthLoading) return undefined;
     return DocumentService.subscribeToUserDocuments(userId, () => {
       refreshDocuments().catch((err) => {
-        console.error("[AppBootstrap][ERRO] reconciliacao realtime falhou:", err.message);
+        logger.error("DocumentSync", "Reconciliação em tempo real falhou", err);
       });
     });
   }, [isAuthLoading, refreshDocuments, userId]);
@@ -238,7 +239,7 @@ const AppBootstrap = ({ children }) => {
       try {
         await refreshDocuments({ hydrateForms: true });
       } catch (err) {
-        console.error("[AppBootstrap][ERRO] sincronizacao inicial falhou:", err.message);
+        logger.error("DocumentSync", "Sincronização inicial falhou; usando dados locais", err);
         const localDocs = StorageService.loadDocuments(userId);
         if (Array.isArray(localDocs)) setUserDocuments(localDocs);
       }

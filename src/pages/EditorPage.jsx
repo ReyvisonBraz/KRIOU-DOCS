@@ -118,7 +118,7 @@ const IdiomaItem = memo(({ idioma, index, total, onUpdate, onRemove }) => (
 ));
 
 const EditorPage = () => {
-  const { navigate, selectedTemplate, currentStep, setCurrentStep, formData, updateForm, saveStatus, lastSaved } = useApp();
+  const { navigate, selectedTemplate, currentStep, setCurrentStep, formData, updateForm, saveStatus, lastSaved, triggerSave } = useApp();
 
   const [stepErrors, setStepErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
@@ -499,7 +499,7 @@ const EditorPage = () => {
             >
               <Icon name="Home" className="w-5 h-5" />
             </button>
-            <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+            <SaveIndicator status={saveStatus} lastSaved={lastSaved} onRetry={triggerSave} />
             <button
               onClick={handleOpenPreview}
               className="touch-target inline-flex items-center gap-2 bg-coral text-white font-bold text-[13px] md:text-[14px] px-4 py-2.5 rounded-xl border-none cursor-pointer transition-all duration-250 shadow-[0_2px_10px_rgba(244,63,94,0.28)] hover:shadow-[0_6px_22px_rgba(244,63,94,0.38)] hover:bg-coral-hover active:scale-[0.97] focus-ring"
@@ -544,7 +544,7 @@ const EditorPage = () => {
         extraContent={
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontSize: 11, color: "var(--text-muted)" }}>
             <span>Etapa {currentStep + 1} de {STEPS.length}</span>
-            <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+            <SaveIndicator status={saveStatus} lastSaved={lastSaved} onRetry={triggerSave} />
           </div>
         }
       />

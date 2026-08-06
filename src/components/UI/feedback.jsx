@@ -361,7 +361,7 @@ export const ErrorMessage = ({ message, onRetry, className, style }) => {
 };
 
 /* ====================== SaveIndicator ====================== */
-export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
+export const SaveIndicator = ({ status = "saved", lastSaved = null, onRetry }) => {
   ensureGlobalStyles();
 
   const isSaving = status === "saving";
@@ -378,7 +378,7 @@ export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
 
   // Rótulo localizado em português
   const label = isError
-    ? "Erro ao salvar"
+    ? "Salvo neste dispositivo; sincronização pendente"
     : isSaving
     ? "Salvando..."
     : isIdle
@@ -425,6 +425,25 @@ export const SaveIndicator = ({ status = "saved", lastSaved = null }) => {
         />
       )}
       <span>{label}</span>
+      {isError && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          style={{
+            minHeight: 32,
+            padding: "0 10px",
+            borderRadius: 8,
+            border: "1px solid currentColor",
+            background: "transparent",
+            color: "inherit",
+            cursor: "pointer",
+            font: "inherit",
+            fontWeight: 800,
+          }}
+        >
+          Tentar novamente
+        </button>
+      )}
     </div>
   );
 };

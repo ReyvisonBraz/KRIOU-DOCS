@@ -2,7 +2,7 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { Alert, ConfirmDialog, EmptyState } from "./feedback";
+import { Alert, ConfirmDialog, EmptyState, SaveIndicator } from "./feedback";
 
 describe("Alert", () => {
   it("anuncia erros imediatamente e associa o conteúdo", () => {
@@ -33,6 +33,17 @@ describe("EmptyState", () => {
     render(<EmptyState title="Sem resultados" headingLevel={3} />);
 
     expect(screen.getByRole("heading", { level: 3, name: "Sem resultados" })).toBeVisible();
+  });
+});
+
+describe("SaveIndicator", () => {
+  it("explica a persistência local e permite tentar a sincronização novamente", () => {
+    const onRetry = vi.fn();
+    render(<SaveIndicator status="error" onRetry={onRetry} />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Salvo neste dispositivo; sincronização pendente");
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 });
 

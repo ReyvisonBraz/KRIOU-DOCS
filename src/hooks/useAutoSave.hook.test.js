@@ -97,6 +97,24 @@ describe("useAutoSave", () => {
     expect(result.current.saveStatus).toBe("saved");
   });
 
+  it("tenta sincronizar novamente quando a conexão volta", async () => {
+    const saveFn = vi.fn()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(undefined);
+    let data = "v1";
+    const { result, rerender } = renderHook(() => useAutoSave(data, saveFn, 500));
+
+    act(() => { data = "v2"; rerender(); });
+    await act(async () => { vi.advanceTimersByTime(500); });
+    expect(result.current.saveStatus).toBe("error");
+
+    await act(async () => { window.dispatchEvent(new Event("online")); });
+
+    expect(saveFn).toHaveBeenCalledTimes(2);
+    expect(saveFn).toHaveBeenLastCalledWith("v2");
+    expect(result.current.saveStatus).toBe("saved");
+  });
+
   it("respeita delayMs customizado", async () => {
     const saveFn = vi.fn().mockResolvedValue(undefined);
     let data = "v1";

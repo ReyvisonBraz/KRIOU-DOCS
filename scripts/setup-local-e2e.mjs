@@ -184,6 +184,29 @@ for (const account of accounts) {
   );
 }
 
+// Documento determinístico para validar o ciclo da lixeira pelo navegador.
+const userAccount = accounts.find(({ role }) => role === "user");
+const userClient = createClient(status.API_URL, status.ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+const { error: userSignInError } = await userClient.auth.signInWithPassword({
+  email: userAccount.email,
+  password: userAccount.password,
+});
+if (userSignInError) throw userSignInError;
+const { error: staleTrashFixtureError } = await userClient
+  .from("documents")
+  .delete()
+  .eq("title", "Documento lixeira E2E");
+if (staleTrashFixtureError) throw staleTrashFixtureError;
+const { error: trashFixtureError } = await userClient.from("documents").insert({
+  user_id: accountIds.get("user"),
+  type: "resume",
+  title: "Documento lixeira E2E",
+  status: "finalizado",
+});
+if (trashFixtureError) throw trashFixtureError;
+
 const sql = postgres(status.DB_URL, { max: 1 });
 try {
   await sql.begin(async (transaction) => {

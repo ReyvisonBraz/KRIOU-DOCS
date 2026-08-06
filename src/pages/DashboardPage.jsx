@@ -1095,7 +1095,7 @@ const DashboardPage = () => {
                   fontFamily: "var(--font-body)", fontWeight: 800, fontSize: "0.875rem",
                 }}
               >
-                <Icon name="ArrowLeft" className="w-4 h-4" /> Voltar aos documentos
+                <Icon name="ChevronLeft" className="w-4 h-4" /> Voltar aos documentos
               </button>
             )}
 

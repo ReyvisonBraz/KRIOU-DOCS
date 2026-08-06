@@ -62,7 +62,7 @@ describe("DocumentCard", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("na lixeira oferece apenas restauracao e exclusao definitiva", () => {
+  it("na lixeira deixa a restauracao visivel sem depender do menu", () => {
     const onRestore = vi.fn();
     const onPermanentDelete = vi.fn();
     render(
@@ -75,7 +75,6 @@ describe("DocumentCard", () => {
     );
 
     expect(screen.getByRole("button", { name: "Ana Souza está na lixeira" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Mais ações para Ana Souza" }));
     fireEvent.click(screen.getByRole("button", { name: "Restaurar documento" }));
     expect(onRestore).toHaveBeenCalledOnce();
   });

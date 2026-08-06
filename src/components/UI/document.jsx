@@ -450,6 +450,21 @@ export const DocumentCard = ({
               <Icon name="CreditCard" className="w-4 h-4" /> Pagar e liberar PDF
             </button>
           )}
+          {isTrashed && onRestore && (
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); onRestore(doc); }}
+              style={{
+                minHeight: TOQUE, padding: "0 14px", borderRadius: 9,
+                border: "1px solid color-mix(in srgb, var(--teal) 45%, transparent)",
+                background: "color-mix(in srgb, var(--teal) 12%, transparent)",
+                color: "var(--teal)", display: "inline-flex", alignItems: "center", gap: 7,
+                cursor: "pointer", fontSize: 12, fontWeight: 800, fontFamily: "var(--font-body)",
+              }}
+            >
+              <Icon name="RefreshCw" className="w-4 h-4" /> Restaurar documento
+            </button>
+          )}
           <DocumentActionsMenu
             documentTitle={accessibleTitle}
             items={[

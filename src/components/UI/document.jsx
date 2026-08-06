@@ -198,11 +198,6 @@ export const DocumentCard = ({
           outline: 3px solid var(--focus-ring);
           outline-offset: -3px;
         }
-        @media (hover: hover) and (pointer: fine) {
-          .doc-action-bar {
-            opacity: ${hover ? 1 : 0.84};
-          }
-        }
       `}</style>
 
       {/* Header: icone + codigo ou tipo */}
@@ -456,9 +451,8 @@ export const DocumentCard = ({
               onClick={(event) => { event.stopPropagation(); onRestore(doc); }}
               style={{
                 minHeight: TOQUE, padding: "0 14px", borderRadius: 9,
-                border: "1px solid color-mix(in srgb, var(--teal) 45%, transparent)",
-                background: "color-mix(in srgb, var(--teal) 12%, transparent)",
-                color: "var(--teal)", display: "inline-flex", alignItems: "center", gap: 7,
+                border: "1px solid var(--teal)", background: "var(--teal)",
+                color: "var(--on-action)", display: "inline-flex", alignItems: "center", gap: 7,
                 cursor: "pointer", fontSize: 12, fontWeight: 800, fontFamily: "var(--font-body)",
               }}
             >

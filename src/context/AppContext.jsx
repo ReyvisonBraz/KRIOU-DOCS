@@ -68,6 +68,7 @@ import {
   RESTORABLE_PAGES,
   resolveInitialPage,
 } from "../domain/navigation";
+import { reconcileDocuments, selectLatestDraft } from "../domain/documents/synchronization";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONTEXTOS
@@ -158,6 +159,42 @@ const AppBootstrap = ({ children }) => {
   const { navigate, currentPage }         = useContext(NavigationContext);
   const { setIsLoading, setProfile }      = useContext(UIContext);
 
+  const refreshDocuments = useCallback(async ({ hydrateForms = false } = {}) => {
+    if (!userId) return [];
+
+    const [serverDocuments, cloudResume, cloudLegal] = await Promise.all([
+      DocumentService.fetchAll(userId),
+      DocumentService.loadDraft(userId, "resume").catch(() => null),
+      DocumentService.loadDraft(userId, "legal").catch(() => null),
+    ]);
+    const localDocuments = StorageService.loadDocuments(userId);
+    const resumeDraft = selectLatestDraft(StorageService.loadDraft(userId, "resume"), cloudResume);
+    const legalDraft = selectLatestDraft(StorageService.loadDraft(userId, "legal"), cloudLegal);
+    const reconciled = reconcileDocuments({
+      serverDocuments,
+      localDocuments: Array.isArray(localDocuments) ? localDocuments : [],
+      resumeDraft,
+      legalDraft,
+      userId,
+    });
+
+    setUserDocuments(reconciled);
+    if (hydrateForms) {
+      if (resumeDraft) setFormData(resumeDraft);
+      if (legalDraft) setLegalFormData(legalDraft);
+    }
+    return reconciled;
+  }, [setFormData, setLegalFormData, setUserDocuments, userId]);
+
+  useEffect(() => {
+    if (!userId || isAuthLoading) return undefined;
+    return DocumentService.subscribeToUserDocuments(userId, () => {
+      refreshDocuments().catch((err) => {
+        console.error("[AppBootstrap][ERRO] reconciliacao realtime falhou:", err.message);
+      });
+    });
+  }, [isAuthLoading, refreshDocuments, userId]);
+
   useEffect(() => {
     if (isAuthLoading) return;
 
@@ -199,73 +236,11 @@ const AppBootstrap = ({ children }) => {
       }
 
       try {
-        const supaDocs = await DocumentService.fetchAll(userId);
-        const localDocs = StorageService.loadDocuments(userId);
-        const localDrafts = Array.isArray(localDocs)
-          ? localDocs.filter(d => d.status === "rascunho")
-          : [];
-        const merged = [...supaDocs, ...localDrafts];
-
-        // Cria cards virtuais para rascunhos salvos via auto-save que nao
-        // tem card correspondente (ex: curriculos salvos apenas via saveDraft)
-        const resumeDraft = StorageService.loadDraft(userId, "resume");
-        const legalDraft  = StorageService.loadDraft(userId, "legal");
-
-        const hasResumeCard = merged.some(d => d.status === "rascunho" && d.type === "resume");
-        if (!hasResumeCard && resumeDraft && Object.keys(resumeDraft).length > 2) {
-          const now = new Date();
-          merged.push({
-            id: `draft-resume-${userId}`,
-            title: resumeDraft.nome || "Currículo (Rascunho)",
-            type: "resume",
-            status: "rascunho",
-            draft: { formData: resumeDraft, selectedTemplate: null, currentStep: 0 },
-            _draftOrigin: "autoSave",
-            date: now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
-            userId,
-          });
-        }
-
-        const hasLegalCard = merged.some(d => d.status === "rascunho" && d.type !== "resume");
-        if (!hasLegalCard && legalDraft && Object.keys(legalDraft).length > 2) {
-          const now = new Date();
-          merged.push({
-            id: `draft-legal-${userId}`,
-            title: "Documento Jurídico (Rascunho)",
-            type: "legal",
-            status: "rascunho",
-            draft: { legalFormData: legalDraft, documentType: null, selectedVariant: null, disabledFields: {}, legalStep: 1 },
-            _draftOrigin: "autoSave",
-            date: now.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }),
-            userId,
-          });
-        }
-
-        setUserDocuments(merged);
+        await refreshDocuments({ hydrateForms: true });
       } catch (err) {
-        console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);
+        console.error("[AppBootstrap][ERRO] sincronizacao inicial falhou:", err.message);
         const localDocs = StorageService.loadDocuments(userId);
-        if (Array.isArray(localDocs) && localDocs.length > 0) {
-          setUserDocuments(localDocs);
-        }
-      }
-
-      try {
-        const cloudResume = await DocumentService.loadDraft(userId, "resume");
-        const localResume = StorageService.loadDraft(userId, "resume");
-        const resumeData = cloudResume?.data || localResume;
-        if (resumeData) setFormData(resumeData);
-
-        const cloudLegal = await DocumentService.loadDraft(userId, "legal");
-        const localLegal = StorageService.loadDraft(userId, "legal");
-        const legalData = cloudLegal?.data || localLegal;
-        if (legalData) setLegalFormData(legalData);
-      } catch (err) {
-        console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
-        const resumeDraft = StorageService.loadDraft(userId, "resume");
-        if (resumeDraft) setFormData(resumeDraft);
-        const legalDraft = StorageService.loadDraft(userId, "legal");
-        if (legalDraft) setLegalFormData(legalDraft);
+        if (Array.isArray(localDocs)) setUserDocuments(localDocs);
       }
 
       // ─── Redirecionamento pos-login ──────────────────────────────────────
@@ -373,6 +348,7 @@ export const useApp = () => {
     saveStatus:       resume.saveStatus,
     lastSaved:        resume.lastSaved,
     triggerSave:      resume.triggerSave,
+    discardResumeDraft: resume.discardResumeDraft,
     userDocuments:    resume.userDocuments,        setUserDocuments: resume.setUserDocuments,
     saveDocument:     (data, options) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
     updateDocument:   (id, data, options) => resume.updateDocument(id, data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
@@ -389,6 +365,7 @@ export const useApp = () => {
     selectDocumentType: legal.selectDocumentType,
     resetLegalForm:    legal.resetLegalForm,
     triggerLegalSave:  legal.triggerSave,
+    discardLegalDraft: legal.discardLegalDraft,
 
     isLoading:         ui.isLoading,
     checkoutComplete:  ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,

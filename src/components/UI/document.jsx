@@ -98,6 +98,8 @@ export const DocumentCard = ({
   onPrint,
   onRename,
   onDuplicate,
+  onRestore,
+  onPermanentDelete,
   unlimitedAccess = false,
   animationDelay = 0,
 }) => {
@@ -129,6 +131,7 @@ export const DocumentCard = ({
   }[accessStatus];
   const person = extractPersonData(doc);
   const accessibleTitle = person.nome || doc.title || typeLabel || "documento";
+  const isTrashed = Boolean(doc.deletedAt);
 
   return (
     <article
@@ -153,9 +156,10 @@ export const DocumentCard = ({
     >
       <button
         type="button"
-        aria-label={`Abrir ${accessibleTitle}`}
+        aria-label={isTrashed ? `${accessibleTitle} está na lixeira` : `Abrir ${accessibleTitle}`}
         className="document-card-primary"
-        onClick={onClick}
+        onClick={isTrashed ? undefined : onClick}
+        disabled={isTrashed}
         style={{
           position: "absolute",
           inset: 0,
@@ -387,6 +391,19 @@ export const DocumentCard = ({
           </div>
         )}
 
+        {isTrashed && (
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10,
+            padding: "4px 9px", borderRadius: 999,
+            background: "color-mix(in srgb, var(--danger) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--danger) 25%, transparent)",
+            color: "var(--danger)", fontSize: 12, fontWeight: 800,
+            textTransform: "uppercase", letterSpacing: "0.04em",
+          }}>
+            <Icon name="Trash2" className="w-3 h-3" /> Na lixeira
+          </div>
+        )}
+
         {/* Acoes rapidas */}
         <div
           className="doc-action-bar"
@@ -402,7 +419,7 @@ export const DocumentCard = ({
             transition: EASE,
           }}
         >
-          <button
+          {!isTrashed && <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             style={{
@@ -414,11 +431,11 @@ export const DocumentCard = ({
             title="Editar o conteúdo deste documento"
           >
             <Icon name="Edit" className="w-4 h-4" /> Editar documento
-          </button>
-          {onDownload && hasDownloadAccess && (
+          </button>}
+          {!isTrashed && onDownload && hasDownloadAccess && (
             <DirectActionButton icon="Download" label="Baixar PDF" onClick={() => onDownload(doc)} accent={accent} />
           )}
-          {onPay && !hasDownloadAccess && accessStatus !== "draft" && (
+          {!isTrashed && onPay && !hasDownloadAccess && accessStatus !== "draft" && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onPay(doc); }}
@@ -436,15 +453,17 @@ export const DocumentCard = ({
           <DocumentActionsMenu
             documentTitle={accessibleTitle}
             items={[
-              onRename && { icon: "Edit", label: "Renomear", onSelect: () => onRename(doc) },
-              onDuplicate && { icon: "Copy", label: "Criar uma cópia", onSelect: () => onDuplicate(doc) },
-              onPrint && hasDownloadAccess && { icon: "Printer", label: "Imprimir", onSelect: () => onPrint(doc) },
-              onArchive && {
+              isTrashed && onRestore && { icon: "RefreshCw", label: "Restaurar documento", onSelect: () => onRestore(doc) },
+              isTrashed && onPermanentDelete && { icon: "Trash2", label: "Excluir definitivamente", onSelect: () => onPermanentDelete(doc), danger: true },
+              !isTrashed && onRename && { icon: "Edit", label: "Renomear", onSelect: () => onRename(doc) },
+              !isTrashed && onDuplicate && { icon: "Copy", label: "Criar uma cópia", onSelect: () => onDuplicate(doc) },
+              !isTrashed && onPrint && hasDownloadAccess && { icon: "Printer", label: "Imprimir", onSelect: () => onPrint(doc) },
+              !isTrashed && onArchive && {
                 icon: doc.archived ? "RefreshCw" : "Archive",
                 label: doc.archived ? "Restaurar" : "Arquivar",
                 onSelect: () => onArchive(doc),
               },
-              {
+              !isTrashed && {
                 icon: "WhatsApp",
                 label: "Compartilhar no WhatsApp",
                 onSelect: () => {
@@ -452,7 +471,7 @@ export const DocumentCard = ({
                   window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
                 },
               },
-              onDelete && { icon: "Trash2", label: "Excluir", onSelect: onDelete, danger: true },
+              !isTrashed && onDelete && { icon: "Trash2", label: "Mover para a lixeira", onSelect: onDelete, danger: true },
             ]}
           />
         </div>

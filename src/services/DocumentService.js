@@ -39,6 +39,8 @@ function mapDocumentRow(row) {
     variantName:      row.variant_name,
     variant:         row.variant,
     archived:         row.archived || false,
+    deletedAt:        row.deleted_at || null,
+    deletedBy:        row.deleted_by || null,
     paymentStatus:    row.payment_status || "pending",
     paymentId:        row.payment_id || null,
     paymentAmount:    row.payment_amount || null,
@@ -55,7 +57,8 @@ function mapDocumentRow(row) {
 
 export const DocumentService = {
   /**
-   * Busca documentos visiveis do usuario: finalizados e pagamentos em andamento.
+   * Busca documentos do usuario, incluindo os que estao na lixeira. A camada
+   * de dominio decide quais aparecem em cada visao do dashboard.
    *
    * @param {string} userId — ID do usuario para filtrar (defesa em profundidade)
    * @returns {Promise<Array>} Lista de documentos mapeados
@@ -229,24 +232,79 @@ export const DocumentService = {
    * Remove um documento pelo ID.
    *
    * @param {string} documentId — UUID do documento
-   * @returns {Promise<boolean>} true se removido com sucesso
+   * @param {string} userId — ID do usuario dono do documento
+   * @returns {Promise<Object>} Identificacao do documento removido
    *
    * PONTO DE FALHA: Se documentId for invalido ou nao pertencer ao usuario,
    * o RLS retornara sucesso mas nada sera deletado (0 rows affected).
    * O Supabase nao retorna erro nesse caso — sempre verifique se o documento
    * sumiu da lista apos a delecao.
    */
-  async remove(documentId) {
-    const { error } = await supabase
+  async remove(documentId, userId) {
+    if (!documentId || !userId) {
+      const err = new Error("[DocumentService][ERRO] remove: documentId e userId sao obrigatorios");
+      console.error(err.message);
+      throw err;
+    }
+
+    const { data, error } = await supabase
       .from("documents")
       .delete()
-      .eq("id", documentId);
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .select("id");
 
     if (error) {
       console.error("[DocumentService][ERRO] remove:", error.message, { documentId });
       throw error;
     }
-    return true;
+
+    if (!Array.isArray(data) || data.length !== 1) {
+      const err = new Error("O servidor nao confirmou a exclusao do documento");
+      console.error("[DocumentService][ERRO] remove sem linha removida", { documentId, userId });
+      throw err;
+    }
+
+    return data[0];
+  },
+
+  /** Move um documento para a lixeira sem apagar seus dados. */
+  async moveToTrash(documentId, userId) {
+    if (!documentId || !userId) {
+      throw new Error("[DocumentService][ERRO] moveToTrash: documentId e userId sao obrigatorios");
+    }
+
+    const deletedAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ deleted_at: deletedAt, deleted_by: userId })
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .select("id, deleted_at, deleted_by")
+      .single();
+
+    if (error) throw error;
+    return { id: data.id, deletedAt: data.deleted_at, deletedBy: data.deleted_by };
+  },
+
+  /** Restaura um documento que estava na lixeira. */
+  async restoreFromTrash(documentId, userId) {
+    if (!documentId || !userId) {
+      throw new Error("[DocumentService][ERRO] restoreFromTrash: documentId e userId sao obrigatorios");
+    }
+
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ deleted_at: null, deleted_by: null })
+      .eq("id", documentId)
+      .eq("user_id", userId)
+      .not("deleted_at", "is", null)
+      .select("id")
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 
   /**
@@ -458,7 +516,7 @@ export const DocumentService = {
 
     const { data, error } = await supabase
       .from("document_drafts")
-      .select("data, current_step")
+      .select("data, current_step, updated_at")
       .eq("user_id", userId)
       .eq("type", draftType)
       .maybeSingle();
@@ -468,7 +526,24 @@ export const DocumentService = {
     return {
       data: data.data,
       currentStep: data.current_step || 0,
+      updatedAt: data.updated_at,
     };
+  },
+
+  subscribeToUserDocuments(userId, onChange) {
+    if (!userId || typeof onChange !== "function") return () => {};
+
+    const channel = supabase
+      .channel(`documents:${userId}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "documents", filter: `user_id=eq.${userId}`,
+      }, onChange)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "document_drafts", filter: `user_id=eq.${userId}`,
+      }, onChange)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   },
 
   /**

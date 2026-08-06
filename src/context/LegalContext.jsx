@@ -48,14 +48,26 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
   }, [isLoading]);
 
   // Funcao de auto-save — persiste localmente e sincroniza com nuvem
-  const saveFn = useCallback((data) => {
+  const saveFn = useCallback(async (data) => {
     if (!isReadyRef.current || !userId || Object.keys(data).length === 0) return;
     const sanitized = sanitizeFormData(data);
     StorageService.saveDraft(sanitized, userId, "legal");
-    DocumentService.saveDraft(userId, "legal", sanitized, legalStep).catch(() => {});
+    const synced = await DocumentService.saveDraft(userId, "legal", sanitized, legalStep);
+    if (!synced) throw new Error("Rascunho salvo neste dispositivo, mas não sincronizado com a nuvem");
   }, [userId, legalStep]);
 
-  const { saveStatus, triggerSave } = useAutoSave(legalFormData, saveFn);
+  const { saveStatus, triggerSave, discardPendingSave } = useAutoSave(legalFormData, saveFn);
+
+  const discardLegalDraft = useCallback(async () => {
+    discardPendingSave();
+    setLegalFormData({});
+    setDocumentType(null);
+    setSelectedVariant(null);
+    setDisabledFields({});
+    setLegalStep(0);
+    StorageService.clearDraft(userId, "legal");
+    await DocumentService.clearDraft(userId, "legal");
+  }, [discardPendingSave, userId]);
 
   // Repassa saveStatus ao UIContext (AppContext) para exibicao global
   useEffect(() => {
@@ -89,7 +101,7 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
     legalStep, setLegalStep,
     legalDocumentTypes: LEGAL_DOCUMENT_TYPES,
     updateLegalField, selectDocumentType, resetLegalForm,
-    triggerSave,
+    triggerSave, discardLegalDraft,
   };
 
   return <LegalContext.Provider value={value}>{children}</LegalContext.Provider>;

@@ -27,6 +27,7 @@ const DashboardPage = () => {
     setLegalStep,
     setDocumentType, setSelectedVariant, setLegalFormData, setDisabledFields,
     setFormData, setEditingDocId, setSelectedTemplate,
+    discardResumeDraft, discardLegalDraft,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
@@ -176,26 +177,75 @@ const DashboardPage = () => {
 
   const handleDeleteDocument = async (doc) => {
     const confirmed = await requestConfirm({
-      title: "Excluir documento",
-      message: `Deseja excluir "${doc.title}"? Esta ação não pode ser desfeita.`,
-      confirmLabel: "Excluir",
+      title: isLocalDraftDocument(doc) ? "Excluir rascunho" : "Mover para a lixeira",
+      message: isLocalDraftDocument(doc)
+        ? `Deseja excluir o rascunho "${doc.title}"? Esta ação não pode ser desfeita.`
+        : `Deseja mover "${doc.title}" para a lixeira? Você poderá restaurá-lo depois.`,
+      confirmLabel: isLocalDraftDocument(doc) ? "Excluir rascunho" : "Mover para lixeira",
       cancelLabel: "Cancelar",
       danger: true,
     });
     if (!confirmed) return;
 
-    const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
-    setUserDocuments(updated);
+    try {
+      if (isLocalDraftDocument(doc)) {
+        if (doc.type === "resume") await discardResumeDraft();
+        else await discardLegalDraft();
+      } else {
+        const trashed = await DocumentService.moveToTrash(doc.id, userId);
+        const updated = (userDocuments || []).map((item) =>
+          item.id === doc.id ? { ...item, ...trashed } : item
+        );
+        setUserDocuments(updated);
+        StorageService.saveDocuments(updated, userId);
+        showToast.success("Documento movido para a lixeira.");
+        return;
+      }
+
+      const updated = (userDocuments || []).filter((d) => d.id !== doc.id);
+      setUserDocuments(updated);
+      StorageService.saveDocuments(updated, userId);
+      showToast.success("Rascunho excluído definitivamente.");
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] exclusao nao confirmada:", err.message);
+      showToast.error("Não foi possível excluir o documento. Ele continua na sua lista.");
+    }
+  };
+
+  const handleRestoreDocument = async (doc) => {
+    try {
+      await DocumentService.restoreFromTrash(doc.id, userId);
+      const updated = (userDocuments || []).map((item) =>
+        item.id === doc.id ? { ...item, deletedAt: null, deletedBy: null } : item
+      );
+      setUserDocuments(updated);
+      StorageService.saveDocuments(updated, userId);
+      showToast.success("Documento restaurado.");
+    } catch (err) {
+      console.error("[DashboardPage][ERRO] restauracao nao confirmada:", err.message);
+      showToast.error("Não foi possível restaurar o documento.");
+    }
+  };
+
+  const handlePermanentDeleteDocument = async (doc) => {
+    const confirmed = await requestConfirm({
+      title: "Excluir definitivamente",
+      message: `Deseja apagar "${doc.title}" permanentemente? Esta ação não pode ser desfeita.`,
+      confirmLabel: "Excluir definitivamente",
+      cancelLabel: "Cancelar",
+      danger: true,
+    });
+    if (!confirmed) return;
 
     try {
+      await DocumentService.remove(doc.id, userId);
+      const updated = (userDocuments || []).filter((item) => item.id !== doc.id);
+      setUserDocuments(updated);
       StorageService.saveDocuments(updated, userId);
-      if (!isLocalDraftDocument(doc)) {
-        await DocumentService.remove(doc.id);
-      }
-      showToast.success("Documento excluído.");
+      showToast.success("Documento excluído definitivamente.");
     } catch (err) {
-      console.error("[DashboardPage][ERRO] saveDocuments falhou apos delecao:", err.message);
-      showToast.error("Documento removido da lista, mas pode não ter sido salvo no servidor.");
+      console.error("[DashboardPage][ERRO] exclusao definitiva nao confirmada:", err.message);
+      showToast.error("Não foi possível excluir definitivamente.");
     }
   };
 
@@ -397,9 +447,11 @@ const DashboardPage = () => {
   };
 
   const activeTabLabel = tabs.find(t => t.id === activeTab)?.label || "documentos";
-  const paidCount = allDocs.filter(isDocumentPaid).length;
-  const pendingPaymentCount = allDocs.filter(isDocumentPaymentPending).length;
-  const draftCount = allDocs.filter(isLocalDraftDocument).length;
+  const activeDocs = allDocs.filter((doc) => !doc.deletedAt);
+  const trashCount = allDocs.filter((doc) => doc.deletedAt).length;
+  const paidCount = activeDocs.filter(isDocumentPaid).length;
+  const pendingPaymentCount = activeDocs.filter(isDocumentPaymentPending).length;
+  const draftCount = activeDocs.filter(isLocalDraftDocument).length;
   const logoTitle = (
     <span className="font-display text-2xl font-black tracking-tight">
       <span className="text-coral">Kriou</span>{" "}
@@ -492,9 +544,9 @@ const DashboardPage = () => {
                 margin: "8px 0 0",
                 lineHeight: 1.5,
               }}>
-                {allDocs.length === 0
+                {activeDocs.length === 0
                   ? "Crie seu primeiro documento profissional."
-                  : `${allDocs.length} documento${allDocs.length !== 1 ? "s" : ""} no seu workspace`}
+                  : `${activeDocs.length} documento${activeDocs.length !== 1 ? "s" : ""} no seu workspace`}
               </p>
             </div>
 
@@ -751,6 +803,7 @@ const DashboardPage = () => {
                 >
                   <option value="ativos">Ativos</option>
                   <option value="arquivados">Arquivados ({allDocs.filter(d => d.archived).length})</option>
+                  <option value="lixeira">Lixeira ({trashCount})</option>
                   <option value="todos">Todos</option>
                 </select>
               </label>
@@ -816,7 +869,9 @@ const DashboardPage = () => {
           <nav aria-label="Filtrar documentos" className="tab-scroll" style={{ marginBottom: 24 }}>
             {visibleTabs.map((tab) => {
               const countBase = allDocs
-                .filter((d) => archiveFilter === "ativos" ? !d.archived : archiveFilter === "arquivados" ? d.archived : true)
+                .filter((d) => archiveFilter === "lixeira"
+                  ? Boolean(d.deletedAt)
+                  : !d.deletedAt && (archiveFilter === "ativos" ? !d.archived : archiveFilter === "arquivados" ? d.archived : true))
                 .filter((d) => matchesDocumentPaymentFilter(d, statusFilter));
               const count = tab.id === "todos" ? countBase.length :
                 tab.filterType === "type" ? countBase.filter(d => d.type === tab.id).length :
@@ -932,6 +987,8 @@ const DashboardPage = () => {
                     onArchive={handleArchiveDocument}
                     onRename={() => openRenameDialog(doc)}
                     onDuplicate={() => handleDuplicateDocument(doc)}
+                    onRestore={handleRestoreDocument}
+                    onPermanentDelete={handlePermanentDeleteDocument}
                     unlimitedAccess={profile?.role === "admin"}
                     animationDelay={index * 0.04}
                   />

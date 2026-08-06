@@ -984,7 +984,7 @@ const LegalEditorPage = () => {
             >
               <Icon name="Home" className="w-5 h-5" />
             </button>
-            <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+            <SaveIndicator status={saveStatus} lastSaved={lastSaved} onRetry={triggerLegalSave} />
           </div>
         }
       />
@@ -1019,7 +1019,7 @@ const LegalEditorPage = () => {
                   </span>
                 )}
               </div>}
-              <SaveIndicator status={saveStatus} lastSaved={lastSaved} />
+              <SaveIndicator status={saveStatus} lastSaved={lastSaved} onRetry={triggerLegalSave} />
             </div>
           }
         />

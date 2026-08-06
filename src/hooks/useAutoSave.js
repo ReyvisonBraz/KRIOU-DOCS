@@ -27,6 +27,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { logger } from "../utils/logger";
 
 export function useAutoSave(data, saveFn, delayMs = 1500) {
   const [saveStatus, setSaveStatus] = useState("idle");
@@ -36,6 +37,7 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
   const saveFnRef = useRef(saveFn);
   const dataRef = useRef(data);
   const skipNextChangeRef = useRef(false);
+  const failedSaveRef = useRef(false);
 
   // Manter referencias sempre atualizadas
   useEffect(() => {
@@ -51,13 +53,25 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
     setSaveStatus("saving");
     try {
       await saveFnRef.current(dataRef.current);
+      failedSaveRef.current = false;
       setSaveStatus("saved");
       setLastSaved(new Date());
+      return true;
     } catch (err) {
-      console.error("[useAutoSave][ERRO] Save falhou:", err.message);
+      failedSaveRef.current = true;
+      logger.error("useAutoSave", "Sincronização manual falhou", err);
       setSaveStatus("error");
+      return false;
     }
   }, []);
+
+  useEffect(() => {
+    const retryWhenOnline = () => {
+      if (failedSaveRef.current) void triggerSave();
+    };
+    window.addEventListener("online", retryWhenOnline);
+    return () => window.removeEventListener("online", retryWhenOnline);
+  }, [triggerSave]);
 
   // Usado ao descartar um rascunho: cancela a gravacao agendada e impede que
   // o reset do formulario recrie o rascunho logo depois da exclusao.
@@ -67,6 +81,7 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
       timerRef.current = null;
     }
     skipNextChangeRef.current = true;
+    failedSaveRef.current = false;
     setSaveStatus("idle");
   }, []);
 
@@ -91,10 +106,12 @@ export function useAutoSave(data, saveFn, delayMs = 1500) {
     timerRef.current = setTimeout(async () => {
       try {
         await saveFnRef.current(dataRef.current);
+        failedSaveRef.current = false;
         setSaveStatus("saved");
         setLastSaved(new Date());
       } catch (err) {
-        console.error("[useAutoSave][ERRO] Auto-save falhou:", err.message);
+        failedSaveRef.current = true;
+        logger.error("useAutoSave", "Sincronização automática falhou", err);
         setSaveStatus("error");
       }
     }, delayMs);

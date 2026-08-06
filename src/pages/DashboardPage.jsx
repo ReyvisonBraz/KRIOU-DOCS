@@ -7,6 +7,7 @@ import { DocumentAccessService } from "../services/DocumentAccessService";
 import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
+import { logger } from "../utils/logger";
 import { usePDF } from "../hooks/usePDF";
 import { generateDocumentCode } from "../utils/documentCode";
 import { INITIAL_FORM_DATA } from "../data/constants";
@@ -207,7 +208,7 @@ const DashboardPage = () => {
       StorageService.saveDocuments(updated, userId);
       showToast.success("Rascunho excluído definitivamente.");
     } catch (err) {
-      console.error("[DashboardPage][ERRO] exclusao nao confirmada:", err.message);
+      logger.error("DocumentSync", "Falha ao mover documento para a lixeira", err);
       showToast.error("Não foi possível excluir o documento. Ele continua na sua lista.");
     }
   };
@@ -222,7 +223,7 @@ const DashboardPage = () => {
       StorageService.saveDocuments(updated, userId);
       showToast.success("Documento restaurado.");
     } catch (err) {
-      console.error("[DashboardPage][ERRO] restauracao nao confirmada:", err.message);
+      logger.error("DocumentSync", "Falha ao restaurar documento", err);
       showToast.error("Não foi possível restaurar o documento.");
     }
   };
@@ -244,7 +245,7 @@ const DashboardPage = () => {
       StorageService.saveDocuments(updated, userId);
       showToast.success("Documento excluído definitivamente.");
     } catch (err) {
-      console.error("[DashboardPage][ERRO] exclusao definitiva nao confirmada:", err.message);
+      logger.error("DocumentSync", "Falha ao excluir documento definitivamente", err);
       showToast.error("Não foi possível excluir definitivamente.");
     }
   };

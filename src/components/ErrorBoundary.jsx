@@ -56,8 +56,10 @@ class ErrorBoundary extends React.Component {
           justifyContent: "center",
           padding: 32,
           textAlign: "center",
-          background: "var(--bg, #0f0f1e)",
-          color: "var(--text, #e0e0f0)",
+          // --bg nunca existiu; o token correto e --navy. Sem fallback:
+          // se index.css nao carregou, o app ja nao renderiza mesmo.
+          background: "var(--navy)",
+          color: "var(--text)",
         }}
       >
         <div style={{
@@ -73,7 +75,7 @@ class ErrorBoundary extends React.Component {
           Algo deu errado
         </h1>
 
-        <p style={{ fontSize: 14, color: "var(--text-muted, #888)", maxWidth: 380, marginBottom: 28, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 380, marginBottom: 28, lineHeight: 1.6 }}>
           Ocorreu um erro inesperado. Seus dados locais estão preservados.
           Tente recarregar ou clique no botão abaixo.
         </p>
@@ -83,7 +85,7 @@ class ErrorBoundary extends React.Component {
             onClick={this.handleReset}
             style={{
               padding: "12px 24px", borderRadius: 10,
-              background: "var(--coral, #E94560)", color: "#fff",
+              background: "var(--coral)", color: "#fff",
               border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer",
             }}
           >
@@ -93,7 +95,7 @@ class ErrorBoundary extends React.Component {
             onClick={() => window.location.reload()}
             style={{
               padding: "12px 24px", borderRadius: 10,
-              background: "var(--surface-2, rgba(255,255,255,0.06))",
+              background: "var(--surface-2)",
               color: "var(--text-muted)", border: "1px solid var(--border)",
               fontWeight: 600, fontSize: 14, cursor: "pointer",
             }}

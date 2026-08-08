@@ -8,6 +8,26 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Kriou Docs — Documentos Profissionais</title>
+    <!--
+      Aplica o tema ANTES da primeira pintura.
+      Sem isto a pagina pinta escura e so troca quando o React monta,
+      causando um flash a cada carregamento para quem usa o tema claro.
+      Mantenha a chave e as cores em sincronia com src/components/Theme.jsx.
+    -->
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem("kriou_theme") === "light" ? "light" : "dark";
+          var root = document.documentElement;
+          root.dataset.theme = mode;
+          root.style.colorScheme = mode;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", mode === "light" ? "#F5F7FA" : "#090914");
+        } catch (e) {
+          /* localStorage bloqueado: segue no tema escuro padrao */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **347 passando, 23 arquivos** | `npm test` |
+| Testes unitários | ✅ **371 passando, 25 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ Playwright, Chromium | `npm run test:e2e:public` |
@@ -124,7 +124,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 | Download autorizado pelo backend | ✅ |
 | E-mail transacional | ✅ |
 | Tema claro/escuro | ✅ |
-| Painel administrativo | 🟡 fundação apenas |
+| Painel administrativo | ✅ versão simples corrigida — sistema de papéis rico dormente |
 | Exportação de dados do titular | 🟡 código pronto, **função não publicada** |
 | Exclusão de conta | ❌ não existe |
 
@@ -140,7 +140,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 |---|---|
 | Arquivos JS/JSX em `src/` | 127 |
 | Linhas em `src/` | ~29.500 |
-| Arquivos de teste | 23 |
+| Arquivos de teste | 25 |
 | Edge Functions | 7 + `_shared` (1 nunca publicada) |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -150,7 +150,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 347 passando
+npm test                  # deve dar 371 passando
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

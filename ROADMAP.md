@@ -275,69 +275,56 @@ Operadores a cobrir em F4.4: Supabase, Mercado Pago, Vercel, provedor de e-mail,
 
 ## F5 — Painel administrativo
 
-### ⚠️ Reescrita em 2026-08-08 — leia antes de continuar
+✅ **Versão simplificada concluída em 2026-08-08** (`b9275f0`). Decisão tomada: manter o
+painel simples (`role = 'admin'`), sem conectar o sistema de papéis rico descoberto na
+[F3.1](#f3--ambiente-e-banco) — ver detalhes abaixo.
+
+| # | Tarefa | Estado |
+|---|---|---|
+| **F5.1** | Refatorar `admin/index.ts` para os helpers `_shared` | ✅ |
+| ~~**F5.2**~~ | Criar tabela `admin_audit_events` | ✅ já existia no banco (`014`, `018`) |
+| **F5.3** | Paginação e busca server-side | ✅ |
+| **F5.4** | Agregação correta nas estatísticas | ✅ |
+
+### O que mudou
+
+- `supabase/functions/admin/index.ts` reescrito seguindo o molde de `authorize-download`:
+  usa os helpers `_shared`, tem CORS, não vaza mais erro interno. Rotas passaram de
+  `GET ?action=x` (query string) para `POST { action: x }` (corpo), como o resto da plataforma.
+- Lógica extraída para `_shared/admin.ts` — sem `Deno.*`, portanto testável no Vitest. **17
+  testes novos**, incluindo o de regressão que trava a paginação de `docsByType`.
+- **Paginação real** na lista de usuários: e-mail e contagem de documentos buscados só da
+  página atual, não mais de até 1000 usuários ou da tabela `documents` inteira.
+- `docsByType` pagina em lotes de 1000 até esgotar as linhas — antes truncava silenciosamente
+  no limite padrão do PostgREST, podendo não bater com `totalDocs`.
+- `AdminService.js` novo, seguindo o padrão de `PrivacyService`/`PaymentService`. **7 testes**.
+- `AdminPage.jsx`: busca com debounce, paginação Anterior/Próxima, carregamento e erro
+  separados por seção. Corrigido também um bug de performance não relacionado: `TabBar` e o
+  objeto de estilos eram recriados a cada render, fazendo a barra de abas
+  desmontar/remontar a cada clique.
+
+### O sistema de papéis rico segue dormente — por decisão, não por esquecimento
 
 A [F3.1](#f3--ambiente-e-banco) trouxe do banco 10 migrations (`014`–`023`) com um sistema de
-administração **pronto no banco e nunca conectado ao código**. Isso muda o que esta frente
-significa. Duas das quatro tarefas originais **já estão feitas do lado do banco**:
-
-| # | Tarefa original | Estado real |
-|---|---|---|
-| **F5.1** | Refatorar `admin/index.ts` para os helpers `_shared` | 🔴 ainda pendente no código |
-| ~~**F5.2**~~ | Criar tabela `admin_audit_events` | ✅ **já existe** (`014`, `018`) — falta o código escrever nela |
-| **F5.3** | Paginação e busca server-side | 🔴 ainda pendente |
-| **F5.4** | Agregação SQL nas estatísticas | 🔴 ainda pendente |
-
-### O que existe no banco, sem nenhum código usando
+administração completo, pronto e nunca conectado ao código:
 
 - **A falha de autopromoção a admin já está corrigida** (`016`) — trigger + permissão por
-  coluna impedem `UPDATE profiles SET role = 'admin'` vindo do cliente. Isso valia como risco
-  aberto até esta descoberta.
+  coluna impedem `UPDATE profiles SET role = 'admin'` vindo do cliente.
 - **Sistema de papéis completo**: `support`, `finance`, `admin`, `owner`, com capacidades
   granulares (`payments.reprocess`, `refunds.approve`, `roles.manage`, etc.), num schema
   `private` inacessível ao cliente. Funções RPC restritas a `service_role`:
   `kriou_admin_authorization`, `kriou_admin_change_role`, `kriou_admin_list_role_assignments`.
-- **`admin_audit_events` já é append-only**, com `operation_id` para idempotência.
-- **Uma lixeira reversível de documentos** (`documents.deleted_at`/`deleted_by`, `022`–`023`)
-  — área nova, fora de qualquer plano anterior.
+- **`admin_audit_events` já é append-only**, com `operation_id` para idempotência — pronta
+  para uso, mas **nenhum código escreve nela ainda**, nem mesmo o `admin/index.ts` reescrito.
 
-### 🤔 Decisão necessária antes de programar
-
-Duas direções possíveis, e são bem diferentes em tamanho:
-
-**A. Simplificar** — manter o painel como está hoje (só `role = 'admin'` simples) e apenas
-corrigir os problemas técnicos do `admin/index.ts` (F5.1, F5.3, F5.4). O sistema de papéis
-rico fica no banco, sem uso, documentado como dormente.
-
-**B. Conectar** — construir a Edge Function e a interface que realmente usam o sistema de
-papéis já pronto: login diferenciado por `support`/`finance`/`admin`/`owner`, tela de gestão
-de papéis, trilha de auditoria visível. Escopo bem maior — é essencialmente construir o
-painel administrativo "de verdade" que a fundação já antecipa.
-
-Não decidi isso sozinho porque muda o tamanho da frente por uma ordem de grandeza. Enquanto
-não houver decisão, meu plano é seguir com F5.1/F5.3/F5.4 no modelo atual (opção A), que tem
-valor mesmo se a opção B vier depois — o `admin/index.ts` corrigido é pré-requisito de
-qualquer uma das duas.
-
-### Sobre `admin/index.ts` hoje
-
-É o **outlier de segurança** do backend:
-
-- é a única função **sem CORS** (monta `Response` à mão em vários pontos)
-- **não usa os helpers `_shared`** — reimplementa auth com `.replace("Bearer ", "")`,
-  substring-replace em vez do `startsWith` mais estrito de `_shared/auth.ts`
-- **vaza o erro interno cru** ao cliente, contra o padrão de todas as outras funções
-- a action `users` faz `select` sem `range` nem `limit`, puxa **todos os documentos do
-  sistema** só para contar em memória, e usa `perPage: 1000` — o usuário 1001 aparece com
-  `email: null` silenciosamente
-
-Já está pronto: a action `user-docs` restringe corretamente a metadados, sem `form_data`.
+Isso permanece disponível para uma **F5.B futura**, caso o painel precise crescer para
+suporte/financeiro com níveis de acesso reais. Não é dívida técnica — é opção guardada.
 
 ### E a lixeira de documentos (`022`–`023`)?
 
-Não estava em nenhum plano. Registrada aqui como pendência de decisão, não como tarefa:
-precisa de UI (botão "mover para lixeira", tela de itens excluídos, exclusão definitiva) e
-de Edge Function ou policy que a exponha. Fica de fora do escopo até haver decisão.
+Não estava em nenhum plano. Registrada como pendência de decisão, não como tarefa: precisa
+de UI (mover para lixeira, tela de itens excluídos, exclusão definitiva) e de Edge Function
+ou policy que a exponha. Fora do escopo até haver decisão.
 
 ---
 

@@ -213,46 +213,39 @@ Fora do Postgres: `localStorage` via `clearUserData` em `src/utils/storage.js:49
 
 📋 **Passo a passo completo: [docs/runbook-deploy.md](docs/runbook-deploy.md)**
 
-| # | Tarefa | Pronto quando |
+| # | Tarefa | Estado |
 |---|---|---|
-| **F3.0** | Obter credenciais, `supabase login`, `link`, criar `.env` | ⛔ **Bloqueia todo o resto** |
-| **F3.1** | Confirmar em que migration o ambiente alvo realmente está | Divergência conhecida e registrada |
-| **F3.2** | Aplicar `012_harden_database_functions.sql` | Aplicada e registrada em `STATUS.md` |
-| **F3.3** | Validar RLS com **duas identidades reais** | Usuário A não enxerga nada do B |
-| **F3.4** | Ensaiar rollback de aplicação e de banco | Procedimento validado na prática |
-| **F3.5** | Publicar `export-user-data` | Botão do perfil funciona de verdade |
+| ~~**F3.0**~~ | Obter credenciais, login, link | ✅ feito em 2026-08-08 — projeto `uyptmlezmdzfufzuknfz` linkado |
+| ~~**F3.1**~~ | Confirmar em que migration o ambiente está | ✅ feito — ver achado abaixo |
+| ~~**F3.2**~~ | Aplicar `012_harden_database_functions.sql` | ✅ **já estava aplicada** — nada a fazer |
+| **F3.3** | Validar RLS com **duas identidades reais** | 🔴 pendente |
+| **F3.4** | Ensaiar rollback de aplicação e de banco | 🔴 pendente |
+| **F3.5** | Publicar `export-user-data` | 🔴 pendente — próximo passo natural |
 
-### ⛔ Nada desta frente é executável na máquina de desenvolvimento hoje
+### ⚠️ O achado da F3.1: 10 migrations existiam só em produção
 
-Não existe `.env`, o projeto **não está linkado** (`supabase/.temp/` ausente) e o
-`config.toml` não tem `project_id`. F3.0 é obtenção de acesso, não programação.
+`npx supabase migration list` mostrou `014`–`023` aplicadas no banco e ausentes do repo.
+A armadilha que este documento previa (histórico vazio, aplicação manual pelo painel)
+**não se confirmou** — `001` a `013` estavam corretamente rastreadas. O problema real era
+outro: **alguém aplicou 10 migrations direto no banco e nunca commitou.**
 
-### ⚠️ A armadilha da F3.1 — leia antes de rodar `db push`
+Usei `supabase migration fetch --linked` para recuperar o conteúdo exato do histórico do
+banco — não é reconstrução, é o SQL que realmente rodou. Conferido com backup antes de
+qualquer mudança: `001`–`013` batem com o repo. As 10 novas foram commitadas em `678ca42`.
 
-Há forte indício de que as migrations foram aplicadas **à mão pelo painel**:
-`add_onboarding_done.sql` diz literalmente *"Execute este SQL no Supabase SQL Editor"*.
+**O que elas contêm muda o quadro da [F5](#f5--painel-administrativo) por completo** — ver lá.
 
-Se for o caso, o histórico remoto está vazio e **`supabase db push` tentaria reaplicar da 001
-à 013 contra um banco que já tem tudo** — a `007` faz `VALIDATE CONSTRAINT` e a `013` tem
-`RAISE EXCEPTION`. É preciso rodar `supabase migration repair --status applied 001 … 011`
-antes. Isso não estava documentado em lugar nenhum.
-
-### O que já foi adiantado (2026-08-08, sem precisar de credenciais)
+### O que já foi adiantado (2026-08-08)
 
 | Item | Onde |
 |---|---|
-| Rollback da `012`, escrito **antes** de aplicar | `supabase/rollback/012_harden_database_functions_down.sql` |
-| Runbook completo dos 8 passos | `docs/runbook-deploy.md` |
-| Variáveis de ambiente que faltavam documentar | `.env.example` |
+| Rollback da `012` | `supabase/rollback/012_harden_database_functions_down.sql` |
+| Runbook completo | `docs/runbook-deploy.md` |
+| Variáveis de ambiente documentadas | `.env.example` |
+| 10 migrations recuperadas do banco | `678ca42` |
 
-**A `012` é segura:** só altera permissão e `search_path` de 14 funções. Não cria, não apaga
-e não toca em dado nenhum. É a melhor migration possível para estrear o pipeline.
-
-**A `F3.5` é o deploy mais barato do projeto:** `export-user-data` não precisa de nenhum
-secret e destrava um botão que já está na interface e hoje não funciona.
-
-> **F3.1 vem antes de tudo.** Não empilhe a migration `014` (F2.2) sem saber onde o banco
-> realmente está. A `012` existe no repo desde julho e nunca foi aplicada.
+**A `F3.5` é o próximo passo natural:** publicar `export-user-data` não precisa de nenhum
+secret e destrava um botão que já está na interface.
 
 ---
 
@@ -282,27 +275,69 @@ Operadores a cobrir em F4.4: Supabase, Mercado Pago, Vercel, provedor de e-mail,
 
 ## F5 — Painel administrativo
 
-| # | Tarefa | Pronto quando |
+### ⚠️ Reescrita em 2026-08-08 — leia antes de continuar
+
+A [F3.1](#f3--ambiente-e-banco) trouxe do banco 10 migrations (`014`–`023`) com um sistema de
+administração **pronto no banco e nunca conectado ao código**. Isso muda o que esta frente
+significa. Duas das quatro tarefas originais **já estão feitas do lado do banco**:
+
+| # | Tarefa original | Estado real |
 |---|---|---|
-| **F5.1** | Refatorar `supabase/functions/admin/index.ts` para os helpers `_shared` | Com CORS, sem vazar `err.message` |
-| **F5.2** | Tabela `admin_audit_events` com RLS fechada para clientes | Ações administrativas ficam registradas |
-| **F5.3** | Paginação, limites e busca server-side | Sem `perPage: 1000` nem contagem em memória |
-| **F5.4** | Agregação SQL nas estatísticas | Não puxa todos os documentos para contar |
+| **F5.1** | Refatorar `admin/index.ts` para os helpers `_shared` | 🔴 ainda pendente no código |
+| ~~**F5.2**~~ | Criar tabela `admin_audit_events` | ✅ **já existe** (`014`, `018`) — falta o código escrever nela |
+| **F5.3** | Paginação e busca server-side | 🔴 ainda pendente |
+| **F5.4** | Agregação SQL nas estatísticas | 🔴 ainda pendente |
 
-### Por que F5.1 vem primeiro
+### O que existe no banco, sem nenhum código usando
 
-`admin/index.ts` é hoje o **outlier de segurança** do backend:
+- **A falha de autopromoção a admin já está corrigida** (`016`) — trigger + permissão por
+  coluna impedem `UPDATE profiles SET role = 'admin'` vindo do cliente. Isso valia como risco
+  aberto até esta descoberta.
+- **Sistema de papéis completo**: `support`, `finance`, `admin`, `owner`, com capacidades
+  granulares (`payments.reprocess`, `refunds.approve`, `roles.manage`, etc.), num schema
+  `private` inacessível ao cliente. Funções RPC restritas a `service_role`:
+  `kriou_admin_authorization`, `kriou_admin_change_role`, `kriou_admin_list_role_assignments`.
+- **`admin_audit_events` já é append-only**, com `operation_id` para idempotência.
+- **Uma lixeira reversível de documentos** (`documents.deleted_at`/`deleted_by`, `022`–`023`)
+  — área nova, fora de qualquer plano anterior.
 
-- é a única função **sem CORS** (linhas 30, 40, 76, 105, 125, 132, 139 montam `Response` à mão)
+### 🤔 Decisão necessária antes de programar
+
+Duas direções possíveis, e são bem diferentes em tamanho:
+
+**A. Simplificar** — manter o painel como está hoje (só `role = 'admin'` simples) e apenas
+corrigir os problemas técnicos do `admin/index.ts` (F5.1, F5.3, F5.4). O sistema de papéis
+rico fica no banco, sem uso, documentado como dormente.
+
+**B. Conectar** — construir a Edge Function e a interface que realmente usam o sistema de
+papéis já pronto: login diferenciado por `support`/`finance`/`admin`/`owner`, tela de gestão
+de papéis, trilha de auditoria visível. Escopo bem maior — é essencialmente construir o
+painel administrativo "de verdade" que a fundação já antecipa.
+
+Não decidi isso sozinho porque muda o tamanho da frente por uma ordem de grandeza. Enquanto
+não houver decisão, meu plano é seguir com F5.1/F5.3/F5.4 no modelo atual (opção A), que tem
+valor mesmo se a opção B vier depois — o `admin/index.ts` corrigido é pré-requisito de
+qualquer uma das duas.
+
+### Sobre `admin/index.ts` hoje
+
+É o **outlier de segurança** do backend:
+
+- é a única função **sem CORS** (monta `Response` à mão em vários pontos)
 - **não usa os helpers `_shared`** — reimplementa auth com `.replace("Bearer ", "")`,
-  que é substring-replace, em vez do `startsWith` mais estrito de `_shared/auth.ts:18`
-- **vaza o erro interno cru** ao cliente (linha 139), contra o padrão de todas as outras funções
-
-Além disso, a action `users` (linha 80) faz `select` sem `range` nem `limit`, puxa **todos os
-documentos do sistema** só para contar em memória (linha 88), e usa `perPage: 1000` — o
-usuário 1001 aparece com `email: null` silenciosamente.
+  substring-replace em vez do `startsWith` mais estrito de `_shared/auth.ts`
+- **vaza o erro interno cru** ao cliente, contra o padrão de todas as outras funções
+- a action `users` faz `select` sem `range` nem `limit`, puxa **todos os documentos do
+  sistema** só para contar em memória, e usa `perPage: 1000` — o usuário 1001 aparece com
+  `email: null` silenciosamente
 
 Já está pronto: a action `user-docs` restringe corretamente a metadados, sem `form_data`.
+
+### E a lixeira de documentos (`022`–`023`)?
+
+Não estava em nenhum plano. Registrada aqui como pendência de decisão, não como tarefa:
+precisa de UI (botão "mover para lixeira", tela de itens excluídos, exclusão definitiva) e
+de Edge Function ou policy que a exponha. Fica de fora do escopo até haver decisão.
 
 ---
 

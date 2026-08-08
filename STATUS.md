@@ -59,16 +59,37 @@ Não existe script `test:coverage` no `package.json` — a medição é feita à
 
 ## Ambiente e banco
 
+**F3.1 executada em 2026-08-08.** Projeto linkado (`uyptmlezmdzfufzuknfz` — KRIOU-DOCS,
+`ACTIVE_HEALTHY`). Resultado: `npx supabase migration list`.
+
 | Item | Estado |
 |---|---|
-| Última migration no repo | `013_assign_owner_admin.sql` |
-| Migration `012_harden_database_functions.sql` | ⚠️ **existe no repo, nunca aplicada no ambiente alvo** |
+| Última migration no repo | `023_enforce_document_trash_integrity.sql` |
+| Migration `012_harden_database_functions.sql` | ✅ **já estava aplicada** — o registro anterior estava errado |
+| Migrations `014`–`023` | ⚠️ **estavam aplicadas em produção e ausentes do repo** — trazidas em `678ca42` |
+| `001`–`012` — conteúdo local bate com o aplicado | ✅ confirmado byte a byte (via `migration fetch`) |
 | RLS validada com duas identidades reais | ❌ nunca feito |
 | Rollback ensaiado | ❌ nunca feito |
 | Pagamento real executado | ❌ **nunca** — bloqueado de propósito |
 
-> Não sabemos com certeza em que migration o ambiente alvo está. Descobrir isso é
-> [F3.1](ROADMAP.md#f3--ambiente-e-banco) e vem antes de qualquer migration nova.
+### ⚠️ O achado mais importante: infraestrutura de admin completa, nunca conectada ao código
+
+As migrations `014`–`023`, recuperadas do banco, mostram um sistema pronto que a aplicação
+**não usa**:
+
+- **A falha de segurança que permitia um usuário comum se autopromover a admin (`UPDATE
+  profiles SET role = 'admin'`) já está corrigida** desde a `016` — trigger + permissão por
+  coluna. O `ROADMAP.md` chegou a registrar isso como risco aberto; estava desatualizado.
+- Tabela `admin_audit_events`, com auditoria append-only — o que a `F5.2` pedia já existe.
+- Sistema de papéis (`support`/`finance`/`admin`/`owner`) com capacidades granulares, num
+  schema `private` inacessível ao cliente, mudança de papel transacional e protegida contra
+  autopromoção mesmo pelo dono da conta.
+- Uma **lixeira reversível de documentos** (`deleted_at`/`deleted_by`), área nova que não
+  estava em nenhum plano.
+
+**Nada disso tem código de aplicação usando.** `grep` em `src/` e `supabase/functions/`
+confirma: zero chamadas. É trabalho pronto e abandonado — decisão sobre o que fazer com ele
+registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 ---
 

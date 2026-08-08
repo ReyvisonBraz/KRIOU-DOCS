@@ -150,6 +150,29 @@ As duas exigências de LGPD que faltam. **É o que destrava o lançamento do lad
 > retenção da [F4.3](#f4--jurídico-e-textos-lgpd). Entregar ao titular uma cópia do que é
 > dele não exige decisão jurídica nenhuma. Apagar, sim.
 
+### Prazos de retenção — decisão de 2026-08-08
+
+Os dois prazos são **deliberadamente diferentes**, porque respondem a leis opostas: a LGPD
+manda apagar, a legislação fiscal manda guardar.
+
+| Categoria | Prazo | Situação |
+|---|---|---|
+| **Dados pessoais** — perfil, rascunhos, conteúdo dos documentos, identidade das partes | **90 dias** | ✅ Definido pelo responsável |
+| **Registro fiscal** — valor, data, `payment_id`, meio de pagamento | **5 anos** | ⚠️ **Provisório — confirmar na [F4.3](#f4--jurídico-e-textos-lgpd)** |
+
+Na prática, ao receber um pedido de exclusão: o documento perde nome, CPF, endereço e todo o
+conteúdo preenchido; sobrevive apenas uma linha registrando que houve uma venda de R$ 9,90 em
+determinada data, sem ninguém identificável ligado a ela.
+
+> ⚠️ **Por que o prazo fiscal não é 90 dias.** Apagar comprovante de venda após 90 dias tende
+> a conflitar com a obrigação de guarda fiscal — a referência usual no Brasil é de 5 anos.
+> Isso não é parecer jurídico; é o motivo de o número estar marcado como provisório e ser o
+> primeiro item a confirmar com o advogado.
+
+**Implementação:** os dois prazos ficam como **constantes únicas** na Edge Function
+`delete-account` (F2.4), para que ajustar seja trocar um número, sem caçar regra espalhada
+pelo código.
+
 ### ⚠️ Três bloqueadores de schema — resolver em F2.1 antes de escrever código
 
 **1. `documents.user_id` é `NOT NULL`** (`001_initial_schema.sql:43`).
@@ -205,12 +228,18 @@ Fora do Postgres: `localStorage` via `clearUserData` em `src/utils/storage.js:49
 | **F4.1** | Revisão das 22 variantes por profissional qualificado | Advogado |
 | **F4.2** | Política de Privacidade e Termos de Uso aprovados | Advogado |
 | **F4.3** | Definir controlador, encarregado/canal, bases legais e prazos de retenção | Nós + advogado |
+| **F4.5** | ⚠️ **Confirmar o prazo de guarda do registro fiscal** (provisório: 5 anos) | Advogado ou contador |
 | **F4.4** | Registrar contratos e DPAs dos operadores | Nós |
 
 Operadores a cobrir em F4.4: Supabase, Mercado Pago, Vercel, provedor de e-mail, GitHub Actions.
 
-> **F4.3 é pré-requisito da F2.** Os prazos de retenção definem o que a exclusão de conta
-> pode apagar e o que precisa ser anonimizado. Sem essa definição, F2.1 é chute.
+> **F4.3 e F4.5 são pré-requisito da F2.4.** Os prazos de retenção definem o que a exclusão de
+> conta pode apagar e o que precisa ser anonimizado.
+>
+> **Parcialmente resolvido:** o prazo dos **dados pessoais** já foi definido em 90 dias
+> (ver [F2](#f2--direitos-do-titular)). Falta apenas confirmar o prazo do **registro fiscal**,
+> hoje provisionado em 5 anos. Enquanto isso não vier, a F2.4 pode ser escrita, mas não
+> executada em produção.
 
 ---
 

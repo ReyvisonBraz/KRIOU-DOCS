@@ -61,7 +61,7 @@ src/
 └── workers/          # pdfWorker.js
 
 supabase/
-├── functions/        # 7 Edge Functions
+├── functions/        # 7 Edge Functions + _shared
 │   ├── _shared/      # auth.ts, http.ts — helpers usados por todas
 │   ├── create-preference, verify-payment, mercadopago-webhook
 │   ├── authorize-download, send-email, admin

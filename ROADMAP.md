@@ -46,15 +46,19 @@ Deve ser disparado antes de tudo, para correr em paralelo com as demais.
 ### Ordem sugerida
 
 1. ~~**F1** — fechar o tema~~ ✅ **concluída em 2026-08-08**
-2. **F4** — acionar o advogado (corre sozinho em segundo plano) ← **próximo**
-3. **F2** — os dois direitos que destravam o lançamento
-4. **F3** — ambiente e banco
-5. **F5** e **F7** — quando houver folga
-6. **F6** — só depois que F2, F3 e F4 estiverem fechadas
+2. **F4** — acionar o advogado (corre sozinho em segundo plano) — **em andamento**
+3. ~~**F2.3** — exportação de dados~~ ✅ **concluída, aguardando F3.0/F3.5 para publicar**
+4. **F3.0** — obter credenciais e linkar o projeto ← **próximo passo que depende de você**
+5. **F5** e **F7** — código puro, seguem em paralelo, sem esperar ninguém
+6. **F2.4** — exclusão de conta, quando a F4.5 confirmar o prazo fiscal
+7. **F6** — só depois que F2, F3 e F4 estiverem fechadas
 
-> **F4.3 — definir prazos de retenção — é pré-requisito da F2.1.** Sem saber o que a lei
-> obriga a guardar, não dá para decidir o que a exclusão de conta pode apagar. Por isso F4
-> vem antes de F2, mesmo não sendo código.
+> **F4.3/F4.5 — prazos de retenção — são pré-requisito da F2.4.** O prazo dos dados pessoais
+> já foi definido (90 dias); falta só confirmar o do registro fiscal (provisório: 5 anos).
+>
+> **F3.0 é o único item bloqueado por acesso, não por decisão.** Precisa das credenciais do
+> Supabase — é o próximo passo que só você consegue destravar. Enquanto isso não vier, F5 e
+> F7 rendem mais que esperar.
 
 ---
 
@@ -207,15 +211,48 @@ Fora do Postgres: `localStorage` via `clearUserData` em `src/utils/storage.js:49
 
 ## F3 — Ambiente e banco
 
+📋 **Passo a passo completo: [docs/runbook-deploy.md](docs/runbook-deploy.md)**
+
 | # | Tarefa | Pronto quando |
 |---|---|---|
+| **F3.0** | Obter credenciais, `supabase login`, `link`, criar `.env` | ⛔ **Bloqueia todo o resto** |
 | **F3.1** | Confirmar em que migration o ambiente alvo realmente está | Divergência conhecida e registrada |
 | **F3.2** | Aplicar `012_harden_database_functions.sql` | Aplicada e registrada em `STATUS.md` |
 | **F3.3** | Validar RLS com **duas identidades reais** | Usuário A não enxerga nada do B |
-| **F3.4** | Ensaiar rollback de aplicação e de banco | Procedimento escrito e testado uma vez |
+| **F3.4** | Ensaiar rollback de aplicação e de banco | Procedimento validado na prática |
+| **F3.5** | Publicar `export-user-data` | Botão do perfil funciona de verdade |
 
-> **F3.1 vem antes de tudo nesta frente.** Não empilhe a migration `014` (F2.2) sem saber
-> onde o banco realmente está. A `012` existe no repo desde julho e nunca foi aplicada.
+### ⛔ Nada desta frente é executável na máquina de desenvolvimento hoje
+
+Não existe `.env`, o projeto **não está linkado** (`supabase/.temp/` ausente) e o
+`config.toml` não tem `project_id`. F3.0 é obtenção de acesso, não programação.
+
+### ⚠️ A armadilha da F3.1 — leia antes de rodar `db push`
+
+Há forte indício de que as migrations foram aplicadas **à mão pelo painel**:
+`add_onboarding_done.sql` diz literalmente *"Execute este SQL no Supabase SQL Editor"*.
+
+Se for o caso, o histórico remoto está vazio e **`supabase db push` tentaria reaplicar da 001
+à 013 contra um banco que já tem tudo** — a `007` faz `VALIDATE CONSTRAINT` e a `013` tem
+`RAISE EXCEPTION`. É preciso rodar `supabase migration repair --status applied 001 … 011`
+antes. Isso não estava documentado em lugar nenhum.
+
+### O que já foi adiantado (2026-08-08, sem precisar de credenciais)
+
+| Item | Onde |
+|---|---|
+| Rollback da `012`, escrito **antes** de aplicar | `supabase/rollback/012_harden_database_functions_down.sql` |
+| Runbook completo dos 8 passos | `docs/runbook-deploy.md` |
+| Variáveis de ambiente que faltavam documentar | `.env.example` |
+
+**A `012` é segura:** só altera permissão e `search_path` de 14 funções. Não cria, não apaga
+e não toca em dado nenhum. É a melhor migration possível para estrear o pipeline.
+
+**A `F3.5` é o deploy mais barato do projeto:** `export-user-data` não precisa de nenhum
+secret e destrava um botão que já está na interface e hoje não funciona.
+
+> **F3.1 vem antes de tudo.** Não empilhe a migration `014` (F2.2) sem saber onde o banco
+> realmente está. A `012` existe no repo desde julho e nunca foi aplicada.
 
 ---
 
@@ -324,11 +361,13 @@ Fora do caminho de lançamento. Registradas para não se perderem, mas **não co
 | **M3** | Unificar os tokens de cor, hoje espalhados em 4 lugares | `--text-faint` já tem valores divergentes entre `Theme.jsx` e `index.css` |
 | **M4** | Reduzir arquivos gigantes: `DashboardPage` 1269, `RequirementsModal` 1252, `TemplatesPage` 1219 | A extração de domínio não encolheu as telas |
 | **M5** | Bundle: worker de PDF ~973 KB, jsPDF ~401 KB | A meta antiga de < 300 KB nunca foi reaferida |
-| **M6** | `add_onboarding_done.sql` não tem prefixo numérico | Ordena depois da `013` e é redundante com a `001` |
+| **M6** | `add_onboarding_done.sql` não tem prefixo numérico | O CLI do Supabase **ignora esse arquivo** — não aparece em `migration list`. A coluna existe no banco por aplicação manual e é invisível para a ferramenta |
 | **M7** | `clearUserData` não limpa `kriou_onboarding_${userId}_seen` | Deixa chave órfã no `localStorage` |
 | **M8** | Re-exportar `useTheme` de `Theme.jsx` | `import { useTheme } from './Theme'` falharia — pegadinha para código futuro |
 | **M9** | `.doc-action-pill` na landing usa `var(--text-dim)` sobre painel de cor fixa escura | Texto escuro sobre painel escuro no tema claro. Encontrado na F1.5, fora do escopo dela |
 | **M10** | 3 `SettingsRow` do perfil continuam sem ação, agora ao lado de botões que funcionam | O contraste com o botão de limpar dados, que agora funciona e é honesto, ficou mais evidente |
+| **M11** | Não há fixture de segunda identidade para E2E | `e2e/auth.setup.js` só suporta uma conta; `VITE_TEST_EMAIL`/`VITE_TEST_PASSWORD` nem estavam documentadas (corrigido no `.env.example`). A validação de RLS da F3.3 é manual por falta disso |
+| **M12** | Nenhuma automação de deploy | Sem script no `package.json`, sem passo no CI. Publicar Edge Function é sempre manual |
 
 ---
 

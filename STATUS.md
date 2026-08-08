@@ -120,7 +120,7 @@ Não existe script `test:coverage` no `package.json` — a medição é feita à
 | Arquivos JS/JSX em `src/` | 127 |
 | Linhas em `src/` | ~29.500 |
 | Arquivos de teste | 23 |
-| Edge Functions | 8 (1 nunca publicada) |
+| Edge Functions | 7 + `_shared` (1 nunca publicada) |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
 

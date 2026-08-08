@@ -509,7 +509,7 @@ const ProfilePage = () => {
             minHeight: 52,
             padding: "14px 24px",
             borderRadius: 14,
-            border: "1.5px solid rgba(255,255,255,0.10)",
+            border: "1.5px solid var(--border)",
             background: "var(--surface-2)",
             color: "var(--text-dim)",
             fontFamily: "var(--font-body)",
@@ -527,12 +527,12 @@ const ProfilePage = () => {
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--surface-3)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.16)";
+            e.currentTarget.style.borderColor = "var(--border-hover)";
             e.currentTarget.style.color = "var(--text)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "var(--surface-2)";
-            e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)";
+            e.currentTarget.style.borderColor = "var(--border)";
             e.currentTarget.style.color = "var(--text-dim)";
           }}
         >

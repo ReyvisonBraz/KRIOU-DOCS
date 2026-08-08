@@ -16,7 +16,7 @@ import { formatCpf } from "../utils/formatting";
 import { useAuth } from "../context/AuthContext";
 
 const labelClass = "block text-[12px] font-bold text-text-muted mb-1.5 uppercase tracking-wide ml-1";
-const inputClass = "w-full bg-surface-2 border border-border rounded-xl px-4 py-3.5 text-[15px] outline-none text-white placeholder-text-muted/60 transition-all focus:border-coral focus:ring-2 focus:ring-coral/20";
+const inputClass = "w-full bg-surface-2 border border-border rounded-xl px-4 py-3.5 text-[15px] outline-none text-text placeholder-text-muted/60 transition-all focus:border-coral focus:ring-2 focus:ring-coral/20";
 const inputErrorClass = "border-coral ring-2 ring-coral/20";
 
 const CompleteProfilePage = ({ onNavigate }) => {
@@ -123,12 +123,12 @@ const CompleteProfilePage = ({ onNavigate }) => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="font-display text-2xl font-black mb-6">
-            <span className="text-coral">Kriou</span><span className="text-white ml-0.5">Docs</span>
+            <span className="text-coral">Kriou</span><span className="text-text ml-0.5">Docs</span>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-coral/10 flex items-center justify-center mx-auto mb-4">
             <Icon name="User" className="w-7 h-7 text-coral" />
           </div>
-          <h1 className="text-2xl font-black text-white font-display mb-2">
+          <h1 className="text-2xl font-black text-text font-display mb-2">
             Complete seu cadastro
           </h1>
           <p className="text-text-muted text-[14px] leading-relaxed">
@@ -193,7 +193,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full py-4 bg-coral hover:bg-coral-light text-white font-bold text-[16px] rounded-2xl transition-all shadow-lg shadow-coral/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+            className="w-full py-4 bg-coral hover:bg-coral-hover text-white font-bold text-[16px] rounded-2xl transition-all shadow-lg shadow-coral/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
           >
             {isSaving ? (
               <>
@@ -213,7 +213,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
             type="button"
             onClick={handleSkip}
             disabled={isSaving}
-            className="w-full py-3 bg-transparent hover:bg-white/5 text-text-muted hover:text-white font-semibold text-[14px] rounded-2xl transition-all border-none cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3 bg-transparent hover:bg-surface-2 text-text-muted hover:text-text font-semibold text-[14px] rounded-2xl transition-all border-none cursor-pointer flex items-center justify-center gap-2"
           >
             Pular, vou preencher depois
           </button>

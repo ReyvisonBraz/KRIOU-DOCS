@@ -126,7 +126,7 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
         <div style={{
           position: "absolute", top: "50%", left: "50%",
           transform: `translate(-50%, -50%) ${hovered ? "scale(1.04)" : "scale(1)"}`,
-          width: "72%", height: "68%", background: "var(--navy)",
+          width: "72%", height: "68%", background: "var(--doc-thumb-bg)",
           borderRadius: 6, padding: 8,
           boxShadow: hovered
             ? "0 10px 30px rgba(0,0,0,0.4)"
@@ -169,7 +169,10 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
             style={{
               minHeight: 44, padding: "10px 20px", borderRadius: 10,
               background: template.accent, border: "none",
-              color: template.id === "primeiro-emprego" ? "var(--navy)" : "#fff",
+              // O fundo e o accent fixo do template, entao a cor do texto
+              // tambem precisa ser fixa. O accent de "primeiro-emprego" e
+              // branco, por isso o texto escuro.
+              color: template.id === "primeiro-emprego" ? "#090914" : "#fff",
               fontSize: 13, fontWeight: 700, cursor: "pointer",
               display: "flex", alignItems: "center", gap: 7,
               transition: "all 0.15s ease",
@@ -191,7 +194,10 @@ const TemplateCard = ({ template, onClick, onViewSpec }) => {
         </div>
         <div style={{
           width: 22, height: 22, borderRadius: "50%", background: template.accent,
-          flexShrink: 0, boxShadow: `0 0 10px ${template.accent}40`,
+          flexShrink: 0,
+          // O anel garante que accents claros (ex: "primeiro-emprego", branco)
+          // continuem visiveis sobre --surface no tema claro.
+          boxShadow: `0 0 10px ${template.accent}40, 0 0 0 1px var(--border)`,
         }} />
       </div>
     </div>

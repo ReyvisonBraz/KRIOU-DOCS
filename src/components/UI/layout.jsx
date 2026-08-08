@@ -20,7 +20,7 @@ import { ThemeToggle } from "../ThemeToggle";
    ─────────────────────────────────────────── */
 export const Navbar = ({ children, className = "", style = {}, ...props }) => (
   <nav
-    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04] ${className}`}
+    className={`sticky top-0 z-50 backdrop-blur-xl bg-[var(--navy)]/92 border-b border-border ${className}`}
     style={style}
     {...props}
   >
@@ -52,7 +52,7 @@ export const GlassPanel = ({ children, className = "", style = {}, ...props }) =
    ─────────────────────────────────────────── */
 export const AppNavbar = ({ title, leftAction, rightAction, children, style }) => (
   <div
-    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--navy)]/92 border-b border-white/[0.04]"
+    className="sticky top-0 z-[100] backdrop-blur-xl bg-[var(--navy)]/92 border-b border-border"
     style={style}
   >
     {/* Linha principal: ação esquerda | título | ação direita */}
@@ -174,7 +174,7 @@ export const AppStepper = ({
             background: isActive
               ? "rgba(244,63,94,0.10)"
               : isReached
-                ? "rgba(255,255,255,0.02)"
+                ? "var(--surface-2)"
                 : "transparent",
             transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
             minWidth: 44,
@@ -199,7 +199,7 @@ export const AppStepper = ({
                 ? "var(--coral)"
                 : isCompleted
                   ? "var(--success)"
-                  : "rgba(255,255,255,0.06)",
+                  : "var(--surface-3)",
               color: isActive || isCompleted ? "#fff" : "var(--text-muted)",
               boxShadow: isActive
                 ? "0 0 18px rgba(244,63,94,0.35)"
@@ -346,7 +346,7 @@ export const BottomNavigation = ({
               border: `1.5px solid ${
                 hovered === "back"
                   ? "rgba(212,175,55,0.40)"
-                  : "rgba(255,255,255,0.10)"
+                  : "var(--border)"
               }`,
               background:
                 hovered === "back"

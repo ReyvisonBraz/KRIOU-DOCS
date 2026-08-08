@@ -165,7 +165,7 @@ const AuthCallbackPage = ({ onNavigate }) => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-navy gap-6 p-8">
       <div className="w-14 h-14 border-[3px] border-coral/30 border-t-coral rounded-full animate-spin" />
       <div className="flex flex-col items-center gap-2">
-        <p className="text-white text-lg font-semibold">{error ? "Ops!" : status}</p>
+        <p className="text-text text-lg font-semibold">{error ? "Ops!" : status}</p>
         {error && <p className="text-text-muted text-sm">{error}</p>}
       </div>
     </div>

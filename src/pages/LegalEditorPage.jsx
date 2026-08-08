@@ -422,7 +422,7 @@ const LegalEditorPage = () => {
             minHeight: 34,
             padding: "4px 12px",
             borderRadius: 100,
-            border: "1px solid rgba(255,255,255,0.08)",
+            border: "1px solid var(--border)",
             background: "transparent",
             color: "var(--text-faint)",
             fontSize: 11,
@@ -529,7 +529,7 @@ const LegalEditorPage = () => {
                     color: stepColor.accent, minHeight: 52,
                     transition: "all 0.2s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = stepColor.bg; }}
                 >
                   <Icon name="Plus" className="w-5 h-5" />

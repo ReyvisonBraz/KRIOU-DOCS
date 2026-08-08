@@ -99,6 +99,9 @@
      ---------------------------------------------------------------- */
   --doc-gold: #a58737;
   --doc-rule: #d8d6ce;
+  /* Fundo das miniaturas de template. Fixo: a miniatura representa o
+     documento, entao deve ter a mesma aparencia nos dois temas. */
+  --doc-thumb-bg: #090914;
 
   /* Gradientes coral — sempre em par com o hover.
      No escuro o hover clareia; no claro, aprofunda. */

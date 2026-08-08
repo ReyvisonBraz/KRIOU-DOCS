@@ -92,7 +92,9 @@ const LandingPage = () => {
           border-radius: 8px;
           background: #fbfaf6;
           color: #15151f;
-          border: 1px solid rgba(255,255,255,0.24);
+          /* Contorno do papel: hairline fixo, para a folha ter a mesma
+             aparencia nos dois temas (mesmo principio do preview real). */
+          border: 1px solid rgba(0,0,0,0.14);
           box-shadow: 0 30px 90px rgba(0,0,0,0.42);
           overflow: hidden;
         }

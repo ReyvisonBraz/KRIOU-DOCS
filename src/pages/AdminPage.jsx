@@ -187,7 +187,7 @@ const AdminPage = () => {
                           <td style={s.td}>
                             <span style={{
                               ...s.pill,
-                              background: u.role === "admin" ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
+                              background: u.role === "admin" ? "rgba(212,175,55,0.12)" : "var(--surface-3)",
                               color: u.role === "admin" ? "var(--gold)" : "var(--text-muted)",
                             }}>
                               {u.role || "user"}

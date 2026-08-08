@@ -399,7 +399,7 @@ const DashboardPage = () => {
   const logoTitle = (
     <span className="font-display text-2xl font-black tracking-tight">
       <span className="text-coral">Kriou</span>{" "}
-      <span className="text-white">Docs</span>
+      <span className="text-text">Docs</span>
     </span>
   );
 

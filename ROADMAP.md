@@ -22,7 +22,7 @@ A coluna **Trilha** é o que mais importa: separa o que depende de nós do que d
 
 | ID | Frente | Trilha | Estado |
 |---|---|---|---|
-| [F1](#f1--tema-claroescuro) | Tema claro/escuro | Nós | 🟡 em andamento |
+| [F1](#f1--tema-claroescuro) | Tema claro/escuro | Nós | ✅ **concluída em 2026-08-08** |
 | [F2](#f2--direitos-do-titular) | Direitos do titular (exportar + excluir conta) | Nós | 🔴 não iniciado |
 | [F3](#f3--ambiente-e-banco) | Ambiente e banco | Nós + infra | 🔴 não iniciado |
 | [F4](#f4--jurídico-e-textos-lgpd) | Jurídico e textos LGPD | **Advogado** | 🔴 **acionar já** |
@@ -37,60 +37,79 @@ F4 (advogado) ──────────────────┐
                                  ├──> F6 (pagamento real) ──> LANÇAMENTO
 F2 (direitos) ──> F3 (ambiente) ─┘
 
-F1, F5, F7 correm em paralelo, sem bloquear ninguém.
+F5 e F7 correm em paralelo, sem bloquear ninguém.   F1 ✅ concluída.
 ```
 
 **F4 é o caminho crítico.** Tem o maior tempo de espera e não depende de escrever código.
-Deve ser disparado antes de tudo, para correr em paralelo com F1 e F2.
+Deve ser disparado antes de tudo, para correr em paralelo com as demais.
 
 ### Ordem sugerida
 
-1. **F4** — acionar o advogado hoje (corre sozinho em segundo plano)
-2. **F1** — fechar o tema, que já está no meio do caminho
-3. **F2** — os dois direitos que destravam a Q10
+1. ~~**F1** — fechar o tema~~ ✅ **concluída em 2026-08-08**
+2. **F4** — acionar o advogado (corre sozinho em segundo plano) ← **próximo**
+3. **F2** — os dois direitos que destravam o lançamento
 4. **F3** — ambiente e banco
 5. **F5** e **F7** — quando houver folga
 6. **F6** — só depois que F2, F3 e F4 estiverem fechadas
+
+> **F4.3 — definir prazos de retenção — é pré-requisito da F2.1.** Sem saber o que a lei
+> obriga a guardar, não dá para decidir o que a exclusão de conta pode apagar. Por isso F4
+> vem antes de F2, mesmo não sendo código.
 
 ---
 
 ## F1 — Tema claro/escuro
 
-A infraestrutura já está pronta e é melhor do que parecia: **68% do código consome
-`var(--surface)`** e derivados, e essas variáveis já trocam sozinhas via `data-theme`.
-As classes Tailwind 4 (`bg-navy`, `text-text-dim`) também seguem automaticamente, porque
-o `@theme` emite referências a variável, não valores fixos.
+✅ **Concluída em 2026-08-08.** Commits `6cb8f95`, `552e981`, `1046236`, `55ad1e9`, `4edb409`.
 
-O que sobra é o bucket de cores fixas — bem menos trabalho do que o número de arquivos sugere.
+| # | Tarefa | Estado |
+|---|---|---|
+| **F1.1** | Blindar o documento contra o tema | ✅ |
+| **F1.2** | Renomear o botão enganoso do perfil | ✅ |
+| **F1.3** | Corrigir hovers e gradientes coral fixos | ✅ |
+| **F1.4** | Corrigir contrastes quebrados | ✅ |
+| **F1.5** | `text-white` e `rgba(255,255,255,…)` sobre superfície | ✅ 41 corrigidos |
+| **F1.6** | Eliminar o flash escuro no carregamento | ✅ |
+| **F1.7** | Corrigir `var(--bg)` inexistente | ✅ |
+| **F1.8** | Deletar a paleta morta | ✅ ~90 linhas |
+| **F1.9** | Testes do tema | ✅ 15 testes novos |
 
-| # | Tarefa | Onde | Pronto quando |
-|---|---|---|---|
-| **F1.1** | 🔴 **Blindar o documento contra o tema** | `src/pages/LegalEditorPage.jsx` linhas 813, 822, 825, 851, 867, 887 | Preview do contrato fica idêntico nos dois temas |
-| **F1.2** | Renomear o botão enganoso do perfil | `src/pages/ProfilePage.jsx:540-670` | Rótulo diz a verdade sobre o que faz |
-| **F1.3** | Corrigir hovers e gradientes coral fixos | `ProfilePage.jsx` (5 sites), `UI/layout.jsx:431`, `DashboardPage.jsx:685,1035`, `UI/primitives.jsx:71` | Usam `--coral-hover`, não `#e63950` |
-| **F1.4** | Corrigir contrastes quebrados | `UI/document.jsx:147`, `UI/feedback.jsx:116`, `UI/legal-helpers.jsx:104,486` | Sem texto ou knob invisível no claro |
-| **F1.5** | `text-white` e `rgba(255,255,255,…)` sobre superfície | ~40 sites; piores: `WelcomePage.jsx`, `CompleteProfilePage.jsx` | Varredura visual tela a tela no claro |
-| **F1.6** | Eliminar o flash escuro no carregamento | `index.html` — script inline antes do paint + `theme-color` dinâmico | Recarregar no claro não pisca escuro |
-| **F1.7** | Corrigir `var(--bg)` inexistente | `src/components/ErrorBoundary.jsx:59` | Usa `--navy` |
-| **F1.8** | Deletar a paleta morta | `src/components/Theme.jsx` — 62 linhas sem consumidor | Uma fonte de verdade só |
-| **F1.9** | Testes do tema (hoje: zero) | novo `src/components/Theme.test.jsx` | Cobre toggle, persistência e `data-theme` |
+### 📌 Convenção estabelecida: `--doc-*` nunca segue o tema
 
-### Por que F1.1 é um bug, não polimento
+A F1.1 revelou um bug de verdade: o preview do contrato usava `var(--gold)` e `var(--border)`,
+que passaram a mudar com `data-theme`. **O documento jurídico trocava de cor junto com a
+interface.**
 
-O preview do contrato usa `var(--gold, #a58737)` e `var(--border, #d8d6ce)`. Como `--gold` e
-`--border` passaram a mudar com `data-theme`, **o documento jurídico muda de cor junto com a
-interface** — o "papel" deixa de parecer papel. A correção é usar hex fixo ou variáveis
-dedicadas (`--doc-gold`, `--doc-border`) fora do escopo do tema.
+A correção criou uma regra que vale para todo trabalho futuro:
 
-O PDF gerado está seguro: `UI/RequirementsModal.jsx` usa hex fixos com `@media print`
-e `!important`, e `src/data/constants.js` alimenta o gerador com literais. Só o preview vaza.
+> Tudo que representa o **documento** — preview de contrato, miniatura de template, mockup de
+> papel, bloco de impressão, cores de template de currículo — usa `--doc-*` ou hex fixo,
+> **nunca** um token de interface.
 
-### Por que F1.2 entra aqui e não na F2
+Tokens criados em `src/index.css`: `--doc-gold`, `--doc-rule`, `--doc-thumb-bg`. São
+declarados apenas no `:root` e **deliberadamente não redefinidos** em
+`:root[data-theme="light"]`.
 
-O botão **"Apagar meus dados"** em `ProfilePage.jsx:540` só limpa o `localStorage` e faz
-logout — **não apaga nada no servidor**. O texto miúdo diz "localmente", mas o rótulo promete
-outra coisa. É exposição de confiança e de LGPD **hoje**, e a correção do rótulo é de um
-minuto. Não deve esperar a F2, que é a implementação de verdade.
+Três testes em `src/components/Theme.test.jsx` travam isso: se alguém reintroduzir um token
+de interface dentro da folha do contrato, a suíte quebra.
+
+### Outros bugs encontrados durante a execução
+
+Nenhum destes estava mapeado — apareceram ao varrer o código:
+
+| Achado | Impacto |
+|---|---|
+| `CompleteProfilePage` tinha **texto branco no campo de digitação** | No tema claro o usuário digitava e não via o que escrevia |
+| `coral-light` **não existe** em `index.css` | 3 hovers estavam mortos nos **dois** temas, não só no claro |
+| Template "Primeiro Emprego" tem destaque **branco** | Botão branco sobre branco e bolinha invisível no card |
+| `CheckoutSpinner` usava branco fixo em dois contextos | Sumia quando ficava sobre botão de superfície |
+| jsdom desta versão **não expõe `localStorage`** | Nenhum teste podia verificar persistência; resolvido em `src/tests/setup.js` |
+
+### O que ficou de fora, de propósito
+
+A varredura da F1.5 classificou 102 usos de branco. Corrigi os 41 que quebravam; os 56 sobre
+destaque sólido (coral, dourado, teal) e os 5 de documento ou marca ficaram como estavam —
+estão corretos nos dois temas.
 
 ---
 
@@ -271,6 +290,8 @@ Fora do caminho de lançamento. Registradas para não se perderem, mas **não co
 | **M6** | `add_onboarding_done.sql` não tem prefixo numérico | Ordena depois da `013` e é redundante com a `001` |
 | **M7** | `clearUserData` não limpa `kriou_onboarding_${userId}_seen` | Deixa chave órfã no `localStorage` |
 | **M8** | Re-exportar `useTheme` de `Theme.jsx` | `import { useTheme } from './Theme'` falharia — pegadinha para código futuro |
+| **M9** | `.doc-action-pill` na landing usa `var(--text-dim)` sobre painel de cor fixa escura | Texto escuro sobre painel escuro no tema claro. Encontrado na F1.5, fora do escopo dela |
+| **M10** | 3 `SettingsRow` do perfil continuam sem ação, agora ao lado de botões que funcionam | O contraste com o botão de limpar dados, que agora funciona e é honesto, ficou mais evidente |
 
 ---
 

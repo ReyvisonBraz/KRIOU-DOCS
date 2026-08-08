@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **321 passando, 21 arquivos** | `npm test` |
+| Testes unitários | ✅ **336 passando, 22 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ Playwright, Chromium | `npm run test:e2e:public` |
@@ -73,13 +73,17 @@ Não existe script `test:coverage` no `package.json` — a medição é feita à
 
 ---
 
-## Trabalho em andamento
+## Última entrega
 
-**Tema claro/escuro**, não commitado, no working tree. A infraestrutura está pronta
-(provider, contexto, toggle, variáveis CSS, Tailwind). Falta a varredura de cores fixas.
+**Frente [F1 — tema claro/escuro](ROADMAP.md#f1--tema-claroescuro), concluída em 2026-08-08.**
+Alternância completa, persistida, sem flash no carregamento, com 15 testes novos.
 
-Inclui um bug conhecido: o preview do contrato muda de cor junto com a interface
-([F1.1](ROADMAP.md#f1--tema-claroescuro)).
+No caminho foram corrigidos cinco bugs que não estavam mapeados — o mais grave era o campo de
+digitação do cadastro, que tinha texto branco sobre fundo claro: no tema claro o usuário
+digitava e não via o que escrevia.
+
+Ficou estabelecida a convenção **`--doc-*` nunca segue o tema**, com testes que a protegem.
+Vale para qualquer trabalho futuro que toque em cor de documento.
 
 ---
 
@@ -94,12 +98,14 @@ Inclui um bug conhecido: o preview do contrato muda de cor junto com a interface
 | Pagamento Mercado Pago, preço fixado no servidor | ✅ código pronto, nunca executado real |
 | Download autorizado pelo backend | ✅ |
 | E-mail transacional | ✅ |
+| Tema claro/escuro | ✅ |
 | Painel administrativo | 🟡 fundação apenas |
 | Exportação de dados do titular | ❌ não existe |
 | Exclusão de conta | ❌ não existe |
 
-> O botão "Apagar meus dados" no perfil **só limpa o `localStorage`** — não apaga nada no
-> servidor. O rótulo é enganoso. Correção em [F1.2](ROADMAP.md#f1--tema-claroescuro).
+> O botão do perfil que limpa dados **só afeta o navegador atual** — não apaga nada no
+> servidor. O rótulo agora diz isso ("Limpar dados deste dispositivo"). A exclusão de conta
+> de verdade é a [F2](ROADMAP.md#f2--direitos-do-titular).
 
 ---
 
@@ -107,9 +113,9 @@ Inclui um bug conhecido: o preview do contrato muda de cor junto com a interface
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 123 |
+| Arquivos JS/JSX em `src/` | 125 |
 | Linhas em `src/` | ~29.500 |
-| Arquivos de teste | 21 |
+| Arquivos de teste | 22 |
 | Edge Functions | 7 |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -119,7 +125,7 @@ Inclui um bug conhecido: o preview do contrato muda de cor junto com a interface
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 321 passando
+npm test                  # deve dar 336 passando
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

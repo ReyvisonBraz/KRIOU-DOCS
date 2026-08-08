@@ -682,7 +682,7 @@ const DashboardPage = () => {
                 }}
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e63950";
+                  e.currentTarget.style.background = "var(--coral-hover)";
                   e.currentTarget.style.boxShadow = "0 6px 24px rgba(244,63,94,0.4)";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
@@ -1032,7 +1032,7 @@ const DashboardPage = () => {
                   }}
                   className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e63950";
+                    e.currentTarget.style.background = "var(--coral-hover)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                     e.currentTarget.style.boxShadow = "0 8px 24px rgba(244,63,94,0.4)";
                   }}

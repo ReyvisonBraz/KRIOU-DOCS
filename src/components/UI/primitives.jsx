@@ -68,7 +68,7 @@ export const Button = ({
   // Mapa de estilos base por variante
   const mapaVariante = {
     primary: {
-      background: hover && !disabled ? "#e63950" : "var(--coral)",
+      background: hover && !disabled ? "var(--coral-hover)" : "var(--coral)",
       color: "#fff",
       fontWeight: 700,
       boxShadow: hover && !disabled

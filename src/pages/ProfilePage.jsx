@@ -23,7 +23,7 @@ import { validateCpf } from "../utils/validation";
 
 const ProfilePage = () => {
   const { navigate, logout, profile, setProfile, email, userId, userDocuments } = useApp();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -93,7 +93,10 @@ const ProfilePage = () => {
     logout();
   };
 
-  const handleDeleteData = () => {
+  // Limpa apenas o armazenamento local deste navegador e desconecta.
+  // NAO apaga nada no servidor — a exclusao de conta de verdade e a frente
+  // F2 do ROADMAP.md. O rotulo do botao precisa refletir isso.
+  const handleClearDeviceData = () => {
     if (userId) {
       StorageService.clearUserData(userId);
       localStorage.removeItem(`kriou_onboarding_${userId}_seen`);
@@ -153,7 +156,7 @@ const ProfilePage = () => {
                 width: "100%",
                 height: "100%",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                background: "var(--coral-gradient)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -319,7 +322,7 @@ const ProfilePage = () => {
                       minHeight: 48,
                       borderRadius: 13,
                       border: "none",
-                      background: saving ? "var(--text-muted)" : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                      background: saving ? "var(--text-muted)" : "var(--coral-gradient)",
                       color: "#fff",
                       fontFamily: "var(--font-body)",
                       fontSize: 14,
@@ -537,10 +540,10 @@ const ProfilePage = () => {
           Sair da Conta
         </button>
 
-        {/* ─── Delete Data ─── */}
-        {!showDeleteConfirm ? (
+        {/* ─── Limpar dados locais deste dispositivo ─── */}
+        {!showClearConfirm ? (
           <button
-            onClick={() => setShowDeleteConfirm(true)}
+            onClick={() => setShowClearConfirm(true)}
             style={{
               minWidth: 44,
               minHeight: 44,
@@ -563,7 +566,7 @@ const ProfilePage = () => {
             onMouseEnter={(e) => { e.currentTarget.style.color = "var(--danger)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
           >
-            Apagar meus dados
+            Limpar dados deste dispositivo
           </button>
         ) : (
           <Card
@@ -600,12 +603,12 @@ const ProfilePage = () => {
                   margin: 0,
                 }}
               >
-                Isso vai apagar <strong style={{ color: "var(--text)" }}>todos os seus documentos e dados salvos</strong> localmente e desconectar sua conta. Esta ação não pode ser desfeita.
+                Isso limpa os dados salvos <strong style={{ color: "var(--text)" }}>apenas neste navegador</strong> e desconecta sua conta. Seus documentos <strong style={{ color: "var(--text)" }}>continuam na sua conta</strong> e reaparecem quando você entrar de novo, aqui ou em outro aparelho.
               </p>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => setShowClearConfirm(false)}
                 style={{
                   flex: 1,
                   minHeight: 48,
@@ -634,14 +637,14 @@ const ProfilePage = () => {
                 Cancelar
               </button>
               <button
-                onClick={handleDeleteData}
+                onClick={handleClearDeviceData}
                 style={{
                   flex: 1,
                   minHeight: 48,
                   padding: "12px 20px",
                   borderRadius: 13,
                   border: "none",
-                  background: "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                  background: "var(--coral-gradient)",
                   color: "#fff",
                   fontFamily: "var(--font-body)",
                   fontSize: 14,
@@ -653,17 +656,17 @@ const ProfilePage = () => {
                 }}
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)";
+                  e.currentTarget.style.background = "var(--coral-gradient-hover)";
                   e.currentTarget.style.boxShadow = "0 8px 28px rgba(244,63,94,0.45)";
                   e.currentTarget.style.transform = "scale(1.02)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)";
+                  e.currentTarget.style.background = "var(--coral-gradient)";
                   e.currentTarget.style.boxShadow = "0 4px 18px rgba(244,63,94,0.30)";
                   e.currentTarget.style.transform = "scale(1)";
                 }}
               >
-                Confirmar exclusão
+                Limpar e sair
               </button>
             </div>
           </Card>

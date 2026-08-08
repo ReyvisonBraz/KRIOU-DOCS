@@ -84,6 +84,12 @@
   --warning: #F59E0B;
   --danger: #EF4444;
 
+  /* Realce de superfície ao passar o mouse. No escuro aprofunda,
+     no claro acinzenta — nunca inverta, ou o card fica preto. */
+  --surface-hover: #14142B;
+  /* Cor de texto legível sobre um fundo --teal sólido. */
+  --on-teal: #090914;
+
   /* ─── Cores de documento ───────────────────────────────────────────────
      NÃO redefinir no tema claro. O documento é "papel" e deve ter
      exatamente a mesma aparência nos dois temas — é o que o usuário
@@ -93,6 +99,11 @@
      ---------------------------------------------------------------- */
   --doc-gold: #a58737;
   --doc-rule: #d8d6ce;
+
+  /* Gradientes coral — sempre em par com o hover.
+     No escuro o hover clareia; no claro, aprofunda. */
+  --coral-gradient: linear-gradient(135deg, #F43F5E 0%, #E4324D 100%);
+  --coral-gradient-hover: linear-gradient(135deg, #FB7185 0%, #F43F5E 100%);
 }
 
 /* ─── Tema claro ─── */
@@ -116,6 +127,12 @@
   --success: #0F766E;
   --warning: #B54708;
   --danger: #B42318;
+
+  --coral-gradient: linear-gradient(135deg, #C93659 0%, #A92545 100%);
+  --coral-gradient-hover: linear-gradient(135deg, #D84468 0%, #C93659 100%);
+
+  --surface-hover: #EEF2F6;
+  --on-teal: #FFFFFF;
 
   --color-navy: #F5F7FA;
   --color-navy-light: #EEF2F6;

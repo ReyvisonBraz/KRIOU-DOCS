@@ -113,7 +113,7 @@ const ensureGlobalStyles = () => {
     }
     .kriou-dialog-btn-confirm {
       background: var(--teal);
-      color: #090914;
+      color: var(--on-teal);
     }
     .kriou-dialog-btn-confirm:hover {
       filter: brightness(1.12);

@@ -428,8 +428,8 @@ export const BottomNavigation = ({
             letterSpacing: "-0.005em",
             background:
               hovered === "next"
-                ? "linear-gradient(135deg, #FB7185 0%, #F43F5E 100%)"
-                : "linear-gradient(135deg, #F43F5E 0%, #E4324D 100%)",
+                ? "var(--coral-gradient-hover)"
+                : "var(--coral-gradient)",
             color: "#fff",
             boxShadow:
               hovered === "next"

@@ -472,7 +472,7 @@ export const OptionalFieldToggle = ({ label, checked, onChange, ...rest }) => {
           width: 36,
           height: 20,
           borderRadius: 12,
-          background: checked ? "var(--coral)" : "var(--surface-3)",
+          background: checked ? "var(--coral)" : "var(--border-hover)",
           position: "relative",
           transition: "background 0.2s ease",
           flexShrink: 0,

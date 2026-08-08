@@ -83,6 +83,59 @@
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
+
+  /* ─── Cores de documento ───────────────────────────────────────────────
+     NÃO redefinir no tema claro. O documento é "papel" e deve ter
+     exatamente a mesma aparência nos dois temas — é o que o usuário
+     compra e o que sai no PDF.
+     Use estas variáveis em preview de contrato, blocos de impressão e
+     qualquer coisa que represente o documento em si.
+     ---------------------------------------------------------------- */
+  --doc-gold: #a58737;
+  --doc-rule: #d8d6ce;
+}
+
+/* ─── Tema claro ─── */
+:root[data-theme="light"] {
+  --navy: #F5F7FA;
+  --navy-light: #EEF2F6;
+  --base: #E4E9F0;
+  --surface: #FFFFFF;
+  --surface-2: #EEF2F6;
+  --surface-3: #E4E9F0;
+  --coral: #C93659;
+  --coral-hover: #A92545;
+  --gold: #8A6510;
+  --teal: #0F766E;
+  --text: #182230;
+  --text-dim: #475467;
+  --text-muted: #5F697B;
+  --text-faint: #98A2B3;
+  --border: #D0D5DD;
+  --border-hover: #98A2B3;
+  --success: #0F766E;
+  --warning: #B54708;
+  --danger: #B42318;
+
+  --color-navy: #F5F7FA;
+  --color-navy-light: #EEF2F6;
+  --color-base: #E4E9F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #EEF2F6;
+  --color-surface-3: #E4E9F0;
+  --color-coral: #C93659;
+  --color-coral-hover: #A92545;
+  --color-gold: #8A6510;
+  --color-teal: #0F766E;
+  --color-text: #182230;
+  --color-text-dim: #475467;
+  --color-text-muted: #5F697B;
+  --color-text-faint: #98A2B3;
+  --color-border: #D0D5DD;
+  --color-border-hover: #98A2B3;
+  --color-success: #0F766E;
+  --color-warning: #B54708;
+  --color-danger: #B42318;
 }
 
 @layer base {

@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { DOC_TYPES, PRICING_PLANS, RESUME_TEMPLATES } from "../data/constants";
 
 const TEMPLATE_PREVIEWS = RESUME_TEMPLATES.slice(0, 4);
@@ -197,22 +198,28 @@ const LandingPage = () => {
               </button>
             </nav>
 
-            <div className="hidden md:flex items-center gap-3">
-              <button onClick={() => navigate("login")} className="btn-secondary btn-small touch-target">
-                Entrar
-              </button>
-              <button onClick={() => navigate("login")} className="btn-primary btn-small touch-target">
-                Começar agora
-              </button>
+            <div className="flex items-center gap-3">
+              <ThemeToggle variant="landing" label={false} className="!hidden md:!inline-flex" />
+              <div className="hidden md:flex items-center gap-3">
+                <button onClick={() => navigate("login")} className="btn-secondary btn-small touch-target">
+                  Entrar
+                </button>
+                <button onClick={() => navigate("login")} className="btn-primary btn-small touch-target">
+                  Começar agora
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={() => setMobileOpen((prev) => !prev)}
-              className="md:hidden bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
-              aria-label="Menu"
-            >
-              <Icon name={mobileOpen ? "X" : "Grid"} className="w-5 h-5 text-text-dim" />
-            </button>
+            <div className="flex items-center gap-2 md:hidden">
+              <ThemeToggle variant="landing" label={false} />
+              <button
+                onClick={() => setMobileOpen((prev) => !prev)}
+                className="bg-surface border border-border rounded-xl w-[44px] h-[44px] flex items-center justify-center cursor-pointer focus-ring"
+                aria-label="Menu"
+              >
+                <Icon name={mobileOpen ? "X" : "Grid"} className="w-5 h-5 text-text-dim" />
+              </button>
+            </div>
           </div>
 
           {mobileOpen && (

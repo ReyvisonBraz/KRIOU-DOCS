@@ -810,7 +810,7 @@ const LegalEditorPage = () => {
           return (
             <div key={i} style={{ textAlign: "center", marginBottom: 28, marginTop: 4 }}>
               <h3 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 19, fontWeight: 700, color: "#161d26", textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: 1.35, margin: 0 }}>{block.text}</h3>
-              <div style={{ width: 50, height: 1.5, background: "var(--gold, #a58737)", margin: "14px auto 0", opacity: 0.7 }} />
+              <div style={{ width: 50, height: 1.5, background: "var(--doc-gold)", margin: "14px auto 0", opacity: 0.7 }} />
             </div>
           );
         case "paragraph":
@@ -819,10 +819,10 @@ const LegalEditorPage = () => {
           return (
             <div key={i} style={{ marginBottom: 14 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: "var(--gold, #a58737)", whiteSpace: "nowrap" }}>CLÁUSULA {block.number}</span>
+                <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: "var(--doc-gold)", whiteSpace: "nowrap" }}>CLÁUSULA {block.number}</span>
                 <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, fontWeight: 700, color: "#161d26", textTransform: "uppercase", letterSpacing: "0.03em" }}>{block.title}</span>
               </div>
-              <div style={{ width: "40%", height: 1, background: "var(--border, #d8d6ce)", marginBottom: 8, opacity: 0.5 }} />
+              <div style={{ width: "40%", height: 1, background: "var(--doc-rule)", marginBottom: 8, opacity: 0.5 }} />
               {block.text && <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 14.5, color: "#3a4048", lineHeight: 1.7, textAlign: "justify", margin: "0 0 8px 0", wordBreak: "break-word" }}>{block.text}</p>}
               {block.paragraphs && (
                 <div style={{ paddingLeft: 16 }}>
@@ -848,7 +848,7 @@ const LegalEditorPage = () => {
                 return (
                   <div key={j} style={{ textAlign: "center", maxWidth: largeSignatures ? 620 : "none", width: "100%", margin: largeSignatures ? "0 auto" : 0 }}>
                     <div style={{ borderBottom: "1.5px dashed #b0ada5", marginBottom: 7, minHeight: atRequest ? (largeSignatures ? 72 : 52) : (largeSignatures ? 62 : 40) }} />
-                    <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: largeSignatures ? 13.5 : 12.5, fontWeight: 700, color: "var(--gold, #a58737)", margin: "0 0 2px 0" }}>{atRequest ? "ASSINANTE A ROGO" : party.role}</p>
+                    <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: largeSignatures ? 13.5 : 12.5, fontWeight: 700, color: "var(--doc-gold)", margin: "0 0 2px 0" }}>{atRequest ? "ASSINANTE A ROGO" : party.role}</p>
                     <p style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: largeSignatures ? 15.5 : 14, color: "#3a4048", margin: 0 }}>{atRequest ? legalFormData._signatureAtRequestSignerName : party.name}</p>
                     {atRequest && <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 12, color: "#767b84", lineHeight: 1.4, margin: "4px 0 0" }}>A rogo de {party.name} ({party.role}), que declarou {legalFormData._signatureAtRequestReason || "não poder assinar"}. CPF: {legalFormData._signatureAtRequestSignerCpf}</p>}
                   </div>
@@ -864,7 +864,7 @@ const LegalEditorPage = () => {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40 }}>
                 {Array.from({ length: block.count }).map((_, j) => (
                   <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: "var(--gold, #a58737)", background: "rgba(165,135,55,0.1)", width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{j + 1}</span>
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: "var(--doc-gold)", background: "rgba(165,135,55,0.1)", width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{j + 1}</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ borderBottom: "1px dashed #c5c2ba", marginBottom: 4, minHeight: 36 }} />
                       <p style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 10.5, color: "#a0a5ae", margin: 0 }}>Nome / CPF</p>
@@ -884,7 +884,7 @@ const LegalEditorPage = () => {
         <h3 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 19, fontWeight: 700, color: "#161d26", textAlign: "center", textTransform: "uppercase", marginBottom: 28 }}>{selectedDoc?.name}</h3>
         {currentSections.map((s) => (
           <div key={s.id} style={{ marginBottom: 20 }}>
-            <h4 style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: "var(--gold, #a58737)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px 0" }}>{s.title}</h4>
+            <h4 style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontSize: 11, fontWeight: 700, color: "var(--doc-gold)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px 0" }}>{s.title}</h4>
             {s.fields.map((f) => (
               <div key={f.key} style={{ display: "flex", gap: 12, fontSize: 14, marginBottom: 3, padding: "4px 0", borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
                 <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 600, color: "#767b84", minWidth: 120, fontSize: 12.5 }}>{f.label}:</span>

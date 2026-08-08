@@ -8,6 +8,7 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
+import { ThemeToggle } from "../components/ThemeToggle";
 import showToast from "../utils/toast";
 
 const LoginPage = () => {
@@ -175,13 +176,16 @@ const LoginPage = () => {
 
         <section className="login-form-wrap">
           <div className="w-full max-w-[440px] animate-fade-up">
-            <button
-              onClick={() => navigate("landing")}
-              className="group inline-flex items-center gap-1.5 text-text-muted hover:text-text transition-colors text-sm font-medium mb-8 bg-transparent border-none cursor-pointer py-2 touch-target"
-            >
-              <Icon name="ChevronLeft" className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-              Voltar ao início
-            </button>
+            <div className="flex items-center justify-between mb-8">
+              <button
+                onClick={() => navigate("landing")}
+                className="group inline-flex items-center gap-1.5 text-text-muted hover:text-text transition-colors text-sm font-medium bg-transparent border-none cursor-pointer py-2 touch-target"
+              >
+                <Icon name="ChevronLeft" className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                Voltar ao início
+              </button>
+              <ThemeToggle />
+            </div>
 
             <div className="surface-card" style={{ padding: "32px", borderRadius: 18, boxShadow: "0 24px 70px rgba(0,0,0,0.24)" }}>
               <div className="mb-8">
@@ -222,11 +226,11 @@ const LoginPage = () => {
                   </>
                 ) : (
                   <>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M10 1.875a8.125 8.125 0 1 0 5.337 14.249l-.864-1.097A6.875 6.875 0 1 1 16.6 9.375h-6.6v1.25h5.288a6.858 6.858 0 0 1-5.288 6.525A6.875 6.875 0 0 1 10 3.125c1.535 0 2.973.506 4.137 1.426l.884-.884A8.125 8.125 0 0 0 10 1.875Z" fill="#4285F4" />
-                      <path fillRule="evenodd" clipRule="evenodd" d="M10 10.625v1.25h5.288a6.858 6.858 0 0 1-1.281 3.152l-.864-1.097a5.625 5.625 0 1 0-3.143-3.305Z" fill="#34A853" />
-                      <path fillRule="evenodd" clipRule="evenodd" d="M10 3.125c1.535 0 2.973.506 4.137 1.426l.884-.884A8.125 8.125 0 0 0 10 1.875v1.25Z" fill="#FBBC05" />
-                      <path fillRule="evenodd" clipRule="evenodd" d="M10 16.875a6.86 6.86 0 0 0 4.052-1.348l.864 1.097A8.125 8.125 0 0 1 10 18.125v-1.25Z" fill="#EA4335" />
+                    <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12 0-6.627 5.373-12 12-12 3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24c0 11.045 8.955 20 20 20 11.045 0 20-8.955 20-20 0-1.341-.138-2.65-.389-3.917z"/>
+                      <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                      <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
                     </svg>
                     Continuar com Google
                   </>

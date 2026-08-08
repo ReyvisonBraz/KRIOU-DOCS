@@ -13,6 +13,7 @@
 
 import React from "react";
 import { Icon } from "../Icons";
+import { ThemeToggle } from "../ThemeToggle";
 
 /* ───────────────────────────────────────────
    Navbar — Barra de navegação base
@@ -106,8 +107,10 @@ export const AppNavbar = ({ title, leftAction, rightAction, children, style }) =
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
+          gap: 8,
         }}
       >
+        <ThemeToggle className="w-[38px] h-[38px] !min-w-[38px] !min-h-[38px]" />
         {rightAction || <span />}
       </div>
     </div>

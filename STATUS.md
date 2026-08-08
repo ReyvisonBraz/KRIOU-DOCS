@@ -68,8 +68,8 @@ Não existe script `test:coverage` no `package.json` — a medição é feita à
 | Migration `012_harden_database_functions.sql` | ✅ **já estava aplicada** — o registro anterior estava errado |
 | Migrations `014`–`023` | ⚠️ **estavam aplicadas em produção e ausentes do repo** — trazidas em `678ca42` |
 | `001`–`012` — conteúdo local bate com o aplicado | ✅ confirmado byte a byte (via `migration fetch`) |
-| RLS validada com duas identidades reais | ❌ nunca feito |
-| Rollback ensaiado | ❌ nunca feito |
+| RLS validada com duas identidades reais | ⛔ **bloqueada** — precisa da chave `service_role`, exposição não autorizada ainda |
+| Rollback ensaiado | ✅ **feito em 2026-08-08, banco local** — aplicar → reverter → reaplicar, ciclo completo confirmado |
 | Pagamento real executado | ❌ **nunca** — bloqueado de propósito |
 
 ### ⚠️ O achado mais importante: infraestrutura de admin completa, nunca conectada ao código
@@ -125,7 +125,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 | E-mail transacional | ✅ |
 | Tema claro/escuro | ✅ |
 | Painel administrativo | ✅ versão simples corrigida — sistema de papéis rico dormente |
-| Exportação de dados do titular | 🟡 código pronto, **função não publicada** |
+| Exportação de dados do titular | ✅ publicada em 2026-08-08 |
 | Exclusão de conta | ❌ não existe |
 
 > O botão do perfil que limpa dados **só afeta o navegador atual** — não apaga nada no
@@ -141,7 +141,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 | Arquivos JS/JSX em `src/` | 127 |
 | Linhas em `src/` | ~29.500 |
 | Arquivos de teste | 25 |
-| Edge Functions | 7 + `_shared` (1 nunca publicada) |
+| Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
 

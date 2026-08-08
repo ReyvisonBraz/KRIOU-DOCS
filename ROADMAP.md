@@ -218,9 +218,9 @@ Fora do Postgres: `localStorage` via `clearUserData` em `src/utils/storage.js:49
 | ~~**F3.0**~~ | Obter credenciais, login, link | ✅ feito em 2026-08-08 — projeto `uyptmlezmdzfufzuknfz` linkado |
 | ~~**F3.1**~~ | Confirmar em que migration o ambiente está | ✅ feito — ver achado abaixo |
 | ~~**F3.2**~~ | Aplicar `012_harden_database_functions.sql` | ✅ **já estava aplicada** — nada a fazer |
-| **F3.3** | Validar RLS com **duas identidades reais** | 🔴 pendente |
-| **F3.4** | Ensaiar rollback de aplicação e de banco | 🔴 pendente |
-| **F3.5** | Publicar `export-user-data` | 🔴 pendente — próximo passo natural |
+| **F3.3** | Validar RLS com **duas identidades reais** | ⛔ **bloqueada — precisa de decisão sobre credencial**, ver abaixo |
+| ~~**F3.4**~~ | Ensaiar rollback de aplicação e de banco | ✅ feito em 2026-08-08, banco local — ver abaixo |
+| ~~**F3.5**~~ | Publicar `export-user-data` | ✅ feito em 2026-08-08 — botão do perfil já funciona |
 
 ### ⚠️ O achado da F3.1: 10 migrations existiam só em produção
 
@@ -235,6 +235,41 @@ qualquer mudança: `001`–`013` batem com o repo. As 10 novas foram commitadas 
 
 **O que elas contêm muda o quadro da [F5](#f5--painel-administrativo) por completo** — ver lá.
 
+### F3.4 — rollback ensaiado de verdade, em banco local
+
+Usei `supabase start` + `supabase db reset` (Docker) para recriar o banco **do zero, só a
+partir das migrations do repo** — nunca em produção. Isolei temporariamente `013`+ para
+testar exatamente o alvo do rollback escrito:
+
+1. Apliquei até a `012` → confirmei por SQL que `search_path` estava fixo e `authenticated`
+   não conseguia mais executar os helpers internos
+2. Rodei `supabase/rollback/012_harden_database_functions_down.sql` → confirmei que **desfez**
+   as duas proteções
+3. Reapliquei a `012` → confirmou que o ciclo aplicar → reverter → reaplicar funciona
+
+**Achado bônus:** a `013_assign_owner_admin.sql` falha em banco vazio, de propósito — ela
+exige encontrar a conta do dono por hash de e-mail, e falha fechada se não achar. Isso é
+correto, mas significa que **não dá para rodar `db reset` do zero sem antes semear** um
+usuário com o e-mail certo. Vale um `supabase/seed.sql` futuro para isso — registrado como
+melhoria [M13](#melhorias-sugeridas).
+
+### F3.3 — bloqueada por uma decisão de credencial, não por falta de acesso
+
+Para testar com duas identidades reais, eu precisaria criar duas contas de teste
+programaticamente — o que exige a chave `service_role`, a mais poderosa do projeto (ignora
+toda proteção de linha). O sistema de permissões **bloqueou** a tentativa de expor essa
+chave, corretamente: não houve autorização explícita para isso.
+
+Três caminhos possíveis, a escolher:
+
+1. **Autorizar a exposição temporária** da chave só para rodar o teste (nunca gravada em
+   arquivo, usada e descartada na mesma sessão)
+2. **Criar duas contas manualmente** pela tela de login do próprio app e me passar os dois
+   tokens de acesso (sem precisar da chave mestra)
+3. **Adiar** — o risco que a F3.3 verifica (usuário vendo dado de outro) já tem cobertura
+   indireta: as policies de RLS foram lidas e conferidas linha a linha em
+   `docs/runbook-deploy.md`, só falta a prova em tempo de execução
+
 ### O que já foi adiantado (2026-08-08)
 
 | Item | Onde |
@@ -243,9 +278,8 @@ qualquer mudança: `001`–`013` batem com o repo. As 10 novas foram commitadas 
 | Runbook completo | `docs/runbook-deploy.md` |
 | Variáveis de ambiente documentadas | `.env.example` |
 | 10 migrations recuperadas do banco | `678ca42` |
-
-**A `F3.5` é o próximo passo natural:** publicar `export-user-data` não precisa de nenhum
-secret e destrava um botão que já está na interface.
+| Rollback da `012` ensaiado em banco local | ver F3.4 acima |
+| `export-user-data` publicada | destrava o botão de exportação da F2.3 |
 
 ---
 
@@ -390,6 +424,7 @@ Fora do caminho de lançamento. Registradas para não se perderem, mas **não co
 | **M10** | 3 `SettingsRow` do perfil continuam sem ação, agora ao lado de botões que funcionam | O contraste com o botão de limpar dados, que agora funciona e é honesto, ficou mais evidente |
 | **M11** | Não há fixture de segunda identidade para E2E | `e2e/auth.setup.js` só suporta uma conta; `VITE_TEST_EMAIL`/`VITE_TEST_PASSWORD` nem estavam documentadas (corrigido no `.env.example`). A validação de RLS da F3.3 é manual por falta disso |
 | **M12** | Nenhuma automação de deploy | Sem script no `package.json`, sem passo no CI. Publicar Edge Function é sempre manual |
+| **M13** | Falta `supabase/seed.sql` | `db reset` local não consegue passar da `013` sem um usuário com o e-mail certo já existir. Um seed com uma conta de teste destravaria banco local reprodutível |
 
 ---
 

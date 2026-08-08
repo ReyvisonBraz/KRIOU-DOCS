@@ -20,21 +20,20 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **336 passando, 22 arquivos** | `npm test` |
+| Testes unitários | ✅ **347 passando, 23 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ Playwright, Chromium | `npm run test:e2e:public` |
 | CI | ✅ ativo | `.github/workflows/quality.yml` |
-| Vulnerabilidades de produção | ⚠️ **1 moderada** | `npm audit --omit=dev` |
+| Vulnerabilidades de produção | ✅ **zero** | `npm audit --omit=dev` |
 
-### ⚠️ A vulnerabilidade
+### Sobre a vulnerabilidade que existia
 
-`dompurify <= 3.4.12` — moderada. Remoção de hook `IN_PLACE` deixa subárvore destacada
-executável, permitindo XSS ([GHSA-55q2-fjhq-7xh7](https://github.com/advisories/GHSA-55q2-fjhq-7xh7)).
-Corrigível com `npm audit fix`.
-
-Isto **regrediu**: em 18/07/2026 o registro era de zero vulnerabilidades de produção.
-Reapareceu depois disso e não estava documentado em lugar nenhum.
+`dompurify <= 3.4.12` tinha falha moderada de XSS
+([GHSA-55q2-fjhq-7xh7](https://github.com/advisories/GHSA-55q2-fjhq-7xh7)), herdada do
+`jspdf`. **Corrigida em 2026-08-08** (`39bb22f`), subindo para 3.4.13. Como o `jspdf` gera
+todos os PDFs do produto, foi verificada com atenção: suíte inteira passando e bundle
+inalterado.
 
 ---
 
@@ -75,15 +74,20 @@ Não existe script `test:coverage` no `package.json` — a medição é feita à
 
 ## Última entrega
 
-**Frente [F1 — tema claro/escuro](ROADMAP.md#f1--tema-claroescuro), concluída em 2026-08-08.**
-Alternância completa, persistida, sem flash no carregamento, com 15 testes novos.
+**2026-08-08 — três blocos de trabalho:**
 
-No caminho foram corrigidos cinco bugs que não estavam mapeados — o mais grave era o campo de
-digitação do cadastro, que tinha texto branco sobre fundo claro: no tema claro o usuário
-digitava e não via o que escrevia.
+1. **[F1 — tema claro/escuro](ROADMAP.md#f1--tema-claroescuro), concluída.** Alternância
+   completa, persistida, sem flash no carregamento, com 15 testes novos. No caminho foram
+   corrigidos cinco bugs não mapeados — o mais grave era o campo de digitação do cadastro,
+   que tinha texto branco sobre fundo claro: no tema claro o usuário digitava e não via o
+   que escrevia. Ficou estabelecida a convenção **`--doc-*` nunca segue o tema**, protegida
+   por testes.
 
-Ficou estabelecida a convenção **`--doc-*` nunca segue o tema**, com testes que a protegem.
-Vale para qualquer trabalho futuro que toque em cor de documento.
+2. **Vulnerabilidade de produção corrigida.** `dompurify` XSS, moderada. Zerada.
+
+3. **[F2.3 — exportação de dados do titular](ROADMAP.md#f2--direitos-do-titular).** Código
+   pronto e testado, ⚠️ **função ainda não publicada**. Antecipada por ser o único item da
+   F2 que não depende dos prazos de retenção do jurídico.
 
 ---
 
@@ -100,7 +104,7 @@ Vale para qualquer trabalho futuro que toque em cor de documento.
 | E-mail transacional | ✅ |
 | Tema claro/escuro | ✅ |
 | Painel administrativo | 🟡 fundação apenas |
-| Exportação de dados do titular | ❌ não existe |
+| Exportação de dados do titular | 🟡 código pronto, **função não publicada** |
 | Exclusão de conta | ❌ não existe |
 
 > O botão do perfil que limpa dados **só afeta o navegador atual** — não apaga nada no
@@ -113,10 +117,10 @@ Vale para qualquer trabalho futuro que toque em cor de documento.
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 125 |
+| Arquivos JS/JSX em `src/` | 127 |
 | Linhas em `src/` | ~29.500 |
-| Arquivos de teste | 22 |
-| Edge Functions | 7 |
+| Arquivos de teste | 23 |
+| Edge Functions | 8 (1 nunca publicada) |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
 
@@ -125,7 +129,7 @@ Vale para qualquer trabalho futuro que toque em cor de documento.
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 336 passando
+npm test                  # deve dar 347 passando
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

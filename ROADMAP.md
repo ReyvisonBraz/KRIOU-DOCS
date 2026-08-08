@@ -133,14 +133,22 @@ As duas exigências de LGPD que faltam. **É o que destrava o lançamento do lad
 
 | # | Tarefa | Pronto quando |
 |---|---|---|
+| **F2.3** | ✅ **Exportação de dados** — função, serviço, UI e 11 testes | ✅ feito em 2026-08-08 (`18fbe32`) — **falta publicar** |
 | **F2.1** | **Decidir o schema de anonimização** (ver bloqueadores) | Decisão registrada em `docs/arquitetura.md` |
 | **F2.2** | Migration `014` — viabilizar anonimização e bypass dos triggers | Aplica sem quebrar a `011` |
-| **F2.3** | Edge Function `export-user-data` | Baixa JSON com `auth.users` + `profiles` + `documents` + `document_drafts` |
 | **F2.4** | Edge Function `delete-account` | Apaga o pessoal, preserva e anonimiza o fiscal |
 | **F2.5** | Redigir o `user_id` de `payment_webhook_events.payload` | `external_reference` anonimizado |
-| **F2.6** | UI no ProfilePage — botões reais | "Exportar meus dados" e "Excluir minha conta" funcionam |
+| **F2.6** | UI da exclusão no ProfilePage | "Excluir minha conta" funciona |
 | **F2.7** | Confirmação por digitação na exclusão | Exige digitar EXCLUIR |
-| **F2.8** | Testes dos dois fluxos | Exportação completa; exclusão preserva o fiscal |
+| **F2.8** | Testes da exclusão | Preserva o que é fiscal, apaga o resto |
+
+> ⚠️ **A F2.3 está pronta no código, mas a Edge Function `export-user-data` nunca foi
+> publicada.** O botão no perfil só vai funcionar depois do deploy. Isso faz parte da
+> [F3](#f3--ambiente-e-banco), que ainda não começou.
+>
+> A F2.3 foi antecipada de propósito: é o único item da F2 que **não depende** dos prazos de
+> retenção da [F4.3](#f4--jurídico-e-textos-lgpd). Entregar ao titular uma cópia do que é
+> dele não exige decisão jurídica nenhuma. Apagar, sim.
 
 ### ⚠️ Três bloqueadores de schema — resolver em F2.1 antes de escrever código
 

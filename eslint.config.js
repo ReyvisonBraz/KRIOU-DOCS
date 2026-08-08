@@ -38,4 +38,15 @@ export default defineConfig([
       },
     },
   },
+  {
+    // Testes rodam no Node (via Vitest), mesmo quando o ambiente é jsdom:
+    // podem ler arquivos e usar process para resolver caminhos.
+    files: ['src/**/*.test.{js,jsx}', 'src/tests/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+  },
 ])

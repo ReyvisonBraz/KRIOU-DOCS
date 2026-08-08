@@ -1,144 +1,63 @@
-/**
- * ============================================
- * KRIOU DOCS — Admin API
- * ============================================
- * Supabase Edge Function protegida por service_role.
- *
- * Requer que o usuario seja admin (profile.role === 'admin').
- *
- * GET /admin?action=stats
- * GET /admin?action=users
- * GET /admin?action=user-docs&userId=xxx
- * ============================================
- */
+// ============================================
+// KRIOU DOCS — Admin API
+// ============================================
+// Supabase Edge Function protegida por service_role.
+// Requer que o usuário seja admin (profile.role === 'admin').
+//
+// POST /admin  { action: "stats" }
+// POST /admin  { action: "users", page, pageSize, search }
+// POST /admin  { action: "user-docs", userId }
+//
+// A lógica de cada ação está em _shared/admin.ts, testável no Vitest.
+// Este arquivo só cuida de CORS, autenticação e roteamento — mesmo padrão
+// de authorize-download e export-user-data.
+// ============================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+import { authenticate, createAdminClient } from "../_shared/auth.ts";
+import { handlePreflight, json } from "../_shared/http.ts";
+import { getStats, getUserDocs, getUsers } from "../_shared/admin.ts";
 
 serve(async (req) => {
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
+  if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
+
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace("Bearer ", "");
+    const supabase = createAdminClient();
+    const user = await authenticate(req, supabase);
+    if (!user) return json({ error: "Não autorizado" }, 401);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Nao autorizado" }), { status: 401, headers: { "Content-Type": "application/json" } });
-    }
-
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
+    if (profileError || !profile) return json({ error: "Perfil não encontrado" }, 403);
+    if (profile.role !== "admin") return json({ error: "Acesso restrito a administradores" }, 403);
 
-    if (profile?.role !== "admin") {
-      return new Response(JSON.stringify({ error: "Acesso restrito a administradores" }), { status: 403, headers: { "Content-Type": "application/json" } });
-    }
-
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action");
+    const body = await req.json().catch(() => ({}));
+    const action = body?.action;
 
     switch (action) {
-      case "stats": {
-        const { count: totalUsers } = await supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true });
+      case "stats":
+        return json(await getStats(supabase));
 
-        const { count: totalDocs } = await supabase
-          .from("documents")
-          .select("*", { count: "exact", head: true });
-
-        const { count: finalizedDocs } = await supabase
-          .from("documents")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "finalizado");
-
-        const { data: docsByType } = await supabase
-          .from("documents")
-          .select("type, document_type");
-
-        const typeCount = {};
-        (docsByType || []).forEach((d) => {
-          const key = d.document_type || d.type || "unknown";
-          typeCount[key] = (typeCount[key] || 0) + 1;
-        });
-
-        return new Response(JSON.stringify({
-          totalUsers: totalUsers || 0,
-          totalDocs: totalDocs || 0,
-          finalizedDocs: finalizedDocs || 0,
-          docsByType: typeCount,
-        }), { status: 200, headers: { "Content-Type": "application/json" } });
-      }
-
-      case "users": {
-        const { data: users, error: usersError } = await supabase
-          .from("profiles")
-          .select("id, nome, sobrenome, role, created_at")
-          .order("created_at", { ascending: false });
-
-        if (usersError) throw usersError;
-
-        const [{ data: documents, error: documentsError }, authUsersResult] = await Promise.all([
-          supabase.from("documents").select("user_id"),
-          supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-        ]);
-        if (documentsError) throw documentsError;
-        if (authUsersResult.error) throw authUsersResult.error;
-
-        const counts = (documents || []).reduce((result, document) => {
-          result[document.user_id] = (result[document.user_id] || 0) + 1;
-          return result;
-        }, {} as Record<string, number>);
-        const emails = new Map(authUsersResult.data.users.map((authUser) => [authUser.id, authUser.email || null]));
-        const usersWithCounts = (users || []).map((profile) => ({
-          ...profile,
-          email: emails.get(profile.id) || null,
-          docCount: counts[profile.id] || 0,
-        }));
-
-        return new Response(JSON.stringify(usersWithCounts), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+      case "users":
+        return json(await getUsers(supabase, body));
 
       case "user-docs": {
-        const targetUserId = url.searchParams.get("userId");
-        if (!targetUserId) {
-          return new Response(JSON.stringify({ error: "userId é obrigatório" }), { status: 400, headers: { "Content-Type": "application/json" } });
+        if (!body?.userId || typeof body.userId !== "string") {
+          return json({ error: "userId é obrigatório" }, 400);
         }
-
-        const { data: docs, error: docsError } = await supabase
-          .from("documents")
-          .select("id, title, code, type, document_type, document_type_name, status, payment_status, created_at, updated_at")
-          .eq("user_id", targetUserId)
-          .order("created_at", { ascending: false });
-
-        if (docsError) throw docsError;
-
-        return new Response(JSON.stringify(docs || []), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json(await getUserDocs(supabase, body.userId));
       }
 
       default:
-        return new Response(JSON.stringify({ error: "Acao invalida. Use: stats, users, user-docs" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json({ error: "Ação inválida. Use: stats, users, user-docs" }, 400);
     }
-  } catch (err) {
-    console.error("[admin][ERRO]", err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+  } catch (error) {
+    console.error("[admin] Erro interno", error instanceof Error ? error.message : "desconhecido");
+    return json({ error: "Erro interno ao processar solicitação administrativa" }, 500);
   }
 });

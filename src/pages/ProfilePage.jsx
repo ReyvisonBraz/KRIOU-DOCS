@@ -12,6 +12,7 @@ import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 import { Card, Button, AppNavbar } from "../components/UI";
 import { DocumentService } from "../services/DocumentService";
+import { PrivacyService } from "../services/PrivacyService";
 import StorageService from "../utils/storage";
 import showToast from "../utils/toast";
 import { validateCpf } from "../utils/validation";
@@ -24,6 +25,7 @@ import { validateCpf } from "../utils/validation";
 const ProfilePage = () => {
   const { navigate, logout, profile, setProfile, email, userId, userDocuments } = useApp();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -91,6 +93,24 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  // Direito de acesso do titular (LGPD, art. 18). Monta o arquivo no proprio
+  // navegador — os dados nao passam por nenhum servico de terceiro.
+  const handleExportData = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const dados = await PrivacyService.downloadMyData();
+      showToast.success(
+        `Pronto! ${dados.resumo.total_de_documentos} documento(s) no arquivo.`,
+      );
+    } catch (err) {
+      console.error("[ProfilePage][ERRO] handleExportData:", err.message);
+      showToast.error("Não foi possível exportar seus dados. Tente novamente.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Limpa apenas o armazenamento local deste navegador e desconecta.
@@ -495,6 +515,14 @@ const ProfilePage = () => {
             Configurações
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
+            <SettingsRow
+              icon="Download"
+              label="Exportar meus dados"
+              description="Baixe um arquivo com tudo que guardamos sobre você"
+              accent="var(--teal)"
+              onClick={handleExportData}
+              loading={exporting}
+            />
             <SettingsRow icon="Bell" label="Notificações" accent="var(--coral)" />
             <SettingsRow icon="Shield" label="Privacidade" accent="var(--gold)" />
             <SettingsRow icon="HelpCircle" label="Ajuda e Suporte" accent="var(--teal)" last />
@@ -850,57 +878,111 @@ const EditField = ({ icon, label, value, onChange, placeholder, mask, last }) =>
   </div>
 );
 
-const SettingsRow = ({ icon, label, last, accent = "var(--text-muted)" }) => (
-  <button
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 14,
-      padding: "14px 0",
-      background: "none",
-      border: "none",
-      borderBottom: last ? "none" : "1px solid var(--border)",
-      cursor: "pointer",
-      width: "100%",
-      textAlign: "left",
-      minHeight: 52,
-      transition: "all 0.2s ease",
-    }}
-    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)] rounded-lg"
-    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; }}
-    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
-  >
-    <div
+// Linha da seção Configurações.
+//
+// Sem `onClick` a linha é apenas informativa: não recebe cursor de mão, não
+// reage ao mouse e não é alcançável pelo teclado. Antes todas pareciam
+// clicáveis e nenhuma fazia nada.
+const SettingsRow = ({
+  icon,
+  label,
+  description,
+  last,
+  accent = "var(--text-muted)",
+  onClick,
+  loading = false,
+  disabled = false,
+}) => {
+  const interativa = typeof onClick === "function";
+  const inerte = !interativa || disabled || loading;
+
+  return (
+    <button
+      type="button"
+      onClick={interativa && !inerte ? onClick : undefined}
+      disabled={inerte}
+      aria-busy={loading || undefined}
       style={{
-        flexShrink: 0,
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        background: `color-mix(in srgb, ${accent} 12%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${accent} 22%, transparent)`,
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        color: accent,
+        gap: 14,
+        padding: "14px 0",
+        background: "none",
+        border: "none",
+        borderBottom: last ? "none" : "1px solid var(--border)",
+        cursor: inerte ? "default" : "pointer",
+        width: "100%",
+        textAlign: "left",
+        minHeight: 52,
+        opacity: disabled ? 0.55 : 1,
         transition: "all 0.2s ease",
       }}
+      className={
+        interativa
+          ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--coral)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)] rounded-lg"
+          : "rounded-lg"
+      }
+      onMouseEnter={(e) => { if (!inerte) e.currentTarget.style.background = "var(--surface-2)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
     >
-      <Icon name={icon} className="w-5 h-5" />
-    </div>
-    <span
-      style={{
-        flex: 1,
-        fontFamily: "var(--font-body)",
-        fontSize: 14,
-        fontWeight: 500,
-        color: "var(--text)",
-        letterSpacing: "-0.005em",
-      }}
-    >
-      {label}
-    </span>
-    <Icon name="ChevronRight" className="w-4 h-4" style={{ color: "var(--text-faint)" }} />
-  </button>
-);
+      <div
+        style={{
+          flexShrink: 0,
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${accent} 22%, transparent)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: accent,
+          transition: "all 0.2s ease",
+        }}
+      >
+        <Icon name={icon} className="w-5 h-5" />
+      </div>
+
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span
+          style={{
+            display: "block",
+            fontFamily: "var(--font-body)",
+            fontSize: 14,
+            fontWeight: 500,
+            color: "var(--text)",
+            letterSpacing: "-0.005em",
+          }}
+        >
+          {label}
+        </span>
+        {description && (
+          <span
+            style={{
+              display: "block",
+              fontFamily: "var(--font-body)",
+              fontSize: 12,
+              color: "var(--text-muted)",
+              marginTop: 2,
+              lineHeight: 1.4,
+            }}
+          >
+            {description}
+          </span>
+        )}
+      </span>
+
+      {loading ? (
+        <span
+          aria-hidden="true"
+          className="w-4 h-4 rounded-full animate-spin"
+          style={{ border: "2px solid currentColor", borderTopColor: "transparent", color: "var(--text-muted)" }}
+        />
+      ) : (
+        interativa && <Icon name="ChevronRight" className="w-4 h-4" style={{ color: "var(--text-faint)" }} />
+      )}
+    </button>
+  );
+};
 
 export default ProfilePage;

@@ -1,112 +1,111 @@
-# Kriou Docs - Documentos Profissionais
+# Kriou Docs
 
-Plataforma para criação de documentos profissionais como currículos, contratos e documentos jurídicos com entrega via WhatsApp.
+Plataforma para criação de documentos profissionais por preenchimento guiado: **currículos**
+(wizard de 7 etapas, 5 templates) e **documentos jurídicos** (10 famílias, 22 variantes —
+compra e venda, locação, procuração, doação, recibo, união estável, autorização de viagem,
+comodato, permuta e prestação de serviços).
 
-## 🚀 Quick Start
+O usuário entra com Google, preenche o formulário com salvamento automático, visualiza o
+resultado, paga **R$ 9,90 por documento** via Mercado Pago e baixa o PDF ou recebe por e-mail.
+
+📍 **Estado atual:** [STATUS.md](STATUS.md) · 🗺️ **O que falta:** [ROADMAP.md](ROADMAP.md)
+
+---
+
+## Começando
 
 ```bash
-# Install dependencies
 npm install
-
-# Run development server
 npm run dev
-
-# Run tests
-npm test
-
-# Build for production
-npm run build
 ```
 
-## 📁 Project Structure
+Copie o `.env.example` para `.env` e preencha as chaves do Supabase antes de rodar.
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| UI | React 19, Tailwind CSS 4 |
+| Build | Vite 8 |
+| Estado | React Context (`AppContext`, `AuthContext`, `LegalContext`, `ResumeContext`) |
+| Roteamento | Router próprio via contexto, sem biblioteca |
+| Backend | Supabase — Postgres com RLS, Auth, Edge Functions em Deno |
+| Pagamento | Mercado Pago Checkout Pro |
+| PDF | jsPDF dentro de um Web Worker |
+| Testes | Vitest, Testing Library, Playwright |
+| Deploy | Vercel |
+
+O projeto é **JavaScript puro com JSX** — não usa TypeScript, Redux/Zustand nem React Router.
+
+---
+
+## Estrutura
 
 ```
 src/
-├── components/     # Reusable UI components
-│   ├── ErrorBoundary.jsx  # Error handling
-│   ├── Icons.jsx    # SVG icon library
-│   ├── Theme.jsx    # Theme and global styles
-│   └── UI.jsx       # Buttons, Cards, Forms, etc.
-├── constants/       # Application constants
-│   ├── styles.js    # Shared style objects
-│   ├── timing.js    # Timing/delay values
-│   └── storage.js   # Storage key definitions
-├── context/        # React Context state management
-│   └── AppContext.jsx
-├── hooks/          # Custom React Hooks
-│   ├── useAutoSave.js      # Debounced auto-save with status
-│   ├── useConfirm.js       # Async confirmation dialog
-│   ├── useUnsavedChanges.js # Page leave warning
-│   ├── usePDF.js           # PDF generation via Web Worker
-│   └── index.js
-├── pages/          # Page components
-│   ├── LandingPage.jsx
-│   ├── LoginPage.jsx
-│   ├── DashboardPage.jsx
-│   ├── TemplatesPage.jsx
-│   ├── EditorPage.jsx      # 7-step resume wizard
-│   ├── LegalEditorPage.jsx # Legal document wizard
-│   ├── PreviewPage.jsx
-│   ├── CheckoutPage.jsx
-│   └── ProfilePage.jsx
-├── services/       # Business logic services (TODO)
-├── utils/          # Utility functions
-│   ├── formatting.js      # formatCpf, formatPhone, formatCnpj, etc.
-│   ├── validation.js      # validateCpf (Mod11), validateEmail, etc.
-│   ├── sanitization.js    # XSS prevention
-│   ├── rateLimiter.js     # Client-side rate limiting
-│   ├── pdfGenerator.js    # Resume PDF generation
-│   ├── legalPdfGenerator.js # Legal PDF generation
-│   └── storage.js         # localStorage utilities
-├── workers/
-│   └── pdfWorker.js       # Web Worker for PDF generation
-└── App.jsx         # Router with lazy loading
+├── components/       # UI compartilhada
+│   ├── UI/           # primitives, form, feedback, layout, document, helpers
+│   ├── Theme.jsx     # provider de tema (claro/escuro)
+│   ├── Icons.jsx     # biblioteca de ícones SVG
+│   └── ErrorBoundary.jsx
+├── context/          # AppContext, AuthContext, LegalContext, ResumeContext
+├── domain/           # regras puras (documents, paidDocuments) — sem React
+├── features/         # fatias de funcionalidade (checkout)
+├── services/         # DocumentService, PaymentService, DocumentAccessService
+├── pages/            # telas
+├── hooks/            # useAutoSave, useConfirm, usePDF, useUnsavedChanges
+├── utils/            # validation, formatting, sanitization, geradores de PDF
+├── data/             # constantes e os 10 templates de documento jurídico
+└── workers/          # pdfWorker.js
+
+supabase/
+├── functions/        # 7 Edge Functions
+│   ├── _shared/      # auth.ts, http.ts — helpers usados por todas
+│   ├── create-preference, verify-payment, mercadopago-webhook
+│   ├── authorize-download, send-email, admin
+└── migrations/       # 13 migrations numeradas
+
+docs/
+├── arquitetura.md    # como o sistema funciona
+└── _historico/       # planejamento antigo — não é plano ativo
 ```
 
-## 🎨 Theme Customization
+---
 
-Edit `src/components/Theme.jsx` to change colors and styles:
+## Comandos
 
-```javascript
-const theme = {
-  colors: {
-    coral: "#E94560",
-    teal: "#00D2D3",
-    // ...
-  }
-};
+```bash
+npm run dev              # servidor de desenvolvimento
+npm run build            # build de produção
+npm run lint             # eslint
+
+npm test                 # testes unitários (321, devem passar todos)
+npm run test:watch       # modo watch
+npm run test:e2e         # Playwright completo (precisa de sessão)
+npm run test:e2e:public  # apenas cenários públicos, sem login
 ```
 
-## 🔐 Security Features
+---
 
-- **CPF Validation** — Mod11 algorithm (rejects `000.000.000-00`)
-- **Email Validation** — RFC-compliant regex
-- **Rate Limiting** — Client-side protection for login/OTP
-- **Input Sanitization** — XSS prevention for all form data
-- **useUnsavedChanges** — Warns user before losing changes
-- **useConfirm** — Confirms destructive actions
+## Segurança
 
-## ⚡ Performance Features
+- **Preço fixado no servidor** — o valor nunca vem do cliente
+- **RLS no Postgres** — o usuário só alcança as próprias linhas
+- **Download autorizado pelo backend**, vinculado ao documento exato
+- **Documento pago é protegido por trigger** contra edição de dados de identidade
+- **Webhook idempotente** — `payment_webhook_events` impede processamento duplicado
+- Validação de CPF por Mod11, sanitização de entrada contra XSS, rate limiting no cliente
 
-- **Code Splitting** — Pages load on demand via `React.lazy()`
-- **PDF Web Worker** — PDF generation doesn't freeze UI
-- **Auto-save** — Debounced (1.5s) with visual status indicator
-- **Sonner Toasts** — Non-blocking notifications
+> ⚠️ Nenhum pagamento real foi executado até hoje. Isso é deliberado — ver
+> [F6 no roadmap](ROADMAP.md#f6--pagamento-real-ponta-a-ponta).
 
-## 📝 Adding New Templates
+---
 
-1. Add new template to `RESUME_TEMPLATES` in `src/data/constants.js`
-2. Define colors and styles
-3. PreviewPage and PDF generator will automatically apply
+## Receitas rápidas
 
-## 🔧 Development
-
-### Add New Page
-1. Create component in `src/pages/`
-2. Add to lazy routes in `App.jsx`
-3. Update `src/context/AppContext.jsx` with new page key
-
-### PDF Generation
+**Gerar PDF**
 ```javascript
 import { usePDF } from "./hooks/usePDF";
 
@@ -114,30 +113,45 @@ const { generatePDF, isGenerating } = usePDF();
 await generatePDF({ type: "GENERATE_RESUME", formData, template });
 ```
 
-### Validation
+**Validar e formatar**
 ```javascript
-import { validateCpf, validateEmail } from "./utils/validation";
+import { validateCpf } from "./utils/validation";
+import { formatCpf, formatCurrency } from "./utils/formatting";
 
-validateCpf("123.456.789-09"); // true
-validateEmail("user@example.com"); // true
+validateCpf("123.456.789-09");  // true — Mod11, rejeita 000.000.000-00
+formatCpf("12345678909");        // "123.456.789-09"
+formatCurrency(9.90);            // "R$ 9,90"
 ```
 
-### Formatting
-```javascript
-import { formatCpf, formatPhone, formatCurrency } from "./utils/formatting";
+**Adicionar um template de currículo**
+Adicione a `RESUME_TEMPLATES` em `src/data/constants.js`. O preview e o gerador de PDF
+aplicam automaticamente.
 
-formatCpf("12345678909"); // "123.456.789-09"
-formatPhone("11987654321"); // "(11) 98765-4321"
-formatCurrency(99.90); // "R$ 99,90"
+**Adicionar uma tela**
+Crie em `src/pages/`, registre na rota lazy do `App.jsx` e adicione a chave da página em
+`src/context/AppContext.jsx`.
+
+---
+
+## Tema
+
+O tema claro/escuro é controlado pelo atributo `data-theme` no `<html>`, aplicado pelo
+`ThemeProvider` em `src/components/Theme.jsx`. As cores são variáveis CSS definidas em
+`src/index.css` — **é ali que se muda a paleta**, não no JSX.
+
+```css
+:root                     { --surface: #1A1A33; }  /* escuro, padrão */
+:root[data-theme="light"] { --surface: #FFFFFF; }
 ```
 
-## 🧪 Testing
+Componentes consomem via `var(--surface)` ou pelas classes Tailwind equivalentes
+(`bg-surface`), que seguem as mesmas variáveis.
 
-```bash
-npm test           # Run tests once
-npm run test:watch # Watch mode
-```
+> ⚠️ Cores de **documento** (preview de contrato, templates de currículo, PDF) devem usar
+> hex fixo, nunca as variáveis de tema — o papel precisa parecer papel nos dois temas.
 
-## 📄 License
+---
 
-MIT License - 2026 Kriou Docs
+## Licença
+
+MIT — 2026 Kriou Docs

@@ -10,6 +10,11 @@ dist/
 output/
 tmp/
 
+# Relatórios de teste
+coverage/
+playwright-report/
+test-results/
+
 # Supabase CLI local state
 supabase/.temp/
 

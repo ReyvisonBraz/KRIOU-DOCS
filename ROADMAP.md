@@ -10,7 +10,7 @@
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 371 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 411 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -391,7 +391,7 @@ automatizados e mocks financeiros — nenhum pagamento real.
 | **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
 | **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
 | **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
-| **F7.4** | Cobrir o que não tem teste, começando por serviços e regras críticas | Gradual, sem meta artificial |
+| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Primeira fatia: `DocumentService`, autenticação e armazenamento |
 
 ### O problema, com precisão
 
@@ -400,10 +400,26 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 371 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 411 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
+
+### F7.4 — primeira fatia verificada em 2026-08-10
+
+Foram adicionados **40 testes** para persistência de documentos, autenticação e armazenamento.
+A cobertura global subiu para **36,75% de linhas, 35,67% de statements, 27,11% de branches e
+24,16% de funções**. Resultados dos alvos:
+
+| Alvo | Cobertura de linhas | Resultado |
+|---|---:|---|
+| `DocumentService.js` | **72,50%** | Acima da meta de serviços (70%) |
+| Camada `src/services` | **80,92%** | Acima da meta da camada (70%) |
+| `AuthContext.jsx` | **100%** | Restauração, eventos, OAuth, logout e cleanup cobertos |
+| `storage.js` | **89,14%** | Acima da meta de utilitários críticos (80%) |
+
+O próximo foco da F7.4 são hooks de fluxo ainda em 18,60% e contextos de aplicação ainda
+sem cobertura. A frente continua aberta; esta entrega fecha apenas a primeira fatia.
 
 ### Metas por camada
 

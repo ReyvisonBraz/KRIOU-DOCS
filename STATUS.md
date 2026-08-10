@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **371 passando, 25 arquivos** | `npm test` |
+| Testes unitários | ✅ **411 passando, 28 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
@@ -42,18 +42,24 @@ inalterado.
 | Número | Valor | Significado |
 |---|---|---|
 | Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
-| Cobertura real de linhas em `src` | **30,44%** | ✅ Baseline de 2026-08-10, medindo todo JS/JSX |
+| Baseline real de linhas em `src` | **30,44%** | ✅ F7.1, medindo todo JS/JSX |
+| Cobertura atual de linhas em `src` | **36,75%** | ✅ Após a primeira fatia da F7.4 |
 
 Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
 arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
 sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 371 testes são reais e estão concentrados onde
-mais importa: geração de PDF, matriz jurídica das 22 variantes e validação de entrada.
+Isso **não significa que a suíte é ruim.** Os 411 testes são reais e estão concentrados onde
+mais importa: geração de PDF, matriz jurídica das 22 variantes, validação, persistência,
+autenticação e armazenamento.
 O problema era a declaração, não a suíte. A medição foi corrigida em
 [F7.1](ROADMAP.md#f7--honestidade-técnica); a expansão segue gradual na F7.4.
 
 Comando oficial: `npm run test:coverage`.
+
+Primeira fatia da F7.4 verificada em 2026-08-10: `DocumentService` chegou a **72,50%** de
+linhas, a camada `src/services` a **80,92%**, `AuthContext` a **100%** e `storage.js` a
+**89,14%**. Foram adicionados 40 testes; a F7.4 continua aberta para hooks e contextos.
 
 ---
 
@@ -138,9 +144,9 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 127 |
-| Linhas em `src/` | ~29.500 |
-| Arquivos de teste | 25 |
+| Arquivos JS/JSX em `src/` | 132 |
+| Linhas JS/JSX em `src/` (incluindo testes) | ~31.100 |
+| Arquivos de teste | 28 |
 | Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -150,8 +156,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 371 passando
-npm run test:coverage     # baseline honesto: 30,44% de linhas em src
+npm test                  # deve dar 411 passando
+npm run test:coverage     # cobertura atual: 36,75% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

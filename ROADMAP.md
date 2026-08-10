@@ -10,7 +10,7 @@
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 411 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 427 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 411 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 427 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -418,8 +418,22 @@ A cobertura global subiu para **36,75% de linhas, 35,67% de statements, 27,11% d
 | `AuthContext.jsx` | **100%** | Restauração, eventos, OAuth, logout e cleanup cobertos |
 | `storage.js` | **89,14%** | Acima da meta de utilitários críticos (80%) |
 
-O próximo foco da F7.4 são hooks de fluxo ainda em 18,60% e contextos de aplicação ainda
-sem cobertura. A frente continua aberta; esta entrega fecha apenas a primeira fatia.
+### F7.4 — segunda fatia verificada em 2026-08-10
+
+Foram adicionados mais **16 testes** para `usePDF`, `useConfirm`, `useUnsavedChanges` e
+`AppContext`. A cobertura global atual passou para **40,89% de linhas, 39,64% de statements,
+28,86% de branches e 27,03% de funções**.
+
+| Alvo | Cobertura de linhas | Resultado |
+|---|---:|---|
+| `usePDF.js` | **100%** | Sucesso, erro do worker, falha nativa e concorrência cobertos |
+| `useConfirm.js` | **100%** | Confirmação, cancelamento, defaults e rótulos cobertos |
+| `useUnsavedChanges.js` | **100%** | Registro, mensagem e cleanup de `beforeunload` cobertos |
+| `AppContext.jsx` | **96,35%** | Bootstrap, offline, navegação, logout e composição cobertos |
+
+A camada `src/hooks` subiu de **18,60% para 50,58%**, e `src/context` chegou a **62,58%**.
+A F7.4 continua aberta porque o módulo legado `hooks/index.js`, `ResumeContext` e
+`LegalContext` ainda não têm cobertura.
 
 ### Metas por camada
 

@@ -10,7 +10,7 @@
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 427 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 441 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 427 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 441 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -432,8 +432,22 @@ Foram adicionados mais **16 testes** para `usePDF`, `useConfirm`, `useUnsavedCha
 | `AppContext.jsx` | **96,35%** | Bootstrap, offline, navegação, logout e composição cobertos |
 
 A camada `src/hooks` subiu de **18,60% para 50,58%**, e `src/context` chegou a **62,58%**.
-A F7.4 continua aberta porque o módulo legado `hooks/index.js`, `ResumeContext` e
-`LegalContext` ainda não têm cobertura.
+
+### F7.4 — terceira fatia verificada em 2026-08-10
+
+Foram adicionados mais **14 testes** para `ResumeContext` e `LegalContext`, cobrindo estado
+inicial, autosave local e remoto, sanitização, criação e atualização de documentos, reset,
+propagação de erros e uso dos hooks fora dos providers. A cobertura global atual passou para
+**43,37% de linhas, 42,20% de statements, 30,95% de branches e 28,82% de funções**.
+
+| Alvo | Cobertura de linhas | Resultado |
+|---|---:|---|
+| `ResumeContext.jsx` | **100%** | Fluxos de currículo, documento jurídico, autosave e falhas cobertos |
+| `LegalContext.jsx` | **100%** | Catálogo, seleção, autosave, sanitização e reset cobertos |
+| Camada `src/context` | **98,20%** | Contextos críticos cobertos de forma integrada |
+
+A F7.4 continua aberta para avaliar e cobrir ou remover o agregador legado
+`hooks/index.js`, ainda sem cobertura.
 
 ### Metas por camada
 

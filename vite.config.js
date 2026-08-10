@@ -43,16 +43,10 @@ export default defineConfig({
     setupFiles: ['./src/tests/setup.js'],
     coverage: {
       provider: 'v8',
-      // Cobre apenas os módulos com testes unitários escritos
-      include: [
-        'src/utils/validation.js',
-        'src/utils/formatting.js',
-        'src/utils/sanitization.js',
-        'src/hooks/useAutoSave.js',
-      ],
+      // Mede todo o código-fonte; não esconda arquivos ainda sem testes.
+      include: ['src/**/*.{js,jsx}'],
       exclude: ['src/**/*.test.*'],
       reporter: ['text', 'html'],
-      thresholds: { lines: 80, functions: 80 },
     },
     // Arquivos .component e .hook usam jsdom
     environmentMatchGlobs: [

@@ -4,15 +4,15 @@
 > registro do que já foi feito, não plano. Se algo aqui divergir de lá, este arquivo vence.
 >
 > Estado atual verificado: veja [STATUS.md](STATUS.md).
-> Última revisão: 2026-08-08.
+> Última revisão: 2026-08-10.
 
 ---
 
 ## Onde estamos em uma frase
 
-O produto está **tecnicamente pronto** — 321 testes passando, lint limpo, pagamento e
-segurança implementados no servidor. O que impede o lançamento **não é código**: é revisão
-jurídica, textos de LGPD e dois direitos do titular que ainda não existem.
+Os portões técnicos básicos estão verdes — 371 testes passando, lint e build limpos, domínio
+crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
+RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
 ---
 
@@ -23,21 +23,21 @@ A coluna **Trilha** é o que mais importa: separa o que depende de nós do que d
 | ID | Frente | Trilha | Estado |
 |---|---|---|---|
 | [F1](#f1--tema-claroescuro) | Tema claro/escuro | Nós | ✅ **concluída em 2026-08-08** |
-| [F2](#f2--direitos-do-titular) | Direitos do titular (exportar + excluir conta) | Nós | 🔴 não iniciado |
-| [F3](#f3--ambiente-e-banco) | Ambiente e banco | Nós + infra | 🔴 não iniciado |
+| [F2](#f2--direitos-do-titular) | Direitos do titular (exportar + excluir conta) | Nós | 🟡 exportação pronta; exclusão pendente |
+| [F3](#f3--ambiente-e-banco) | Ambiente e banco | Nós + infra | 🟡 5/6 concluídas; RLS bloqueada |
 | [F4](#f4--jurídico-e-textos-lgpd) | Jurídico e textos LGPD | **Advogado** | 🔴 **acionar já** |
-| [F5](#f5--painel-administrativo) | Painel administrativo | Nós | 🟡 parcial |
+| [F5](#f5--painel-administrativo) | Painel administrativo | Nós | ✅ versão simplificada concluída |
 | [F6](#f6--pagamento-real-ponta-a-ponta) | Pagamento real ponta a ponta | Nós | 🚫 bloqueado |
-| [F7](#f7--honestidade-técnica) | Honestidade técnica | Nós | 🔴 não iniciado |
+| [F7](#f7--honestidade-técnica) | Honestidade técnica | Nós | 🟡 medição corrigida; expansão gradual |
 
 ### Dependências
 
 ```
-F4 (advogado) ──────────────────┐
-                                 ├──> F6 (pagamento real) ──> LANÇAMENTO
-F2 (direitos) ──> F3 (ambiente) ─┘
+F4 (advogado) ──> F2.4 (exclusão) ──┐
+                                     ├──> F6 (pagamento real) ──> LANÇAMENTO
+F3.3 (RLS real) ─────────────────────┘
 
-F5 e F7 correm em paralelo, sem bloquear ninguém.   F1 ✅ concluída.
+F7.4 corre em paralelo.   F1 ✅ concluída.   F5 ✅ concluída.
 ```
 
 **F4 é o caminho crítico.** Tem o maior tempo de espera e não depende de escrever código.
@@ -47,18 +47,18 @@ Deve ser disparado antes de tudo, para correr em paralelo com as demais.
 
 1. ~~**F1** — fechar o tema~~ ✅ **concluída em 2026-08-08**
 2. **F4** — acionar o advogado (corre sozinho em segundo plano) — **em andamento**
-3. ~~**F2.3** — exportação de dados~~ ✅ **concluída, aguardando F3.0/F3.5 para publicar**
-4. **F3.0** — obter credenciais e linkar o projeto ← **próximo passo que depende de você**
-5. **F5** e **F7** — código puro, seguem em paralelo, sem esperar ninguém
+3. ~~**F2.3** — exportação de dados~~ ✅ **concluída e publicada em 2026-08-08**
+4. **F3.3** — validar RLS com duas identidades reais ← **bloqueada pela decisão de credencial**
+5. ~~**F5**~~ ✅ concluída; **F7.4** segue em paralelo ampliando testes críticos
 6. **F2.4** — exclusão de conta, quando a F4.5 confirmar o prazo fiscal
 7. **F6** — só depois que F2, F3 e F4 estiverem fechadas
 
 > **F4.3/F4.5 — prazos de retenção — são pré-requisito da F2.4.** O prazo dos dados pessoais
 > já foi definido (90 dias); falta só confirmar o do registro fiscal (provisório: 5 anos).
 >
-> **F3.0 é o único item bloqueado por acesso, não por decisão.** Precisa das credenciais do
-> Supabase — é o próximo passo que só você consegue destravar. Enquanto isso não vier, F5 e
-> F7 rendem mais que esperar.
+> **F3.3 é o único item da F3 ainda bloqueado.** O projeto já está linkado; falta escolher
+> como obter duas identidades reais para provar as policies de RLS em execução. Enquanto a
+> decisão não vier, F7.4 pode avançar sem depender dela.
 
 ---
 
@@ -119,7 +119,8 @@ estão corretos nos dois temas.
 
 ## F2 — Direitos do titular
 
-As duas exigências de LGPD que faltam. **É o que destrava o lançamento do lado do código.**
+A exportação de dados já está publicada; falta a exclusão completa da conta. **É o que
+destrava o lançamento do lado do código.**
 
 ### O que reusar (não inventar)
 
@@ -137,18 +138,17 @@ As duas exigências de LGPD que faltam. **É o que destrava o lançamento do lad
 
 | # | Tarefa | Pronto quando |
 |---|---|---|
-| **F2.3** | ✅ **Exportação de dados** — função, serviço, UI e 11 testes | ✅ feito em 2026-08-08 (`18fbe32`) — **falta publicar** |
+| **F2.3** | ✅ **Exportação de dados** — função, serviço, UI e 11 testes | ✅ feita e publicada em 2026-08-08 (`18fbe32`) |
 | **F2.1** | **Decidir o schema de anonimização** (ver bloqueadores) | Decisão registrada em `docs/arquitetura.md` |
-| **F2.2** | Migration `014` — viabilizar anonimização e bypass dos triggers | Aplica sem quebrar a `011` |
+| **F2.2** | Nova migration (próximo prefixo: `024`) — viabilizar anonimização e bypass dos triggers | Aplica sem quebrar a `011` |
 | **F2.4** | Edge Function `delete-account` | Apaga o pessoal, preserva e anonimiza o fiscal |
 | **F2.5** | Redigir o `user_id` de `payment_webhook_events.payload` | `external_reference` anonimizado |
 | **F2.6** | UI da exclusão no ProfilePage | "Excluir minha conta" funciona |
 | **F2.7** | Confirmação por digitação na exclusão | Exige digitar EXCLUIR |
 | **F2.8** | Testes da exclusão | Preserva o que é fiscal, apaga o resto |
 
-> ⚠️ **A F2.3 está pronta no código, mas a Edge Function `export-user-data` nunca foi
-> publicada.** O botão no perfil só vai funcionar depois do deploy. Isso faz parte da
-> [F3](#f3--ambiente-e-banco), que ainda não começou.
+> ✅ **A F2.3 está pronta e publicada.** A Edge Function `export-user-data` foi implantada em
+> 2026-08-08; o botão do perfil já funciona.
 >
 > A F2.3 foi antecipada de propósito: é o único item da F2 que **não depende** dos prazos de
 > retenção da [F4.3](#f4--jurídico-e-textos-lgpd). Entregar ao titular uma cópia do que é
@@ -388,21 +388,37 @@ automatizados e mocks financeiros — nenhum pagamento real.
 
 | # | Tarefa | Pronto quando |
 |---|---|---|
-| **F7.1** | Coverage real em `vite.config.js:44-56` | Mede `src` inteiro; número honesto publicado |
-| **F7.2** | Definir metas por camada, sem portão global irreal | Metas registradas aqui |
-| **F7.3** | Script `test:coverage` no `package.json` | Não existe hoje |
+| **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
+| **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
+| **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
 | **F7.4** | Cobrir o que não tem teste, começando por serviços e regras críticas | Gradual, sem meta artificial |
 
 ### O problema, com precisão
 
-`vite.config.js` restringe a medição a **4 arquivos escolhidos a dedo**
+Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhidos a dedo**
 (`validation.js`, `formatting.js`, `sanitization.js`, `useAutoSave.js`) com portão de 80%.
-Isso produz "91,09%" no relatório. A cobertura real de `src` é **~14%**.
+Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
+JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 321 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 371 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
-O erro não foi ter 14% — foi declarar 91%. F7.1 é sobre publicar o número verdadeiro.
-F7.4 é o trabalho de verdade, e é gradual.
+O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
+**30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
+
+### Metas por camada
+
+São metas de priorização para a F7.4, não um portão global que mascara a situação atual:
+
+| Camada | Meta de linhas | Regra |
+|---|---:|---|
+| Regras de domínio (`src/domain`) | **80%+** | Toda regra nova entra testada |
+| Serviços (`src/services`) | **70%+** | Priorizar autenticação, persistência, pagamento e privacidade |
+| Utilitários críticos | **80%+** | Validação, sanitização, PDF, identidade e armazenamento |
+| Hooks de fluxo | **70%+** | Cobrir sucesso, erro e cancelamento |
+| Páginas e componentes visuais | Sem meta fixa inicial | Testar comportamentos críticos; E2E cobre jornadas públicas |
+
+O relatório não tem threshold global de propósito. Um portão só será adicionado por camada
+quando aquela camada atingir a própria meta sem excluir arquivos desfavoráveis.
 
 ---
 

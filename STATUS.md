@@ -1,6 +1,6 @@
 # Status — Kriou Docs
 
-> **Verificado em 2026-08-08 rodando os comandos, não lendo documentos.**
+> **Verificado em 2026-08-10 rodando os comandos, não lendo documentos.**
 >
 > Regra deste arquivo: nada entra aqui sem um comando que comprove. Se você não conseguiu
 > verificar, escreva "não verificado" — nunca copie um número de outro documento.
@@ -23,7 +23,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 | Testes unitários | ✅ **371 passando, 25 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
-| E2E público | ✅ Playwright, Chromium | `npm run test:e2e:public` |
+| E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
 | CI | ✅ ativo | `.github/workflows/quality.yml` |
 | Vulnerabilidades de produção | ✅ **zero** | `npm audit --omit=dev` |
 
@@ -41,19 +41,19 @@ inalterado.
 
 | Número | Valor | Significado |
 |---|---|---|
-| Cobertura **relatada** | ~91% | ❌ **Não confie.** Mede só 4 arquivos escolhidos a dedo |
-| Cobertura **real de `src`** | **~14%** | ✅ Este é o número honesto |
+| Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
+| Cobertura real de linhas em `src` | **30,44%** | ✅ Baseline de 2026-08-10, medindo todo JS/JSX |
 
-`vite.config.js:44-56` restringe a medição a `validation.js`, `formatting.js`,
-`sanitization.js` e `useAutoSave.js`, com portão de 80%. O portão passa verde porque mede
-apenas arquivos favoráveis.
+Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
+arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
+sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 321 testes são reais e estão concentrados onde
+Isso **não significa que a suíte é ruim.** Os 371 testes são reais e estão concentrados onde
 mais importa: geração de PDF, matriz jurídica das 22 variantes e validação de entrada.
-O problema é a declaração, não a suíte. Correção planejada em
-[F7](ROADMAP.md#f7--honestidade-técnica).
+O problema era a declaração, não a suíte. A medição foi corrigida em
+[F7.1](ROADMAP.md#f7--honestidade-técnica); a expansão segue gradual na F7.4.
 
-Não existe script `test:coverage` no `package.json` — a medição é feita à mão.
+Comando oficial: `npm run test:coverage`.
 
 ---
 
@@ -107,8 +107,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 2. **Vulnerabilidade de produção corrigida.** `dompurify` XSS, moderada. Zerada.
 
 3. **[F2.3 — exportação de dados do titular](ROADMAP.md#f2--direitos-do-titular).** Código
-   pronto e testado, ⚠️ **função ainda não publicada**. Antecipada por ser o único item da
-   F2 que não depende dos prazos de retenção do jurídico.
+   pronto, testado e publicado em 2026-08-08. Antecipada por ser o único item da F2 que não
+   depende dos prazos de retenção do jurídico.
 
 ---
 
@@ -151,6 +151,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 ```bash
 npm test                  # deve dar 371 passando
+npm run test:coverage     # baseline honesto: 30,44% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

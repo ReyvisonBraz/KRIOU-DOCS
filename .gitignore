@@ -17,6 +17,7 @@ test-results/
 
 # Supabase CLI local state
 supabase/.temp/
+supabase/.branches/
 
 # Claude Code (configurações locais de cada dev)
 .claude/settings.local.json

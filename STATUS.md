@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **466 passando, 38 arquivos** | `npm test` |
+| Testes unitários | ✅ **486 passando, 39 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
@@ -43,13 +43,13 @@ inalterado.
 |---|---|---|
 | Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
 | Baseline real de linhas em `src` | **30,44%** | ✅ F7.1, medindo todo JS/JSX |
-| Cobertura atual de linhas em `src` | **49,97%** | ✅ Após a quinta fatia da F7.4 |
+| Cobertura atual de linhas em `src` | **52,05%** | ✅ Após a sexta fatia da F7.4 |
 
 Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
 arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
 sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 466 testes são reais e estão concentrados onde
+Isso **não significa que a suíte é ruim.** Os 486 testes são reais e estão concentrados onde
 mais importa: geração de PDF, matriz jurídica das 22 variantes, validação, persistência,
 autenticação e armazenamento.
 O problema era a declaração, não a suíte. A medição foi corrigida em
@@ -82,6 +82,16 @@ o protocolo do worker e as regras de código e identificação de documentos. `p
 `pdfWorker.js` e `documentCode.js` chegaram a **100% de linhas**; os branches medidos foram
 **92,22%**, **100%** e **88,70%**, respectivamente. A cobertura global atual passou para
 **49,97% de linhas, 48,64% de statements, 34,55% de branches e 31,90% de funções**.
+
+Sexta fatia, verificada em 2026-08-11: mais 20 testes de componente cobriram
+`AuthCallbackPage` e o pós-login imediato, levando o alvo a **100% de linhas e 93,67% de
+branches**. O timeout de 15 segundos agora é um watchdog independente de `getSession`; o listener
+permanece ativo durante `fetchProfile`, e `SIGNED_OUT` invalida resolução ou rejeição posterior
+sem navegar ou atualizar a tela de novo. O suporte a callback durante o próprio registro é
+hardening defensivo além do contrato assíncrono do SDK atual, com unsubscribe idempotente. O
+fallback de falha em `fetchProfile` permanece documentado como fail-open para o dashboard de uma
+sessão ainda autenticada. A cobertura global atual passou para **52,05% de linhas, 50,59% de
+statements, 36,12% de branches e 32,85% de funções**.
 
 ---
 
@@ -166,9 +176,9 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 142 |
-| Linhas JS/JSX em `src/` (incluindo testes) | ~32.260 |
-| Arquivos de teste | 38 |
+| Arquivos JS/JSX em `src/` | 143 |
+| Linhas JS/JSX em `src/` (incluindo testes) | 32.686 |
+| Arquivos de teste | 39 |
 | Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -178,8 +188,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 466 passando
-npm run test:coverage     # cobertura atual: 49,97% de linhas em src
+npm test                  # deve dar 486 passando
+npm run test:coverage     # cobertura atual: 52,05% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

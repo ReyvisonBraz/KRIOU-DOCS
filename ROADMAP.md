@@ -4,13 +4,13 @@
 > registro do que já foi feito, não plano. Se algo aqui divergir de lá, este arquivo vence.
 >
 > Estado atual verificado: veja [STATUS.md](STATUS.md).
-> Última revisão: 2026-08-10.
+> Última revisão: 2026-08-11.
 
 ---
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 466 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 486 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -391,7 +391,7 @@ automatizados e mocks financeiros — nenhum pagamento real.
 | **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
 | **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
 | **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
-| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Quinta fatia: pipeline de PDF e códigos de documento cobertos |
+| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Sexta fatia: callback OAuth e fluxo pós-login imediato cobertos |
 
 ### O problema, com precisão
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 466 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 486 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -491,6 +491,33 @@ e 31,90% de funções**.
 Os testes revelaram e travaram dois bugs em `documentCode.js`: códigos malformados ou com prefixo
 de outro tipo podiam inflar a próxima sequência, e uma consulta alfanumérica com três dígitos era
 classificada como CPF. As correções foram limitadas à validação estrita desses dois casos.
+
+### F7.4 — sexta fatia verificada em 2026-08-11
+
+Foram adicionados **20 testes de componente/comportamento** para `AuthCallbackPage`, cobrindo o
+estado inicial, polling e recuperação de falha, decisão por completude do perfil e onboarding,
+timeout, `SIGNED_IN`, `INITIAL_SESSION`, `TOKEN_REFRESHED`, `SIGNED_OUT`, deduplicação e cleanup.
+Quando `fetchProfile` falha, o fallback existente é deliberadamente **fail-open para o dashboard**:
+a indisponibilidade temporária do perfil não bloqueia uma sessão que o Supabase já autenticou.
+
+Os testes reproduziram corridas reais no limite do timeout, em `getSession` e `fetchProfile`
+pendentes durante logout e em resolução após unmount. O timeout agora é um watchdog independente
+do `await getSession`; aceitar uma sessão interrompe somente polling e watchdog, mantendo o
+listener ativo até a decisão de rota. `SIGNED_OUT` torna o fluxo terminal e invalida tanto a
+resolução quanto a rejeição posterior do perfil, sem segunda navegação nem atualização tardia.
+Timer e subscription são encerrados por um caminho idempotente.
+
+O suporte a callback disparado durante o próprio registro é **hardening defensivo, além do
+contrato assíncrono do SDK atual**, e não foi registrado como bug do Supabase. O teste garante que
+um unsubscribe solicitado antes de a assinatura ficar disponível seja executado exatamente uma
+vez assim que o registro retorna.
+
+A cobertura global atual passou para **52,05% de linhas, 50,59% de statements, 36,12% de branches
+e 32,85% de funções**.
+
+| Alvo | Linhas | Branches | Resultado |
+|---|---:|---:|---|
+| `AuthCallbackPage.jsx` | **100%** | **93,67%** | Rotas pós-login, eventos, watchdog, corridas e cleanup cobertos |
 
 ### Metas por camada
 

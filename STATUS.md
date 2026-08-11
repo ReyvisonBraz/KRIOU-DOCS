@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **441 passando, 34 arquivos** | `npm test` |
+| Testes unitários | ✅ **444 passando, 35 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
@@ -43,13 +43,13 @@ inalterado.
 |---|---|---|
 | Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
 | Baseline real de linhas em `src` | **30,44%** | ✅ F7.1, medindo todo JS/JSX |
-| Cobertura atual de linhas em `src` | **43,37%** | ✅ Após a terceira fatia da F7.4 |
+| Cobertura atual de linhas em `src` | **44,25%** | ✅ Após a quarta fatia da F7.4 |
 
 Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
 arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
 sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 441 testes são reais e estão concentrados onde
+Isso **não significa que a suíte é ruim.** Os 444 testes são reais e estão concentrados onde
 mais importa: geração de PDF, matriz jurídica das 22 variantes, validação, persistência,
 autenticação e armazenamento.
 O problema era a declaração, não a suíte. A medição foi corrigida em
@@ -66,9 +66,16 @@ de linhas e `AppContext` a **96,35%**. A cobertura global atual é **40,89%**; `
 subiu para **50,58%** e `src/context` para **62,58%**.
 
 Terceira fatia: mais 14 testes levaram `ResumeContext` e `LegalContext` a **100%** de linhas
-e a camada `src/context` a **98,20%**. A cobertura global atual é **43,37% de linhas,
-42,20% de statements, 30,95% de branches e 28,82% de funções**. A pendência imediata da
-F7.4 é avaliar e cobrir ou remover o agregador legado `hooks/index.js`.
+e a camada `src/context` a **98,20%**.
+
+Quarta fatia, verificada em 2026-08-11: a busca no repositório comprovou que `AdminPage.jsx`
+era o único consumidor de `hooks/index.js`, usando apenas `useDebounce`; os outros sete hooks e o
+export default não tinham consumidores. O módulo legado e o código morto foram removidos,
+`useDebounce` foi extraído para arquivo próprio e recebeu 3 testes de atraso, cancelamento e
+cleanup. `useDebounce.js` chegou a **100%** de linhas e funções, e a camada `src/hooks` a
+**97,87%** de linhas. A cobertura global atual, sobre a superfície menor de produção, é **44,25%
+de linhas, 43,08% de statements, 31,12% de branches e 29,83% de funções**. A pendência específica
+do módulo está encerrada; a F7.4 segue aberta para novas áreas críticas.
 
 ---
 
@@ -155,7 +162,7 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 |---|---|
 | Arquivos JS/JSX em `src/` | 138 |
 | Linhas JS/JSX em `src/` (incluindo testes) | ~31.978 |
-| Arquivos de teste | 34 |
+| Arquivos de teste | 35 |
 | Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -165,8 +172,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 441 passando
-npm run test:coverage     # cobertura atual: 43,37% de linhas em src
+npm test                  # deve dar 444 passando
+npm run test:coverage     # cobertura atual: 44,25% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

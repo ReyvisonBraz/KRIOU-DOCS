@@ -4,7 +4,7 @@ import { Icon } from "../components/Icons";
 import { AppNavbar } from "../components/UI";
 import AdminRoute from "../components/AdminRoute";
 import { AdminService } from "../services/AdminService";
-import { useDebounce } from "../hooks";
+import { useDebounce } from "../hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 

@@ -10,7 +10,7 @@
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 441 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 444 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -391,7 +391,7 @@ automatizados e mocks financeiros — nenhum pagamento real.
 | **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
 | **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
 | **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
-| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Primeira fatia: `DocumentService`, autenticação e armazenamento |
+| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Quarta fatia: `hooks/index.js` removido e `useDebounce` coberto |
 
 ### O problema, com precisão
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 441 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 444 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -446,8 +446,28 @@ propagação de erros e uso dos hooks fora dos providers. A cobertura global atu
 | `LegalContext.jsx` | **100%** | Catálogo, seleção, autosave, sanitização e reset cobertos |
 | Camada `src/context` | **98,20%** | Contextos críticos cobertos de forma integrada |
 
-A F7.4 continua aberta para avaliar e cobrir ou remover o agregador legado
-`hooks/index.js`, ainda sem cobertura.
+A F7.4 continuou aberta para avaliar e cobrir ou remover o módulo legado
+`hooks/index.js`, ainda sem cobertura naquele momento.
+
+### F7.4 — quarta fatia verificada em 2026-08-11
+
+A busca por imports e por todos os oito exports do módulo comprovou um único contrato de produção:
+`AdminPage.jsx` usa `useDebounce` para a busca de usuários. Nenhum dos outros sete hooks nem o
+export default tinha consumidor. Como este app não publica uma biblioteca, `hooks/index.js` e os
+exports mortos foram removidos; `useDebounce` foi extraído para arquivo próprio e passou a ser
+importado diretamente pelo Admin. Foram adicionados **3 testes** para atualização atrasada,
+cancelamento do timer anterior e cleanup ao desmontar.
+
+A cobertura global atual passou para **44,25% de linhas, 43,08% de statements, 31,12% de branches
+e 29,83% de funções**. A comparação usa a superfície de produção menor após excluir o código morto.
+
+| Alvo | Cobertura de linhas | Resultado |
+|---|---:|---|
+| `useDebounce.js` | **100%** | Atraso, cancelamento e cleanup cobertos |
+| Camada `src/hooks` | **97,87%** | Acima da meta de hooks de fluxo (70%) |
+
+A pendência específica de `hooks/index.js` está encerrada. A F7.4 permanece aberta para as próximas
+áreas críticas ainda sem cobertura, sem perseguir um percentual global artificial.
 
 ### Metas por camada
 

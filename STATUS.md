@@ -1,6 +1,6 @@
 # Status — Kriou Docs
 
-> **Verificado em 2026-08-10 rodando os comandos, não lendo documentos.**
+> **Verificado em 2026-08-11 rodando os comandos, não lendo documentos.**
 >
 > Regra deste arquivo: nada entra aqui sem um comando que comprove. Se você não conseguiu
 > verificar, escreva "não verificado" — nunca copie um número de outro documento.
@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **444 passando, 35 arquivos** | `npm test` |
+| Testes unitários | ✅ **466 passando, 38 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
@@ -43,13 +43,13 @@ inalterado.
 |---|---|---|
 | Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
 | Baseline real de linhas em `src` | **30,44%** | ✅ F7.1, medindo todo JS/JSX |
-| Cobertura atual de linhas em `src` | **44,25%** | ✅ Após a quarta fatia da F7.4 |
+| Cobertura atual de linhas em `src` | **49,97%** | ✅ Após a quinta fatia da F7.4 |
 
 Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
 arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
 sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 444 testes são reais e estão concentrados onde
+Isso **não significa que a suíte é ruim.** Os 466 testes são reais e estão concentrados onde
 mais importa: geração de PDF, matriz jurídica das 22 variantes, validação, persistência,
 autenticação e armazenamento.
 O problema era a declaração, não a suíte. A medição foi corrigida em
@@ -76,6 +76,12 @@ cleanup. `useDebounce.js` chegou a **100%** de linhas e funções, e a camada `s
 **97,87%** de linhas. A cobertura global atual, sobre a superfície menor de produção, é **44,25%
 de linhas, 43,08% de statements, 31,12% de branches e 29,83% de funções**. A pendência específica
 do módulo está encerrada; a F7.4 segue aberta para novas áreas críticas.
+
+Quinta fatia, verificada em 2026-08-11: mais 22 testes cobriram a geração real de currículo,
+o protocolo do worker e as regras de código e identificação de documentos. `pdfGenerator.js`,
+`pdfWorker.js` e `documentCode.js` chegaram a **100% de linhas**; os branches medidos foram
+**92,22%**, **100%** e **88,70%**, respectivamente. A cobertura global atual passou para
+**49,97% de linhas, 48,64% de statements, 34,55% de branches e 31,90% de funções**.
 
 ---
 
@@ -160,9 +166,9 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 138 |
-| Linhas JS/JSX em `src/` (incluindo testes) | ~31.978 |
-| Arquivos de teste | 35 |
+| Arquivos JS/JSX em `src/` | 142 |
+| Linhas JS/JSX em `src/` (incluindo testes) | ~32.260 |
+| Arquivos de teste | 38 |
 | Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -172,8 +178,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 444 passando
-npm run test:coverage     # cobertura atual: 44,25% de linhas em src
+npm test                  # deve dar 466 passando
+npm run test:coverage     # cobertura atual: 49,97% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

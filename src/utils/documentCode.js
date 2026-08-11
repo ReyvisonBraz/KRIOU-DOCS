@@ -47,9 +47,10 @@ export function generateDocumentCode(allDocs, docType) {
   });
 
   let maxNum = 0;
+  const codePattern = new RegExp(`^${prefix}-(\\d+)$`);
   for (const doc of sameType) {
     if (!doc.code) continue;
-    const match = doc.code.match(/^[A-Z]+-(\d+)/);
+    const match = doc.code.match(codePattern);
     if (match) {
       const num = parseInt(match[1], 10);
       if (num > maxNum) maxNum = num;
@@ -145,9 +146,11 @@ export function normalizeRG(rg) {
  * Verifica se uma string parece um CPF (apenas digitos ou com mascara).
  */
 export function looksLikeCPF(query) {
+  if (typeof query !== "string") return false;
   const digits = query.replace(/\D/g, "");
   return digits.length >= 3 && digits.length <= 11 &&
-    (query.includes(".") || query.includes("-") || /^\d{3,11}$/.test(digits));
+    /^[\d.-]+$/.test(query) &&
+    (query.includes(".") || query.includes("-") || /^\d{3,11}$/.test(query));
 }
 
 /**

@@ -10,7 +10,7 @@
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 444 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 466 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -391,7 +391,7 @@ automatizados e mocks financeiros — nenhum pagamento real.
 | **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
 | **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
 | **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
-| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Quarta fatia: `hooks/index.js` removido e `useDebounce` coberto |
+| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Quinta fatia: pipeline de PDF e códigos de documento cobertos |
 
 ### O problema, com precisão
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 444 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 466 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -468,6 +468,29 @@ e 29,83% de funções**. A comparação usa a superfície de produção menor ap
 
 A pendência específica de `hooks/index.js` está encerrada. A F7.4 permanece aberta para as próximas
 áreas críticas ainda sem cobertura, sem perseguir um percentual global artificial.
+
+### F7.4 — quinta fatia verificada em 2026-08-11
+
+Foram adicionados **22 testes** para o pipeline real de currículo em PDF, o protocolo completo do
+worker e códigos e identificação de documentos. Os testes do PDF abrem o `ArrayBuffer` serializado
+com a API pública do `unpdf`, validando cabeçalho e trailer, texto extraído, seções, limpeza de
+caracteres e paginação sem snapshot binário. A dependência é exclusiva de desenvolvimento e usa
+uma build serverless embutida do PDF.js, menor que adicionar o pacote completo ao projeto.
+O worker cobre currículo e jurídico, filenames padrão e personalizados, transferência do
+`ArrayBuffer`, tipo desconhecido e falha do gerador.
+
+A cobertura global atual passou para **49,97% de linhas, 48,64% de statements, 34,55% de branches
+e 31,90% de funções**.
+
+| Alvo | Linhas | Branches | Resultado |
+|---|---:|---:|---|
+| `pdfGenerator.js` | **100%** | **92,22%** | PDF real, texto, seções e paginação cobertos |
+| `pdfWorker.js` | **100%** | **100%** | Todos os caminhos do protocolo cobertos |
+| `documentCode.js` | **100%** | **88,70%** | Sequência, extração, normalização e detectores cobertos |
+
+Os testes revelaram e travaram dois bugs em `documentCode.js`: códigos malformados ou com prefixo
+de outro tipo podiam inflar a próxima sequência, e uma consulta alfanumérica com três dígitos era
+classificada como CPF. As correções foram limitadas à validação estrita desses dois casos.
 
 ### Metas por camada
 

@@ -7,7 +7,7 @@
  * do sistema. Marcada como vista no localStorage.
  */
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Icon } from "../components/Icons";
 
@@ -38,9 +38,19 @@ const WelcomePage = () => {
   const { profile, navigate, userId } = useApp();
   const [slide, setSlide]             = useState(0);
   const firstName                     = profile?.nome || "Usuário";
+  const finishInFlightRef             = useRef(false);
 
   const finish = () => {
-    if (userId) localStorage.setItem(`kriou_onboarding_${userId}_seen`, "1");
+    if (finishInFlightRef.current) return;
+    finishInFlightRef.current = true;
+
+    if (userId) {
+      try {
+        localStorage.setItem(`kriou_onboarding_${userId}_seen`, "1");
+      } catch (err) {
+        console.warn("[WelcomePage] Nao foi possivel persistir o onboarding localmente:", err);
+      }
+    }
     navigate("dashboard", { replace: true });
   };
 
@@ -93,6 +103,8 @@ const WelcomePage = () => {
               <button
                 key={i}
                 onClick={() => setSlide(i)}
+                aria-label={`Ir para etapa ${i + 1}`}
+                aria-current={i === slide ? "step" : undefined}
                 style={{
                   width: i === slide ? 28 : 8,
                   height: 8,

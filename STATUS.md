@@ -1,6 +1,6 @@
 # Status — Kriou Docs
 
-> **Verificado em 2026-08-11 rodando os comandos, não lendo documentos.**
+> **Verificado em 2026-08-12 rodando os comandos, não lendo documentos.**
 >
 > Regra deste arquivo: nada entra aqui sem um comando que comprove. Se você não conseguiu
 > verificar, escreva "não verificado" — nunca copie um número de outro documento.
@@ -20,7 +20,7 @@ O produto está **tecnicamente pronto**. O que falta para lançar é majoritaria
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **486 passando, 39 arquivos** | `npm test` |
+| Testes unitários | ✅ **501 passando, 41 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build | ✅ aprovado | `npm run build` |
 | E2E público | ✅ **4 passando**, Playwright/Chromium | `npm run test:e2e:public` |
@@ -43,13 +43,13 @@ inalterado.
 |---|---|---|
 | Cobertura antiga | ~91% | ❌ Media só 4 arquivos escolhidos a dedo |
 | Baseline real de linhas em `src` | **30,44%** | ✅ F7.1, medindo todo JS/JSX |
-| Cobertura atual de linhas em `src` | **52,05%** | ✅ Após a sexta fatia da F7.4 |
+| Cobertura atual de linhas em `src` | **55,52%** | ✅ Após a sétima fatia da F7.4 |
 
 Desde 2026-08-10, `vite.config.js` mede `src/**/*.{js,jsx}` e exclui apenas os próprios
 arquivos de teste. O antigo portão global de 80% foi removido porque escondia os arquivos
 sem cobertura em vez de orientar melhoria real.
 
-Isso **não significa que a suíte é ruim.** Os 486 testes são reais e estão concentrados onde
+Isso **não significa que a suíte é ruim.** Os 501 testes são reais e estão concentrados onde
 mais importa: geração de PDF, matriz jurídica das 22 variantes, validação, persistência,
 autenticação e armazenamento.
 O problema era a declaração, não a suíte. A medição foi corrigida em
@@ -92,6 +92,24 @@ hardening defensivo além do contrato assíncrono do SDK atual, com unsubscribe 
 fallback de falha em `fetchProfile` permanece documentado como fail-open para o dashboard de uma
 sessão ainda autenticada. A cobertura global atual passou para **52,05% de linhas, 50,59% de
 statements, 36,12% de branches e 32,85% de funções**.
+
+Sétima fatia, verificada em 2026-08-12: mais 15 testes cobriram o preenchimento de
+perfil pós-OAuth e o onboarding. `CompleteProfilePage` chegou a **98,98% de linhas e 92,07% de
+branches**; `WelcomePage`, a **100% de linhas e 97,22% de branches**; e os branches relevantes de
+`DocumentService.isProfileComplete`, a **100%**. CPF agora é realmente opcional para completude,
+mas validado quando informado; o perfil retornado é sincronizado antes da navegação; submit, skip e
+conclusão são single-flight; CPF inválido não é persistido ao pular; e falha de `localStorage` ou
+ausência de `userId` não impede o dashboard. O botão "Sair" usa o wrapper de `useApp`, que limpa o
+perfil e a página persistida e navega para landing; metadados Google usam `user_metadata`; respostas
+tardias após unmount/logout não alteram estado; e a revisão interna do perfil, vinculada ao
+`userId`, impede tanto a sobrescrita de um save novo quanto a publicação tardia do perfil,
+documentos e drafts de outra identidade após troca de conta ou `SIGNED_OUT`; o primeiro render já
+mascara dados cujo owner diverge, providers remontam por `userId`, fallbacks e navegação respeitam a
+execução atual e usuários sem draft recebem os estados iniciais canônicos completos. Saves cuja
+publicação é rejeitada não confirmam sucesso nem navegam a nova sessão. Labels, inputs e erros estão associados por
+contratos acessíveis. O onboarding ativo continua local, sem integração com
+`profiles.onboarding_done`. A cobertura global passou para **55,52% de linhas, 54,13% de
+statements, 39,81% de branches e 37,35% de funções**.
 
 ---
 
@@ -176,9 +194,9 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 
 | Métrica | Valor |
 |---|---|
-| Arquivos JS/JSX em `src/` | 143 |
-| Linhas JS/JSX em `src/` (incluindo testes) | 32.686 |
-| Arquivos de teste | 39 |
+| Arquivos JS/JSX em `src/` | 145 |
+| Linhas JS/JSX em `src/` (incluindo testes) | 33.600 |
+| Arquivos de teste | 41 |
 | Edge Functions | 7 + `_shared`, todas publicadas |
 | Tabelas no Postgres | 4 (`profiles`, `documents`, `document_drafts`, `payment_webhook_events`) |
 | Maiores arquivos | `DashboardPage` 1269 · `RequirementsModal` 1252 · `TemplatesPage` 1219 |
@@ -188,8 +206,8 @@ registrada em [F5](ROADMAP.md#f5--painel-administrativo).
 ## Como reverificar tudo
 
 ```bash
-npm test                  # deve dar 486 passando
-npm run test:coverage     # cobertura atual: 52,05% de linhas em src
+npm test                  # deve dar 501 passando
+npm run test:coverage     # cobertura atual: 55,52% de linhas em src
 npm run lint              # deve sair limpo
 npm run build             # deve compilar
 npm audit --omit=dev      # confira se a moderada foi resolvida

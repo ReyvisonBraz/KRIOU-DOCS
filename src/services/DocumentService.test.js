@@ -206,7 +206,7 @@ describe("DocumentService perfil", () => {
         user: {
           id: "user-1",
           email: "ana@example.com",
-          raw_user_meta_data: { sub: "google-1", avatar_url: "avatar.png" },
+          user_metadata: { sub: "google-session", avatar_url: "avatar.png" },
         },
       },
     });
@@ -218,20 +218,48 @@ describe("DocumentService perfil", () => {
       nome: "Ana",
       sobrenome: "Silva",
       cpf: "123",
-      googleData: { email: "google@example.com" },
+      googleData: { email: "google@example.com", google_id: "google-caller" },
     })).resolves.toBe(profile);
 
     expect(builder.upsert).toHaveBeenCalledWith(expect.objectContaining({
       id: "user-1",
       email: "google@example.com",
       avatar_url: "avatar.png",
-      google_id: "google-1",
+      google_id: "google-caller",
     }), { onConflict: "id" });
   });
 
-  it("avalia perfil e onboarding sem aceitar campos em branco", () => {
-    expect(DocumentService.isProfileComplete({ nome: "Ana", sobrenome: "Silva", cpf: "123" })).toBe(true);
-    expect(DocumentService.isProfileComplete({ nome: " ", sobrenome: "Silva", cpf: "123" })).toBe(false);
+  it("usa user_metadata público como fallback para os dados Google", async () => {
+    supabase.auth.getUser.mockResolvedValue({
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: {
+            email: "meta@example.com",
+            avatar_url: "meta-avatar.png",
+            sub: "google-meta",
+          },
+        },
+      },
+    });
+    const builder = createBuilder({ data: { id: "user-1" }, error: null });
+    supabase.from.mockReturnValue(builder);
+
+    await DocumentService.updateProfile({ nome: "Ana", sobrenome: "Silva", cpf: null });
+
+    expect(builder.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      email: "meta@example.com",
+      avatar_url: "meta-avatar.png",
+      google_id: "google-meta",
+    }), { onConflict: "id" });
+  });
+
+  it("considera CPF opcional para completude e exige nome e sobrenome", () => {
+    expect(DocumentService.isProfileComplete({ nome: "Ana", sobrenome: "Silva" })).toBe(true);
+    expect(DocumentService.isProfileComplete({ nome: "Ana", sobrenome: "Silva", cpf: "invalido" })).toBe(true);
+    expect(DocumentService.isProfileComplete({ nome: " ", sobrenome: "Silva" })).toBe(false);
+    expect(DocumentService.isProfileComplete({ nome: "Ana", sobrenome: " " })).toBe(false);
+    expect(DocumentService.isProfileComplete(null)).toBe(false);
     expect(DocumentService.isOnboardingDone({ onboarding_done: true })).toBe(true);
     expect(DocumentService.isOnboardingDone(null)).toBe(false);
   });

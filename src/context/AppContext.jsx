@@ -57,6 +57,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import StorageService from "../utils/storage";
 import { DocumentService } from "../services/DocumentService";
 import { APP_INIT_DELAY_MS } from "../constants/timing";
+import { INITIAL_FORM_DATA, INITIAL_LEGAL_FORM_DATA } from "../data/constants";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { ResumeProvider, useResume } from "./ResumeContext";
 import { LegalProvider, useLegal } from "./LegalContext";
@@ -197,9 +198,24 @@ const AppBootstrap = ({ children }) => {
   const { setFormData, setUserDocuments } = useResume();
   const { setLegalFormData }              = useLegal();
   const { navigate, currentPage }         = useContext(NavigationContext);
-  const { setIsLoading, setProfile }      = useContext(UIContext);
+  const {
+    setIsLoading,
+    beginBootstrap,
+    isBootstrapCurrent,
+    beginProfileLoad,
+    setProfileFromBootstrap,
+  } = useContext(UIContext);
 
   useEffect(() => {
+    const bootstrapToken = beginBootstrap(userId);
+    const profileToken = beginProfileLoad(userId);
+    const isCurrentBootstrap = () => isBootstrapCurrent(bootstrapToken);
+
+    if (bootstrapToken.identityChanged) {
+      setUserDocuments([]);
+      setFormData(INITIAL_FORM_DATA);
+      setLegalFormData(INITIAL_LEGAL_FORM_DATA);
+    }
     if (isAuthLoading) return;
 
     console.log(
@@ -229,18 +245,21 @@ const AppBootstrap = ({ children }) => {
 
       try {
         const prof = await DocumentService.fetchProfile();
+        if (!isCurrentBootstrap()) return;
         if (prof) {
           console.log("[AppBootstrap] Perfil carregado:", { nome: prof.nome, profileComplete: DocumentService.isProfileComplete(prof) });
-          setProfile(prof);
+          setProfileFromBootstrap(prof, profileToken);
         } else {
           console.log("[AppBootstrap] Perfil nao encontrado");
         }
       } catch (err) {
+        if (!isCurrentBootstrap()) return;
         console.error("[AppBootstrap][ERRO] fetchProfile falhou:", err.message);
       }
 
       try {
         const supaDocs = await DocumentService.fetchAll(userId);
+        if (!isCurrentBootstrap()) return;
         const localDocs = StorageService.loadDocuments(userId);
         const localDrafts = Array.isArray(localDocs)
           ? localDocs.filter(d => d.status === "rascunho")
@@ -284,6 +303,7 @@ const AppBootstrap = ({ children }) => {
 
         setUserDocuments(merged);
       } catch (err) {
+        if (!isCurrentBootstrap()) return;
         console.error("[AppBootstrap][ERRO] fetchAll falhou:", err.message);
         const localDocs = StorageService.loadDocuments(userId);
         if (Array.isArray(localDocs) && localDocs.length > 0) {
@@ -293,20 +313,23 @@ const AppBootstrap = ({ children }) => {
 
       try {
         const cloudResume = await DocumentService.loadDraft(userId, "resume");
+        if (!isCurrentBootstrap()) return;
         const localResume = StorageService.loadDraft(userId, "resume");
         const resumeData = cloudResume?.data || localResume;
-        if (resumeData) setFormData(resumeData);
+        setFormData(resumeData || INITIAL_FORM_DATA);
 
         const cloudLegal = await DocumentService.loadDraft(userId, "legal");
+        if (!isCurrentBootstrap()) return;
         const localLegal = StorageService.loadDraft(userId, "legal");
         const legalData = cloudLegal?.data || localLegal;
-        if (legalData) setLegalFormData(legalData);
+        setLegalFormData(legalData || INITIAL_LEGAL_FORM_DATA);
       } catch (err) {
+        if (!isCurrentBootstrap()) return;
         console.error("[AppBootstrap][ERRO] loadDraft falhou:", err.message);
         const resumeDraft = StorageService.loadDraft(userId, "resume");
-        if (resumeDraft) setFormData(resumeDraft);
+        setFormData(resumeDraft || INITIAL_FORM_DATA);
         const legalDraft = StorageService.loadDraft(userId, "legal");
-        if (legalDraft) setLegalFormData(legalDraft);
+        setLegalFormData(legalDraft || INITIAL_LEGAL_FORM_DATA);
       }
 
       // ─── Redirecionamento pos-login ──────────────────────────────────────
@@ -317,13 +340,15 @@ const AppBootstrap = ({ children }) => {
         // Usuario autenticado em landing/login → dashboard
         console.log("[AppBootstrap] Autenticado em pagina publica → dashboard");
         const targetPage = "dashboard";
-        setTimeout(() => navigate(targetPage), APP_INIT_DELAY_MS);
+        setTimeout(() => {
+          if (isCurrentBootstrap()) navigate(targetPage);
+        }, APP_INIT_DELAY_MS);
       } else {
         // Pagina interna (dashboard, editor, etc.) — fica onde esta
         console.log("[AppBootstrap] Pagina interna, fica onde esta");
       }
 
-      setIsLoading(false);
+      if (isCurrentBootstrap()) setIsLoading(false);
     };
 
     init();
@@ -338,10 +363,12 @@ const AppBootstrap = ({ children }) => {
 
 const InnerProviders = ({ children, isLoading, setSaveStatus }) => {
   const { userId } = useAuth();
+  const { bootstrapOwnerId } = useContext(UIContext);
+  const providerIsLoading = isLoading || bootstrapOwnerId !== userId;
 
   return (
-    <ResumeProvider userId={userId} isLoading={isLoading}>
-      <LegalProvider userId={userId} isLoading={isLoading} onSaveStatus={setSaveStatus}>
+    <ResumeProvider key={userId || "anonymous"} userId={userId} isLoading={providerIsLoading}>
+      <LegalProvider userId={userId} isLoading={providerIsLoading} onSaveStatus={setSaveStatus}>
         <AppBootstrap>
           {children}
         </AppBootstrap>
@@ -356,10 +383,86 @@ export const AppProvider = ({ children }) => {
   const [isLoading, setIsLoading]               = useState(true);
   const [checkoutComplete, setCheckoutComplete] = useState(false);
   const [saveStatus, setSaveStatus]             = useState("saved");
-  const [profile, setProfile]                   = useState(null);
+  const [profile, setProfileState]              = useState(null);
+  const [profileOwnerId, setProfileOwnerId]     = useState(null);
+  const [bootstrapOwnerId, setBootstrapOwnerId] = useState(null);
+  const profileOwnerRef                         = useRef(null);
+  const profileRevisionRef                      = useRef(0);
+  const bootstrapUserRef                        = useRef(null);
+  const bootstrapRevisionRef                    = useRef(0);
+
+  const beginBootstrap = useCallback((userId) => {
+    const normalizedUserId = userId || null;
+    const identityChanged = bootstrapUserRef.current !== normalizedUserId;
+    bootstrapUserRef.current = normalizedUserId;
+    bootstrapRevisionRef.current += 1;
+    if (identityChanged) {
+      setBootstrapOwnerId(normalizedUserId);
+      setIsLoading(true);
+    }
+
+    return {
+      userId: normalizedUserId,
+      revision: bootstrapRevisionRef.current,
+      identityChanged,
+    };
+  }, []);
+
+  const isBootstrapCurrent = useCallback((token) => (
+    bootstrapUserRef.current === token.userId
+    && bootstrapRevisionRef.current === token.revision
+  ), []);
+
+  const beginProfileLoad = useCallback((userId) => {
+    const normalizedUserId = userId || null;
+    if (profileOwnerRef.current !== normalizedUserId) {
+      profileOwnerRef.current = normalizedUserId;
+      profileRevisionRef.current += 1;
+      setProfileOwnerId(normalizedUserId);
+      setProfileState(null);
+    }
+
+    return {
+      userId: normalizedUserId,
+      revision: profileRevisionRef.current,
+    };
+  }, []);
+
+  const setProfileForUser = useCallback((userId, nextProfile) => {
+    const normalizedUserId = userId || null;
+    if (profileOwnerRef.current !== normalizedUserId) return false;
+    profileRevisionRef.current += 1;
+    setProfileState(nextProfile);
+    return true;
+  }, []);
+
+  const setProfileFromBootstrap = useCallback((nextProfile, token) => {
+    if (
+      profileOwnerRef.current !== token.userId
+      || profileRevisionRef.current !== token.revision
+    ) return false;
+    profileRevisionRef.current += 1;
+    setProfileState(nextProfile);
+    return true;
+  }, []);
 
   return (
-    <UIContext.Provider value={{ isLoading, setIsLoading, checkoutComplete, setCheckoutComplete, saveStatus, setSaveStatus, profile, setProfile }}>
+    <UIContext.Provider value={{
+      isLoading,
+      setIsLoading,
+      checkoutComplete,
+      setCheckoutComplete,
+      saveStatus,
+      setSaveStatus,
+      profile,
+      profileOwnerId,
+      bootstrapOwnerId,
+      beginBootstrap,
+      isBootstrapCurrent,
+      beginProfileLoad,
+      setProfileForUser,
+      setProfileFromBootstrap,
+    }}>
       <NavigationProvider>
         <AuthProvider>
           <InnerProviders isLoading={isLoading} setSaveStatus={setSaveStatus}>
@@ -386,11 +489,26 @@ export const useApp = () => {
     throw new Error("useApp must be used within AppProvider");
   }
 
+  const { setProfileForUser } = ui;
+  const { userId, logout: authLogout } = auth;
+  const { navigate } = nav;
+  const ownsBootstrapData = ui.bootstrapOwnerId === auth.userId;
+  const visibleFormData = ownsBootstrapData ? resume.formData : INITIAL_FORM_DATA;
+  const visibleUserDocuments = ownsBootstrapData ? resume.userDocuments : [];
+  const visibleLegalFormData = ownsBootstrapData
+    ? legal.legalFormData
+    : INITIAL_LEGAL_FORM_DATA;
+
+  const setProfile = useCallback((nextProfile) => (
+    setProfileForUser(userId, nextProfile)
+  ), [setProfileForUser, userId]);
+
   const logout = useCallback(async () => {
     StorageService.clearPage();
-    await auth.logout();
-    nav.navigate("landing");
-  }, [auth, nav]);
+    setProfileForUser(userId, null);
+    await authLogout();
+    navigate("landing");
+  }, [authLogout, navigate, setProfileForUser, userId]);
 
   return {
     currentPage: nav.currentPage,
@@ -408,13 +526,13 @@ export const useApp = () => {
     selectedTemplate: resume.selectedTemplate,   setSelectedTemplate: resume.setSelectedTemplate,
     templates:        resume.templates,
     currentStep:      resume.currentStep,         setCurrentStep: resume.setCurrentStep,
-    formData:         resume.formData,            setFormData: resume.setFormData,
+    formData:         visibleFormData,             setFormData: resume.setFormData,
     updateForm:       resume.updateForm,
     resetForm:        () => resume.resetForm(legal.resetLegalForm),
     saveStatus:       resume.saveStatus,
     lastSaved:        resume.lastSaved,
     triggerSave:      resume.triggerSave,
-    userDocuments:    resume.userDocuments,        setUserDocuments: resume.setUserDocuments,
+    userDocuments:    visibleUserDocuments,         setUserDocuments: resume.setUserDocuments,
     saveDocument:     (data, options) => resume.saveDocument(data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
     updateDocument:   (id, data, options) => resume.updateDocument(id, data, legal.documentType, resume.selectedTemplate, { id: legal.selectedVariant, name: legal.selectedVariant }, options),
     editingDocId:     resume.editingDocId,        setEditingDocId: resume.setEditingDocId,
@@ -422,7 +540,7 @@ export const useApp = () => {
 
     documentType:      legal.documentType,        setDocumentType: legal.setDocumentType,
     selectedVariant:   legal.selectedVariant,     setSelectedVariant: legal.setSelectedVariant,
-    legalFormData:     legal.legalFormData,       setLegalFormData: legal.setLegalFormData,
+    legalFormData:     visibleLegalFormData,      setLegalFormData: legal.setLegalFormData,
     disabledFields:    legal.disabledFields,      setDisabledFields: legal.setDisabledFields,
     legalStep:         legal.legalStep,           setLegalStep: legal.setLegalStep,
     legalDocumentTypes: legal.legalDocumentTypes,
@@ -431,8 +549,9 @@ export const useApp = () => {
     resetLegalForm:    legal.resetLegalForm,
     triggerLegalSave:  legal.triggerSave,
 
-    isLoading:         ui.isLoading,
+    isLoading:         ui.isLoading || !ownsBootstrapData,
     checkoutComplete:  ui.checkoutComplete,       setCheckoutComplete: ui.setCheckoutComplete,
-    profile:           ui.profile,                setProfile: ui.setProfile,
+    profile:           ui.profileOwnerId === auth.userId ? ui.profile : null,
+    setProfile,
   };
 };

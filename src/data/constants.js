@@ -459,6 +459,8 @@ export const INITIAL_FORM_DATA = {
   cursos: "",
 };
 
+export const INITIAL_LEGAL_FORM_DATA = {};
+
 // ─── Document Types - Contratos Jurídicos ───
 // Agora usa o sistema de legalDocuments.js para dados completos.
 // Este array mantém compatibilidade com componentes que usam LEGAL_DOCUMENT_TYPES.

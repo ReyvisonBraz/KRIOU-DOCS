@@ -4,13 +4,13 @@
 > registro do que já foi feito, não plano. Se algo aqui divergir de lá, este arquivo vence.
 >
 > Estado atual verificado: veja [STATUS.md](STATUS.md).
-> Última revisão: 2026-08-11.
+> Última revisão: 2026-08-12.
 
 ---
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 486 testes passando, lint e build limpos, domínio
+Os portões técnicos básicos estão verdes — 501 testes passando, lint e build limpos, domínio
 crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
 RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
 
@@ -391,7 +391,7 @@ automatizados e mocks financeiros — nenhum pagamento real.
 | **F7.1** | ✅ Coverage real em `vite.config.js` | ✅ `src/**/*.{js,jsx}` medido; baseline publicado |
 | **F7.2** | ✅ Definir metas por camada, sem portão global irreal | ✅ metas registradas abaixo |
 | **F7.3** | ✅ Script `test:coverage` no `package.json` | ✅ `npm run test:coverage` |
-| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Sexta fatia: callback OAuth e fluxo pós-login imediato cobertos |
+| **F7.4** | 🟡 Cobrir o que não tem teste, começando por serviços e regras críticas | Sétima fatia: perfil pós-OAuth e onboarding cobertos |
 
 ### O problema, com precisão
 
@@ -400,7 +400,7 @@ Até 2026-08-10, `vite.config.js` restringia a medição a **4 arquivos escolhid
 Isso produzia "91,09%" no relatório. A F7.1 removeu esse recorte e passou a medir todo o
 JavaScript/JSX de `src`.
 
-**Não recomendamos perseguir 80% global.** Os 486 testes existentes são bons e estão
+**Não recomendamos perseguir 80% global.** Os 501 testes existentes são bons e estão
 concentrados onde mais importa: geração de PDF, matriz jurídica das 22 variantes e validação.
 O erro não era o número baixo — era declarar 91%. Em 2026-08-10, o baseline honesto ficou em
 **30,44% de linhas, 29,79% de statements, 21,50% de branches e 19,50% de funções**.
@@ -518,6 +518,44 @@ e 32,85% de funções**.
 | Alvo | Linhas | Branches | Resultado |
 |---|---:|---:|---|
 | `AuthCallbackPage.jsx` | **100%** | **93,67%** | Rotas pós-login, eventos, watchdog, corridas e cleanup cobertos |
+
+### F7.4 — sétima fatia verificada em 2026-08-12
+
+Foram adicionados **15 testes**: 12 de página (`CompleteProfilePage` e `WelcomePage`), 2 de
+integração no `AppContext` e 1 de serviço no `DocumentService`. O fluxo cobre
+autofill Google, nomes obrigatórios, CPF opcional e válido quando informado, payload normalizado,
+sincronização imediata do perfil no `AppContext`, logout, single-flight, skip resiliente e todos os
+controles do tour. O onboarding continua deliberadamente local; `profiles.onboarding_done` não foi
+integrado nesta fatia.
+
+Treze bugs funcionais foram corrigidos: o CPF opcional era exigido nos logins seguintes; o perfil
+salvo não chegava ao contexto antes da saudação; cliques repetidos em pular podiam gravar em
+concorrência e persistir CPF inválido; uma exceção de `localStorage` impedia a chegada ao dashboard;
+o botão "Sair" usava o logout cru de autenticação, sem a limpeza e navegação do wrapper de `useApp`;
+`google_id` lia um shape interno em vez de `user_metadata`; saves tardios ainda alteravam estado após
+unmount/logout; um `fetchProfile` antigo do bootstrap podia sobrescrever o save novo; uma leitura
+da identidade anterior podia publicar seu perfil depois de troca de conta ou `SIGNED_OUT`; o mesmo
+bootstrap obsoleto ainda podia publicar documentos e drafts da conta anterior; e um save rejeitado
+pela revisão de perfil ainda confirmava sucesso e navegava na nova sessão; o primeiro render de uma
+nova identidade ainda expunha documentos e formulários antigos; e o reset para `{}` deixava o
+editor de currículo sem arrays obrigatórios. Providers agora remontam por identidade, `useApp`
+mascara os domínios antes dos effects e o bootstrap publica os estados iniciais canônicos. Labels,
+controles e erros também passaram a ter associação acessível. A chave local permanece isolada por
+`userId`, e a ausência de identificador não bloqueia a conclusão.
+
+A cobertura global atual passou para **55,52% de linhas, 54,13% de statements, 39,81% de branches
+e 37,35% de funções**.
+
+| Alvo | Linhas | Branches | Resultado |
+|---|---:|---:|---|
+| `CompleteProfilePage.jsx` | **98,98%** | **92,07%** | Validação, persistência, identidade da operação, publicação, acessibilidade e logout cobertos |
+| `WelcomePage.jsx` | **100%** | **97,22%** | Tour, storage resiliente, isolamento e conclusão single-flight cobertos |
+| `DocumentService.isProfileComplete` | **100%** | **100%** | Nome e sobrenome obrigatórios; CPF fora da regra de completude |
+| `AppContext.jsx` | **98,00%** | **85,95%** | Owner e token isolam render/loading, perfil, documentos, drafts, fallback e navegação por usuário |
+
+Os portões passaram com **501 testes em 41 arquivos**, lint, build, 4 E2E públicos, auditoria de
+produção sem vulnerabilidades e `git diff --check` limpo. A F7.4 permanece aberta para a próxima
+área crítica, sem portão global artificial.
 
 ### Metas por camada
 

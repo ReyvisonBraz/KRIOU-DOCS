@@ -350,9 +350,11 @@ export const DocumentService = {
       throw err;
     }
 
-    const email = googleData?.email || user?.email || null;
-    const avatar_url = googleData?.avatar_url || user?.raw_user_meta_data?.avatar_url || null;
-    const google_id = user?.raw_user_meta_data?.sub || null;
+    const publicMeta = user?.user_metadata || {};
+    const rawMeta = user?.raw_user_meta_data || {};
+    const email = googleData?.email || user?.email || publicMeta.email || rawMeta.email || null;
+    const avatar_url = googleData?.avatar_url || publicMeta.avatar_url || rawMeta.avatar_url || null;
+    const google_id = googleData?.google_id || publicMeta.sub || rawMeta.sub || null;
 
     const { data, error } = await supabase
       .from("profiles")
@@ -376,13 +378,14 @@ export const DocumentService = {
   },
 
   /**
-   * Verifica se o perfil esta completo (nome, sobrenome e CPF preenchidos).
+   * Verifica se o perfil esta completo (nome e sobrenome preenchidos).
+   * CPF e opcional e deve ser validado apenas quando informado no fluxo de edicao.
    *
    * @param {Object|null} profile
    * @returns {boolean}
    */
   isProfileComplete(profile) {
-    return !!(profile?.nome?.trim() && profile?.sobrenome?.trim() && profile?.cpf?.trim());
+    return !!(profile?.nome?.trim() && profile?.sobrenome?.trim());
   },
 
   /**

@@ -25,7 +25,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
-import { LEGAL_DOCUMENT_TYPES } from "../data/constants";
+import { INITIAL_LEGAL_FORM_DATA, LEGAL_DOCUMENT_TYPES } from "../data/constants";
 import { DocumentService } from "../services/DocumentService";
 import StorageService from "../utils/storage";
 import { sanitizeFormData } from "../utils/sanitization";
@@ -36,7 +36,7 @@ const LegalContext = createContext(null);
 export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => {
   const [documentType, setDocumentType]       = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [legalFormData, setLegalFormData]     = useState({});
+  const [legalFormData, setLegalFormData]     = useState(INITIAL_LEGAL_FORM_DATA);
   const [disabledFields, setDisabledFields]   = useState({});
   const [legalStep, setLegalStep]             = useState(0);
 
@@ -68,11 +68,11 @@ export const LegalProvider = ({ children, userId, isLoading, onSaveStatus }) => 
 
   const selectDocumentType = useCallback((type) => {
     setDocumentType(type);
-    setLegalFormData({});
+    setLegalFormData(INITIAL_LEGAL_FORM_DATA);
   }, []);
 
   const resetLegalForm = useCallback(() => {
-    setLegalFormData({});
+    setLegalFormData(INITIAL_LEGAL_FORM_DATA);
     setDocumentType(null);
     setSelectedVariant(null);
     setDisabledFields({});

@@ -7,34 +7,50 @@
  * CPF (opcional) para registro interno.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DocumentService } from "../services/DocumentService";
 import { Icon } from "../components/Icons";
 import showToast from "../utils/toast";
 import { validateCpf } from "../utils/validation";
 import { formatCpf } from "../utils/formatting";
 import { useAuth } from "../context/AuthContext";
+import { useApp } from "../context/AppContext";
 
 const labelClass = "block text-[12px] font-bold text-text-muted mb-1.5 uppercase tracking-wide ml-1";
 const inputClass = "w-full bg-surface-2 border border-border rounded-xl px-4 py-3.5 text-[15px] outline-none text-text placeholder-text-muted/60 transition-all focus:border-coral focus:ring-2 focus:ring-coral/20";
 const inputErrorClass = "border-coral ring-2 ring-coral/20";
 
 const CompleteProfilePage = ({ onNavigate }) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { logout, setProfile } = useApp();
   const [nome, setNome]           = useState("");
   const [sobrenome, setSobrenome] = useState("");
   const [cpf, setCpf]             = useState("");
   const [errors, setErrors]       = useState({});
   const [isSaving, setIsSaving]   = useState(false);
+  const saveInFlightRef           = useRef(false);
+  const mountedRef                = useRef(false);
+  const operationRef              = useRef(0);
+  const userIdRef                 = useRef(user?.id || null);
+
+  userIdRef.current = user?.id || null;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      operationRef.current += 1;
+    };
+  }, []);
 
   // Auto-preencher sobrenome com dados do Google se disponível
   useEffect(() => {
     if (user) {
       const rawMeta = user.raw_user_meta_data || {};
-      const meta = user.user_metadata || rawMeta;
+      const meta = { ...rawMeta, ...(user.user_metadata || {}) };
       const fullName = meta?.full_name || meta?.name || "";
       if (fullName) {
-        const parts = fullName.split(" ");
+        const parts = fullName.trim().split(/\s+/);
         if (parts.length > 1) {
           setNome(parts[0]);
           setSobrenome(parts.slice(1).join(" "));
@@ -53,6 +69,46 @@ const CompleteProfilePage = ({ onNavigate }) => {
     return errs;
   };
 
+  const buildGoogleData = () => {
+    const rawMeta = user?.raw_user_meta_data || {};
+    const meta = { ...rawMeta, ...(user?.user_metadata || {}) };
+
+    return {
+      email: user?.email || meta.email || null,
+      avatar_url: meta.avatar_url || null,
+      google_id: meta.sub || null,
+    };
+  };
+
+  const beginSave = () => {
+    if (saveInFlightRef.current) return null;
+    saveInFlightRef.current = true;
+    operationRef.current += 1;
+    setIsSaving(true);
+    return {
+      id: operationRef.current,
+      userId: userIdRef.current,
+    };
+  };
+
+  const finishSave = (completed) => {
+    setIsSaving(false);
+    if (!completed) saveInFlightRef.current = false;
+  };
+
+  const isCurrentOperation = (operation) => (
+    mountedRef.current
+    && operationRef.current === operation.id
+    && userIdRef.current === operation.userId
+  );
+
+  const handleLogout = async () => {
+    operationRef.current += 1;
+    saveInFlightRef.current = true;
+    if (mountedRef.current) setIsSaving(false);
+    await logout();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
@@ -60,49 +116,58 @@ const CompleteProfilePage = ({ onNavigate }) => {
       setErrors(errs);
       return;
     }
+    const operation = beginSave();
+    if (operation === null) return;
 
-    setIsSaving(true);
+    let completed = false;
     try {
-      const rawMeta = user?.raw_user_meta_data || {};
-      const meta = user?.user_metadata || rawMeta;
-      const googleData = {
-        email: user?.email || meta?.email || null,
-        avatar_url: meta?.avatar_url || null,
-        google_id: rawMeta?.sub || null,
-      };
-
-      await DocumentService.updateProfile({
+      const updatedProfile = await DocumentService.updateProfile({
         nome:      nome.trim(),
         sobrenome: sobrenome.trim(),
         cpf:       cpf.replace(/\D/g, "") || null,
-        googleData,
+        googleData: buildGoogleData(),
       });
+      if (!isCurrentOperation(operation)) return;
+      if (setProfile(updatedProfile) === false) return;
       showToast.success("Cadastro concluído! Bem-vindo ao Kriou Docs.");
       onNavigate("welcome", { replace: true });
+      completed = true;
     } catch (err) {
+      if (!isCurrentOperation(operation)) return;
       console.error("[CompleteProfile] Erro ao salvar perfil:", err);
       showToast.error("Erro ao salvar dados. Tente novamente.");
     } finally {
-      setIsSaving(false);
+      if (isCurrentOperation(operation)) finishSave(completed);
     }
   };
 
   const handleSkip = async () => {
+    const operation = beginSave();
+    if (operation === null) return;
+
+    const normalizedCpf = cpf.replace(/\D/g, "");
+    const safeCpf = normalizedCpf && validateCpf(normalizedCpf) ? normalizedCpf : null;
+    let completed = false;
     try {
-      await DocumentService.updateProfile({
-        nome:      nome.trim() || "Usuário",
-        sobrenome: sobrenome.trim() || "Kriou",
-        cpf:       cpf.replace(/\D/g, "") || null,
-        googleData: {
-          email: user?.email || null,
-          avatar_url: user?.raw_user_meta_data?.avatar_url || null,
-          google_id: user?.raw_user_meta_data?.sub || null,
-        },
-      });
-    } catch (err) {
-      console.warn("[CompleteProfile] Falha ao salvar perfil opcional:", err.message);
+      try {
+        const updatedProfile = await DocumentService.updateProfile({
+          nome:      nome.trim() || "Usuário",
+          sobrenome: sobrenome.trim() || "Kriou",
+          cpf:       safeCpf,
+          googleData: buildGoogleData(),
+        });
+        if (!isCurrentOperation(operation)) return;
+        if (setProfile(updatedProfile) === false) return;
+      } catch (err) {
+        if (!isCurrentOperation(operation)) return;
+        console.warn("[CompleteProfile] Falha ao salvar perfil opcional:", err?.message || err);
+      }
+      if (!isCurrentOperation(operation)) return;
+      onNavigate("dashboard", { replace: true });
+      completed = true;
+    } finally {
+      if (isCurrentOperation(operation)) finishSave(completed);
     }
-    onNavigate("dashboard", { replace: true });
   };
 
   return (
@@ -113,7 +178,7 @@ const CompleteProfilePage = ({ onNavigate }) => {
 
       {/* Sair button */}
       <button
-        onClick={signOut}
+        onClick={handleLogout}
         className="absolute top-5 right-5 z-20 flex items-center gap-1.5 text-text-muted text-sm font-semibold hover:text-coral transition-colors bg-transparent border-none cursor-pointer"
       >
         <Icon name="LogOut" className="w-4 h-4" /> Sair
@@ -142,43 +207,52 @@ const CompleteProfilePage = ({ onNavigate }) => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Nome */}
           <div>
-            <label className={labelClass}>Nome *</label>
+            <label htmlFor="complete-profile-nome" className={labelClass}>Nome *</label>
             <input
+              id="complete-profile-nome"
               type="text"
               placeholder="Seu primeiro nome"
               value={nome}
               onChange={(e) => { setNome(e.target.value); setErrors((p) => ({ ...p, nome: "" })); }}
               className={`${inputClass} ${errors.nome ? inputErrorClass : ""}`}
+              aria-invalid={Boolean(errors.nome)}
+              aria-describedby={errors.nome ? "complete-profile-nome-error" : undefined}
               autoFocus
             />
-            {errors.nome && <p className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.nome}</p>}
+            {errors.nome && <p id="complete-profile-nome-error" role="alert" className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.nome}</p>}
           </div>
 
           {/* Sobrenome */}
           <div>
-            <label className={labelClass}>Sobrenome *</label>
+            <label htmlFor="complete-profile-sobrenome" className={labelClass}>Sobrenome *</label>
             <input
+              id="complete-profile-sobrenome"
               type="text"
               placeholder="Seu sobrenome"
               value={sobrenome}
               onChange={(e) => { setSobrenome(e.target.value); setErrors((p) => ({ ...p, sobrenome: "" })); }}
               className={`${inputClass} ${errors.sobrenome ? inputErrorClass : ""}`}
+              aria-invalid={Boolean(errors.sobrenome)}
+              aria-describedby={errors.sobrenome ? "complete-profile-sobrenome-error" : undefined}
             />
-            {errors.sobrenome && <p className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.sobrenome}</p>}
+            {errors.sobrenome && <p id="complete-profile-sobrenome-error" role="alert" className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.sobrenome}</p>}
           </div>
 
           {/* CPF */}
           <div>
-            <label className={labelClass}>CPF <span className="text-text-faint font-normal normal-case tracking-normal">(opcional)</span></label>
+            <label htmlFor="complete-profile-cpf" className={labelClass}>CPF <span className="text-text-faint font-normal normal-case tracking-normal">(opcional)</span></label>
             <input
+              id="complete-profile-cpf"
               type="text"
               placeholder="000.000.000-00"
               value={cpf}
               maxLength={14}
               onChange={(e) => { setCpf(formatCpf(e.target.value)); setErrors((p) => ({ ...p, cpf: "" })); }}
               className={`${inputClass} ${errors.cpf ? inputErrorClass : ""}`}
+              aria-invalid={Boolean(errors.cpf)}
+              aria-describedby={errors.cpf ? "complete-profile-cpf-error" : undefined}
             />
-            {errors.cpf && <p className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.cpf}</p>}
+            {errors.cpf && <p id="complete-profile-cpf-error" role="alert" className="text-coral text-xs mt-1.5 ml-1 font-semibold">{errors.cpf}</p>}
           </div>
 
           {/* Info */}

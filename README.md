@@ -16,10 +16,21 @@ resultado, paga **R$ 9,90 por documento** via Mercado Pago e baixa o PDF ou rece
 
 ```bash
 npm install
+cp .env.example .env.local
+npm run env:check
 npm run dev
 ```
 
-Copie o `.env.example` para `.env` e preencha as chaves do Supabase antes de rodar.
+Copie `.env.example` para `.env.local`. O padrão habilita offline local explicitamente; para Auth
+e persistência, inicie o Supabase local e preencha sua URL e chave anon/publishable. Staging pago
+foi diferido: Preview autenticado permanece indisponível e nunca aponta para produção. Consulte o
+[runbook](docs/runbook-deploy.md) antes de qualquer uso de ambiente remoto.
+
+Inventário público informado pelo responsável em 2026-08-15: organização Supabase
+`sptobceudadpankmgwyz`, produção `uyptmlezmdzfufzuknfz`, região `us-east-1`, ainda sem dados reais
+declarados. A exceção atual permite somente duas contas descartáveis e Auth+RLS manual em produção
+na Fase 2, com limpeza por UUIDs exatos e parada imediata em vazamento. Não autoriza migrations,
+teste de exclusão, pagamentos, leitura/alteração de secrets financeiros nem Preview→produção.
 
 ---
 
@@ -64,8 +75,8 @@ supabase/
 ├── functions/        # 7 Edge Functions + _shared
 │   ├── _shared/      # auth.ts, http.ts — helpers usados por todas
 │   ├── create-preference, verify-payment, mercadopago-webhook
-│   ├── authorize-download, send-email, admin
-└── migrations/       # 13 migrations numeradas
+│   ├── authorize-download, send-email, export-user-data, admin
+└── migrations/       # migrations numeradas 001–023 + legado não numerado
 
 docs/
 ├── arquitetura.md    # como o sistema funciona
@@ -78,12 +89,16 @@ docs/
 
 ```bash
 npm run dev              # servidor de desenvolvimento
-npm run build            # build de produção
+npm run env:check        # valida o contrato sem imprimir credenciais
+npm run build            # build; falha se o ambiente não estiver configurado
+npm run build:ci         # compilação offline explícita do quality gate
 npm run lint             # eslint
+npm run scan:secrets     # index + worktree + novos + dist (valores omitidos)
 
-npm test                 # testes unitários (321, devem passar todos)
+npm test                 # testes unitários (560, devem passar todos)
 npm run test:watch       # modo watch
 npm run test:e2e         # Playwright completo (precisa de sessão)
+npm run test:e2e:setup   # login real somente no futuro staging (indisponível hoje)
 npm run test:e2e:public  # apenas cenários públicos, sem login
 ```
 

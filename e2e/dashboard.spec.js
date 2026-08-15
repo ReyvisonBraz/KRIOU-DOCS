@@ -1,10 +1,6 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Dashboard (autenticado)", () => {
-  test.use({
-    storageState: "e2e/.auth/user.json",
-  });
-
   test("deve exibir saudação do usuário", async ({ page }) => {
     await page.goto("/dashboard");
 

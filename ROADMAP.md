@@ -4,15 +4,17 @@
 > registro do que já foi feito, não plano. Se algo aqui divergir de lá, este arquivo vence.
 >
 > Estado atual verificado: veja [STATUS.md](STATUS.md).
-> Última revisão: 2026-08-12.
+> Última revisão: 2026-08-15.
 
 ---
 
 ## Onde estamos em uma frase
 
-Os portões técnicos básicos estão verdes — 501 testes passando, lint e build limpos, domínio
-crítico bem coberto. O lançamento ainda depende da exclusão de conta, da validação real de
-RLS e pagamento, além da revisão jurídica e dos textos de LGPD.
+Os portões técnicos básicos estão verdes — 560 testes passando, lint, build configurado e secret
+scan limpos, domínio crítico bem coberto. O staging pago foi diferido; enquanto o responsável
+declara que produção ainda não contém dados reais, somente Auth + RLS manuais e controlados foram
+autorizados ali para a Fase 2. O lançamento ainda depende de staging antes de migrations, exclusão
+de conta e pagamento, além da revisão jurídica e dos textos de LGPD.
 
 ---
 
@@ -24,7 +26,7 @@ A coluna **Trilha** é o que mais importa: separa o que depende de nós do que d
 |---|---|---|---|
 | [F1](#f1--tema-claroescuro) | Tema claro/escuro | Nós | ✅ **concluída em 2026-08-08** |
 | [F2](#f2--direitos-do-titular) | Direitos do titular (exportar + excluir conta) | Nós | 🟡 exportação pronta; exclusão pendente |
-| [F3](#f3--ambiente-e-banco) | Ambiente e banco | Nós + infra | 🟡 5/6 concluídas; RLS bloqueada |
+| [F3](#f3--ambiente-e-banco) | Ambiente e banco | Nós + infra | 🟡 5/6 concluídas; RLS autorizada e não executada |
 | [F4](#f4--jurídico-e-textos-lgpd) | Jurídico e textos LGPD | **Advogado** | 🔴 **acionar já** |
 | [F5](#f5--painel-administrativo) | Painel administrativo | Nós | ✅ versão simplificada concluída |
 | [F6](#f6--pagamento-real-ponta-a-ponta) | Pagamento real ponta a ponta | Nós | 🚫 bloqueado |
@@ -48,7 +50,7 @@ Deve ser disparado antes de tudo, para correr em paralelo com as demais.
 1. ~~**F1** — fechar o tema~~ ✅ **concluída em 2026-08-08**
 2. **F4** — acionar o advogado (corre sozinho em segundo plano) — **em andamento**
 3. ~~**F2.3** — exportação de dados~~ ✅ **concluída e publicada em 2026-08-08**
-4. **F3.3** — validar RLS com duas identidades reais ← **bloqueada pela decisão de credencial**
+4. **F3.3** — validar RLS com duas identidades descartáveis em produção ← **autorizada para a Fase 2, ainda não executada**
 5. ~~**F5**~~ ✅ concluída; **F7.4** segue em paralelo ampliando testes críticos
 6. **F2.4** — exclusão de conta, quando a F4.5 confirmar o prazo fiscal
 7. **F6** — só depois que F2, F3 e F4 estiverem fechadas
@@ -56,9 +58,10 @@ Deve ser disparado antes de tudo, para correr em paralelo com as demais.
 > **F4.3/F4.5 — prazos de retenção — são pré-requisito da F2.4.** O prazo dos dados pessoais
 > já foi definido (90 dias); falta só confirmar o do registro fiscal (provisório: 5 anos).
 >
-> **F3.3 é o único item da F3 ainda bloqueado.** O projeto já está linkado; falta escolher
-> como obter duas identidades reais para provar as policies de RLS em execução. Enquanto a
-> decisão não vier, F7.4 pode avançar sem depender dela.
+> **F3.3 é o único item da F3 ainda aberto.** Em 2026-08-15 o responsável declarou que produção
+> ainda não tem dados reais e autorizou somente duas contas descartáveis + validação manual de
+> Auth/RLS nesse projeto. A execução pertence à Fase 2 e deve seguir o inventário de UUIDs exatos,
+> limpeza exata e stop-on-leak do runbook. Preview continua proibida de apontar para produção.
 
 ---
 
@@ -218,7 +221,7 @@ Fora do Postgres: `localStorage` via `clearUserData` em `src/utils/storage.js:49
 | ~~**F3.0**~~ | Obter credenciais, login, link | ✅ feito em 2026-08-08 — projeto `uyptmlezmdzfufzuknfz` linkado |
 | ~~**F3.1**~~ | Confirmar em que migration o ambiente está | ✅ feito — ver achado abaixo |
 | ~~**F3.2**~~ | Aplicar `012_harden_database_functions.sql` | ✅ **já estava aplicada** — nada a fazer |
-| **F3.3** | Validar RLS com **duas identidades reais** | ⛔ **bloqueada — precisa de decisão sobre credencial**, ver abaixo |
+| **F3.3** | Validar RLS com **duas identidades descartáveis** | 🟡 **autorizada para a Fase 2 em produção; ainda não executada**, ver abaixo |
 | ~~**F3.4**~~ | Ensaiar rollback de aplicação e de banco | ✅ feito em 2026-08-08, banco local — ver abaixo |
 | ~~**F3.5**~~ | Publicar `export-user-data` | ✅ feito em 2026-08-08 — botão do perfil já funciona |
 
@@ -253,22 +256,23 @@ correto, mas significa que **não dá para rodar `db reset` do zero sem antes se
 usuário com o e-mail certo. Vale um `supabase/seed.sql` futuro para isso — registrado como
 melhoria [M13](#melhorias-sugeridas).
 
-### F3.3 — bloqueada por uma decisão de credencial, não por falta de acesso
+### F3.3 — exceção manual de produção aprovada; execução pertence à Fase 2
 
-Para testar com duas identidades reais, eu precisaria criar duas contas de teste
-programaticamente — o que exige a chave `service_role`, a mais poderosa do projeto (ignora
-toda proteção de linha). O sistema de permissões **bloqueou** a tentativa de expor essa
-chave, corretamente: não houve autorização explícita para isso.
+O inventário público informado pelo responsável identifica a organização Supabase
+`sptobceudadpankmgwyz`, o projeto de produção `uyptmlezmdzfufzuknfz` e a região `us-east-1`.
+O responsável declarou em 2026-08-15 que o projeto ainda não contém dados reais. Essa declaração
+não foi verificada externamente por este changeset.
 
-Três caminhos possíveis, a escolher:
+Com base nessa declaração, foi autorizada somente a criação manual de **duas contas
+descartáveis** pelo Auth normal da aplicação e a validação controlada de RLS na Fase 2. O operador
+deve usar apenas dados sintéticos sem PII, registrar os UUIDs exatos de contas/linhas, interromper
+imediatamente diante de dado preexistente inesperado ou qualquer vazamento entre identidades e
+limpar apenas pelos UUIDs registrados. Não é necessário nem permitido expor `service_role`.
 
-1. **Autorizar a exposição temporária** da chave só para rodar o teste (nunca gravada em
-   arquivo, usada e descartada na mesma sessão)
-2. **Criar duas contas manualmente** pela tela de login do próprio app e me passar os dois
-   tokens de acesso (sem precisar da chave mestra)
-3. **Adiar** — o risco que a F3.3 verifica (usuário vendo dado de outro) já tem cobertura
-   indireta: as policies de RLS foram lidas e conferidas linha a linha em
-   `docs/runbook-deploy.md`, só falta a prova em tempo de execução
+Essa exceção não autoriza Preview apontando para produção, migrations, teste do fluxo de exclusão
+de conta, pagamentos, secrets financeiros ou qualquer outra mutação. Staging pago permanece
+diferido, mas volta a ser pré-requisito antes dessas áreas e antes de E2E autenticado automatizado.
+Nenhuma conta foi criada e nenhum teste RLS foi executado nesta fase.
 
 ### O que já foi adiantado (2026-08-08)
 
@@ -583,14 +587,14 @@ Fora do caminho de lançamento. Registradas para não se perderem, mas **não co
 | **M1** | As 3 `SettingsRow` do ProfilePage são botões decorativos sem `onClick` | Clicar não faz nada — parece quebrado |
 | **M2** | Trocar o confirm artesanal do ProfilePage pelo `ConfirmDialog` existente | Remove ~130 linhas duplicadas |
 | **M3** | Unificar os tokens de cor, hoje espalhados em 4 lugares | `--text-faint` já tem valores divergentes entre `Theme.jsx` e `index.css` |
-| **M4** | Reduzir arquivos gigantes: `DashboardPage` 1269, `RequirementsModal` 1252, `TemplatesPage` 1219 | A extração de domínio não encolheu as telas |
+| **M4** | Reduzir arquivos gigantes: `DashboardPage` 1269, `RequirementsModal` 1252, `TemplatesPage` 1225 | A extração de domínio não encolheu as telas |
 | **M5** | Bundle: worker de PDF ~973 KB, jsPDF ~401 KB | A meta antiga de < 300 KB nunca foi reaferida |
 | **M6** | `add_onboarding_done.sql` não tem prefixo numérico | O CLI do Supabase **ignora esse arquivo** — não aparece em `migration list`. A coluna existe no banco por aplicação manual e é invisível para a ferramenta |
 | **M7** | `clearUserData` não limpa `kriou_onboarding_${userId}_seen` | Deixa chave órfã no `localStorage` |
 | **M8** | Re-exportar `useTheme` de `Theme.jsx` | `import { useTheme } from './Theme'` falharia — pegadinha para código futuro |
 | **M9** | `.doc-action-pill` na landing usa `var(--text-dim)` sobre painel de cor fixa escura | Texto escuro sobre painel escuro no tema claro. Encontrado na F1.5, fora do escopo dela |
 | **M10** | 3 `SettingsRow` do perfil continuam sem ação, agora ao lado de botões que funcionam | O contraste com o botão de limpar dados, que agora funciona e é honesto, ficou mais evidente |
-| **M11** | Não há fixture de segunda identidade para E2E | `e2e/auth.setup.js` só suporta uma conta; `VITE_TEST_EMAIL`/`VITE_TEST_PASSWORD` nem estavam documentadas (corrigido no `.env.example`). A validação de RLS da F3.3 é manual por falta disso |
+| **M11** | Não há fixture de segunda identidade para E2E | `e2e/auth.setup.js` continua restrito ao futuro staging; `E2E_TEST_*` não entra no Vite e o storageState é ignorado. A exceção atual cobre somente RLS manual na Fase 2 em produção, nunca E2E autenticado automatizado |
 | **M12** | Nenhuma automação de deploy | Sem script no `package.json`, sem passo no CI. Publicar Edge Function é sempre manual |
 | **M13** | Falta `supabase/seed.sql` | `db reset` local não consegue passar da `013` sem um usuário com o e-mail certo já existir. Um seed com uma conta de teste destravaria banco local reprodutível |
 

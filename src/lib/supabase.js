@@ -10,10 +10,11 @@
  * - A chave "service_role" NUNCA deve ser usada no frontend.
  * - RLS (Row Level Security) e a unica barreira entre usuarios.
  *
- * AMBIENTE DE DEV:
- * - Sem .env.local configurado, o cliente usa placeholders para nao crashar.
- * - isSupabaseConfigured retorna false, permitindo condicionar features.
- * - Nao tenta fazer chamadas reais ao Supabase em modo offline.
+ * CONTRATO DE AMBIENTE:
+ * - Local pode ficar offline somente com VITE_ALLOW_OFFLINE=true.
+ * - Preview usa Supabase de homologacao e nunca o project-ref de producao.
+ * - Producao exige o project-ref de producao.
+ * - A validacao roda no build e novamente ao iniciar o cliente.
  *
  * LOGS: Prefixo [supabase] para facilitar filtragem.
  *
@@ -23,31 +24,18 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { resolveClientEnvironment } from "../config/environment";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const environment = resolveClientEnvironment(import.meta.env);
 
-const isDev = import.meta.env.DEV;
-const hasCredentials =
-  supabaseUrl &&
-  supabaseKey &&
-  !supabaseUrl.includes("placeholder") &&
-  !supabaseKey.includes("placeholder");
-
-if (!supabaseUrl || !supabaseKey) {
-  if (!isDev) {
-    throw new Error(
-      "[supabase][ERRO_CRITICO] VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY sao obrigatorias. Verifique o arquivo .env.local"
-    );
-  } else {
-    console.warn(
-      "[supabase] Credenciais nao configuradas. Rodando em modo offline (sem autenticacao). Configure .env.local para usar funcionalidades que precisam de login."
-    );
-  }
+if (!environment.supabaseConfigured) {
+  console.warn(
+    "[supabase] Modo offline local habilitado; autenticacao e persistencia remota estao indisponiveis.",
+  );
 }
 
-const effectiveUrl = supabaseUrl || "https://placeholder.supabase.co";
-const effectiveKey = supabaseKey || "placeholder-key";
+const effectiveUrl = environment.supabaseUrl || "https://placeholder.supabase.co";
+const effectiveKey = environment.supabaseKey || "placeholder-key";
 
 export const supabase = createClient(effectiveUrl, effectiveKey, {
   auth: {
@@ -65,4 +53,4 @@ export const supabase = createClient(effectiveUrl, effectiveKey, {
  *   import { isSupabaseConfigured } from "../lib/supabase";
  *   if (isSupabaseConfigured) { /* ... *\/ }
  */
-export const isSupabaseConfigured = hasCredentials;
+export const isSupabaseConfigured = environment.supabaseConfigured;

@@ -3,7 +3,7 @@
 Como o sistema funciona hoje. Descreve o que **existe**, não o que se pretende construir —
 para isso veja o [ROADMAP.md](../ROADMAP.md).
 
-Última revisão: 2026-08-08.
+Última revisão: 2026-08-15.
 
 ---
 
@@ -13,13 +13,37 @@ para isso veja o [ROADMAP.md](../ROADMAP.md).
 Navegador (React 19 + Vite)
     │
     ├── Supabase Auth ─────────► Google OAuth
-    ├── Supabase Postgres ─────► 4 tabelas, protegidas por RLS
+    ├── Supabase Postgres ─────► 5 tabelas públicas + autorização privada
     └── Supabase Edge Functions (Deno) ──► Mercado Pago
                                        └─► provedor de e-mail
 ```
 
 Não existe servidor próprio. Tudo que precisa de segredo ou autoridade roda como Edge
 Function; o resto é cliente.
+
+### Fronteira de ambientes
+
+`src/config/environment.js` valida o contrato antes do build e ao iniciar o cliente:
+
+- local usa Supabase local ou offline explicitamente habilitado;
+- Preview só aceita Supabase `staging`; como o staging pago foi diferido, o fluxo autenticado de
+  Preview permanece indisponível e nunca usa produção;
+- produção usa exclusivamente o project-ref canônico versionado em
+  `src/config/deployment-trust.js`;
+- somente a allowlist pública conhecida pode usar prefixo `VITE_`; qualquer outro nome falha.
+
+O project-ref é extraído da URL e comparado com uma âncora fora das variáveis do deploy. Trocar URL,
+rótulo e uma falsa âncora `VITE_*` juntos continua falhando; rotacionar produção exige mudança
+revisável de código. A matriz completa, owners e rotação estão no
+[runbook de deploy](runbook-deploy.md).
+
+Inventário público informado pelo responsável em 2026-08-15: organização Supabase
+`sptobceudadpankmgwyz`, project-ref de produção `uyptmlezmdzfufzuknfz`, região `us-east-1`. O
+responsável declarou que o projeto ainda não contém dados reais; esta revisão não consultou o
+serviço externo para confirmar. A única exceção operacional vigente é manual, para duas contas
+descartáveis e validação Auth+RLS na Fase 2. Ela não muda a topologia, não habilita Preview, não
+autoriza migrations, exclusão, pagamentos ou acesso a secrets financeiros e exige limpeza pelos
+UUIDs exatos e stop-on-leak.
 
 ---
 
@@ -115,8 +139,9 @@ Todas em Deno, em `supabase/functions/`.
 | `mercadopago-webhook` | Recebe a notificação assíncrona |
 | `authorize-download` | Autoriza o download vinculado ao documento exato |
 | `send-email` | E-mail transacional de confirmação |
+| `export-user-data` | Exporta os dados do titular em JSON |
 | `admin` | Painel administrativo |
-| `_shared` | `auth.ts` e `http.ts` — helpers comuns |
+| `_shared` | Autenticação, HTTP, pagamentos, identidade e lógica admin compartilhada |
 
 ### Padrão de uma Edge Function
 
@@ -150,9 +175,10 @@ Regras que o padrão carrega:
 - Papel de administrador é `profiles.role === "admin"`
 - Erro ao cliente é genérico; o detalhe vai só para o `console.error`
 
-> ⚠️ **`admin/index.ts` não segue este padrão.** Foi escrito antes dos helpers: não tem CORS,
-> reimplementa a autenticação e vaza o erro cru. Não use como referência — a correção é
-> [F5.1](../ROADMAP.md#f5--painel-administrativo).
+`admin/index.ts` foi migrada para este padrão: usa os helpers compartilhados de CORS e
+autenticação e devolve erro interno genérico. A autorização ativa do painel simples ainda consulta
+`profiles.role === "admin"`; o sistema rico de papéis das migrations `019`–`021` permanece
+dormente no código de aplicação.
 
 ### Chamada a partir do cliente
 
@@ -172,7 +198,10 @@ async function invoke(functionName, body) {
 
 ## Banco de dados
 
-Quatro tabelas, todas com RLS.
+Cinco tabelas públicas com RLS. `profiles`, `documents`, `document_drafts` e
+`payment_webhook_events` formam o produto; `admin_audit_events` é a trilha append-only acessível
+somente pelo backend. O schema `private` contém mais duas tabelas de autorização administrativa,
+sem acesso direto de `anon`, `authenticated` ou `service_role`.
 
 ### `profiles`
 Liga ao usuário por **`id`** (é a própria PK, igual a `auth.users.id`) — não por `user_id`.
@@ -202,6 +231,13 @@ dentro de `payload`, cujo formato é `${user.id}::${documentId}`.
 > identificador dele continua dentro do `payload`. Tratamento em
 > [F2.5](../ROADMAP.md#f2--direitos-do-titular).
 
+### `admin_audit_events` e schema `private`
+
+`admin_audit_events` registra operações administrativas com `operation_id`, resultado e correlação;
+é append-only para `service_role`. `private.admin_role_assignments` e
+`private.admin_role_capabilities` modelam `support`, `finance`, `admin` e `owner`. Funções
+`SECURITY DEFINER` restritas ao backend são a única ponte para essa matriz.
+
 ### Proteções no banco
 
 | Migration | O que faz |
@@ -209,8 +245,15 @@ dentro de `payload`, cujo formato é `${user.id}::${documentId}`.
 | `007` | Índice único em `documents(payment_id)` quando não nulo |
 | `010` | Congela a identidade no momento do pagamento |
 | `011` | **Triggers que rejeitam edição de documento pago** — `kriou_enforce_paid_document_edit_policy` e `kriou_protect_backend_payment_fields` |
-| `012` | Endurece funções do banco — ⚠️ **existe no repo, nunca aplicada** |
+| `012` | Endurece funções do banco — aplicada em produção e versionada |
 | `013` | Atribui o papel de administrador |
+| `014`–`018` | Auditoria admin append-only e privilégios mínimos de backend |
+| `019`–`021` | Papéis/capacidades no schema privado e operações protegidas |
+| `022`–`023` | Lixeira de documentos e integridade de ownership |
+
+As migrations `001`–`023` foram verificadas como aplicadas em produção em 2026-08-08. O projeto
+de staging não foi criado: o custo foi deliberadamente diferido. Não se deve inferir que a mesma
+sequência roda fora de produção nem usar a exceção Auth+RLS para aplicar ou ensaiar migrations.
 
 > Os triggers da `011` bloqueiam qualquer UPDATE que zere `form_data` ou `legal_data` de um
 > documento pago. Isso é proposital contra fraude, mas significa que a anonimização por LGPD
@@ -258,7 +301,7 @@ cenário, justificação de parágrafo e proteção dos ornamentos de cláusula,
 | E2E | Playwright | `e2e/` |
 
 A suíte é forte em `domain/`, geradores de PDF e utilitários; fraca em páginas e componentes.
-O número de cobertura relatado pela configuração atual é enganoso — ver
+A cobertura atual mede todo `src`, sem esconder módulos não testados — ver
 [STATUS.md](../STATUS.md) e [F7](../ROADMAP.md#f7--honestidade-técnica).
 
 ---

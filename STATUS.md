@@ -13,9 +13,11 @@
 
 O produto é funcional, mas **ainda não está pronto para produção**. Além das pendências jurídicas,
 faltam promoção controlada, observabilidade e os testes reais previstos no plano de prontidão. O
-staging pago foi diferido. O responsável declarou que produção ainda não contém dados reais e
-autorizou ali somente duas contas descartáveis + Auth/RLS manuais para a Fase 2; nada disso foi
-executado ou verificado externamente neste changeset. Preview continua proibida de usar produção.
+staging pago foi diferido. O preflight de produção encontrou 3 profiles, 10 documents e 8
+document_drafts preexistentes, posteriormente classificados pelo responsável como descartáveis,
+mas eles permanecem preservados e fora do escopo. O executor local de Auth/RLS para duas contas
+novas está pronto; contas, writes e smoke externo ainda não foram executados neste changeset.
+Preview continua proibida de usar produção.
 
 ---
 
@@ -23,7 +25,7 @@ executado ou verificado externamente neste changeset. Preview continua proibida 
 
 | Portão | Estado | Como verificar |
 |---|---|---|
-| Testes unitários | ✅ **560 passando, 44 arquivos** | `npm test` |
+| Testes unitários | ✅ **571 passando, 45 arquivos** | `npm test` |
 | Lint | ✅ **limpo** | `npm run lint` |
 | Build configurado | ✅ aprovado | `cp .env.example .env.local`; `npm run build` |
 | Build CI explícito | ✅ aprovado; recusado na Vercel | `npm run build:ci` |
@@ -138,10 +140,10 @@ statements, 42,08% de branches e 38,22% de funções**; `src/config/environment.
 | URL/JWT anon | ✅ schemas hosted/CLI, tempo e binding issuer↔URL validados; tokens privilegiados recusados |
 | Modo offline | ✅ permitido somente no local com opt-in explícito |
 | Inventário público de produção | ℹ️ informado pelo responsável: org `sptobceudadpankmgwyz`, ref `uyptmlezmdzfufzuknfz`, região `us-east-1`; não reverificado externamente |
-| Dados reais em produção | ℹ️ o responsável declarou que ainda não existem; não verificado por este changeset |
+| Dados preexistentes em produção | ⚠️ preflight agregado encontrou `profiles=3`, `documents=10`, `document_drafts=8`; o responsável os classificou como descartáveis, mas o SEC2.1 deve preservá-los integralmente |
 | Projeto Supabase de staging | ⏸️ **não criado/não verificado** — custo pago diferido; será pré-requisito antes das áreas destrutivas/financeiras |
 | Variáveis Vercel por escopo | ⛔ **não configuradas/não verificadas** — nenhuma alteração externa autorizada |
-| Auth/RLS manual em produção | 🟡 autorizado somente para duas contas descartáveis na Fase 2; não executado |
+| Auth/RLS manual em produção | 🟡 executor versionado + 11 testes locais; criação humana das duas contas novas, commit das fontes, execução externa e remoção dessas contas ainda pendentes; nenhum write executado |
 | Migrations, exclusão de conta e pagamentos | ⛔ fora da exceção; exigem staging antes de execução |
 
 O inventário sem valores, a rotação, as contas descartáveis e a limpeza estão em

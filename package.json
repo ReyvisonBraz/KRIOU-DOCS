@@ -18,7 +18,8 @@
     "test:e2e:setup": "playwright test --project=setup",
     "test:e2e:public": "playwright test --project=public",
     "env:check": "node scripts/check-environment.mjs",
-    "scan:secrets": "node scripts/scan-secrets.mjs"
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "verify:production-rls": "node scripts/verify-production-rls.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.2",

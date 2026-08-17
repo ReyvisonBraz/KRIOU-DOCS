@@ -111,9 +111,10 @@ export function createSupabaseIdentityOperations(client) {
     },
 
     readSensitiveProfile(id) {
-      // cpf/phone sao solicitados para provar que nem essas colunas atravessam a RLS.
+      // cpf é solicitado para provar que nem essa coluna sensível atravessa a RLS.
+      // phone não existe no schema de produção (achado do SEC2.1) e não é selecionado.
       // O adapter descarta os valores e devolve somente id/contagem.
-      return query("profiles", "id,cpf,phone", { id });
+      return query("profiles", "id,cpf", { id });
     },
 
     updateProfileIdentity(id) {

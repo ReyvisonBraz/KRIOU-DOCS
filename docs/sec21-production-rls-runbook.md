@@ -1,8 +1,20 @@
 # SEC2.1 — Auth + RLS controlados em produção
 
 Este procedimento se limita às duas contas novas do ensaio e aos UUIDs gerados pelo novo
-`run_id`. Os 3 perfis, 10 documentos e 8 drafts classificados anteriormente são preservados e
-nunca entram nos filtros de escrita ou limpeza.
+`run_id`. Os perfis, 10 documentos e 8 drafts preexistentes são preservados e nunca entram nos
+filtros de escrita ou limpeza.
+
+> **Achado de governança registrado em 2026-08-16 (execução SEC2.1):**
+> a produção diverge do histórico de migrations esperado pela verificação. Na tabela real
+> `public.profiles` do ref `uyptmlezmdzfufzuknfz`, **a coluna `phone` não existe** (por isso a
+> primeira execução parou em `42703` — undefined column no probe `id,cpf,phone`). O schema real é:
+> `id, display_name, email, avatar_url, nome, sobrenome, cpf, created_at, updated_at,
+> onboarding_done, google_id, role`, com FK `id → auth.users(id) ON DELETE CASCADE` e trigger
+> `protect_profile_privileged_fields (BEFORE INSERT OR UPDATE)`. Além disso, a contagem pré-existente
+> era de **10 perfis** (não 3): o preflight anterior agregava apenas o subconjunto classificado
+> descartável; ao criar uma conta pelo Dashboard, um trigger cria o row de perfil correspondente.
+> Revisar o histórico de migrations `profiles` e o dado "3 perfis" do preflight quando staging
+> existir; até lá, o SEC2.1 preserva tudo e só toca os UUIDs do `run_id` e das duas contas novas.
 
 ## Bloqueio humano antes da primeira escrita
 

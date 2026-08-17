@@ -15,7 +15,10 @@ O produto é funcional, mas **ainda não está pronto para produção**. Além d
 faltam promoção controlada, observabilidade e os testes reais previstos no plano de prontidão. O
 staging pago foi diferido. O preflight de produção encontrou 3 profiles, 10 documents e 8
 document_drafts preexistentes, posteriormente classificados pelo responsável como descartáveis,
-mas eles permanecem preservados e fora do escopo. O executor local de Auth/RLS para duas contas
+mas eles permanecem preservados e fora do escopo. Na execução SEC2.1 de 2026-08-16 a contagem
+real verificada foi `profiles=10` (auth users=10) e o schema de `profiles` divergiu do histórico
+de migrations (coluna `phone` ausente; `display_name`, `email`, `google_id` presentes) — achado
+registrado no runbook SEC2.1. O executor local de Auth/RLS para duas contas
 novas está pronto; contas, writes e smoke externo ainda não foram executados neste changeset.
 Preview continua proibida de usar produção.
 
@@ -140,10 +143,10 @@ statements, 42,08% de branches e 38,22% de funções**; `src/config/environment.
 | URL/JWT anon | ✅ schemas hosted/CLI, tempo e binding issuer↔URL validados; tokens privilegiados recusados |
 | Modo offline | ✅ permitido somente no local com opt-in explícito |
 | Inventário público de produção | ℹ️ informado pelo responsável: org `sptobceudadpankmgwyz`, ref `uyptmlezmdzfufzuknfz`, região `us-east-1`; não reverificado externamente |
-| Dados preexistentes em produção | ⚠️ preflight agregado encontrou `profiles=3`, `documents=10`, `document_drafts=8`; o responsável os classificou como descartáveis, mas o SEC2.1 deve preservá-los integralmente |
+| Dados preexistentes em produção | ⚠️ preflight agregado encontrou `profiles=3`; **na execução SEC2.1 de 2026-08-16 a contagem real verificada no Dashboard foi `profiles=10` (auth users=10)**, `documents=10`, `document_drafts=8` — ver achado de divergência abaixo; preservados integralmente |
 | Projeto Supabase de staging | ⏸️ **não criado/não verificado** — custo pago diferido; será pré-requisito antes das áreas destrutivas/financeiras |
 | Variáveis Vercel por escopo | ⛔ **não configuradas/não verificadas** — nenhuma alteração externa autorizada |
-| Auth/RLS manual em produção | 🟡 executor versionado + 11 testes locais; criação humana das duas contas novas, commit das fontes, execução externa e remoção dessas contas ainda pendentes; nenhum write executado |
+| Auth/RLS manual em produção | 🟡 executor versionado + testes locais; contas A e B criadas e confirmadas (10 auth users pré-existentes + as duas novas); 1ª execução (2026-08-16) parada em `42703` — coluna `phone` inexistente no schema real, conforme achado acima; fix mínimo aplicado (probe `id,cpf` sem `phone`) **commitado localmente sem push**; gates verdes 571 testes, cobertura 56.77 L, lint, build:ci e scan limpos; rerun com novo `run_id` em andamento |
 | Migrations, exclusão de conta e pagamentos | ⛔ fora da exceção; exigem staging antes de execução |
 
 O inventário sem valores, a rotação, as contas descartáveis e a limpeza estão em

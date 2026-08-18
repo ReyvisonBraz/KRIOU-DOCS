@@ -18,8 +18,9 @@ document_drafts preexistentes, posteriormente classificados pelo responsável co
 mas eles permanecem preservados e fora do escopo. Na execução SEC2.1 de 2026-08-16 a contagem
 real verificada foi `profiles=10` (auth users=10) e o schema de `profiles` divergiu do histórico
 de migrations (coluna `phone` ausente; `display_name`, `email`, `google_id` presentes) — achado
-registrado no runbook SEC2.1. O executor local de Auth/RLS para duas contas
-novas está pronto; contas, writes e smoke externo ainda não foram executados neste changeset.
+registrado no runbook SEC2.1. A execução Auth/RLS de 2026-08-17 (duas contas
+descartáveis) concluiu **20/20 cenários passed** e `records_cleanup=verified`, com registros
+preexistentes preservados; restou somente a remoção dessas duas contas no Dashboard.
 Preview continua proibida de usar produção.
 
 ---
